@@ -2,16 +2,17 @@
   "name": "recative-system",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
   "private": true,
-  "dependencies": {},
   "devDependencies": {
     "@nrwl/cli": "14.5.2",
     "@nrwl/js": "14.5.2",
+    "@nrwl/node": "^14.5.2",
     "@nrwl/nx-cloud": "latest",
-    "@nrwl/workspace": "14.5.2",
+    "@nrwl/web": "^14.5.2",
+    "@nrwl/workspace": "^14.5.2",
     "nx": "14.5.2",
     "prettier": "^2.6.2",
     "typescript": "~4.7.2"
-  }
+  },
+  "packageManager": "yarn@3.2.2"
 }
