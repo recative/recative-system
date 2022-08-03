@@ -6,13 +6,15 @@
     "build": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
-        "command": "echo yay"
+        "command": "yarn build",
+        "cwd": "packages/ap-core"
       }
     },
     "publish": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
-        "command": "echo yay"
+        "command": "yarn npm publish",
+        "cwd": "packages/ap-core"
       },
       "dependsOn": [
         {

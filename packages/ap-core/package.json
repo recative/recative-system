@@ -1,5 +1,68 @@
 {
   "name": "@recative/ap-core",
-  "version": "0.0.1",
-  "type": "commonjs"
+  "version": "0.0.0-dev.38",
+  "source": "src/index.ts",
+  "main": "dist/main.js",
+  "module": "dist/module.js",
+  "types": "dist/types.d.ts",
+  "repository": "https://github.com/recative/recative-system",
+  "scripts": {
+    "start:docs": "serve ./docs",
+    "prepack": "yarn clean && yarn build",
+    "clean": "rimraf ./dist",
+    "watch": "rollup -c -w",
+    "build": "rollup -c",
+    "build:docs": "typedoc --options ./typedoc.json"
+  },
+  "dependencies": {
+    "@nanostores/persistent": "^0.5.1",
+    "@recative/act-protocol": "^0.0.0-dev.58",
+    "@recative/definitions": "^0.0.0-dev.84",
+    "@recative/open-promise": "^0.0.0-dev.31",
+    "@recative/resource-bridge": "^0.0.0-dev.30",
+    "@recative/smart-resource": "^0.0.0-dev.7",
+    "@ungap/event-target": "^0.2.2",
+    "debug": "^4.3.3",
+    "lodash": "^4.17.21",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-sucrase": "^4.0.3",
+    "@types/animejs": "^3.1.2",
+    "@types/debug": "^4.1.5",
+    "@types/lodash": "^4.14.169",
+    "@types/three": "^0.127.1",
+    "@types/uuid": "^8.3.0",
+    "@typescript-eslint/eslint-plugin": "^5.3.0",
+    "@typescript-eslint/parser": "^5.3.0",
+    "animejs": "^3.2.1",
+    "eslint": "^8.2.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-airbnb-typescript": "^15.0.0",
+    "eslint-plugin-import": "^2.25.2",
+    "pixi.js-legacy": "6.3.2",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.72.1",
+    "rollup-plugin-dts": "^4.2.1",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "runtypes": "*",
+    "serve": "^11.3.2",
+    "three": "^0.140.2",
+    "ts-loader": "^8.0.14",
+    "typedoc": "0.21.5",
+    "typedoc-plugin-pages-fork": "^0.0.1",
+    "typescript": ">=3.0.0"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "browserslist": [
+    "last 1 Chrome versions"
+  ],
+  "peerDependencies": {
+    "animejs": "*",
+    "pixi.js-legacy": "*",
+    "three": "*"
+  }
 }
