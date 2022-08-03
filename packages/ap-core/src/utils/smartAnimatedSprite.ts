@@ -158,6 +158,8 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
         oldTexture.texture.destroy();
       }
     });
+    // Animated sprite won't update scale with saved width/height after setting the textures so we should manually update it here
+    this._onTextureUpdate()
   };
 
   get label() {
