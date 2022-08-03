@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "strict": true,
+    "baseUrl": "./src/",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist/",
+    "module": "CommonJS",
+  },
+  "include": [
+    "src",
+    "example"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
+

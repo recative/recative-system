@@ -46,3 +46,6 @@ Thumbs.db
 !.yarn/sdks
 !.yarn/versions
 .pnp.*
+
+# Parcel
+.parcel-cache

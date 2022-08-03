@@ -1,0 +1,40 @@
+{
+  "name": "@recative/smart-resource",
+  "version": "0.0.0-dev.7",
+  "source": "src/index.ts",
+  "main": "dist/main.js",
+  "module": "dist/module.js",
+  "types": "dist/types.d.ts",
+  "repository": "https://github.com/recative/recative-system",
+  "scripts": {
+    "prepack": "yarn clean && yarn build",
+    "clean": "rimraf ./dist",
+    "watch": "rollup -c -w",
+    "build": "rollup -c"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-sucrase": "^4.0.3",
+    "@types/debug": "^4.1.7",
+    "@typescript-eslint/eslint-plugin": "^5.3.0",
+    "@typescript-eslint/parser": "^5.3.0",
+    "eslint": "^8.2.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-airbnb-typescript": "^15.0.0",
+    "eslint-plugin-import": "^2.25.2",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.72.1",
+    "rollup-plugin-dts": "^4.2.1",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "typescript": ">=3.0.0"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "browserslist": [
+    "last 1 Chrome versions"
+  ],
+  "dependencies": {
+    "debug": "^4.3.4"
+  }
+}

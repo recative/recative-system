@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Example</title>
+	<script src="./index.ts" type="module"></script>
+</head>
+
+<body>
+	<button id="activate">Activate</button>
+	<div id="playground" style="display: none;">
+		<button id="toggle">Play</button>
+		<button id="seek_zero">Seek zero</button>
+		<button id="seek_neg">Seek -1</button>
+		<button id="seek_end">Seek near end</button>
+		<button id="stop">Stop</button>
+		<button id="suspend">Suspend</button>
+		<button id="loop">Loop: false</button>
+		<button id="fade">Fade,1,0,5</button>
+		<input type="range" name="volume" id="volume" min="0" max="1" step="0.01">
+	</div>
+</body>
+
+</html>

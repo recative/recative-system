@@ -1,0 +1,63 @@
+{
+  "name": "@recative/resource-bridge",
+  "version": "0.0.0-dev.30",
+  "source": "src/index.ts",
+  "main": "dist/main.js",
+  "module": "dist/module.js",
+  "types": "dist/types.d.ts",
+  "repository": "https://github.com/recative/recative-system",
+  "scripts": {
+    "prepack": "yarn clean && yarn build",
+    "clean": "rimraf ./dist",
+    "watch": "parcel watch",
+    "build": "parcel build",
+    "dev": "parcel serve --no-hmr example/*.html"
+  },
+  "targets": {
+    "main": {},
+    "module": {},
+    "types": {},
+    "sw": {
+      "source": "src/serviceWorker.ts",
+      "distDir": "dist/sw",
+      "context": "service-worker",
+      "optimize": false,
+      "engines": {
+        "browsers": [
+          "Chrome 70"
+        ]
+      }
+    }
+  },
+  "devDependencies": {
+    "@parcel/packager-ts": "2.3.0",
+    "@parcel/transformer-typescript-tsc": "2.2.1",
+    "@parcel/transformer-typescript-types": "2.3.0",
+    "@types/debug": "^4.1.7",
+    "@typescript-eslint/eslint-plugin": "^5.3.0",
+    "@typescript-eslint/parser": "^5.3.0",
+    "buffer": "^6.0.3",
+    "eslint": "^8.2.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-airbnb-typescript": "^15.0.0",
+    "eslint-plugin-import": "^2.25.2",
+    "parcel": "2.2.1",
+    "process": "^0.11.10",
+    "rimraf": "^3.0.2",
+    "typescript": "4.4.4"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "browserslist": [
+    "last 1 Chrome versions"
+  ],
+  "dependencies": {
+    "@recative/act-protocol": "^0.0.0-dev.58",
+    "@recative/definitions": "^0.0.0-dev.84",
+    "@recative/open-promise": "^0.0.0-dev.31",
+    "async-call-rpc": "^6.0.1",
+    "debug": "^4.3.3",
+    "nanoid": "^3.1.30"
+  }
+}

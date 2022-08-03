@@ -3,7 +3,15 @@
   "version": "0.0.0",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "build": "nx run-many --target=build",
+    "publish": "nx affected --target=version",
+    "prepare": "husky install"
+  },
   "devDependencies": {
+    "@commitlint/cli": "^17.0.0",
+    "@commitlint/config-conventional": "^17.0.0",
+    "@jscutlery/semver": "^2.25.2",
     "@nrwl/cli": "14.5.2",
     "@nrwl/eslint-plugin-nx": "14.5.2",
     "@nrwl/jest": "14.5.2",
@@ -19,6 +27,7 @@
     "@typescript-eslint/parser": "^5.29.0",
     "eslint": "~8.15.0",
     "eslint-config-prettier": "8.1.0",
+    "husky": "^8.0.0",
     "jest": "27.5.1",
     "nx": "14.5.2",
     "prettier": "^2.6.2",
@@ -29,5 +38,8 @@
   "packageManager": "yarn@3.2.2",
   "dependencies": {
     "tslib": "^2.3.0"
-  }
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }

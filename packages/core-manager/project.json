@@ -4,14 +4,23 @@
   "projectType": "library",
   "targets": {
     "build": {
-      "executor": "@nrwl/js:tsc",
-      "outputs": ["{options.outputPath}"],
+      "executor": "@nrwl/workspace:run-commands",
       "options": {
-        "outputPath": "dist/packages/core-manager",
-        "main": "packages/core-manager/src/index.ts",
-        "tsConfig": "packages/core-manager/tsconfig.lib.json",
-        "assets": ["packages/core-manager/*.md"]
+        "command": "yarn build",
+        "cwd": "packages/core-manager"
       }
+    },
+    "publish": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "command": "node tools/scripts/publish.mjs ap-core {args.ver} {args.tag}"
+      },
+      "dependsOn": [
+        {
+          "projects": "self",
+          "target": "build"
+        }
+      ]
     },
     "lint": {
       "executor": "@nrwl/linter:eslint",
@@ -26,6 +35,12 @@
       "options": {
         "jestConfig": "packages/core-manager/jest.config.ts",
         "passWithNoTests": true
+      }
+    },
+    "version": {
+      "executor": "@jscutlery/semver:version",
+      "options": {
+        "preset": "conventional"
       }
     }
   },

@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "strict": true,
+    "baseUrl": "./src/",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "jsx":"react-jsx"
+  },
+  "include": [
+    "src",
+    "example"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
+

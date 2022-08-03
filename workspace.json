@@ -2,6 +2,19 @@
   "$schema": "./node_modules/nx/schemas/workspace-schema.json",
   "version": 2,
   "projects": {
-    "core-manager": "packages/core-manager"
+    "act-player": "packages/act-player",
+    "act-protocol": "packages/act-protocol",
+    "ap-core": "packages/ap-core",
+    "ap-pack": "packages/ap-pack",
+    "ap-preview": "packages/ap-preview",
+    "audio-station": "packages/audio-station",
+    "client-sdk": "packages/client-sdk",
+    "core-manager": "packages/core-manager",
+    "definitions": "packages/definitions",
+    "open-promise": "packages/open-promise",
+    "resource-bridge": "packages/resource-bridge",
+    "resource-loader": "packages/resource-loader",
+    "smart-resource": "packages/smart-resource",
+    "time-schedule": "packages/time-schedule"
   }
 }
