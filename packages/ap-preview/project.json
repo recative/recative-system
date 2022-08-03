@@ -13,7 +13,8 @@
     "publish": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
-        "command": "node tools/scripts/publish.mjs ap-preview {args.ver} {args.tag}"
+        "command": "yarn npm publish",
+        "cwd": "packages/ap-preview"
       },
       "dependsOn": [
         {

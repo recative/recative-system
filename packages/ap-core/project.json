@@ -12,7 +12,7 @@
     "publish": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
-        "command": "node tools/scripts/publish.mjs ap-core {args.ver} {args.tag}"
+        "command": "echo yay"
       },
       "dependsOn": [
         {
