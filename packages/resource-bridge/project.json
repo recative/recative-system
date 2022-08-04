@@ -13,7 +13,7 @@
     "publish": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
-        "command": "yarn npm publish",
+        "command": "yarn npm publish --tolerate-republish",
         "cwd": "packages/resource-bridge"
       },
       "dependsOn": [
