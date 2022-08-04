@@ -10,3 +10,5 @@ export * from './components/Loading/Loading';
 export * from './components/ClearLottie/ClearLottie';
 export * from './components/Panic/Error';
 export * from './hooks/useRandomId';
+
+export * from './types/ExtensionCore';

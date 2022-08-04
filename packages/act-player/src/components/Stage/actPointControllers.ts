@@ -113,7 +113,7 @@ export const getController = (id: string) => {
             resourceId: string,
             type: 'label' | 'id',
           ) => {
-            const { resources } = coreFunctions!.core.getEpisodeData()!;
+            const resources = coreFunctions!.core.getEpisodeData()!.resources;
 
             const resource = getResourceMetadata(resourceId, type);
             if (!resource) return null;
@@ -268,10 +268,6 @@ export const getController = (id: string) => {
         } as Partial<HostFunctions>,
         {
           get(target, prop) {
-            coreFunctions?.log(
-              `Host function accessed: %c${prop.toString()}`,
-              'color: #64DD17',
-            );
             if (prop in target) {
               return target[prop as keyof HostFunctions];
             }
@@ -354,6 +350,7 @@ export const getController = (id: string) => {
 
   return {
     controller,
+    destroyConnector: () => connector?.destroy(),
     setActPointTag,
     removeActPointTag,
     setActPointReady,

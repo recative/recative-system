@@ -1,5 +1,8 @@
+import type { _AsyncVersionOf } from 'async-call-rpc'
+
 import { createClientConnector } from '@recative/act-protocol';
 import { createActPointConnector } from '@recative/resource-bridge';
+import type { ServiceWorkerFunctions } from '@recative/resource-bridge';
 
 import { FunctionalAtomDefinition } from '../core/AtomStore';
 import { connectToHost } from '../core/protocol';
@@ -7,6 +10,7 @@ import {
   logHostFunctionsHooks,
   logResourceBridgeFunctionsHooks,
 } from '../utils/log';
+
 
 import { useStore, useResourceTracker, useContext } from './baseHooks';
 
@@ -53,6 +57,7 @@ export const HOST_FUNCTIONS_STORE = FunctionalAtomDefinition(() => {
     dispose() {
       if (c) {
         c.channel.destroy();
+        c.destroy();
       }
       c = null;
       context = null;
@@ -127,7 +132,7 @@ const RESOURCE_BRIDGE_FUNCTIONS_STORE = FunctionalAtomDefinition(() => {
       });
     }
 
-    return b.connector;
+    return b.connector as _AsyncVersionOf<ServiceWorkerFunctions> | null;
   };
 
   return {

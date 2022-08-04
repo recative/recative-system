@@ -151,7 +151,7 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
 
     controller.setCoreFunctions(coreFunctions);
 
-    return { controller, coreFunctions };
+    return { controller, coreFunctions, destroyConnector: controller.destroyConnector };
   });
 
   const handleEmergencyMessage = React.useCallback((event: MessageEvent) => {
@@ -168,6 +168,12 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
     if (event.data === 'ap-script-load-error') {
       props.core.panicCode.set('Unable to Load the Script');
     }
+  }, []);
+
+  React.useEffect(() => {
+    return () => {
+      core.destroyConnector();
+    };
   }, []);
 
   React.useLayoutEffect(() => {
