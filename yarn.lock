@@ -4437,7 +4437,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@recative/act-player@^0.0.0, @recative/act-player@workspace:packages/act-player":
+"@recative/act-player@^0.0.1, @recative/act-player@workspace:packages/act-player":
   version: 0.0.0-use.local
   resolution: "@recative/act-player@workspace:packages/act-player"
   dependencies:
@@ -4584,7 +4584,7 @@ __metadata:
     "@babel/preset-typescript": 7.16.7
     "@babel/runtime-corejs3": 7.16.8
     "@paciolan/remote-module-loader": ^3.0.2
-    "@recative/act-player": ^0.0.0
+    "@recative/act-player": ^0.0.1
     "@recative/resource-bridge": ^0.2.0
     "@types/fs-extra": 9.0.13
     "@types/mkdirp": 1.0.2
@@ -4621,6 +4621,8 @@ __metadata:
     webpack-dev-server: 4.7.3
     webpack-manifest-plugin: 4.1.1
     webpack-plugin-pwa-manifest: ^1.1.0
+  peerDependencies:
+    ap-preview: "*"
   bin:
     ap-pack: ./bin/ap-pack.js
   languageName: unknown
@@ -4720,7 +4722,7 @@ __metadata:
     "@nanostores/react": ^0.1.5
     "@paciolan/remote-module-loader": ^3.0.2
     "@react-hookz/web": ^13.0.0
-    "@recative/act-player": ^0.0.0
+    "@recative/act-player": ^0.0.1
     "@recative/act-protocol": ^0.2.0
     "@recative/core-manager": ^0.2.0
     "@recative/definitions": ^0.2.0

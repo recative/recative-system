@@ -57,5 +57,8 @@
     "webpack-dev-server": "4.7.3",
     "webpack-manifest-plugin": "4.1.1",
     "webpack-plugin-pwa-manifest": "^1.1.0"
+  },
+  "peerDependencies": {
+    "ap-preview": "*"
   }
 }
