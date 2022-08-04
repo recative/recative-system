@@ -3,8 +3,6 @@ import type { EventBasedChannel } from 'async-call-rpc';
 
 import { logHost, logClient } from './log';
 
-const TICK_MESSAGE = '@recative/act-protocol/tick';
-
 const isTransferable = (obj: object): obj is Transferable => {
   if (obj instanceof ArrayBuffer) {
     return true;
@@ -145,35 +143,24 @@ export class BatchedMessagePortChannel extends MessagePortChannel {
 
   constructor(port: MessagePort) {
     super(port);
-
-    this.tick();
   }
 
-  tickScheduled = false;
+  timeout: number = -1;
 
-  scheduleTick = () => {
-    if (this.tickScheduled) return;
-    this.tickScheduled = true;
-    raf(this.tick);
-  }
-
-  lastTickTime = 0;
-
-  tick = () => {
-    if ((Date.now() - this.lastTickTime) < (1000 / 30)) {
-      return;
-    }
-
-    this.lastTickTime = Date.now();
-    this.port.postMessage(TICK_MESSAGE);
-    this.tickScheduled = false;
-    
+  forceSendTask = () => {
     if (this.destroyed) return;
     
     this.port.postMessage(this.messageBuffer, extractTransferables(this.messageBuffer));
     this.messageBuffer = [];
-    
-    this.scheduleTick();
+    globalThis.clearTimeout(this.timeout);
+  }
+
+  scheduleSendTask = () => {
+    globalThis.clearTimeout(this.timeout);
+
+    this.timeout = window.setTimeout(() => {
+      this.forceSendTask();
+    }, 1000 / 60);
   }
 
   on = (listener: Listener): void | (() => void) => {
@@ -183,9 +170,6 @@ export class BatchedMessagePortChannel extends MessagePortChannel {
 
     this.port.addEventListener('message', (event) => {
       // For mobile platform, raf is not available when the iFrame is not shown.
-      if (event.data === TICK_MESSAGE) {
-        this.tick();
-      }
 
       if (Array.isArray(event.data)) {
         event.data.forEach(listener);
@@ -200,6 +184,11 @@ export class BatchedMessagePortChannel extends MessagePortChannel {
     if (this.destroyed) throw new DestroyedError();
 
     this.messageBuffer.push(data);
+    if (this.messageBuffer.length > 2000) {
+      this.forceSendTask();
+    } else {
+      this.scheduleSendTask();
+    }
   }
 }
 
