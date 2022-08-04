@@ -1,8 +1,10 @@
 import { IResourceFileForClient } from '@recative/definitions';
+import { useSelector } from 'core/DataSource';
+import { useEnvVariableDataSource } from 'hooks/envVariableHooks';
 import * as PIXI from 'pixi.js-legacy';
 import { useResourceUrlByIdFetcher } from '../hooks/resourceManagerHooks';
 
-export interface SmartTextureInfo{
+export interface SmartTextureInfo {
   url?: string
   frame?: PIXI.Rectangle
   orig?: PIXI.Rectangle
@@ -59,39 +61,39 @@ export const useSmartTextureInfoFromResourceMetadata = () => {
 
     if (atlasKeys.every((key) => key in extension)) {
       if (extension[ATLAS_ENABLE_KEY] === 'yes') {
-      /*
-      On baseTexture:
-      +----------------+
-      |    |           |
-      |    y           |
-      |    |           |
-      |--x-+--w--+     |
-      |    |     |     |
-      |    h     |     |
-      |    |     |     |
-      |    +-----+     |
-      |                |
-      +----------------+
-      On Texture:
-      +----------------+
-      |    |           |
-      |   ey           |
-      |    |           |
-      |-ex-+-ew--+    th
-      |    |     |     |
-      |   eh     |     |
-      |    |     |     |
-      |    +-----+     |
-      |                |
-      +---tw-----------+
-      *if f, w===eh && h===ew
-      *else, w===ew && h===eh
-      For pixi.js:
-      frame=[x,y,w,h]
-      orig=f?[0,0,w,h]:[0,0,h,w]
-      trim=[ex,ey,ew,eh]
-      rotate=f?PIXI.groupD8.S:PIXI.groupD8.E
-      */
+        /*
+        On baseTexture:
+        +----------------+
+        |    |           |
+        |    y           |
+        |    |           |
+        |--x-+--w--+     |
+        |    |     |     |
+        |    h     |     |
+        |    |     |     |
+        |    +-----+     |
+        |                |
+        +----------------+
+        On Texture:
+        +----------------+
+        |    |           |
+        |   ey           |
+        |    |           |
+        |-ex-+-ew--+    th
+        |    |     |     |
+        |   eh     |     |
+        |    |     |     |
+        |    +-----+     |
+        |                |
+        +---tw-----------+
+        *if f, w===eh && h===ew
+        *else, w===ew && h===eh
+        For pixi.js:
+        frame=[x,y,w,h]
+        orig=f?[0,0,w,h]:[0,0,h,w]
+        trim=[ex,ey,ew,eh]
+        rotate=f?PIXI.groupD8.S:PIXI.groupD8.E
+        */
         const rotated = String(extension[ATLAS_F_KEY]) === 'true';
         smartTextureInfo.frame = new PIXI.Rectangle(
           Number(extension[ATLAS_X_KEY]),
@@ -118,3 +120,21 @@ export const useSmartTextureInfoFromResourceMetadata = () => {
     return smartTextureInfo;
   };
 };
+
+export const useSmartResourceConfig = () => {
+  const envVariableDataSource = useEnvVariableDataSource();
+  const smartResourceConfigStringDataSource = useSelector(envVariableDataSource, (env) => {
+    const smartResourceConfig = env?.__smartResourceConfig
+    if (!smartResourceConfig) {
+      return null
+    }
+    return JSON.stringify(smartResourceConfig, Object.keys(smartResourceConfig).sort())
+  })
+  return useSelector(smartResourceConfigStringDataSource, (str) => {
+    if (str === null) {
+      return null
+    } else {
+      return JSON.parse(str) as Record<string,string>
+    }
+  })
+}
