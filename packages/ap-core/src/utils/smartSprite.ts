@@ -6,32 +6,31 @@ import { useQuery } from '../hooks/fetchDataHooks';
 import {
   DefaultTagDataSource, useResourceMetadataByLabelFetcher,
 } from '../hooks/resourceManagerHooks';
-import { useEnvVariableDataSource } from '../hooks/envVariableHooks';
 import { DataSource, useCombinator, useSelector } from '../core/DataSource';
 import {
-  SmartTextureInfo, useSmartTextureInfoFromResourceMetadata,
+  SmartTextureInfo, useSmartResourceConfig, useSmartTextureInfoFromResourceMetadata,
 } from './smartTexture';
 
 const useSmartTextureInfo = (
   labelDataSource: Subscribable<string>,
   tagDataSource: Subscribable<string> = DefaultTagDataSource,
 ): DataSourceNode<SmartTextureInfo | null> => {
-  const envVariableDataSource = useEnvVariableDataSource();
+  const smartResourceConfigDataSource = useSmartResourceConfig();
   const {
     subscribeResultUpdate: metadataResponseDataSource,
   } = useQuery(labelDataSource, useResourceMetadataByLabelFetcher());
 
   const combinedDataSource = useCombinator(
-    envVariableDataSource,
+    smartResourceConfigDataSource,
     metadataResponseDataSource,
     tagDataSource,
   );
 
-  const selectedMetadataDataSource = useSelector(combinedDataSource, ([envVariable, metadataResponse, tag]) => {
+  const selectedMetadataDataSource = useSelector(combinedDataSource, ([smartResourceConfig, metadataResponse, tag]) => {
     if (metadataResponse === null) {
       return undefined;
     }
-    if (envVariable === null) {
+    if (smartResourceConfig === null) {
       return null;
     }
     if (!metadataResponse?.success) {
@@ -55,7 +54,7 @@ const useSmartTextureInfo = (
     const file = getMatchedResource(
       files,
       {
-        ...envVariable.__smartResourceConfig,
+        ...smartResourceConfig,
         custom: tag || 'unknown',
       },
     );

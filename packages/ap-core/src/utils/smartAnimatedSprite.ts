@@ -3,28 +3,27 @@ import { getMatchedResource, ResourceEntry } from '@recative/smart-resource';
 import { IResourceFileForClient } from '@recative/definitions';
 import * as PIXI from 'pixi.js-legacy';
 import { useQuery } from '../hooks/fetchDataHooks';
-import { useEnvVariableDataSource } from '../hooks/envVariableHooks';
 import { useResourceMetadataByIdFetcher, useResourceMetadataByLabelFetcher } from '../hooks/resourceManagerHooks';
-import { ATLAS_FRAMES_KEY, SmartTextureInfo, useSmartTextureInfoFromResourceMetadata } from './smartTexture';
+import { ATLAS_FRAMES_KEY, SmartTextureInfo, useSmartResourceConfig, useSmartTextureInfoFromResourceMetadata } from './smartTexture';
 import { DataSource, useCombinator, useSelector } from '../core/DataSource';
 
 const useSmartTextureInfoSequence = (
   labelDataSource: Subscribable<string>,
 ): DataSourceNode<SmartTextureInfo[] | null> => {
-  const envVariableDataSource = useEnvVariableDataSource();
+  const smartResourceConfigDataSource = useSmartResourceConfig();
   const {
     subscribeResultUpdate: metadataResponseDataSource,
   } = useQuery(labelDataSource, useResourceMetadataByLabelFetcher());
   const combinedDataSource = useCombinator(
-    envVariableDataSource,
+    smartResourceConfigDataSource,
     metadataResponseDataSource,
   );
 
-  const frameIdsDataSource = useSelector(combinedDataSource, ([envVariable, metadataResponse]) => {
+  const frameIdsDataSource = useSelector(combinedDataSource, ([smartResourceConfig, metadataResponse]) => {
     if (metadataResponse === null) {
       return undefined;
     }
-    if (envVariable === null) {
+    if (smartResourceConfig === null) {
       return null;
     }
     if (!metadataResponse?.success) {
@@ -48,7 +47,7 @@ const useSmartTextureInfoSequence = (
     const file = getMatchedResource(
       files,
       {
-        ...envVariable.__smartResourceConfig,
+        ...smartResourceConfig,
         custom: 'frame-sequence-pointer!',
       },
     );
