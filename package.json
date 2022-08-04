@@ -23,6 +23,7 @@
     "@nrwl/nx-cloud": "latest",
     "@nrwl/web": "^14.5.2",
     "@nrwl/workspace": "^14.5.2",
+    "@parcel/packager-ts": "2.6.2",
     "@types/jest": "27.4.1",
     "@types/node": "16.11.7",
     "@typescript-eslint/eslint-plugin": "^5.29.0",

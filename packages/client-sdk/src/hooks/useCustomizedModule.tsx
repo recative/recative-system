@@ -11,6 +11,7 @@ import {
   PanicLayer,
   Controller,
 } from '@recative/act-player';
+import type { InterfaceExtensionComponent } from '@recative/act-player';
 
 import { loadCustomizedModule } from '../utils/loadCustomizedModule';
 
@@ -46,7 +47,7 @@ export const dirname = (path: string) => {
 };
 
 export const DEFAULT_INTERFACE_COMPONENTS_MODULE = {
-  default: [LoadingLayer, Stage, Subtitle, Dialog, Controller({}), PanicLayer],
+  default: [LoadingLayer, Stage, Subtitle, Dialog, Controller({}), PanicLayer] as InterfaceExtensionComponent[],
 };
 
 export interface ICustomizedModule<T = any> {

@@ -3426,7 +3426,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@parcel/packager-ts@npm:^2.0.0":
+"@parcel/packager-ts@npm:2.6.2, @parcel/packager-ts@npm:^2.0.0":
   version: 2.6.2
   resolution: "@parcel/packager-ts@npm:2.6.2"
   dependencies:
@@ -4443,14 +4443,15 @@ __metadata:
   dependencies:
     "@nanostores/react": 0.2.0
     "@paciolan/remote-module-loader": ^3.0.2
-    "@parcel/packager-ts": ^2.0.0
-    "@parcel/transformer-react-refresh-wrap": ^2.0.1
-    "@parcel/transformer-typescript-types": ^2.0.0
     "@react-hookz/web": ^12.3.0
     "@recative/act-protocol": ^0.2.0
     "@recative/core-manager": ^0.2.0
     "@recative/definitions": ^0.2.0
     "@recative/smart-resource": ^0.2.0
+    "@rollup/plugin-commonjs": ^21.0.2
+    "@rollup/plugin-node-resolve": ^13.3.0
+    "@rollup/plugin-sucrase": ^4.0.3
+    "@rollup/plugin-typescript": ^8.3.1
     "@types/debug": ^4.1.7
     "@types/fs-extra": ^9.0.13
     "@types/lodash": ^4.14.177
@@ -4476,7 +4477,6 @@ __metadata:
     lodash: ^4.17.21
     lottie-react: 2.1.0
     nanostores: ^0.5.12
-    parcel: ^2.0.0
     process: ^0.11.10
     querystring-es3: ^0.2.1
     react: 18.1.0
@@ -4484,10 +4484,14 @@ __metadata:
     react-dom: 18.1.0
     react-error-boundary: ^3.1.4
     react-router-dom: 6.3.0
-    react-slider: ^1.3.1
+    react-slider: 2.0.1
     react-tooltip: ^4.2.21
     react-use: ^17.3.1
     rimraf: ^3.0.2
+    rollup: ^2.72.1
+    rollup-plugin-dts: ^4.2.1
+    rollup-plugin-peer-deps-external: ^2.2.4
+    rollup-plugin-typescript2: ^0.31.2
     stream-http: ^3.2.0
     styletron-engine-atomic: ^1.4.8
     styletron-react: ^6.0.2
@@ -4512,7 +4516,7 @@ __metadata:
     "@types/debug": ^4.1.7
     "@typescript-eslint/eslint-plugin": ^5.3.0
     "@typescript-eslint/parser": ^5.3.0
-    async-call-rpc: ^6.0.1
+    async-call-rpc: 6.1.2
     debug: ^4.3.3
     eslint: ^8.2.0
     eslint-config-airbnb-base: ^14.2.1
@@ -4675,7 +4679,6 @@ __metadata:
     react-dom: 18.1.0
     react-error-boundary: ^3.1.4
     react-router-dom: 6.3.0
-    react-slider: ^1.3.1
     react-tooltip: ^4.2.21
     react-use: ^17.3.1
     rimraf: ^3.0.2
@@ -4748,7 +4751,7 @@ __metadata:
     nanostores: ^0.5.10
     react: 18.1.0
     react-dom: ^18.1.0
-    react-slider: ^1.3.1
+    react-slider: 2.0.1
     react-use: ^17.3.2
     rimraf: ^3.0.2
     rollup: ^2.72.1
@@ -4868,6 +4871,7 @@ __metadata:
     "@nrwl/nx-cloud": latest
     "@nrwl/web": ^14.5.2
     "@nrwl/workspace": ^14.5.2
+    "@parcel/packager-ts": 2.6.2
     "@types/jest": 27.4.1
     "@types/node": 16.11.7
     "@typescript-eslint/eslint-plugin": ^5.29.0
@@ -6611,6 +6615,13 @@ __metadata:
     object-is: ^1.0.1
     util: ^0.12.0
   checksum: bb91f181a86d10588ee16c5e09c280f9811373974c29974cbe401987ea34e966699d7989a812b0e19377b511ea0bc627f5905647ce569311824848ede382cae8
+  languageName: node
+  linkType: hard
+
+"async-call-rpc@npm:6.1.2":
+  version: 6.1.2
+  resolution: "async-call-rpc@npm:6.1.2"
+  checksum: 6c1d3e929f1a97fc51495e8b072e6331c4a1e4b59006f12e19a07e4ce6b23b8de42f6cfda2f59869d89ffe3086f2b544991db30edc716d313e07ec50e311fd2a
   languageName: node
   linkType: hard
 
@@ -15769,7 +15780,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:^15.6.0, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2":
+"prop-types@npm:^15.6.0, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -16178,13 +16189,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-slider@npm:^1.3.1":
-  version: 1.3.1
-  resolution: "react-slider@npm:1.3.1"
+"react-slider@npm:2.0.1":
+  version: 2.0.1
+  resolution: "react-slider@npm:2.0.1"
+  dependencies:
+    prop-types: ^15.8.1
   peerDependencies:
-    prop-types: ^15.6
-    react: ^16 || ^17
-  checksum: 8a385381d8346137970205936c36d1192108b5ca5619cbcf203c8449d0b4c3a5d8b0716f28eb10aedbef6f3cb958ad5f549d5b083c1ac13eeb39c292e7df2100
+    react: ^16 || ^17 || ^18
+  checksum: dac8bfbb3d7134ada291743d0047d620bd1f2a7982b4827fd1b4c607000a407367affc4702dcee1ad02c44039292eef36c9ec51f5dab4e644dca07ae11354a4c
   languageName: node
   linkType: hard
 
