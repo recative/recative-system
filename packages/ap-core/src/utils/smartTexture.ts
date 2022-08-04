@@ -1,6 +1,6 @@
 import { IResourceFileForClient } from '@recative/definitions';
-import { useSelector } from 'core/DataSource';
-import { useEnvVariableDataSource } from 'hooks/envVariableHooks';
+import { useSelector } from '../core/DataSource';
+import { useEnvVariableDataSource } from '../hooks/envVariableHooks';
 import * as PIXI from 'pixi.js-legacy';
 import { useResourceUrlByIdFetcher } from '../hooks/resourceManagerHooks';
 
