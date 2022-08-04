@@ -1,5 +1,11 @@
 # @recative/ap-core
 
+## 0.0.2
+
+### Patch Changes
+
+- fix: Incorrect import path
+
 ## 0.0.1
 
 ### Patch Changes

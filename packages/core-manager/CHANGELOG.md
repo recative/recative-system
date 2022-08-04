@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.4
+
+### Patch Changes
+
+- feat: Implement `trustedUploaders` to improve performance
+
 ## 0.2.3
 
 ### Patch Changes

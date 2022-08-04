@@ -1,5 +1,13 @@
 # @recative/act-player
 
+## 0.0.3
+
+### Patch Changes
+
+- feat: Implement `trustedUploaders` to improve performance
+- Updated dependencies
+  - @recative/core-manager@0.2.4
+
 ## 0.0.2
 
 ### Patch Changes
