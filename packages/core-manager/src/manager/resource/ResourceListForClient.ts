@@ -17,10 +17,10 @@ import type { Core } from '../../core';
 
 const log = debug('core:resource-list');
 
-const GLOBAL_CACHE = new Map<string, string>();
+const GLOBAL_CACHE = new Map<string, string | OpenPromise<string>>();
 
 export class ResourceListForClient extends ResourceList<IDetailedResourceItemForClient> {
-  private cachedUrlMap: Map<string, string> = new Map();
+  private cachedUrlMap: Map<string, string | OpenPromise<string>> = new Map();
 
   /**
    * ResourceListForClient will handle resource query related tasks, such as
@@ -74,28 +74,31 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
     }
 
     const encodedUrlMap = JSON.stringify(urlMap);
-
-    // This function cache the url of try valid resource url.
-    const wrappedPostProcess = (url: string) => {
-      if (postProcess) {
-        return postProcess(url);
-      }
-
-      this.cachedUrlMap.set(encodedUrlMap, url);
-
-      if (addToGlobalCache) {
-        GLOBAL_CACHE.set(encodedUrlMap, url);
-      }
-
-      return url as unknown as Result;
-    };
+    const cachedMap = addToGlobalCache ? this.cachedUrlMap : GLOBAL_CACHE;
 
     // If the URL is cached.
     const cache = this.cachedUrlMap.get(encodedUrlMap)
                   ?? GLOBAL_CACHE.get(encodedUrlMap);
     if (cache) {
-      return Promise.resolve(wrappedPostProcess(cache));
+      return Promise.resolve(cache).then((x) => wrappedPostProcess(x));
     }
+
+    const cachedPromise = new OpenPromise<string>();
+    cachedMap.set(encodedUrlMap, cachedPromise);
+
+    // This function cache the url of try valid resource url.
+    const wrappedPostProcess = (url: string) => {
+      cachedMap.set(encodedUrlMap, url);
+      cachedPromise.resolve(url);
+
+      if (postProcess) {
+        return postProcess(url);
+      }
+
+      cachedMap.set(encodedUrlMap, url);
+
+      return url as unknown as Result;
+    };
 
     // If the URL is not cached.
     const task = new OpenPromise<Result | null>((resolve, reject) => {
