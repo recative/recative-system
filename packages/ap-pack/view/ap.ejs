@@ -81,8 +81,8 @@
     };
 
     if (
-      "serviceWorker" in navigator 
-      && !localStorage.getItem('@recative/ap-pack/no-sw')
+      "serviceWorker" in navigator
+      && localStorage.getItem('@recative/ap-pack/experimental-sw')
     ) {
       window.addEventListener("load", () => {
         navigator.serviceWorker
