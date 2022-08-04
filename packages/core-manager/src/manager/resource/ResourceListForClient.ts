@@ -59,7 +59,7 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
     taskId = 'client-side-selector-url-map',
     addToGlobalCache = false,
     useSlowQueue = false,
-  ) => {
+  ): Promise<Result | null> => {
     if (REDIRECT_URL_EXTENSION_ID in urlMap) {
       const nextId = urlMap[REDIRECT_URL_EXTENSION_ID].replace('redirect://', '');
       const nextResource = await this.getResourceById(
@@ -162,52 +162,39 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
     useSlowQueue = false,
     taskId = 'client-query',
   ) => {
-    const task = new OpenPromise<Result | null>((resolve, reject) => {
-      let finalResource: IDetailedResourceItemForClient | undefined;
+    let finalResource: IDetailedResourceItemForClient | undefined;
 
-      if (resource.type === 'group') {
-        const trueEnvConfig = {
-          ...this.core.envVariableManager.envVariableAtom.get().__smartResourceConfig,
-          ...envConfig,
-        };
+    if (resource.type === 'group') {
+      const trueEnvConfig = {
+        ...this.core.envVariableManager.envVariableAtom.get().__smartResourceConfig,
+        ...envConfig,
+      };
 
-        const matchedResource = getMatchedResource(
-          resource.files.map((x) => ({
-            item: x.id,
-            selector: x.tags,
-          })),
-          trueEnvConfig,
-          weights,
-          taskId,
-        );
-
-        finalResource = this.filesById.get(matchedResource);
-      } else {
-        finalResource = this.filesById.get(resource.id);
-      }
-
-      if (!finalResource) {
-        resolve(null);
-        return;
-      }
-
-      const shouldCacheToGlobal = this.enableGlobalCache && (
-        !finalResource.episodeIds.length
-        || finalResource.cacheToHardDisk
+      const matchedResource = getMatchedResource(
+        resource.files.map((x) => ({
+          item: x.id,
+          selector: x.tags,
+        })),
+        trueEnvConfig,
+        weights,
+        taskId,
       );
 
-      this.getResourceByUrlMap(finalResource.url, postProcess, taskId, shouldCacheToGlobal)
-        .then(resolve)
-        .catch(reject);
-    }, true);
-
-    if (useSlowQueue) {
-      this.core.slowTaskQueue.add(task);
+      finalResource = this.filesById.get(matchedResource);
     } else {
-      this.core.fastTaskQueue.add(task);
+      finalResource = this.filesById.get(resource.id);
     }
 
-    return task;
+    if (!finalResource) {
+      return Promise.resolve(null);
+    }
+
+    const shouldCacheToGlobal = this.enableGlobalCache && (
+      !finalResource.episodeIds.length
+      || finalResource.cacheToHardDisk
+    );
+
+    return this.getResourceByUrlMap(finalResource.url, postProcess, taskId, shouldCacheToGlobal, useSlowQueue)
   };
 
   /**
