@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.4
+
+### Patch Changes
+
+- fix: Infinite ticking
+
 ## 0.2.3
 
 ### Patch Changes
