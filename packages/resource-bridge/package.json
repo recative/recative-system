@@ -1,6 +1,6 @@
 {
   "name": "@recative/resource-bridge",
-  "version": "0.0.0-dev.30",
+  "version": "0.1.0",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
