@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2
+
+### Patch Changes
+
+- fix: Incorrect entry point for preview profile
+
 ## 0.2.1
 
 ### Patch Changes
