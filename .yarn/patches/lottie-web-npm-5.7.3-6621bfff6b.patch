@@ -1,0 +1,117 @@
+diff --git a/build/player/lottie.js b/build/player/lottie.js
+index fddeaa9a33d73ca7c7f9ee0d3a697bfb4714f463..3622e944a4903c6a0698145f4bde6e70ee73e9d7 100644
+--- a/build/player/lottie.js
++++ b/build/player/lottie.js
+@@ -257,7 +257,7 @@ BaseEvent.prototype = {
+ 	removeEventListener: function (eventName,callback){
+ 	    if (!callback){
+ 	        this._cbs[eventName] = null;
+-	    }else if(this._cbs[eventName]){
++	    }else if(this._cbs && this._cbs[eventName]){
+ 	        var i = 0, len = this._cbs[eventName].length;
+ 	        while(i<len){
+ 	            if(this._cbs[eventName][i] === callback){
+diff --git a/build/player/lottie_canvas.js b/build/player/lottie_canvas.js
+index 2ef6e03630ddd3c97d74498217c3e7dcb4278953..81476884a9f409c8dc23e87d937c1f82482142ef 100644
+--- a/build/player/lottie_canvas.js
++++ b/build/player/lottie_canvas.js
+@@ -257,7 +257,7 @@ BaseEvent.prototype = {
+ 	removeEventListener: function (eventName,callback){
+ 	    if (!callback){
+ 	        this._cbs[eventName] = null;
+-	    }else if(this._cbs[eventName]){
++	    }else if(this._cbs && this._cbs[eventName]){
+ 	        var i = 0, len = this._cbs[eventName].length;
+ 	        while(i<len){
+ 	            if(this._cbs[eventName][i] === callback){
+diff --git a/build/player/lottie_canvas_worker.js b/build/player/lottie_canvas_worker.js
+index ce8a46870c651e81f9f080a68d7a28232f4d0de8..d61912ef2c64e597a46f2e459be8aff6ac36d19f 100644
+--- a/build/player/lottie_canvas_worker.js
++++ b/build/player/lottie_canvas_worker.js
+@@ -258,7 +258,7 @@ BaseEvent.prototype = {
+ 	removeEventListener: function (eventName,callback){
+ 	    if (!callback){
+ 	        this._cbs[eventName] = null;
+-	    }else if(this._cbs[eventName]){
++	    }else if(this._cbs && this._cbs[eventName]){
+ 	        var i = 0, len = this._cbs[eventName].length;
+ 	        while(i<len){
+ 	            if(this._cbs[eventName][i] === callback){
+diff --git a/build/player/lottie_html.js b/build/player/lottie_html.js
+index aa2ad41d885e833594af27c560260cc5628c1d03..94e5607538252d23b5c16e6a59f37b007875a52a 100644
+--- a/build/player/lottie_html.js
++++ b/build/player/lottie_html.js
+@@ -257,7 +257,7 @@ BaseEvent.prototype = {
+ 	removeEventListener: function (eventName,callback){
+ 	    if (!callback){
+ 	        this._cbs[eventName] = null;
+-	    }else if(this._cbs[eventName]){
++	    }else if(this._cbs && this._cbs[eventName]){
+ 	        var i = 0, len = this._cbs[eventName].length;
+ 	        while(i<len){
+ 	            if(this._cbs[eventName][i] === callback){
+diff --git a/build/player/lottie_light.js b/build/player/lottie_light.js
+index 702e5d0fcd1be001bd4136c8a5945f2f63896462..3160f3081f7ce24e5ffb33ab30ae942a90ff03cb 100644
+--- a/build/player/lottie_light.js
++++ b/build/player/lottie_light.js
+@@ -257,7 +257,7 @@ BaseEvent.prototype = {
+ 	removeEventListener: function (eventName,callback){
+ 	    if (!callback){
+ 	        this._cbs[eventName] = null;
+-	    }else if(this._cbs[eventName]){
++	    }else if(this._cbs && this._cbs[eventName]){
+ 	        var i = 0, len = this._cbs[eventName].length;
+ 	        while(i<len){
+ 	            if(this._cbs[eventName][i] === callback){
+diff --git a/build/player/lottie_light_canvas.js b/build/player/lottie_light_canvas.js
+index e375104a910ee8a8b0c1a1b01d9ba1347009d4b4..a14c9b69b72784c30bf3dddae0a066044a0f3ece 100644
+--- a/build/player/lottie_light_canvas.js
++++ b/build/player/lottie_light_canvas.js
+@@ -257,7 +257,7 @@ BaseEvent.prototype = {
+ 	removeEventListener: function (eventName,callback){
+ 	    if (!callback){
+ 	        this._cbs[eventName] = null;
+-	    }else if(this._cbs[eventName]){
++	    }else if(this._cbs && this._cbs[eventName]){
+ 	        var i = 0, len = this._cbs[eventName].length;
+ 	        while(i<len){
+ 	            if(this._cbs[eventName][i] === callback){
+diff --git a/build/player/lottie_light_html.js b/build/player/lottie_light_html.js
+index dc68b22bbd1b2606daf66ae370782b6623ab674a..1d3f36e6679926697f5858cb52a80d27ddc2f2b7 100644
+--- a/build/player/lottie_light_html.js
++++ b/build/player/lottie_light_html.js
+@@ -257,7 +257,7 @@ BaseEvent.prototype = {
+ 	removeEventListener: function (eventName,callback){
+ 	    if (!callback){
+ 	        this._cbs[eventName] = null;
+-	    }else if(this._cbs[eventName]){
++	    }else if(this._cbs && this._cbs[eventName]){
+ 	        var i = 0, len = this._cbs[eventName].length;
+ 	        while(i<len){
+ 	            if(this._cbs[eventName][i] === callback){
+diff --git a/build/player/lottie_svg.js b/build/player/lottie_svg.js
+index 6698fa50df3c7a1641da650871ccf3cc35666ca0..4b037cfe4ca4c8e165d662f976a4c5236f49a810 100644
+--- a/build/player/lottie_svg.js
++++ b/build/player/lottie_svg.js
+@@ -257,7 +257,7 @@ BaseEvent.prototype = {
+ 	removeEventListener: function (eventName,callback){
+ 	    if (!callback){
+ 	        this._cbs[eventName] = null;
+-	    }else if(this._cbs[eventName]){
++	    }else if(this._cbs && this._cbs[eventName]){
+ 	        var i = 0, len = this._cbs[eventName].length;
+ 	        while(i<len){
+ 	            if(this._cbs[eventName][i] === callback){
+diff --git a/player/js/utils/BaseEvent.js b/player/js/utils/BaseEvent.js
+index 3ebac9fee275c6265dc653c36fbc3168afda5f97..ab4c9de6a414270dbf559d186e2660fb9dc20fde 100644
+--- a/player/js/utils/BaseEvent.js
++++ b/player/js/utils/BaseEvent.js
+@@ -21,7 +21,7 @@ BaseEvent.prototype = {
+ 	removeEventListener: function (eventName,callback){
+ 	    if (!callback){
+ 	        this._cbs[eventName] = null;
+-	    }else if(this._cbs[eventName]){
++	    }else if(this._cbs && this._cbs[eventName]){
+ 	        var i = 0, len = this._cbs[eventName].length;
+ 	        while(i<len){
+ 	            if(this._cbs[eventName][i] === callback){

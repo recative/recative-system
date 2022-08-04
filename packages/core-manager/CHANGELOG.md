@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2
+
+### Patch Changes
+
+- fix(core): Resource preload caused app crash
+
 ## 0.2.1
 
 ### Patch Changes
