@@ -3,6 +3,8 @@ import type { EventBasedChannel } from 'async-call-rpc';
 
 import { logHost, logClient } from './log';
 
+const TICK_MESSAGE = '@recative/act-protocol/tick';
+
 const isTransferable = (obj: object): obj is Transferable => {
   if (obj instanceof ArrayBuffer) {
     return true;
@@ -95,12 +97,20 @@ export class DestroyedError extends Error {
   }
 }
 
+const raf = (cb: FrameRequestCallback) => {
+  if ('requestAnimationFrame' in globalThis) {
+    return globalThis.requestAnimationFrame(cb);
+  } else {
+    return globalThis.setTimeout(cb, 0);
+  }
+}
+
 export class MessagePortChannel implements EventBasedChannel {
   listeners: Set<Listener> = new Set();
 
   destroyed = false;
 
-  constructor(private port: MessagePort) {
+  constructor(protected port: MessagePort) {
     this.port = port;
 
     port.start();
@@ -127,6 +137,69 @@ export class MessagePortChannel implements EventBasedChannel {
     this.destroyed = true;
     this.port.close();
     this.listeners.forEach((listener) => this.port.removeEventListener('message', listener));
+  }
+}
+
+export class BatchedMessagePortChannel extends MessagePortChannel {
+  private messageBuffer: unknown[] = [];
+
+  constructor(port: MessagePort) {
+    super(port);
+
+    this.tick();
+  }
+
+  tickScheduled = false;
+
+  scheduleTick = () => {
+    if (this.tickScheduled) return;
+    this.tickScheduled = true;
+    raf(this.tick);
+  }
+
+  lastTickTime = 0;
+
+  tick = () => {
+    if (this.lastTickTime - Date.now() < 1000 / 60) {
+      return;
+    }
+
+    this.lastTickTime = Date.now();
+    this.port.postMessage(TICK_MESSAGE);
+    this.tickScheduled = false;
+    
+    if (this.destroyed) return;
+    
+    this.port.postMessage(this.messageBuffer, extractTransferables(this.messageBuffer));
+    this.messageBuffer = [];
+    
+    this.scheduleTick();
+  }
+
+  on = (listener: Listener): void | (() => void) => {
+    if (this.destroyed) throw new DestroyedError();
+
+    this.listeners.add(listener);
+
+    this.port.addEventListener('message', (event) => {
+      // For mobile platform, raf is not available when the iFrame is not shown.
+      if (event.data === TICK_MESSAGE) {
+        this.tick();
+      }
+
+      if (Array.isArray(event.data)) {
+        event.data.forEach(listener);
+      } else {
+        listener(event.data);
+      }
+    });
+    this.port.start();
+  }
+
+  send = (data: unknown): void => {
+    if (this.destroyed) throw new DestroyedError();
+
+    this.messageBuffer.push(data);
   }
 }
 
@@ -205,7 +278,7 @@ export class IFramePortHostChannel extends LazyMessagePortChannel {
 
     const messageChannel = new MessageChannel();
     const port = messageChannel.port1;
-    const rpcChannel = new MessagePortChannel(port);
+    const rpcChannel = new BatchedMessagePortChannel(port);
 
     this.initialize(rpcChannel);
 
@@ -236,7 +309,7 @@ export class IFramePortClientChannel extends LazyMessagePortChannel {
     if (event.data !== 'iframe-host-port') return;
 
     logClient('Received protocol port');
-    const rpcChannel = new MessagePortChannel(event.ports[0]);
+    const rpcChannel = new BatchedMessagePortChannel(event.ports[0]);
 
     this.initialize(rpcChannel);
 
