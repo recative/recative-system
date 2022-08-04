@@ -1,6 +1,4 @@
 /* eslint-disable no-alert */
-/* eslint-disable import/no-extraneous-dependencies */
-
 import * as React from 'react';
 import { atom } from 'nanostores';
 import { debug } from 'debug';
