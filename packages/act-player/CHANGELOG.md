@@ -1,5 +1,11 @@
 # @recative/act-player
 
+## 0.0.1
+
+### Patch Changes
+
+- fix: Inconsistent react version caused rendering problem
+
 ## 0.0.0
 
 ### Minor Changes

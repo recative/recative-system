@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.1
+
+### Patch Changes
+
+- fix: Inconsistent react version caused rendering problem
+- Updated dependencies
+  - @recative/act-player@0.0.1
+
 ## 1.0.0
 
 ### Minor Changes
