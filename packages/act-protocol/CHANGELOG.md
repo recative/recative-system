@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2
+
+### Patch Changes
+
+- fix: Batch not working correctly
+
 ## 0.2.1
 
 ### Patch Changes
