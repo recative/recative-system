@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.3
+
+### Patch Changes
+
+- fix: Typing problem for nesting packages
+- Updated dependencies
+  - @recative/act-protocol@0.2.1
+
 ## 0.2.2
 
 ### Patch Changes
