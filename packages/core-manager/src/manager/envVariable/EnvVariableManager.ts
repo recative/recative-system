@@ -23,6 +23,8 @@ export interface IEnvVariable {
   __smartResourceConfig: Record<string, string>;
 }
 
+export const DEFAULT_LANGUAGE = 'en';
+
 export class EnvVariableManager<
   T extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable,
 > extends WithLogger {
@@ -61,7 +63,7 @@ export class EnvVariableManager<
           ...this.browserRelatedEnvVariable,
           ...additional,
           __smartResourceConfig: {
-            lang,
+            lang: lang ?? DEFAULT_LANGUAGE,
             device,
             screen,
           },

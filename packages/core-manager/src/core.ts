@@ -45,10 +45,11 @@ import { ContentInstance } from './instance';
 
 import { DialogManager } from './manager/dialog/DialogManager';
 import { PreloadManager } from './manager/preload/PreloadManager';
-import { EnvVariableManager } from './manager/envVariable/EnvVariableManager';
 import { ResourceListForClient } from './manager/resource/ResourceListForClient';
-import type { IDefaultAdditionalEnvVariable } from './manager/envVariable/EnvVariableManager';
+import { EnvVariableManager, DEFAULT_LANGUAGE } from './manager/envVariable/EnvVariableManager';
 import { ContentSequence, IInitialAssetStatus } from './sequence';
+
+import type { IDefaultAdditionalEnvVariable } from './manager/envVariable/EnvVariableManager';
 
 export interface CoreConfig<T> {
   initialEnvVariable: T;
@@ -197,11 +198,11 @@ export class Core<
   constructor(config: CoreConfig<AdditionalEnvVariable>) {
     this.contentLanguage = jsonAtom(
       '@recative/core-manager/content-lang',
-      config.defaultSubtitleLanguage ?? 'en',
+      config.defaultSubtitleLanguage ?? DEFAULT_LANGUAGE,
     );
     this.subtitleLanguage = jsonAtom(
       '@recative/core-manager/subtitle-lang',
-      config.defaultSubtitleLanguage ?? 'en',
+      config.defaultSubtitleLanguage ?? DEFAULT_LANGUAGE,
     );
 
     this.criticalComponentReady = new Promise((res) => {
