@@ -29,7 +29,7 @@ IIconButtonProps
   return (
     <Button
       ref={ref}
-      startEnhancer={startEnhancer}
+      startEnhancer={startEnhancer as any}
       overrides={internalOverrides}
       {...props}
     />

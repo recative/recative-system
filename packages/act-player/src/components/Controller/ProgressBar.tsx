@@ -200,7 +200,7 @@ export const ProgressBar: React.FC<IProgressbarProps> = React.memo((props) => {
                   { [markHoverStyles]: hover },
                   markStyles,
                 )}
-                {...markProps}
+                {...markProps as any}
               />
             )}
             renderTrack={({ className, ...trackProps }) => (
