@@ -1,6 +1,6 @@
 {
   "name": "@recative/client-sdk",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
@@ -16,11 +16,11 @@
   "devDependencies": {
     "@nanostores/react": "^0.1.5",
     "@paciolan/remote-module-loader": "^3.0.2",
-    "@recative/act-player": "^0.0.0-dev.179",
-    "@recative/act-protocol": "^0.0.0-dev.58",
-    "@recative/core-manager": "^0.0.0-dev.167",
-    "@recative/definitions": "^0.0.0-dev.89",
-    "@recative/smart-resource": "^0.0.0-dev.7",
+    "@recative/act-player": "^0.0.0",
+    "@recative/act-protocol": "^0.2.0",
+    "@recative/core-manager": "^0.2.0",
+    "@recative/definitions": "^0.2.0",
+    "@recative/smart-resource": "^0.2.0",
     "@rollup/plugin-commonjs": "^21.0.2",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-sucrase": "^4.0.3",
@@ -76,7 +76,7 @@
   "dependencies": {
     "@msgpack/msgpack": "^2.7.2",
     "@react-hookz/web": "^13.0.0",
-    "@recative/open-promise": "^0.0.0-dev.34",
+    "@recative/open-promise": "^0.2.0",
     "debug": "^4.3.3",
     "nanoid": "^3.3.3"
   }

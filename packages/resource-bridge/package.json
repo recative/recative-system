@@ -1,6 +1,6 @@
 {
   "name": "@recative/resource-bridge",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
@@ -53,9 +53,9 @@
     "last 1 Chrome versions"
   ],
   "dependencies": {
-    "@recative/act-protocol": "^0.0.0-dev.58",
-    "@recative/definitions": "^0.0.0-dev.84",
-    "@recative/open-promise": "^0.0.0-dev.31",
+    "@recative/act-protocol": "^0.2.0",
+    "@recative/definitions": "^0.2.0",
+    "@recative/open-promise": "^0.2.0",
     "async-call-rpc": "^6.0.1",
     "debug": "^4.3.3",
     "nanoid": "^3.1.30"

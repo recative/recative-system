@@ -1,17 +1,18 @@
 {
-  "name": "recative-system",
+  "name": "@recative/recative-system",
   "version": "0.0.0",
   "license": "MIT",
   "private": true,
   "scripts": {
     "build": "nx run-many --target=build",
-    "publish": "nx affected --target=version",
+    "version": "yarn changeset version",
+    "publish": "nx run-many --target=publish",
     "prepare": "husky install"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.24.1",
     "@commitlint/cli": "^17.0.0",
     "@commitlint/config-conventional": "^17.0.0",
-    "@jscutlery/semver": "^2.25.2",
     "@nrwl/cli": "14.5.2",
     "@nrwl/eslint-plugin-nx": "14.5.2",
     "@nrwl/jest": "14.5.2",
