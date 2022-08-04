@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "build": "nx run-many --target=build",
+    "changelog": "yarn changeset",
     "version": "yarn changeset version",
     "publish": "nx run-many --target=publish",
     "prepare": "husky install"
