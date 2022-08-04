@@ -148,6 +148,7 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
     if (smartTextureInfo === null) {
       return;
     }
+    const playing = this.playing;
     const oldTextures = super.textures;
     super.textures = SmartAnimatedSprite.createTexturesFromSmartTextureInfo(smartTextureInfo);
     oldTextures.forEach((oldTexture) => {
@@ -159,6 +160,10 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
     });
     // Animated sprite won't update scale with saved width/height after setting the textures so we should manually update it here
     this._onTextureUpdate()
+    // Animated sprite will stop automatically after reset the textures, so restore playing state here
+    if (playing) {
+      this.play();
+    }
   };
 
   get label() {
