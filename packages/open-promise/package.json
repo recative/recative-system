@@ -1,6 +1,6 @@
 {
   "name": "@recative/open-promise",
-  "version": "0.0.0-dev.34",
+  "version": "0.1.0",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
