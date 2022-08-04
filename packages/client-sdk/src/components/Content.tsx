@@ -60,6 +60,7 @@ export interface IContentProps<EnvVariable> {
   initialAsset: IInitialAssetStatus | undefined;
   userImplementedFunctions: Partial<UserImplementedFunctions> | undefined;
   preferredUploaders: string[];
+  trustedUploaders: string[];
   envVariable: EnvVariable | undefined;
   loadingComponent?: React.FC<{}>;
   playerPropsHookDependencies?: any;
@@ -102,6 +103,7 @@ export const ContentModuleFactory = <
       initialAsset,
       loadingComponent,
       preferredUploaders,
+      trustedUploaders,
       userImplementedFunctions,
       playerPropsHookDependencies,
       onEnd: playerOnEnd,
@@ -220,6 +222,7 @@ export const ContentModuleFactory = <
                   assets={episodeDetail.assets}
                   resources={episodeDetail.resources}
                   preferredUploaders={preferredUploaders}
+                  trustedUploaders={trustedUploaders}
                   initialAsset={initialAsset || config.initialAssetStatus}
                   userImplementedFunctions={userImplementedFunctions}
                   interfaceComponents={interfaceComponents}

@@ -245,7 +245,11 @@ export class Core<
 
     const episodeData: InternalEpisodeData = {
       ...data,
-      resources: new ResourceListForClient(data.resources, this),
+      resources: new ResourceListForClient(
+        data.resources,
+        data.trustedUploaders ?? [],
+        this
+      ),
       preloader: new PreloadManager(this),
     };
 
@@ -381,7 +385,11 @@ export class Core<
 
     this.episodeData.resolve({
       assets: [],
-      resources: new ResourceListForClient([], this),
+      resources: new ResourceListForClient(
+        [],
+        [],
+        this
+      ),
       preferredUploaders: [],
       preloader: new PreloadManager(this),
     });

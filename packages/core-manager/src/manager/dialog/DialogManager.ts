@@ -128,7 +128,7 @@ export class DialogManager {
         messages.push({
           type: 'image',
           direction: message.direction,
-          src: url,
+          src: url[0],
         });
       } else {
         messages.push(message);

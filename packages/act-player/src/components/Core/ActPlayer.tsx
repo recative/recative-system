@@ -46,6 +46,7 @@ interface IInternalActPlayerProps<
   assets: PlayerAssetProp[];
   resources: IDetailedResourceItemForClient[];
   preferredUploaders: string[];
+  trustedUploaders: string[];
   userData: IUserRelatedEnvVariable | undefined;
   envVariable: T;
   initialAsset?: IInitialAssetStatus;
@@ -170,6 +171,7 @@ const InternalActPlayer = <
       })),
       resources: props.resources,
       preferredUploaders: props.preferredUploaders,
+      trustedUploaders: props.trustedUploaders,
     });
 
     setEpisodeData(nextEpisodeData);

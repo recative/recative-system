@@ -61,7 +61,7 @@ export function* selectUrl(
         logObject[uploader] = `[Trying]\t${urlSpec}`;
       }
 
-      yield urlSpec;
+      yield [urlSpec, uploader] as const;
       currentIndex += 1;
       continue;
     }
@@ -73,7 +73,7 @@ export function* selectUrl(
         logObject[uploader] = `[Trying]\t${urls[0].url}`;
       }
 
-      yield urls[0].url;
+      yield [urls[0].url, uploader] as const;
       currentIndex += 1;
       continue;
     }
@@ -102,7 +102,7 @@ export function* selectUrl(
       logObject[uploader] = `[Trying]\t${result}`;
     }
 
-    yield result;
+    yield [result, uploader] as const;
     currentIndex += 1;
   }
 }

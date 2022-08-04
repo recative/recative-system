@@ -24,6 +24,7 @@ export interface EpisodeData {
   resources: IDetailedResourceItemForClient[];
   assets: AssetForClient[];
   preferredUploaders: string[];
+  trustedUploaders: string[];
 }
 
 export interface InternalEpisodeData {

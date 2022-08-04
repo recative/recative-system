@@ -35,6 +35,7 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
    */
   constructor(
     x: IDetailedResourceItemForClient[],
+    private trustedUploaders: string[],
     private core: Core,
     private enableGlobalCache = true,
   ) {
@@ -112,6 +113,7 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
           logObject,
         ),
         wrappedPostProcess,
+        this.trustedUploaders,
         taskId,
         logObject,
       )

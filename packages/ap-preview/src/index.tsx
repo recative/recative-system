@@ -46,6 +46,10 @@ const PREFERRED_UPLOADERS = [
   '@recative/uploader-polyv-vod/PolyVUploader',
 ];
 
+const TRUSTED_UPLOADERS = [
+  '@recative/uploader-extension-studio/ResourceManager',
+]
+
 if (window.localStorage.getItem('@recative/act-player/error-request')) {
   PREFERRED_UPLOADERS.push('@recative/uploader-extension-error/not-exists');
 }
@@ -111,6 +115,7 @@ const Player: React.FC = () => {
         initialAsset={initialAsset}
         userImplementedFunctions={userImplementedFunctions}
         envVariable={envVariable}
+        trustedUploaders={TRUSTED_UPLOADERS}
         preferredUploaders={PREFERRED_UPLOADERS}
         loadingComponent={Loading}
         playerPropsHookDependencies={dependencies}

@@ -4,6 +4,8 @@ import objectEntries from 'object.entries';
 
 import { NoMoreURLAvailableError } from './NoMoreURLAvailableError';
 
+const OK = { ok: true };
+
 export type PostProcessCallback<Result = string> = (
   url: string
 ) => Promise<Result | null> | (Result | null);
@@ -16,17 +18,20 @@ export const tryValidResourceUrl = async <
   PostProcess extends PostProcessCallback<Result> | undefined,
   Result = string,
 >(
-  x: Generator<string, void, unknown>,
+  x: Generator<readonly [string, string], void, unknown>,
   postProcess?: PostProcess,
+  trustedUploaders: string[] = [],
   taskId = Math.random().toString(36),
   logObject: Record<string, string> | undefined = undefined,
 ): Promise<PostProcess extends undefined ? string | null : Result | null> => {
   while (true) {
-    const url = x.next().value;
+    const match = x.next().value;
 
-    if (!url) {
-      throw new Error(`Invalid URL: ${url}`);
+    if (!match) {
+      throw new Error(`Invalid URL: ${match}`);
     }
+
+    const [url, uploader] = match;
 
     const key = logObject
       ? (objectEntries(logObject) as [string, string][])
@@ -34,10 +39,13 @@ export const tryValidResourceUrl = async <
       : null;
 
     try {
-      const availability = await fetch(url, {
-        method: 'HEAD',
-        cache: 'no-cache',
-      });
+      const availability = trustedUploaders.includes(uploader)  
+        ? OK 
+        : await fetch(url, {
+          method: 'HEAD',
+          cache: 'no-cache',
+        });
+
       if (availability.ok) {
         if (logObject && typeof key === 'string') {
           logObject[key] = `[OK-${taskId}]\t${url}`;
