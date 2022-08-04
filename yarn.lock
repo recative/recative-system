@@ -13285,10 +13285,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lottie-web@npm:^5.7.3":
-  version: 5.9.6
-  resolution: "lottie-web@npm:5.9.6"
-  checksum: aed6a1d0c24eefb6c42a42aae18f29737746551cfdc86319f1b9675f5bc276ba26971e8d2b0e1498df880571fe4bfe2fc87885a1d4f8a318d5e4e5b939b7a474
+"lottie-web@npm:5.7.3":
+  version: 5.7.3
+  resolution: "lottie-web@npm:5.7.3"
+  checksum: 450d3fbf90174b17088fd31b0444f41eae0890e1c223d34adba6823ef9c4716769cf24f0e674ed274731d7d774d2b4fb60d05ca6604c3176e131723aceedd71f
+  languageName: node
+  linkType: hard
+
+"lottie-web@patch:lottie-web@npm:5.7.3#.yarn/patches/lottie-web-npm-5.7.3-6621bfff6b.patch::locator=%40recative%2Frecative-system%40workspace%3A.":
+  version: 5.7.3
+  resolution: "lottie-web@patch:lottie-web@npm%3A5.7.3#.yarn/patches/lottie-web-npm-5.7.3-6621bfff6b.patch::version=5.7.3&hash=a7159c&locator=%40recative%2Frecative-system%40workspace%3A."
+  checksum: c496cec710e7ff83b2ec0f8974fa340c06b01fd90effa8f7dfbc09ee47c1212aa169e620e37017e10f22f96fb11c09486ff8df6d978f05114100aab5f620e501
   languageName: node
   linkType: hard
 

@@ -81,9 +81,6 @@
     "baseui": true,
     "@parcel/transformer-react-refresh-wrap": true
   },
-  "resolutions": {
-    "lottie-web": "patch:lottie-web@npm:5.7.3#.yarn/patches/lottie-web-npm-5.7.3-6621bfff6b.patch"
-  },
   "files": [
     "dist/**/*",
     "src/**/*"
