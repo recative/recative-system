@@ -75,16 +75,7 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
 
     const encodedUrlMap = JSON.stringify(urlMap);
     const cachedMap = addToGlobalCache ? this.cachedUrlMap : GLOBAL_CACHE;
-
-    // If the URL is cached.
-    const cache = this.cachedUrlMap.get(encodedUrlMap)
-                  ?? GLOBAL_CACHE.get(encodedUrlMap);
-    if (cache) {
-      return Promise.resolve(cache).then((x) => wrappedPostProcess(x));
-    }
-
     const cachedPromise = new OpenPromise<string>();
-    cachedMap.set(encodedUrlMap, cachedPromise);
 
     // This function cache the url of try valid resource url.
     const wrappedPostProcess = (url: string) => {
@@ -99,6 +90,15 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
 
       return url as unknown as Result;
     };
+
+    // If the URL is cached.
+    const cache = this.cachedUrlMap.get(encodedUrlMap)
+                  ?? GLOBAL_CACHE.get(encodedUrlMap);
+    if (cache) {
+      return Promise.resolve(cache).then((x) => wrappedPostProcess(x));
+    }
+
+    cachedMap.set(encodedUrlMap, cachedPromise);
 
     // If the URL is not cached.
     const task = new OpenPromise<Result | null>((resolve, reject) => {
