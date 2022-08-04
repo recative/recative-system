@@ -160,7 +160,7 @@ export class BatchedMessagePortChannel extends MessagePortChannel {
   lastTickTime = 0;
 
   tick = () => {
-    if (Date.now() - this.lastTickTime < 1000 / 60) {
+    if ((Date.now() - this.lastTickTime) < (1000 / 30)) {
       return;
     }
 
