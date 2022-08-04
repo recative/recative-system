@@ -14,7 +14,7 @@ if (certValid) {
 }
 
 const bundler = new Parcel({
-  entries: './example/index.html',
+  entries: './src/index.html',
   defaultConfig: '@parcel/config-default',
   shouldDisableCache: true,
   shouldPatchConsole: true,
@@ -35,6 +35,8 @@ const bundler = new Parcel({
 bundler.watch((err, event) => {
   if (err) {
     // fatal error
+    console.log(`💀 Failed to start bundler`);
+    console.log(err);
     throw err;
   }
 

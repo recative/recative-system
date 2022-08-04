@@ -18,7 +18,7 @@ export const getProjectMetadata = (logError: Logger = console.error) => {
   const index = path.resolve(
     root,
     show
-      ? require.resolve('@recative/act-player/example/web.tsx')
+      ? require.resolve('@recative/act-player/src/web.tsx')
       : require.resolve('@recative/ap-pack/src/empty.ts'),
   );
   const episodesPath = path.resolve(root, 'src/episodes');
