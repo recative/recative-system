@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.3
+
+### Patch Changes
+
+- chore: Performance improvement by batch RPC requests
+- Updated dependencies
+  - @recative/act-player@0.0.2
+
 ## 0.2.2
 
 ### Patch Changes

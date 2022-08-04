@@ -1,5 +1,15 @@
 # @recative/act-player
 
+## 0.0.2
+
+### Patch Changes
+
+- fix: Typing problem for nesting packages
+- Updated dependencies
+- Updated dependencies
+  - @recative/core-manager@0.2.3
+  - @recative/act-protocol@0.2.1
+
 ## 0.0.1
 
 ### Patch Changes

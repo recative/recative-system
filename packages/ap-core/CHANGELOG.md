@@ -1,5 +1,16 @@
 # @recative/ap-core
 
+## 0.0.1
+
+### Patch Changes
+
+- fix: Don't update texture when other env change
+- fix: Restore animated sprite play state when load
+- chore: Disable service worker by default since it caused atlas not working correctly
+- chore: Performance improvement by batch RPC requests
+- Updated dependencies
+  - @recative/act-protocol@0.2.1
+
 ## 0.0.0
 
 ### Minor Changes

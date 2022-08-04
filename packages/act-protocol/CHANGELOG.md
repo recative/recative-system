@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1
+
+### Patch Changes
+
+- chore: Performance improvement by batch RPC requests
+
 ## 0.2.0
 
 ### Minor Changes
