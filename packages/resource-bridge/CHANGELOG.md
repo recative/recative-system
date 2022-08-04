@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1
+
+### Patch Changes
+
+- fix: Incorrect dependency version
+
 ## 0.2.0
 
 ### Minor Changes
