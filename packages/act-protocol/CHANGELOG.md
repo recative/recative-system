@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.3
+
+### Patch Changes
+
+- fix: Incorrect tick time
+
 ## 0.2.2
 
 ### Patch Changes
