@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.6
+
+### Patch Changes
+
+- Updated dependencies
+  - @recative/definitions@0.3.0
+
 ## 0.2.5
 
 ### Patch Changes

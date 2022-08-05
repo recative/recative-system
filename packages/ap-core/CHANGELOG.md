@@ -1,5 +1,14 @@
 # @recative/ap-core
 
+## 0.0.3
+
+### Patch Changes
+
+- Updated dependencies
+  - @recative/definitions@0.3.0
+  - @recative/act-protocol@0.2.6
+  - @recative/resource-bridge@0.2.2
+
 ## 0.0.2
 
 ### Patch Changes

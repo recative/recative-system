@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.4.0
+
+### Minor Changes
+
+- refactor: Turn detailed episode data into episode data
+
+### Patch Changes
+
+- Updated dependencies
+  - @recative/definitions@0.3.0
+  - @recative/act-protocol@0.2.6
+  - @recative/resource-loader@0.2.1
+
 ## 0.3.0
 
 ### Minor Changes

@@ -1,5 +1,18 @@
 # @recative/ap-preview
 
+## 0.1.0
+
+### Minor Changes
+
+- refactor: Turn detailed episode data into episode data
+
+### Patch Changes
+
+- Updated dependencies
+  - @recative/core-manager@0.4.0
+  - @recative/definitions@0.3.0
+  - @recative/act-protocol@0.2.6
+
 ## 0.0.5
 
 ### Patch Changes
