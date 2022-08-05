@@ -4,7 +4,7 @@ import debug from 'debug';
 import { useAsync } from '@react-hookz/web';
 
 import { fetch } from './utils/fetch';
-import type { IEpisodeDetail } from './types/IEpisodeDetail';
+import type { IEpisodeAbstraction } from './types/IEpisodeDetail';
 import type { IClientSdkConfig } from './types/IClientSdkConfig';
 
 const log = debug('client:provider');
@@ -43,7 +43,7 @@ export const PlayerSdkProvider: React.FC<IPlayerSdkProviderProps> = ({
     log(`Fetching episode list with path pattern: ${pathPattern}`);
 
     if (pathPattern) {
-      const result = await fetch<IEpisodeDetail[]>(
+      const result = await fetch<IEpisodeAbstraction[]>(
         'episodes',
         dataType,
         pathPattern,
