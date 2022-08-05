@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.1.0
+
+### Minor Changes
+
+- refactor: Shrink data to build smaller bundle
+
 ## 3.0.0
 
 ### Minor Changes
