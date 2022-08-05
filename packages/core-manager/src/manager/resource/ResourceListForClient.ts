@@ -62,7 +62,9 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
     useSlowQueue = false,
   ): Promise<Result | null> => {
     if (REDIRECT_URL_EXTENSION_ID in urlMap) {
-      const nextId = urlMap[REDIRECT_URL_EXTENSION_ID].replace('redirect://', '');
+      const nextId = urlMap[REDIRECT_URL_EXTENSION_ID]
+        .replace('redirect://', '')
+        .split('#')[0];
       const nextResource = await this.getResourceById(
         nextId, null, undefined, postProcess, 'file', useSlowQueue, taskId,
       );
@@ -276,7 +278,7 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
     }
 
     if (result && 'redirectTo' in result && result.redirectTo) {
-      return this.queryItem(result.redirectTo, 'id', resourceType);
+      return this.queryItem(result.redirectTo.split('#')[0], 'id', resourceType);
     }
 
     return result;
