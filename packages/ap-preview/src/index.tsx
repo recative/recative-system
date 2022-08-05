@@ -41,6 +41,8 @@ import {
 import { Error } from '@recative/act-player';
 import { Loading } from '@recative/act-player';
 
+window.React = React;
+
 const PREFERRED_UPLOADERS = [
   '@recative/uploader-extension-studio/ResourceManager',
   '@recative/uploader-polyv-vod/PolyVUploader',
