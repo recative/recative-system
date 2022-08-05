@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0
+
+### Minor Changes
+
+- feat: Supports redirect reason description
+- feat: Supports redirect reason description
+
 ## 0.2.4
 
 ### Patch Changes

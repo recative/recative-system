@@ -1,5 +1,13 @@
 # @recative/ap-preview
 
+## 0.0.4
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+  - @recative/core-manager@0.3.0
+
 ## 0.0.3
 
 ### Patch Changes

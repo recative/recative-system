@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.5
+
+### Patch Changes
+
+- @recative/act-player@0.0.4
+
 ## 0.2.4
 
 ### Patch Changes

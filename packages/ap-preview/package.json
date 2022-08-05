@@ -1,6 +1,6 @@
 {
   "name": "@recative/ap-preview",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "source": "src/index.html",
   "repository": "https://github.com/recative/recative-system",
   "scripts": {
@@ -55,7 +55,7 @@
     "@nanostores/react": "0.2.0",
     "@react-hookz/web": "^12.3.0",
     "@recative/act-protocol": "^0.2.1",
-    "@recative/core-manager": "^0.2.4",
+    "@recative/core-manager": "^0.3.0",
     "@recative/definitions": "^0.2.0",
     "@recative/smart-resource": "^0.2.0",
     "classnames": "^2.3.1",
