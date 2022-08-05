@@ -10,8 +10,8 @@ import type {
   ContentSpec,
   AssetForClient,
   ManagedCoreState,
+  IResourceItemForClient,
   ManagerCoreStateTrigger,
-  IDetailedResourceItemForClient,
 } from '@recative/definitions';
 import { ResourceEntry } from '@recative/smart-resource';
 
@@ -21,7 +21,7 @@ import type { PreloadManager } from './manager/preload/PreloadManager';
 import type { ResourceListForClient } from './manager/resource/ResourceListForClient';
 
 export interface EpisodeData {
-  resources: IDetailedResourceItemForClient[];
+  resources: IResourceItemForClient[];
   assets: AssetForClient[];
   preferredUploaders: string[];
   trustedUploaders: string[];

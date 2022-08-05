@@ -181,7 +181,7 @@ export const getController = (id: string) => {
           getResourceList: () => {
             const { resources } = coreFunctions!.core.getEpisodeData()!;
 
-            return [...resources.items];
+            return [...resources.rawResourceList];
           },
           requestTextFieldInput: () => {
             // This should do nothing when since the interaction can create textField itself

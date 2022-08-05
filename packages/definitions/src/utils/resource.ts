@@ -96,12 +96,15 @@ export class ResourceList<
 }
 
 export const cleanUpResourceListForClient = <FormatFileField extends boolean>(
-  resources: IResourceItem[],
-  format: FormatFileField = false as FormatFileField,
+  resources: (IResourceItem | IResourceItemForClient | IDetailedResourceItemForClient)[],
+  unfoldAsDetailed: FormatFileField = false as FormatFileField,
 ): FormatFileField extends true
     ? IDetailedResourceItemForClient[]
     : IResourceItemForClient[] => {
-  const cleanedResource: IResourceItemForClient[] = resources.map(
+  const cleanedResource: (
+    | IResourceItemForClient
+    | IDetailedResourceItemForClient
+  )[] = resources.map(
     (resource) => {
       if (resource.type === 'file') {
         return pick(resource, [
@@ -131,14 +134,14 @@ export const cleanUpResourceListForClient = <FormatFileField extends boolean>(
           'files',
           'postProcessRecord',
           'tags',
-        ] as const) as IResourceGroupForClient;
+        ] as const) as IResourceGroupForClient | IDetailedResourceGroupForClient;
       }
       throw new TypeError('Invalid resource type');
     },
   );
 
   // @ts-ignore: Expected typings
-  if (!format) return cleanedResource;
+  if (!unfoldAsDetailed) return cleanedResource;
 
   const fileMap: Map<string, IResourceFile> = new Map();
 
@@ -152,10 +155,14 @@ export const cleanUpResourceListForClient = <FormatFileField extends boolean>(
     (resource) => {
       if (resource.type === 'file') {
         return resource;
-      } if (resource.type === 'group') {
+      } else if (resource.type === 'group') {
         return {
           ...resource,
-          files: resource.files.map((fileId) => fileMap.get(fileId)!).filter(Boolean),
+          files: resource.files.map((file) => 
+            typeof file === 'string'
+              ? fileMap.get(file)!
+              : file
+          ).filter(Boolean),
         } as IDetailedResourceGroupForClient;
       }
       throw new TypeError('Invalid resource type');

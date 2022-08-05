@@ -7,8 +7,8 @@ import { useStore } from '@nanostores/react';
 
 import { Core } from '@recative/core-manager';
 import {
-  IDetailedResourceItemForClient,
   AssetForClient,
+  IResourceItemForClient,
   UserImplementedFunctions,
 } from '@recative/definitions';
 import type {
@@ -35,7 +35,7 @@ const log = debug('player:core');
 export type PlayerAssetProp = Omit<AssetForClient, 'duration'> & {
   duration: number | null;
 };
-export type PlayerResourceProp = IDetailedResourceItemForClient;
+export type PlayerResourceProp = IResourceItemForClient;
 
 interface IInternalActPlayerProps<
   T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
@@ -44,7 +44,7 @@ interface IInternalActPlayerProps<
   interfaceComponents?: InterfaceExtensionComponent[];
   interfaceComponentProps?: Record<string, unknown>;
   assets: PlayerAssetProp[];
-  resources: IDetailedResourceItemForClient[];
+  resources: IResourceItemForClient[];
   preferredUploaders: string[];
   trustedUploaders: string[];
   userData: IUserRelatedEnvVariable | undefined;
