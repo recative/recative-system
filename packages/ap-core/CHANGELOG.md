@@ -1,5 +1,11 @@
 # @recative/ap-core
 
+## 0.0.4
+
+### Patch Changes
+
+- chore: Better error log when texture url missing
+
 ## 0.0.3
 
 ### Patch Changes
