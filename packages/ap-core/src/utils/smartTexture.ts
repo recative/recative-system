@@ -47,7 +47,13 @@ export const useSmartTextureInfoFromResourceMetadata = () => {
     if (file === null) {
       return {};
     }
-    const url = await resourceUrlByIdFetcher(file.id);
+    const url = await (async () => {
+      try {
+        return await resourceUrlByIdFetcher(file.id);
+      } catch (err) {
+        throw new Error(`Error when invoking resourceUrlByIdFetcher, id:${file.id}, original error:${err}`)
+      }
+    })()
     if (url === null) {
       return {};
     }
@@ -134,7 +140,7 @@ export const useSmartResourceConfig = () => {
     if (str === null) {
       return null
     } else {
-      return JSON.parse(str) as Record<string,string>
+      return JSON.parse(str) as Record<string, string>
     }
   })
 }
