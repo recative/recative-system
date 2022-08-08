@@ -5,7 +5,7 @@ import { NetworkRequestStatus } from '../constant/NetworkRequestStatus';
 
 export interface IClientSdkConfig {
   pathPattern: string;
-  dataType: 'bson' | 'json';
+  dataType: 'bson' | 'json' | 'uson';
   episodesMap: Map<string, IEpisode>;
   initialAssetStatus: IInitialAssetStatus | undefined;
   videoModalUrls: string[];

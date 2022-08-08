@@ -5,11 +5,12 @@ import type { IClientSdkConfig } from '../types/IClientSdkConfig';
 
 import { fetchJson } from './fetchJson';
 import { fetchBson } from './fetchBson';
+import { fetchUson } from './fetchUson';
 import { postProcessUrl } from './postProcessUrl';
 
 export const fetch = async <T>(
   fileName: string,
-  dataType: 'bson' | 'json',
+  dataType: 'bson' | 'json' | 'uson',
   pathPattern: string,
   setClientSdkConfig?: React.Dispatch<React.SetStateAction<IClientSdkConfig>>,
 ) => {
@@ -21,11 +22,21 @@ export const fetch = async <T>(
   try {
     const url = postProcessUrl(fileName, pathPattern);
 
-    const result = await (
-      dataType === 'bson'
-        ? fetchBson<T>(url)
-        : fetchJson<T>(url)
-    );
+    let result: T;
+
+    switch (dataType) {
+      case 'bson':
+        result = await fetchBson<T>(url);
+        break;
+      case 'json':
+        result = await fetchJson<T>(url);
+        break;
+      case 'uson':
+        result = await fetchUson<T>(url);
+        break;
+      default:
+        throw new TypeError(`Unknown data type: ${dataType}`);
+    }
 
     setClientSdkConfig?.((config) => {
       config.requestStatus[fileName] = NetworkRequestStatus.SUCCESS;
