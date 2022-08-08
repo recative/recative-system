@@ -15,6 +15,7 @@
     "resource-bridge": "packages/resource-bridge",
     "resource-loader": "packages/resource-loader",
     "smart-resource": "packages/smart-resource",
-    "time-schedule": "packages/time-schedule"
+    "time-schedule": "packages/time-schedule",
+    "ugly-json": "packages/ugly-json"
   }
 }

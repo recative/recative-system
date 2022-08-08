@@ -18,7 +18,7 @@
       "@recative/act-player": ["packages/act-player/src/index.ts"],
       "@recative/act-protocol": ["packages/act-protocol/src/index.ts"],
       "@recative/ap-core": ["packages/ap-core/src/index.ts"],
-      "@recative/ap-pack": ["packages/ap-pack/src/index.ts"],
+      "@recative/ap-pack": ["packages/ap-pack/src/main.ts"],
       "@recative/ap-preview": ["packages/ap-preview/src/index.ts"],
       "@recative/audio-station": ["packages/audio-station/src/index.ts"],
       "@recative/client-sdk": ["packages/client-sdk/src/index.ts"],
@@ -28,7 +28,8 @@
       "@recative/resource-bridge": ["packages/resource-bridge/src/index.ts"],
       "@recative/resource-loader": ["packages/resource-loader/src/index.ts"],
       "@recative/smart-resource": ["packages/smart-resource/src/index.ts"],
-      "@recative/time-schedule": ["packages/time-schedule/src/index.ts"]
+      "@recative/time-schedule": ["packages/time-schedule/src/index.ts"],
+      "@recative/ugly-json": ["packages/ugly-json/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
