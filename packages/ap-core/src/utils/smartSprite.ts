@@ -13,6 +13,7 @@ import {
   SmartTextureInfo,
   useSmartResourceConfig,
   useSmartTextureInfoFromResourceMetadata,
+  useSmartTextureRC,
 } from './smartTexture';
 import type { DataSourceNode, DataSourceNodeController, Subscribable } from '../types/dataSource';
 
@@ -112,8 +113,11 @@ export class SmartSprite extends PIXI.Sprite {
 
   private smartTextureInfoController: DataSourceNodeController<SmartTextureInfo | null>;
 
+  private smartTextureRc: ReturnType<typeof useSmartTextureRC>
+
   constructor(option: SmartSpriteOption) {
     super(PIXI.Texture.EMPTY);
+    this.smartTextureRc=useSmartTextureRC()
     this.labelDataSource = new DataSource(option.label ?? '');
     this.tagDataSource = new DataSource(option.tag ?? 'unknown');
     this.smartTextureInfoDataSource = useSmartTextureInfo(this.labelDataSource.subscribe, this.tagDataSource.subscribe);
@@ -121,13 +125,13 @@ export class SmartSprite extends PIXI.Sprite {
     this.updateTexture(this.smartTextureInfoController.getter());
   }
 
-  private static createTextureFromSmartTextureInfo(smartTextureInfo: SmartTextureInfo) {
+  private createTextureFromSmartTextureInfo(smartTextureInfo: SmartTextureInfo) {
     const { url } = smartTextureInfo;
     if (url === undefined) {
       return PIXI.Texture.EMPTY;
     }
 
-    const baseTexture = PIXI.BaseTexture.from(url);
+    const baseTexture = this.smartTextureRc.acquire(url);
 
     return new PIXI.Texture(
       baseTexture, smartTextureInfo.frame, smartTextureInfo.orig, smartTextureInfo.trim, smartTextureInfo.rotate,
@@ -143,10 +147,12 @@ export class SmartSprite extends PIXI.Sprite {
       return;
     }
     const oldTexture = super.texture;
-    super.texture = SmartSprite.createTextureFromSmartTextureInfo(smartTextureInfo);
+    const oldUrl = oldTexture.baseTexture.cacheId
+    super.texture = this.createTextureFromSmartTextureInfo(smartTextureInfo);
     super.texture.on('update', this.onTextureUpdate);
     oldTexture.off('update', this.onTextureUpdate);
     oldTexture.destroy();
+    this.smartTextureRc.release(oldUrl)
     this.emit('textureupdate', {});
   };
 

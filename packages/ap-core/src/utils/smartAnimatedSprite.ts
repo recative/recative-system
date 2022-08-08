@@ -17,7 +17,8 @@ import {
   ATLAS_FRAMES_KEY,
   SmartTextureInfo,
   useSmartResourceConfig,
-  useSmartTextureInfoFromResourceMetadata
+  useSmartTextureInfoFromResourceMetadata,
+  useSmartTextureRC
 } from './smartTexture';
 
 const useSmartTextureInfoSequence = (
@@ -121,7 +122,7 @@ const useSmartTextureInfoSequence = (
   return frameTextureInfosDataSource;
 };
 
-export interface SmartAnimatedSpriteOption{
+export interface SmartAnimatedSpriteOption {
   label?: string,
   tag?: string;
 }
@@ -133,15 +134,18 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
 
   private smartTextureInfoController: DataSourceNodeController<SmartTextureInfo[] | null>;
 
+  private smartTextureRc: ReturnType<typeof useSmartTextureRC>
+
   constructor(option: SmartAnimatedSpriteOption) {
     super([PIXI.Texture.EMPTY]);
+    this.smartTextureRc = useSmartTextureRC()
     this.labelDataSource = new DataSource(option.label ?? '');
     this.smartTextureInfoDataSource = useSmartTextureInfoSequence(this.labelDataSource.subscribe);
     this.smartTextureInfoController = this.smartTextureInfoDataSource(this.updateTextureSequence);
     this.updateTextureSequence(this.smartTextureInfoController.getter());
   }
 
-  private static createTexturesFromSmartTextureInfo(smartTextureInfos: SmartTextureInfo[]) {
+  private createTexturesFromSmartTextureInfo(smartTextureInfos: SmartTextureInfo[]) {
     if (smartTextureInfos.length <= 0) {
       return [PIXI.Texture.EMPTY];
     }
@@ -151,7 +155,7 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
         return PIXI.Texture.EMPTY;
       }
 
-      const baseTexture = PIXI.BaseTexture.from(url);
+      const baseTexture = this.smartTextureRc.acquire(url);
 
       return new PIXI.Texture(
         baseTexture, smartTextureInfo.frame, smartTextureInfo.orig, smartTextureInfo.trim, smartTextureInfo.rotate,
@@ -165,14 +169,20 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
     }
     const playing = this.playing;
     const oldTextures = super.textures;
-    super.textures = SmartAnimatedSprite.createTexturesFromSmartTextureInfo(smartTextureInfo);
+    super.textures = this.createTexturesFromSmartTextureInfo(smartTextureInfo);
+    const oldUrls: string[] = []
     oldTextures.forEach((oldTexture) => {
       if (oldTexture instanceof PIXI.Texture) {
+        oldUrls.push(oldTexture.baseTexture.cacheId)
         oldTexture.destroy();
       } else {
+        oldUrls.push(oldTexture.texture.baseTexture.cacheId)
         oldTexture.texture.destroy();
       }
     });
+    oldUrls.forEach((oldUrl) => {
+      this.smartTextureRc.release(oldUrl)
+    })
     // Animated sprite won't update scale with saved width/height after setting the textures so we should manually update it here
     this._onTextureUpdate()
     // Animated sprite will stop automatically after reset the textures, so restore playing state here
