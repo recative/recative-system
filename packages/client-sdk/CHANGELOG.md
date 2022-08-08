@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.2.1
+
+### Patch Changes
+
+- fix: Data connection for client-sdk
+
 ## 3.2.0
 
 ### Minor Changes
