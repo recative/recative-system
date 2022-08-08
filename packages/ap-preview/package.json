@@ -4,9 +4,10 @@
   "source": "src/index.html",
   "repository": "https://github.com/recative/recative-system",
   "scripts": {
+    "prepack": "yarn clean && yarn build",
     "clean": "rimraf ./dist",
     "watch": "parcel watch",
-    "build": "yarn clean && parcel build",
+    "build": "parcel build",
     "reset": "rimraf ./dist ./.parcel-cache",
     "dev": "parcel serve example/*.html",
     "dev:https": "rimraf ./.parcel-cache && ts-node ./src/devServer.ts"

@@ -7,8 +7,9 @@
   "types": "dist/esm/index.d.ts",
   "repository": "https://github.com/recative/recative-system",
   "scripts": {
+    "prepack": "yarn clean && yarn build",
     "clean": "rimraf ./dist",
-    "build": "yarn clean && yarn tsc --project ./commonjs.tsconfig.json && yarn tsc --project ./esmodule.tsconfig.json"
+    "build": "yarn tsc --project ./commonjs.tsconfig.json && yarn tsc --project ./esmodule.tsconfig.json"
   },
   "devDependencies": {
     "@types/node": "^17.0.0",

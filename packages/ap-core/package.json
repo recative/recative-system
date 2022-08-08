@@ -8,9 +8,10 @@
   "repository": "https://github.com/recative/recative-system",
   "scripts": {
     "start:docs": "serve ./docs",
+    "prepack": "yarn clean && yarn build",
     "clean": "rimraf ./dist",
     "watch": "rollup -c -w",
-    "build": "yarn clean && rollup -c",
+    "build": "rollup -c",
     "build:docs": "typedoc --options ./typedoc.json"
   },
   "dependencies": {
