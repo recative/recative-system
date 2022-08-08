@@ -17,7 +17,7 @@ export const ClientSdkContext = React.createContext<IClientSdkConfigContextValue
 
 interface IPlayerSdkProviderProps {
   pathPattern: string;
-  dataType: 'bson' | 'json';
+  dataType: 'bson' | 'json' | 'uson';
   children: React.ReactNode;
 }
 
