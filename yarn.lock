@@ -4739,6 +4739,7 @@ __metadata:
     "@recative/definitions": ^0.3.0
     "@recative/open-promise": ^0.2.0
     "@recative/smart-resource": ^0.2.0
+    "@recative/ugly-json": "workspace:^"
     "@rollup/plugin-commonjs": ^21.0.2
     "@rollup/plugin-node-resolve": ^13.3.0
     "@rollup/plugin-sucrase": ^4.0.3
@@ -4991,7 +4992,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/ugly-json@workspace:packages/ugly-json":
+"@recative/ugly-json@workspace:^, @recative/ugly-json@workspace:packages/ugly-json":
   version: 0.0.0-use.local
   resolution: "@recative/ugly-json@workspace:packages/ugly-json"
   dependencies:
