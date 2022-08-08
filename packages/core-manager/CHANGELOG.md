@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1
+
+### Patch Changes
+
+- fix: Don't ready again when destroy sequence
+
 ## 0.4.0
 
 ### Minor Changes

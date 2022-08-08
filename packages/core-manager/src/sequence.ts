@@ -129,9 +129,9 @@ export class ContentSequence {
     this.parentPlaying.set(option.parentPlaying ?? true);
 
     if (option.dependencyLoadedPromise) {
-      option.dependencyLoadedPromise.finally(() => this.dependencyReady.resolve(true));
+      option.dependencyLoadedPromise.finally(this.setDependencyReady);
     } else {
-      this.dependencyReady.resolve(true);
+      this.setDependencyReady()
     }
 
     this.playing.subscribe((playing) => {
@@ -175,10 +175,16 @@ export class ContentSequence {
     this.nextSegmentStartTime = option.initialAssetStatus?.time ?? 0;
   }
 
+  private setDependencyReady=()=>{
+    try{
+      this.dependencyReady.resolve(true);
+    }catch{}
+  }
+
   destroy() {
     this.destroyed = true;
     this.nextContentSetupBlocker.clear();
-    this.dependencyReady.resolve(true);
+    this.setDependencyReady();
     this.trySetupCurrentContent();
     this.switchingBlocker.clear();
     this.tryStartCurrentContent();
