@@ -51,8 +51,8 @@ export class EnvVariableManager<
     super();
     this.envVariableAtom = computed(
       [
-        this.additionalEnvVariableAtom,
         this.userRelatedEnvVariableAtom,
+        this.additionalEnvVariableAtom,
         this.languageAtom,
         this.deviceTypeEnvVariableAtom,
         this.screenSizeEnvVariableAtom,
