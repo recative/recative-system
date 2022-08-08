@@ -4,16 +4,16 @@ import { getMatchedResource, ResourceEntry } from '@recative/smart-resource';
 
 import { useQuery } from '../hooks/fetchDataHooks';
 import { DataSource, useCombinator, useSelector } from '../core/DataSource';
-import { 
-  Subscribable, 
-  DataSourceNode, 
-  DataSourceNodeController, 
+import {
+  Subscribable,
+  DataSourceNode,
+  DataSourceNodeController,
 } from '../types/dataSource';
-import { 
-  useResourceMetadataByIdFetcher, 
-  useResourceMetadataByLabelFetcher 
+import {
+  useResourceMetadataByIdFetcher,
+  useResourceMetadataByLabelFetcher
 } from '../hooks/resourceManagerHooks';
-import { 
+import {
   ATLAS_FRAMES_KEY,
   SmartTextureInfo,
   useSmartResourceConfig,
@@ -151,9 +151,7 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
         return PIXI.Texture.EMPTY;
       }
 
-      const baseTexture = PIXI.BaseTexture.from(url, {
-        mipmap: PIXI.MIPMAP_MODES.OFF,
-      });
+      const baseTexture = PIXI.BaseTexture.from(url);
 
       return new PIXI.Texture(
         baseTexture, smartTextureInfo.frame, smartTextureInfo.orig, smartTextureInfo.trim, smartTextureInfo.rotate,

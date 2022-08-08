@@ -127,9 +127,7 @@ export class SmartSprite extends PIXI.Sprite {
       return PIXI.Texture.EMPTY;
     }
 
-    const baseTexture = PIXI.BaseTexture.from(url, {
-      mipmap: PIXI.MIPMAP_MODES.OFF,
-    });
+    const baseTexture = PIXI.BaseTexture.from(url);
 
     return new PIXI.Texture(
       baseTexture, smartTextureInfo.frame, smartTextureInfo.orig, smartTextureInfo.trim, smartTextureInfo.rotate,
