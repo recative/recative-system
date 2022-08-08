@@ -2,6 +2,7 @@ import dts from "rollup-plugin-dts";
 import resolve from "@rollup/plugin-node-resolve";
 import sucrase from '@rollup/plugin-sucrase';
 import external from "rollup-plugin-peer-deps-external";
+import AutoImport from 'unplugin-auto-import/rollup'
 
 const packageJson = require("./package.json");
 
@@ -30,6 +31,18 @@ export default [
       sucrase({
         exclude: ['node_modules/**'],
         transforms: ['jsx', 'typescript'],
+      }),
+      AutoImport({
+        include: [
+          /\.[tj]sx?$/, 
+        ],
+        imports: [
+          {
+            'react': [
+              ['default', 'React'],
+            ]
+          }
+        ],
       }),
     ]
   },
