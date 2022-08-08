@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.2
+
+### Patch Changes
+
+- d8cfc20: fix: Order of atoms in env manager
+
 ## 0.4.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @recative/ap-core
 
+## 0.0.6
+
+### Patch Changes
+
+- 76ce3ff: feat: Get mipmap back in smart textures
+
 ## 0.0.5
 
 ### Patch Changes
