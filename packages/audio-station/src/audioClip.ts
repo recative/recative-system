@@ -1,4 +1,4 @@
-import type { AudioSource } from 'audioSource';
+import type { AudioSource } from './audioSource';
 import type { AudioStation } from './audioStation';
 
 /**

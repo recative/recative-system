@@ -1,11 +1,24 @@
-import { DataSourceNode, DataSourceNodeController, Subscribable } from 'types/dataSource';
-import { getMatchedResource, ResourceEntry } from '@recative/smart-resource';
-import { IResourceFileForClient } from '@recative/definitions';
 import * as PIXI from 'pixi.js-legacy';
+import { IResourceFileForClient } from '@recative/definitions';
+import { getMatchedResource, ResourceEntry } from '@recative/smart-resource';
+
 import { useQuery } from '../hooks/fetchDataHooks';
-import { useResourceMetadataByIdFetcher, useResourceMetadataByLabelFetcher } from '../hooks/resourceManagerHooks';
-import { ATLAS_FRAMES_KEY, SmartTextureInfo, useSmartResourceConfig, useSmartTextureInfoFromResourceMetadata } from './smartTexture';
 import { DataSource, useCombinator, useSelector } from '../core/DataSource';
+import { 
+  Subscribable, 
+  DataSourceNode, 
+  DataSourceNodeController, 
+} from '../types/dataSource';
+import { 
+  useResourceMetadataByIdFetcher, 
+  useResourceMetadataByLabelFetcher 
+} from '../hooks/resourceManagerHooks';
+import { 
+  ATLAS_FRAMES_KEY,
+  SmartTextureInfo,
+  useSmartResourceConfig,
+  useSmartTextureInfoFromResourceMetadata
+} from './smartTexture';
 
 const useSmartTextureInfoSequence = (
   labelDataSource: Subscribable<string>,
