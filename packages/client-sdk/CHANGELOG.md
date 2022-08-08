@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.2.0
+
+### Minor Changes
+
+- feat: Supports `uson` data format
+
 ## 3.1.0
 
 ### Minor Changes
