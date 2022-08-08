@@ -7,10 +7,9 @@
   "types": "dist/types.d.ts",
   "repository": "https://github.com/recative/recative-system",
   "scripts": {
-    "prepack": "yarn clean && yarn build",
     "clean": "rimraf ./dist",
     "watch": "parcel watch",
-    "build": "parcel build",
+    "build": "yarn clean && parcel build",
     "dev": "parcel serve --no-hmr example/*.html"
   },
   "targets": {

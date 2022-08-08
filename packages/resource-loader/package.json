@@ -8,10 +8,9 @@
   "license": "gpl-3.0",
   "repository": "https://github.com/recative/recative-system",
   "scripts": {
-    "prepack": "yarn clean && yarn build",
     "clean": "rimraf ./dist",
     "watch": "rollup -c -w",
-    "build": "rollup -c"
+    "build": "yarn clean && rollup -c"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.3.0",
