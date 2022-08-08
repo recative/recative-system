@@ -114,3 +114,6 @@ dist
 
 # parcel
 .parcel-cache
+
+# auto imports
+auto-imports.d.ts
