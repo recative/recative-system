@@ -4,7 +4,6 @@
     "target": "esnext",
     "module": "esnext",
     "strict": true,
-    "baseUrl": "./src/",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
