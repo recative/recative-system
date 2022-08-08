@@ -1,5 +1,11 @@
 # @recative/ap-core
 
+## 0.0.5
+
+### Patch Changes
+
+- feat: Disable mipmap to reduce memory usage
+
 ## 0.0.4
 
 ### Patch Changes
