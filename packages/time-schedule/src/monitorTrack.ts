@@ -1,4 +1,4 @@
-import { Track } from 'track';
+import { Track } from './track';
 
 /**
  * The track used to subscribe state change on timeline,

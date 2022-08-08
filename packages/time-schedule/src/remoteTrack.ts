@@ -1,4 +1,4 @@
-import { Track } from 'track';
+import { Track } from './track';
 
 /**
  * An abstract interface used by RemoteTrack to represent remote system

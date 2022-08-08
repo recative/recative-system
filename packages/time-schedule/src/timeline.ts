@@ -1,5 +1,5 @@
-import { BasicTrack } from './basicTrack';
 import { Track } from './track';
+import { BasicTrack } from './basicTrack';
 
 /**
  * The timeline used to coordinate time and progress of different tracks
