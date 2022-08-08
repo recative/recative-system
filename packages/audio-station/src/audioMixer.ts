@@ -1,5 +1,6 @@
-import type { AudioSource } from 'audioSource';
 import type { AudioContext, GainNode } from 'standardized-audio-context';
+
+import type { AudioSource } from './audioSource';
 import type { AudioStation } from './audioStation';
 /**
  * The audio mixer

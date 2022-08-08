@@ -1,15 +1,20 @@
+import * as PIXI from 'pixi.js-legacy';
+
 import { IResourceFileForClient } from '@recative/definitions';
 import { getMatchedResource, ResourceEntry } from '@recative/smart-resource';
-import type { DataSourceNode, DataSourceNodeController, Subscribable } from 'types/dataSource';
-import * as PIXI from 'pixi.js-legacy';
+
 import { useQuery } from '../hooks/fetchDataHooks';
-import {
-  DefaultTagDataSource, useResourceMetadataByLabelFetcher,
-} from '../hooks/resourceManagerHooks';
 import { DataSource, useCombinator, useSelector } from '../core/DataSource';
 import {
-  SmartTextureInfo, useSmartResourceConfig, useSmartTextureInfoFromResourceMetadata,
+  DefaultTagDataSource,
+  useResourceMetadataByLabelFetcher,
+} from '../hooks/resourceManagerHooks';
+import {
+  SmartTextureInfo,
+  useSmartResourceConfig,
+  useSmartTextureInfoFromResourceMetadata,
 } from './smartTexture';
+import type { DataSourceNode, DataSourceNodeController, Subscribable } from '../types/dataSource';
 
 const useSmartTextureInfo = (
   labelDataSource: Subscribable<string>,
