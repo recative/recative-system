@@ -150,7 +150,11 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
       if (url === undefined) {
         return PIXI.Texture.EMPTY;
       }
-      const baseTexture = PIXI.BaseTexture.from(url);
+
+      const baseTexture = PIXI.BaseTexture.from(url, {
+        mipmap: PIXI.MIPMAP_MODES.OFF,
+      });
+
       return new PIXI.Texture(
         baseTexture, smartTextureInfo.frame, smartTextureInfo.orig, smartTextureInfo.trim, smartTextureInfo.rotate,
       );
