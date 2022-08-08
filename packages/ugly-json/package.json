@@ -1,6 +1,6 @@
 {
   "name": "@recative/ugly-json",
-  "version": "0.0.0-dev.0",
+  "version": "0.0.0",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
