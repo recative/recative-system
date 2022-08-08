@@ -15,8 +15,10 @@ export const parse = <T>(x: string): T => {
       if (value !== null && typeof value === 'object') {
         const result: Record<string, unknown> = {};
 
-        for (const i in value) {
-          result[head[i]] = value[i];
+        const keys = Object.keys(value);
+        for (let i = 0; i < keys.length; i += 1) {
+          const key = keys[i];
+          result[head[key]] = value[key];
         }
 
         return result;

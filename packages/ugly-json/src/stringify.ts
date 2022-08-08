@@ -9,11 +9,10 @@ export const stringify = (x: unknown) => {
     }
 
     head.push(x);
-
     return head.length - 1;
   }
 
-  const body = JSON.stringify(x, (_, value) => {
+  const sBody = JSON.stringify(x, (_, value) => {
     if (Array.isArray(value)) {
       return value;
     }
@@ -21,8 +20,10 @@ export const stringify = (x: unknown) => {
     if (value !== null && typeof value === 'object') {
       const result: Record<string, unknown> = {};
 
-      for (const i in value) {
-        result[getIndex(i)] = value[i];
+      const keys = Object.keys(value);
+      for (let i = 0; i < keys.length; i += 1) {
+        const key = keys[i];
+        result[getIndex(key)] = value[key];
       }
 
       return result;
@@ -31,5 +32,7 @@ export const stringify = (x: unknown) => {
     return getIndex(value);
   });
 
-  return `${body}\n${JSON.stringify(head)}`;
+  const sHead = JSON.stringify(head);
+
+  return `${sBody}\n${sHead}`;
 }
