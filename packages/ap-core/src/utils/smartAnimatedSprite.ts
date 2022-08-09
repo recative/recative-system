@@ -21,6 +21,8 @@ import {
   useSmartTextureInfoFromResourceMetadata,
   useSmartTextureRC
 } from './smartTexture';
+import { useEventTarget } from '../hooks/baseHooks';
+import { CHECK_SMART_TEXTURE_RELEASE } from './smartTextureReleaseChecker';
 
 const useSmartTextureInfoSequence = (
   labelDataSource: Subscribable<string>,
@@ -130,6 +132,7 @@ const useSmartTextureInfoSequence = (
 };
 
 export interface SmartAnimatedSpriteOption {
+  autoReleaseTexture: boolean;
   label?: string,
   tag?: string;
 }
@@ -145,14 +148,23 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
 
   private smartTextureRc: ReturnType<typeof useSmartTextureRC>
 
+  private autoReleaseTexture: boolean
+
+  private eventTarget: ReturnType<typeof useEventTarget>
+
   constructor(option: SmartAnimatedSpriteOption) {
     super([PIXI.Texture.EMPTY]);
+    this.autoReleaseTexture = option.autoReleaseTexture ?? false
     this.smartTextureRc = useSmartTextureRC()
     this.labelDataSource = new DataSource(option.label ?? '');
     this.textureReleasedDataSource = new DataSource(false);
     this.smartTextureInfoDataSource = useSmartTextureInfoSequence(this.labelDataSource.subscribe, this.textureReleasedDataSource.subscribe);
     this.smartTextureInfoController = this.smartTextureInfoDataSource(this.updateTextureSequence);
     this.updateTextureSequence(this.smartTextureInfoController.getter());
+    this.eventTarget = useEventTarget()
+    if (this.autoReleaseTexture) {
+      this.eventTarget.on(CHECK_SMART_TEXTURE_RELEASE, this.checkTextureRelease)
+    }
   }
 
   private createTexturesFromSmartTextureInfo(smartTextureInfos: SmartTextureInfo[]) {
@@ -201,6 +213,10 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
     }
   };
 
+  private checkTextureRelease = () => {
+    this.textureReleasedDataSource.data = !this.worldVisible;
+  }
+
   get label() {
     return this.labelDataSource.data;
   }
@@ -214,11 +230,17 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
   }
 
   set textureReleased(value: boolean) {
+    if (this.autoReleaseTexture) {
+      throw new Error("This This animated sprite automatically release textures, textureReleased should not be manually set");
+    }
     this.textureReleasedDataSource.data = value;
   }
 
   destroy(...param: Parameters<typeof PIXI.Sprite.prototype.destroy>) {
     this.smartTextureInfoController.unsubscribe();
+    if (this.autoReleaseTexture) {
+      this.eventTarget.off(CHECK_SMART_TEXTURE_RELEASE, this.checkTextureRelease)
+    }
     super.destroy(...param);
   }
 }
