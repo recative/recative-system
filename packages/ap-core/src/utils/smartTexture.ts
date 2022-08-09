@@ -1,10 +1,13 @@
 import { IResourceFileForClient } from '@recative/definitions';
-import { useSelector } from '../core/DataSource';
+import { DataSource, useSelector } from '../core/DataSource';
 import { useEnvVariableDataSource } from '../hooks/envVariableHooks';
 import * as PIXI from 'pixi.js-legacy';
 import { useResourceUrlByIdFetcher } from '../hooks/resourceManagerHooks';
 import { FunctionalAtomDefinition } from '../core/AtomStore';
 import { useStore } from '../hooks/baseHooks';
+
+const DEFAULT_TEXTURE_RELEASED_DATA_SOURCE = new DataSource(false);
+export const DefaultTextureReleasedDataSource = DEFAULT_TEXTURE_RELEASED_DATA_SOURCE.subscribe;
 
 export interface SmartTextureInfo {
   url?: string

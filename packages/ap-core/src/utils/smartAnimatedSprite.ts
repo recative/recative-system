@@ -15,6 +15,7 @@ import {
 } from '../hooks/resourceManagerHooks';
 import {
   ATLAS_FRAMES_KEY,
+  DefaultTextureReleasedDataSource,
   SmartTextureInfo,
   useSmartResourceConfig,
   useSmartTextureInfoFromResourceMetadata,
@@ -23,6 +24,7 @@ import {
 
 const useSmartTextureInfoSequence = (
   labelDataSource: Subscribable<string>,
+  textureReleasedDataSource: Subscribable<boolean> = DefaultTextureReleasedDataSource,
 ): DataSourceNode<SmartTextureInfo[] | null> => {
   const smartResourceConfigDataSource = useSmartResourceConfig();
   const {
@@ -119,7 +121,12 @@ const useSmartTextureInfoSequence = (
     },
   );
 
-  return frameTextureInfosDataSource;
+  return useSelector(useCombinator(frameTextureInfosDataSource, textureReleasedDataSource), ([frameTextureInfos, hidden]) => {
+    if (hidden) {
+      return []
+    }
+    return frameTextureInfos
+  });
 };
 
 export interface SmartAnimatedSpriteOption {
@@ -129,6 +136,8 @@ export interface SmartAnimatedSpriteOption {
 
 export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
   private labelDataSource: DataSource<string>;
+
+  private textureReleasedDataSource: DataSource<boolean>;
 
   private smartTextureInfoDataSource: DataSourceNode<SmartTextureInfo[] | null>;
 
@@ -140,7 +149,8 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
     super([PIXI.Texture.EMPTY]);
     this.smartTextureRc = useSmartTextureRC()
     this.labelDataSource = new DataSource(option.label ?? '');
-    this.smartTextureInfoDataSource = useSmartTextureInfoSequence(this.labelDataSource.subscribe);
+    this.textureReleasedDataSource = new DataSource(false);
+    this.smartTextureInfoDataSource = useSmartTextureInfoSequence(this.labelDataSource.subscribe, this.textureReleasedDataSource.subscribe);
     this.smartTextureInfoController = this.smartTextureInfoDataSource(this.updateTextureSequence);
     this.updateTextureSequence(this.smartTextureInfoController.getter());
   }
@@ -197,6 +207,14 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
 
   set label(value: string) {
     this.labelDataSource.data = value;
+  }
+
+  get textureReleased() {
+    return this.textureReleasedDataSource.data;
+  }
+
+  set textureReleased(value: boolean) {
+    this.textureReleasedDataSource.data = value;
   }
 
   destroy(...param: Parameters<typeof PIXI.Sprite.prototype.destroy>) {

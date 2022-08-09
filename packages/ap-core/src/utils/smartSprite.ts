@@ -10,6 +10,7 @@ import {
   useResourceMetadataByLabelFetcher,
 } from '../hooks/resourceManagerHooks';
 import {
+  DefaultTextureReleasedDataSource,
   SmartTextureInfo,
   useSmartResourceConfig,
   useSmartTextureInfoFromResourceMetadata,
@@ -20,6 +21,7 @@ import type { DataSourceNode, DataSourceNodeController, Subscribable } from '../
 const useSmartTextureInfo = (
   labelDataSource: Subscribable<string>,
   tagDataSource: Subscribable<string> = DefaultTagDataSource,
+  textureReleasedDataSource: Subscribable<boolean> = DefaultTextureReleasedDataSource,
 ): DataSourceNode<SmartTextureInfo | null> => {
   const smartResourceConfigDataSource = useSmartResourceConfig();
   const {
@@ -96,10 +98,15 @@ const useSmartTextureInfo = (
     },
   );
 
-  return textureInfoDataSource;
+  return useSelector(useCombinator(textureInfoDataSource, textureReleasedDataSource), ([textureInfo, hidden]) => {
+    if (hidden) {
+      return {}
+    }
+    return textureInfo
+  });
 };
 
-export interface SmartSpriteOption{
+export interface SmartSpriteOption {
   label?: string,
   tag?: string;
 }
@@ -109,6 +116,8 @@ export class SmartSprite extends PIXI.Sprite {
 
   private tagDataSource: DataSource<string>;
 
+  private textureReleasedDataSource: DataSource<boolean>;
+
   private smartTextureInfoDataSource: DataSourceNode<SmartTextureInfo | null>;
 
   private smartTextureInfoController: DataSourceNodeController<SmartTextureInfo | null>;
@@ -117,10 +126,11 @@ export class SmartSprite extends PIXI.Sprite {
 
   constructor(option: SmartSpriteOption) {
     super(PIXI.Texture.EMPTY);
-    this.smartTextureRc=useSmartTextureRC()
+    this.smartTextureRc = useSmartTextureRC()
     this.labelDataSource = new DataSource(option.label ?? '');
     this.tagDataSource = new DataSource(option.tag ?? 'unknown');
-    this.smartTextureInfoDataSource = useSmartTextureInfo(this.labelDataSource.subscribe, this.tagDataSource.subscribe);
+    this.textureReleasedDataSource = new DataSource(false);
+    this.smartTextureInfoDataSource = useSmartTextureInfo(this.labelDataSource.subscribe, this.tagDataSource.subscribe, this.textureReleasedDataSource.subscribe);
     this.smartTextureInfoController = this.smartTextureInfoDataSource(this.updateTexture);
     this.updateTexture(this.smartTextureInfoController.getter());
   }
@@ -170,6 +180,14 @@ export class SmartSprite extends PIXI.Sprite {
 
   set tag(value: string) {
     this.tagDataSource.data = value;
+  }
+
+  get textureReleased() {
+    return this.textureReleasedDataSource.data;
+  }
+
+  set textureReleased(value: boolean) {
+    this.textureReleasedDataSource.data = value;
   }
 
   destroy(...param: Parameters<typeof PIXI.Sprite.prototype.destroy>) {
