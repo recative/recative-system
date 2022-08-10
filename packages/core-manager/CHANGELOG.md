@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.3
+
+### Patch Changes
+
+- 58754b7: fix: Incorrect env override order
+
 ## 0.4.2
 
 ### Patch Changes
