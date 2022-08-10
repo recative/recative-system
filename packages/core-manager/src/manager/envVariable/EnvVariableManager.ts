@@ -59,9 +59,9 @@ export class EnvVariableManager<
       ],
       (user, additional, lang, device, screen) => {
         return {
-          ...user,
-          ...this.browserRelatedEnvVariable,
           ...additional,
+          ...this.browserRelatedEnvVariable,
+          ...user,
           __smartResourceConfig: {
             lang: lang ?? DEFAULT_LANGUAGE,
             device,
