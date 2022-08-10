@@ -210,10 +210,12 @@ export class SmartSprite extends PIXI.Sprite {
   }
 
   destroy(...param: Parameters<typeof PIXI.Sprite.prototype.destroy>) {
+    this.textureReleasedDataSource.data = true;
     this.smartTextureInfoController.unsubscribe();
     if (this.autoReleaseTexture) {
       this.eventTarget.off(CHECK_SMART_TEXTURE_RELEASE, this.checkTextureRelease)
     }
+    this.updateTexture({})
     super.destroy(...param);
   }
 }

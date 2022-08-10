@@ -132,9 +132,9 @@ const useSmartTextureInfoSequence = (
 };
 
 export interface SmartAnimatedSpriteOption {
-  autoReleaseTexture: boolean;
   label?: string,
   tag?: string;
+  autoReleaseTexture?: boolean;
 }
 
 export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
@@ -237,10 +237,12 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
   }
 
   destroy(...param: Parameters<typeof PIXI.Sprite.prototype.destroy>) {
+    this.textureReleasedDataSource.data = true;
     this.smartTextureInfoController.unsubscribe();
     if (this.autoReleaseTexture) {
       this.eventTarget.off(CHECK_SMART_TEXTURE_RELEASE, this.checkTextureRelease)
     }
+    this.updateTextureSequence([])
     super.destroy(...param);
   }
 }
