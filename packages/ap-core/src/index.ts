@@ -33,6 +33,7 @@ export * from './utils/emptyApp';
 export * from './utils/bindAppToPlayerEvent';
 export * from './utils/smartSprite';
 export * from './utils/smartAnimatedSprite';
+export * from './utils/smartTextureReleaseChecker';
 
 export * from './types/components';
 export * from './types/dataSource';

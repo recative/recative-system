@@ -1,5 +1,17 @@
 # @recative/ap-core
 
+## 0.1.0
+
+### Minor Changes
+
+- f421a81: feat: Smart texture released property
+- f0374bd: feat: Smart texture reference count
+- bf9b809: feat: Smart texture auto release
+
+### Patch Changes
+
+- 731507f: fix: Various fix around smart texture release
+
 ## 0.0.6
 
 ### Patch Changes

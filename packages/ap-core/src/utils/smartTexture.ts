@@ -1,8 +1,13 @@
 import { IResourceFileForClient } from '@recative/definitions';
-import { useSelector } from '../core/DataSource';
+import { DataSource, useSelector } from '../core/DataSource';
 import { useEnvVariableDataSource } from '../hooks/envVariableHooks';
 import * as PIXI from 'pixi.js-legacy';
 import { useResourceUrlByIdFetcher } from '../hooks/resourceManagerHooks';
+import { FunctionalAtomDefinition } from '../core/AtomStore';
+import { useStore } from '../hooks/baseHooks';
+
+const DEFAULT_TEXTURE_RELEASED_DATA_SOURCE = new DataSource(false);
+export const DefaultTextureReleasedDataSource = DEFAULT_TEXTURE_RELEASED_DATA_SOURCE.subscribe;
 
 export interface SmartTextureInfo {
   url?: string
@@ -143,4 +148,39 @@ export const useSmartResourceConfig = () => {
       return JSON.parse(str) as Record<string, string>
     }
   })
+}
+
+const BASE_TEXTURE_STORE = FunctionalAtomDefinition<Map<string, { refCount: number, texture: PIXI.BaseTexture }>>(
+  () => new Map(),
+);
+
+
+export const useSmartTextureRC = () => {
+  const [getTextureMap] = useStore(BASE_TEXTURE_STORE);
+  const textureMap = getTextureMap();
+  const acquire = (url: string) => {
+    if (textureMap.has(url)) {
+      const rcCell = textureMap.get(url)!
+      rcCell.refCount += 1
+      return rcCell.texture
+    } else {
+      const texture = PIXI.BaseTexture.from(url)
+      textureMap.set(url, { refCount: 1, texture })
+      return texture
+    }
+  }
+  const release = (url: string) => {
+    if (textureMap.has(url)) {
+      const rcCell = textureMap.get(url)!
+      rcCell.refCount -= 1
+      if (rcCell.refCount <= 0) {
+        rcCell.texture.destroy();
+        textureMap.delete(url)
+      }
+    }
+  }
+  return {
+    acquire,
+    release,
+  }
 }

@@ -10,15 +10,20 @@ import {
   useResourceMetadataByLabelFetcher,
 } from '../hooks/resourceManagerHooks';
 import {
+  DefaultTextureReleasedDataSource,
   SmartTextureInfo,
   useSmartResourceConfig,
   useSmartTextureInfoFromResourceMetadata,
+  useSmartTextureRC,
 } from './smartTexture';
 import type { DataSourceNode, DataSourceNodeController, Subscribable } from '../types/dataSource';
+import { useEventTarget } from '../hooks/baseHooks';
+import { CHECK_SMART_TEXTURE_RELEASE } from './smartTextureReleaseChecker';
 
 const useSmartTextureInfo = (
   labelDataSource: Subscribable<string>,
   tagDataSource: Subscribable<string> = DefaultTagDataSource,
+  textureReleasedDataSource: Subscribable<boolean> = DefaultTextureReleasedDataSource,
 ): DataSourceNode<SmartTextureInfo | null> => {
   const smartResourceConfigDataSource = useSmartResourceConfig();
   const {
@@ -95,12 +100,18 @@ const useSmartTextureInfo = (
     },
   );
 
-  return textureInfoDataSource;
+  return useSelector(useCombinator(textureInfoDataSource, textureReleasedDataSource), ([textureInfo, hidden]) => {
+    if (hidden) {
+      return {}
+    }
+    return textureInfo
+  });
 };
 
-export interface SmartSpriteOption{
-  label?: string,
+export interface SmartSpriteOption {
+  label?: string;
   tag?: string;
+  autoReleaseTexture?: boolean;
 }
 
 export class SmartSprite extends PIXI.Sprite {
@@ -108,26 +119,41 @@ export class SmartSprite extends PIXI.Sprite {
 
   private tagDataSource: DataSource<string>;
 
+  private textureReleasedDataSource: DataSource<boolean>;
+
   private smartTextureInfoDataSource: DataSourceNode<SmartTextureInfo | null>;
 
   private smartTextureInfoController: DataSourceNodeController<SmartTextureInfo | null>;
 
+  private smartTextureRc: ReturnType<typeof useSmartTextureRC>
+
+  private autoReleaseTexture: boolean
+
+  private eventTarget: ReturnType<typeof useEventTarget>
+
   constructor(option: SmartSpriteOption) {
     super(PIXI.Texture.EMPTY);
+    this.autoReleaseTexture = option.autoReleaseTexture ?? false
+    this.smartTextureRc = useSmartTextureRC()
     this.labelDataSource = new DataSource(option.label ?? '');
     this.tagDataSource = new DataSource(option.tag ?? 'unknown');
-    this.smartTextureInfoDataSource = useSmartTextureInfo(this.labelDataSource.subscribe, this.tagDataSource.subscribe);
+    this.textureReleasedDataSource = new DataSource(false);
+    this.smartTextureInfoDataSource = useSmartTextureInfo(this.labelDataSource.subscribe, this.tagDataSource.subscribe, this.textureReleasedDataSource.subscribe);
     this.smartTextureInfoController = this.smartTextureInfoDataSource(this.updateTexture);
     this.updateTexture(this.smartTextureInfoController.getter());
+    this.eventTarget = useEventTarget()
+    if (this.autoReleaseTexture) {
+      this.eventTarget.on(CHECK_SMART_TEXTURE_RELEASE, this.checkTextureRelease)
+    }
   }
 
-  private static createTextureFromSmartTextureInfo(smartTextureInfo: SmartTextureInfo) {
+  private createTextureFromSmartTextureInfo(smartTextureInfo: SmartTextureInfo) {
     const { url } = smartTextureInfo;
     if (url === undefined) {
       return PIXI.Texture.EMPTY;
     }
 
-    const baseTexture = PIXI.BaseTexture.from(url);
+    const baseTexture = this.smartTextureRc.acquire(url);
 
     return new PIXI.Texture(
       baseTexture, smartTextureInfo.frame, smartTextureInfo.orig, smartTextureInfo.trim, smartTextureInfo.rotate,
@@ -143,12 +169,18 @@ export class SmartSprite extends PIXI.Sprite {
       return;
     }
     const oldTexture = super.texture;
-    super.texture = SmartSprite.createTextureFromSmartTextureInfo(smartTextureInfo);
+    const oldUrl = oldTexture.baseTexture.cacheId
+    super.texture = this.createTextureFromSmartTextureInfo(smartTextureInfo);
     super.texture.on('update', this.onTextureUpdate);
     oldTexture.off('update', this.onTextureUpdate);
     oldTexture.destroy();
+    this.smartTextureRc.release(oldUrl)
     this.emit('textureupdate', {});
   };
+
+  private checkTextureRelease = ()=>{
+    this.textureReleasedDataSource.data = !this.worldVisible;
+  }
 
   get label() {
     return this.labelDataSource.data;
@@ -166,8 +198,24 @@ export class SmartSprite extends PIXI.Sprite {
     this.tagDataSource.data = value;
   }
 
+  get textureReleased() {
+    return this.textureReleasedDataSource.data;
+  }
+
+  set textureReleased(value: boolean) {
+    if (this.autoReleaseTexture) {
+      throw new Error("This smart sprite automatically release texture, textureReleased should not be manually set");
+    }
+    this.textureReleasedDataSource.data = value;
+  }
+
   destroy(...param: Parameters<typeof PIXI.Sprite.prototype.destroy>) {
+    this.textureReleasedDataSource.data = true;
     this.smartTextureInfoController.unsubscribe();
+    if (this.autoReleaseTexture) {
+      this.eventTarget.off(CHECK_SMART_TEXTURE_RELEASE, this.checkTextureRelease)
+    }
+    this.updateTexture({})
     super.destroy(...param);
   }
 }
