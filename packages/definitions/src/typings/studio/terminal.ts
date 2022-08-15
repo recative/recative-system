@@ -15,7 +15,7 @@ export enum TerminalMessageLevel {
 
 export interface ITerminalMessage {
   level: TerminalMessageLevel;
-  message: string;
+  message: string | [string, string];
 }
 
 export interface ITerminal {
