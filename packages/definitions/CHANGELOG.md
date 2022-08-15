@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0
+
+### Minor Changes
+
+- chore: Remove useless definitions
+
 ## 0.3.1
 
 ### Patch Changes

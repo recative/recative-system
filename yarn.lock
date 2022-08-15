@@ -4775,7 +4775,6 @@ __metadata:
     "@recative/act-player": "*"
     "@recative/act-protocol": "*"
     "@recative/core-manager": "*"
-    "@recative/definitions": "*"
     "@recative/smart-resource": "*"
     baseui: "*"
     classnames: "*"

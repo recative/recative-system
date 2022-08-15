@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.3
+
+### Patch Changes
+
+- Updated dependencies
+  - @recative/definitions@0.4.0
+  - @recative/act-protocol@0.2.7
+
 ## 0.2.2
 
 ### Patch Changes

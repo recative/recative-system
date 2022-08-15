@@ -1,6 +1,6 @@
 {
   "name": "@recative/core-manager",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
@@ -30,11 +30,11 @@
   },
   "dependencies": {
     "@nanostores/persistent": "^0.5.2",
-    "@recative/act-protocol": "^0.2.6",
+    "@recative/act-protocol": "^0.2.7",
     "@recative/audio-station": "^0.2.0",
-    "@recative/definitions": "^0.3.0",
+    "@recative/definitions": "^0.4.0",
     "@recative/open-promise": "^0.2.0",
-    "@recative/resource-loader": "^0.2.1",
+    "@recative/resource-loader": "^0.2.2",
     "@recative/smart-resource": "^0.2.0",
     "@recative/time-schedule": "^0.2.0",
     "@ungap/event-target": "^0.2.3",
