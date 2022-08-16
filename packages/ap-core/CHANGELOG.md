@@ -1,5 +1,11 @@
 # @recative/ap-core
 
+## 0.2.0
+
+### Minor Changes
+
+- BREAKING: Change preload strategy
+
 ## 0.1.1
 
 ### Patch Changes
