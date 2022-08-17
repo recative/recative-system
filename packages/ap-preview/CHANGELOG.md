@@ -1,5 +1,11 @@
 # @recative/ap-preview
 
+## 0.3.0
+
+### Minor Changes
+
+- BREAKING: Refactor the rule to build data url
+
 ## 0.2.0
 
 ### Minor Changes

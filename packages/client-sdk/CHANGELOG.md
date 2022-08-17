@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.4.0
+
+### Minor Changes
+
+- BREAKING: Refactor the rule to build data url
+
 ## 3.3.0
 
 ### Minor Changes
