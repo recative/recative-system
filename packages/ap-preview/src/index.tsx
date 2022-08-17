@@ -109,7 +109,7 @@ const Player: React.FC = () => {
 
   const Content = React.useMemo(
     () => ContentModuleFactory(config.pathPattern, config.dataType),
-    [config.pathPattern],
+    [config.pathPattern, config.dataType],
   );
 
   return (
