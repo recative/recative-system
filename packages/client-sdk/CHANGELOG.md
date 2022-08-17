@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.3.0
+
+### Minor Changes
+
+- BREAKING: Change interfaceComponents loading rule
+
 ## 3.2.4
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @recative/ap-preview
 
+## 0.2.0
+
+### Minor Changes
+
+- BREAKING: Change interfaceComponents loading rule
+
 ## 0.1.1
 
 ### Patch Changes
