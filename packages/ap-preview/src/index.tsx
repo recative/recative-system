@@ -108,7 +108,7 @@ const Player: React.FC = () => {
   }
 
   const Content = React.useMemo(
-    () => ContentModuleFactory(`${config.pathPattern}/../..`),
+    () => ContentModuleFactory(config.pathPattern),
     [config.pathPattern],
   );
 
