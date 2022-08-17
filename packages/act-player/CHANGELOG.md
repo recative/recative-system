@@ -1,5 +1,11 @@
 # @recative/act-player
 
+## 0.1.2
+
+### Patch Changes
+
+- e413c8d: fix: Ignore unexpected visibilitychange event
+
 ## 0.1.1
 
 ### Patch Changes

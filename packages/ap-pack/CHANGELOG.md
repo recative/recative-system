@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0
+
+### Minor Changes
+
+- e979740: feat: Fetch constants in ap-pack dist
+
+### Patch Changes
+
+- Updated dependencies [e413c8d]
+  - @recative/act-player@0.1.2
+
 ## 0.2.6
 
 ### Patch Changes
