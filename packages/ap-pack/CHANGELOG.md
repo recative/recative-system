@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.2
+
+### Patch Changes
+
+- 3b9bfa2: fix: Ap-pack template syntax error
+
 ## 0.3.1
 
 ### Patch Changes
