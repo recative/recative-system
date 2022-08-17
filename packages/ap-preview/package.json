@@ -9,7 +9,7 @@
     "watch": "parcel watch",
     "build": "parcel build",
     "reset": "rimraf ./dist ./.parcel-cache",
-    "dev": "parcel serve example/*.html",
+    "dev": "parcel serve src/*.html",
     "dev:https": "rimraf ./.parcel-cache && ts-node ./src/devServer.ts"
   },
   "devDependencies": {

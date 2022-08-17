@@ -40,7 +40,7 @@ export const PlayerSdkProvider: React.FC<IPlayerSdkProviderProps> = ({
   }, [pathPattern, dataType]);
 
   const fetchEpisodes = React.useCallback(async () => {
-    log(`Fetching episode list with path pattern: ${pathPattern}`);
+    log(`Fetching episode list with pattern: ${pathPattern} and data type: ${dataType}`);
 
     if (pathPattern) {
       const result = await fetch<IEpisodeAbstraction[]>(
@@ -55,7 +55,7 @@ export const PlayerSdkProvider: React.FC<IPlayerSdkProviderProps> = ({
 
     log('No pathPattern provided');
     return null;
-  }, [pathPattern]);
+  }, [pathPattern, dataType]);
 
   const [episodes, episodesController] = useAsync(fetchEpisodes);
 

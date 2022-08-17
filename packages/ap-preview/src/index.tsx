@@ -108,7 +108,7 @@ const Player: React.FC = () => {
   }
 
   const Content = React.useMemo(
-    () => ContentModuleFactory(config.pathPattern),
+    () => ContentModuleFactory(config.pathPattern, config.dataType),
     [config.pathPattern],
   );
 
@@ -230,9 +230,9 @@ export const renderPlayer = (selector = '#app', resourceServerPort = 9999) => {
         <PlayerSdkProvider
           pathPattern={
             temporaryPath
-            ?? `${window.location.protocol}//${window.location.hostname}:${resourceServerPort}/bson/$fileName`
+            ?? `${window.location.protocol}//${window.location.hostname}:${resourceServerPort}/preview/$fileName`
           }
-          dataType={dataType ?? 'bson'}
+          dataType={dataType ?? 'json'}
         >
           <HashRouter>
             <App />

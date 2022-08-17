@@ -38,6 +38,7 @@ const dependencies = {
 export const loadCustomizedModule = (
   scriptName: string,
   pathPattern: string,
+  dataType: string,
   baseUrl = ''
 ) => {
   const requires = createRequires(dependencies);
@@ -46,7 +47,9 @@ export const loadCustomizedModule = (
   return loadRemoteModule(
     postProcessUrl(
       joinPath(baseUrl, scriptName), 
-      pathPattern
+      pathPattern,
+      dataType,
+      true
     )
   );
 };

@@ -46,12 +46,18 @@ export const useCustomizedModule = <T extends ICustomizedModule<P>, P = any>(
   baseUrl: string | null,
   defaultModule = DEFAULT_MODULE as unknown as T,
 ) => {
-  const { pathPattern } = useSdkConfig();
+  const { pathPattern, dataType } = useSdkConfig();
   const loadComponents = React.useCallback(async () => {
     if (baseUrl === null) return null;
 
     try {
-      const module = await loadCustomizedModule(scriptName, pathPattern, baseUrl);
+      const module = await loadCustomizedModule(
+        scriptName,
+        pathPattern,
+        dataType,
+        baseUrl
+      );
+      
       if ('default' in module) {
         log('Got imported components');
         return module as T;
