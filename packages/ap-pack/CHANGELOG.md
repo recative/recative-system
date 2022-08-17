@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1
+
+### Patch Changes
+
+- 81934e8: fix: Don't extend base tsconfig in ap-pack
+
 ## 0.3.0
 
 ### Minor Changes
