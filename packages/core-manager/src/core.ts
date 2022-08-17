@@ -78,7 +78,7 @@ export class Core<
 
   readonly fastTaskQueue = new TimeSlicingQueue(8, 4);
 
-  readonly slowTaskQueue = new TimeSlicingQueue(3, 8);
+  readonly slowTaskQueue = new TimeSlicingQueue(5, 8);
 
   private components = new Map<string, Partial<ComponentFunctions>>();
 

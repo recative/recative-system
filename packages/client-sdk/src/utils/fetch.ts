@@ -20,7 +20,7 @@ export const fetch = async <T>(
   });
 
   try {
-    const url = postProcessUrl(fileName, pathPattern);
+    const url = postProcessUrl(fileName, pathPattern, dataType);
 
     let result: T;
 

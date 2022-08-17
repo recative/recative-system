@@ -4,17 +4,18 @@ import debug from 'debug';
 
 import { ActPlayer } from '@recative/act-player';
 import type { IActPointProps } from '@recative/act-player';
-import type { Core, IInitialAssetStatus } from '@recative/core-manager';
 import type { UserImplementedFunctions } from '@recative/definitions';
+import type { Core, IInitialAssetStatus } from '@recative/core-manager';
 
 import { fetch } from '../utils/fetch';
-import { dirname } from '../hooks/useCustomizedModule';
 import { loadCustomizedModule } from '../utils/loadCustomizedModule';
 
 import { useSdkConfig } from '../hooks/useSdkConfig';
 import { useEpisodeDetail } from '../hooks/useEpisodeDetail';
 import { useMemoryLeakFixer } from '../hooks/useMemoryLeakFixer';
 import { useResetAssetStatusCallback } from '../hooks/useResetAssetStatusCallback';
+
+import { CONTAINER_COMPONENT } from '../constant/storageKeys';
 
 const log = debug('client:content-sdk');
 
@@ -74,13 +75,17 @@ export const ContentModuleFactory = <
   EnvVariable extends Record<string, unknown>,
   ContentModule
 >(
-    baseUrl: string
+    pathPattern: string,
+    dataType: string,
+    baseUrl = '',
   ) => React.lazy(async () => {
     const containerModule = await (async () => {
       try {
         return (await loadCustomizedModule(
-          'containerComponents.js',
-          localStorage.getItem('@recative/client-sdk/container-component') ?? dirname(baseUrl)
+          localStorage.getItem(CONTAINER_COMPONENT) ?? 'containerComponents.js',
+          pathPattern,
+          dataType,
+          baseUrl,
         )) as IContentModule<ContentModule>;
       } catch (e) {
         console.warn('Failed to load customized module!');
@@ -88,6 +93,7 @@ export const ContentModuleFactory = <
         return DefaultContainerModule as IContentModule<ContentModule>;
       }
     })();
+
     const {
       usePlayerProps: internalUsePlayerProps,
       Container,

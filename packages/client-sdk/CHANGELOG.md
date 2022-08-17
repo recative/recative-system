@@ -1,5 +1,33 @@
 # Changelog
 
+## 3.4.0
+
+### Minor Changes
+
+- BREAKING: Refactor the rule to build data url
+
+## 3.3.0
+
+### Minor Changes
+
+- BREAKING: Change interfaceComponents loading rule
+
+## 3.2.4
+
+### Patch Changes
+
+- Updated dependencies
+  - @recative/definitions@0.4.0
+  - @recative/act-player@0.1.1
+  - @recative/act-protocol@0.2.7
+  - @recative/core-manager@0.4.5
+
+## 3.2.3
+
+### Patch Changes
+
+- fix: Dependency map
+
 ## 3.2.1
 
 ### Patch Changes

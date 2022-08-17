@@ -1,5 +1,26 @@
 # @recative/ap-preview
 
+## 0.3.0
+
+### Minor Changes
+
+- BREAKING: Refactor the rule to build data url
+
+## 0.2.0
+
+### Minor Changes
+
+- BREAKING: Change interfaceComponents loading rule
+
+## 0.1.1
+
+### Patch Changes
+
+- Updated dependencies
+  - @recative/definitions@0.4.0
+  - @recative/act-protocol@0.2.7
+  - @recative/core-manager@0.4.5
+
 ## 0.1.0
 
 ### Minor Changes

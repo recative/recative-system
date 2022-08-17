@@ -4,50 +4,29 @@ import debug from 'debug';
 import { useAsync } from '@react-hookz/web';
 
 import {
-  LoadingLayer,
   Stage,
-  Subtitle,
   Dialog,
+  Subtitle,
   PanicLayer,
   Controller,
+  LoadingLayer,
 } from '@recative/act-player';
 import type { InterfaceExtensionComponent } from '@recative/act-player';
 
 import { loadCustomizedModule } from '../utils/loadCustomizedModule';
+import { useSdkConfig } from './useSdkConfig';
 
 const log = debug('client:ui-components');
 
-/**
- * Get pathname of the URL, from `https://github.com/browserify/path-browserify/blob/master/index.js`
- * @param path The path
- * @returns The dirname
- */
-export const dirname = (path: string) => {
-  if (path.length === 0) return '.';
-  let code = path.charCodeAt(0);
-  const hasRoot = code === 47;
-  let end = -1;
-  let matchedSlash = true;
-  for (let i = path.length - 1; i >= 1; i = i - 1) {
-    code = path.charCodeAt(i);
-    if (code === 47 /* / */) {
-      if (!matchedSlash) {
-        end = i;
-        break;
-      }
-    } else {
-      // We saw the first non-path separator
-      matchedSlash = false;
-    }
-  }
-
-  if (end === -1) return hasRoot ? '/' : '.';
-  if (hasRoot && end === 1) return '//';
-  return path.slice(0, end);
-};
-
 export const DEFAULT_INTERFACE_COMPONENTS_MODULE = {
-  default: [LoadingLayer, Stage, Subtitle, Dialog, Controller({}), PanicLayer] as InterfaceExtensionComponent[],
+  default: [
+    LoadingLayer,
+    Stage,
+    Subtitle,
+    Dialog,
+    Controller({}),
+    PanicLayer
+  ] as InterfaceExtensionComponent[],
 };
 
 export interface ICustomizedModule<T = any> {
@@ -67,11 +46,18 @@ export const useCustomizedModule = <T extends ICustomizedModule<P>, P = any>(
   baseUrl: string | null,
   defaultModule = DEFAULT_MODULE as unknown as T,
 ) => {
+  const { pathPattern, dataType } = useSdkConfig();
   const loadComponents = React.useCallback(async () => {
-    if (!baseUrl) return null;
+    if (baseUrl === null) return null;
 
     try {
-      const module = await loadCustomizedModule(scriptName, dirname(baseUrl));
+      const module = await loadCustomizedModule(
+        scriptName,
+        pathPattern,
+        dataType,
+        baseUrl
+      );
+      
       if ('default' in module) {
         log('Got imported components');
         return module as T;

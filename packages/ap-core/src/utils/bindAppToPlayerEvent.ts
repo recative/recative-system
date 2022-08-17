@@ -24,16 +24,29 @@ export const bindAppToPlayerEvent = (
 
   const resourceList = await hostFunctions.connector.getResourceList();
 
-  resourceList.filter((resource) => {
+  const preloadedResources = resourceList.filter((resource) => {
     if (resource.type !== 'file') { return false; }
     if (!resource.preloadTriggers?.includes(PreloadLevel.InsideActPoint)) { return false; }
+
+    // If the resource is cached to hard-disk, we think that it do not 
+    // need to be preloaded. since the loading speed should be fast 
+    // enough. And there's an edge case, the bare bundle created by
+    // Recative Studio, no resource will be cached, this case should be
+    // handled by the web-root template properly.
+    if (resource.cacheToHardDisk) { return null; }
+    
     return true;
-  }).forEach((resource) => {
+  });
+
+  logBingAppToPlayerEvent(`Try to preload resources: ${preloadedResources.length}`);
+  
+  preloadedResources.forEach((resource) => {
     requireInitializeTask(() => new Promise<void>((resolve) => hostFunctions
       .connector
       .getResourceUrl(resource.id, 'id')
       .then((resourceUrl) => {
         if (!resourceUrl) { return null; }
+
         return fetch(resourceUrl);
       })
       .then(() => {

@@ -8,7 +8,7 @@ export const joinPath = (part0: string, ...parts: string[]) => {
   }
   const [, protocol, truePart0] = matchResult;
 
-  const partsToBeJoined = [truePart0 as string, ...parts];
+  const partsToBeJoined = [truePart0 as string, ...parts].filter(Boolean);
 
   const result = partsToBeJoined.map((part) => part
     .replace(new RegExp(`^${SEPARATOR}*`), '')

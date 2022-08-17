@@ -5,6 +5,7 @@ import createLoadRemoteModule, {
 import * as sdk from '../external';
 
 import { joinPath } from './joinPath';
+import { postProcessUrl } from './postProcessUrl';
 
 const dependencies = {
   '@nanostores/react': require('@nanostores/react'),
@@ -34,12 +35,21 @@ const dependencies = {
   '@recative/smart-resource': require('@recative/smart-resource'),
 };
 
-export const loadCustomizedModule = (scriptName: string, baseUrl: string) => {
+export const loadCustomizedModule = (
+  scriptName: string,
+  pathPattern: string,
+  dataType: string,
+  baseUrl = ''
+) => {
   const requires = createRequires(dependencies);
   const loadRemoteModule = createLoadRemoteModule({ requires });
 
-  const remoteModuleUrl = new URL(baseUrl, window.location.href);
-  remoteModuleUrl.pathname = joinPath(remoteModuleUrl.pathname, scriptName);
-
-  return loadRemoteModule(remoteModuleUrl.toString());
+  return loadRemoteModule(
+    postProcessUrl(
+      joinPath(baseUrl, scriptName), 
+      pathPattern,
+      dataType,
+      true
+    )
+  );
 };

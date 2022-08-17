@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.4.1
+
+### Patch Changes
+
+- fix: Incorrect bundler config
+
+## 0.4.0
+
+### Minor Changes
+
+- chore: Remove useless definitions
+
+## 0.3.1
+
+### Patch Changes
+
+- chore: Update definition of terminal
+
 ## 0.3.0
 
 ### Minor Changes
