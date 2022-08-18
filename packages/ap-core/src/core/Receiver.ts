@@ -1,7 +1,7 @@
 import { isDataSourceNodeController } from './DataSource';
 import type { Subscribable } from '../types/dataSource';
 
-export const Receiver = <T extends Object>(x: T) => {
+export const Receiver = <T extends {}>(x: T) => {
   const connect = <P extends keyof T>(
     target: P,
     // eslint-disable-next-line no-unused-vars

@@ -25,7 +25,7 @@ export const DEFAULT_INTERFACE_COMPONENTS_MODULE = {
     Subtitle,
     Dialog,
     Controller({}),
-    PanicLayer
+    PanicLayer,
   ] as InterfaceExtensionComponent[],
 };
 
@@ -55,9 +55,9 @@ export const useCustomizedModule = <T extends ICustomizedModule<P>, P = any>(
         scriptName,
         pathPattern,
         dataType,
-        baseUrl
+        baseUrl,
       );
-      
+
       if ('default' in module) {
         log('Got imported components');
         return module as T;

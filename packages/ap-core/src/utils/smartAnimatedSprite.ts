@@ -11,7 +11,7 @@ import {
 } from '../types/dataSource';
 import {
   useResourceMetadataByIdFetcher,
-  useResourceMetadataByLabelFetcher
+  useResourceMetadataByLabelFetcher,
 } from '../hooks/resourceManagerHooks';
 import {
   ATLAS_FRAMES_KEY,
@@ -19,7 +19,7 @@ import {
   SmartTextureInfo,
   useSmartResourceConfig,
   useSmartTextureInfoFromResourceMetadata,
-  useSmartTextureRC
+  useSmartTextureRC,
 } from './smartTexture';
 import { useEventTarget } from '../hooks/baseHooks';
 import { CHECK_SMART_TEXTURE_RELEASE } from './smartTextureReleaseChecker';
@@ -37,54 +37,57 @@ const useSmartTextureInfoSequence = (
     metadataResponseDataSource,
   );
 
-  const frameIdsDataSource = useSelector(combinedDataSource, ([smartResourceConfig, metadataResponse]) => {
-    if (metadataResponse === null) {
-      return undefined;
-    }
-    if (smartResourceConfig === null) {
-      return null;
-    }
-    if (!metadataResponse?.success) {
-      console.warn('Failed to get metadata:', metadataResponse.error);
-      return null;
-    }
-    const metadata = metadataResponse.data;
-    if (metadata === null) return null;
-    if (!('type' in metadata)) {
-      return null;
-    }
+  const frameIdsDataSource = useSelector(
+    combinedDataSource,
+    ([smartResourceConfig, metadataResponse]) => {
+      if (metadataResponse === null) {
+        return undefined;
+      }
+      if (smartResourceConfig === null) {
+        return null;
+      }
+      if (!metadataResponse?.success) {
+        console.warn('Failed to get metadata:', metadataResponse.error);
+        return null;
+      }
+      const metadata = metadataResponse.data;
+      if (metadata === null) return null;
+      if (!('type' in metadata)) {
+        return null;
+      }
 
-    if (metadata.type === 'file') {
-      return null;
-    }
-    const files: ResourceEntry<IResourceFileForClient>[] = metadata.files.map((file) => ({
-      selector: file.tags,
-      item: file,
-    }));
+      if (metadata.type === 'file') {
+        return null;
+      }
+      const files: ResourceEntry<IResourceFileForClient>[] = metadata.files.map((file) => ({
+        selector: file.tags,
+        item: file,
+      }));
 
-    const file = getMatchedResource(
-      files,
-      {
-        ...smartResourceConfig,
-        custom: 'frame-sequence-pointer!',
-      },
-    );
+      const file = getMatchedResource(
+        files,
+        {
+          ...smartResourceConfig,
+          custom: 'frame-sequence-pointer!',
+        },
+      );
 
-    if (!file) {
-      return null;
-    }
+      if (!file) {
+        return null;
+      }
 
-    if (!('extensionConfigurations' in file)) {
-      return null;
-    }
-    const extension = file.extensionConfigurations;
+      if (!('extensionConfigurations' in file)) {
+        return null;
+      }
+      const extension = file.extensionConfigurations;
 
-    if (!(ATLAS_FRAMES_KEY in extension)) {
-      return null;
-    }
+      if (!(ATLAS_FRAMES_KEY in extension)) {
+        return null;
+      }
 
-    return String(extension[ATLAS_FRAMES_KEY]).split(',');
-  });
+      return String(extension[ATLAS_FRAMES_KEY]).split(',');
+    },
+  );
 
   const resourceUrlByIdFetcher = useResourceMetadataByIdFetcher();
   const getSmartTextureInfoFromResourceMetadata = useSmartTextureInfoFromResourceMetadata();
@@ -123,12 +126,15 @@ const useSmartTextureInfoSequence = (
     },
   );
 
-  return useSelector(useCombinator(frameTextureInfosDataSource, textureReleasedDataSource), ([frameTextureInfos, hidden]) => {
-    if (hidden) {
-      return []
-    }
-    return frameTextureInfos
-  });
+  return useSelector(
+    useCombinator(frameTextureInfosDataSource, textureReleasedDataSource),
+    ([frameTextureInfos, hidden]) => {
+      if (hidden) {
+        return [];
+      }
+      return frameTextureInfos;
+    },
+  );
 };
 
 export interface SmartAnimatedSpriteOption {
@@ -146,24 +152,26 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
 
   private smartTextureInfoController: DataSourceNodeController<SmartTextureInfo[] | null>;
 
-  private smartTextureRc: ReturnType<typeof useSmartTextureRC>
+  private smartTextureRc: ReturnType<typeof useSmartTextureRC>;
 
-  private autoReleaseTexture: boolean
+  private autoReleaseTexture: boolean;
 
-  private eventTarget: ReturnType<typeof useEventTarget>
+  private eventTarget: ReturnType<typeof useEventTarget>;
 
   constructor(option: SmartAnimatedSpriteOption) {
     super([PIXI.Texture.EMPTY]);
-    this.autoReleaseTexture = option.autoReleaseTexture ?? false
-    this.smartTextureRc = useSmartTextureRC()
+    this.autoReleaseTexture = option.autoReleaseTexture ?? false;
+    this.smartTextureRc = useSmartTextureRC();
     this.labelDataSource = new DataSource(option.label ?? '');
     this.textureReleasedDataSource = new DataSource(false);
-    this.smartTextureInfoDataSource = useSmartTextureInfoSequence(this.labelDataSource.subscribe, this.textureReleasedDataSource.subscribe);
+    this.smartTextureInfoDataSource = useSmartTextureInfoSequence(
+      this.labelDataSource.subscribe, this.textureReleasedDataSource.subscribe,
+    );
     this.smartTextureInfoController = this.smartTextureInfoDataSource(this.updateTextureSequence);
     this.updateTextureSequence(this.smartTextureInfoController.getter());
-    this.eventTarget = useEventTarget()
+    this.eventTarget = useEventTarget();
     if (this.autoReleaseTexture) {
-      this.eventTarget.on(CHECK_SMART_TEXTURE_RELEASE, this.checkTextureRelease)
+      this.eventTarget.on(CHECK_SMART_TEXTURE_RELEASE, this.checkTextureRelease);
     }
   }
 
@@ -180,7 +188,11 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
       const baseTexture = this.smartTextureRc.acquire(url);
 
       return new PIXI.Texture(
-        baseTexture, smartTextureInfo.frame, smartTextureInfo.orig, smartTextureInfo.trim, smartTextureInfo.rotate,
+        baseTexture,
+        smartTextureInfo.frame,
+        smartTextureInfo.orig,
+        smartTextureInfo.trim,
+        smartTextureInfo.rotate,
       );
     });
   }
@@ -189,25 +201,28 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
     if (smartTextureInfo === null) {
       return;
     }
-    const playing = this.playing;
+    const { playing } = this;
     const oldTextures = super.textures;
     super.textures = this.createTexturesFromSmartTextureInfo(smartTextureInfo);
-    const oldUrls: string[] = []
+    const oldUrls: string[] = [];
     oldTextures.forEach((oldTexture) => {
       if (oldTexture instanceof PIXI.Texture) {
-        oldUrls.push(oldTexture.baseTexture.cacheId)
+        oldUrls.push(oldTexture.baseTexture.cacheId);
         oldTexture.destroy();
       } else {
-        oldUrls.push(oldTexture.texture.baseTexture.cacheId)
+        oldUrls.push(oldTexture.texture.baseTexture.cacheId);
         oldTexture.texture.destroy();
       }
     });
     oldUrls.forEach((oldUrl) => {
-      this.smartTextureRc.release(oldUrl)
-    })
-    // Animated sprite won't update scale with saved width/height after setting the textures so we should manually update it here
-    this._onTextureUpdate()
-    // Animated sprite will stop automatically after reset the textures, so restore playing state here
+      this.smartTextureRc.release(oldUrl);
+    });
+    // Animated sprite won't update scale with saved width/height
+    // after setting the textures
+    // so we should manually update it here
+    this._onTextureUpdate();
+    // Animated sprite will stop automatically after reset the textures
+    // so restore playing state here
     if (playing) {
       this.play();
     }
@@ -215,7 +230,7 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
 
   private checkTextureRelease = () => {
     this.textureReleasedDataSource.data = !this.worldVisible;
-  }
+  };
 
   get label() {
     return this.labelDataSource.data;
@@ -231,7 +246,7 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
 
   set textureReleased(value: boolean) {
     if (this.autoReleaseTexture) {
-      throw new Error("This This animated sprite automatically release textures, textureReleased should not be manually set");
+      throw new Error('This This animated sprite automatically release textures, textureReleased should not be manually set');
     }
     this.textureReleasedDataSource.data = value;
   }
@@ -240,9 +255,9 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
     this.textureReleasedDataSource.data = true;
     this.smartTextureInfoController.unsubscribe();
     if (this.autoReleaseTexture) {
-      this.eventTarget.off(CHECK_SMART_TEXTURE_RELEASE, this.checkTextureRelease)
+      this.eventTarget.off(CHECK_SMART_TEXTURE_RELEASE, this.checkTextureRelease);
     }
-    this.updateTextureSequence([])
+    this.updateTextureSequence([]);
     super.destroy(...param);
   }
 }

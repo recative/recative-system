@@ -102,7 +102,7 @@ export const Dialog: InterfaceExtensionComponent = (props) => {
 
               {
                 (dialogUnit.type === 'image')
-                && (<img src={dialogUnit.src} alt="Image message"/>)
+                && (<img src={dialogUnit.src} alt="Alt message"/>)
               }
             </DialogUnit>
           ))}

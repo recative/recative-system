@@ -48,6 +48,7 @@ setTimeout(() => {
         src: 'placeholder',
       },
       preloadDisabled: true,
+      earlyDestroyOnSwitch: false,
     }, {
       id: 'demo2',
       duration: Infinity,
@@ -56,7 +57,9 @@ setTimeout(() => {
         src: 'placeholder',
       },
       preloadDisabled: true,
+      earlyDestroyOnSwitch: false,
     }],
     preferredUploaders: [],
+    trustedUploaders: [],
   });
 }, 1000);

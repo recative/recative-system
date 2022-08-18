@@ -33,6 +33,7 @@ const usePlayerPropsDefaultHook = () => ({
 });
 
 const DefaultContainerComponent: React.FC = ({ children }) => (
+  // eslint-disable-next-line react/forbid-dom-props
   <div className="demoContainer" style={{ width: '100%', height: '100%' }}>
     {children}
   </div>
@@ -125,6 +126,7 @@ export const ContentModuleFactory = <
 
       const episodeDetail = useEpisodeDetail(episodeId ?? null);
 
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const { pathPattern, dataType, setClientSdkConfig } = useSdkConfig();
 
       const fetchData = React.useCallback(

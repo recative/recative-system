@@ -131,7 +131,7 @@ export class ContentSequence {
     if (option.dependencyLoadedPromise) {
       option.dependencyLoadedPromise.finally(this.setDependencyReady);
     } else {
-      this.setDependencyReady()
+      this.setDependencyReady();
     }
 
     this.playing.subscribe((playing) => {
@@ -175,11 +175,12 @@ export class ContentSequence {
     this.nextSegmentStartTime = option.initialAssetStatus?.time ?? 0;
   }
 
-  private setDependencyReady=()=>{
-    try{
+  private setDependencyReady = () => {
+    try {
       this.dependencyReady.resolve(true);
-    }catch{}
-  }
+    // eslint-disable-next-line no-empty
+    } catch {}
+  };
 
   destroy() {
     this.destroyed = true;

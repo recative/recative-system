@@ -95,7 +95,9 @@ export const ACT_POINT_SHOWN = AtomDefinition(false);
 export const ENV_VARIABLE_STORE = FunctionalAtomDefinition<null | IEnvVariable>(
   () => null,
 );
-export const INITIALIZE_TASK_STORE = FunctionalAtomDefinition(() => new Map<string, OpenPromise<void>>());
+export const INITIALIZE_TASK_STORE = FunctionalAtomDefinition(
+  () => new Map<string, OpenPromise<void>>(),
+);
 
 export const connectToHost = (context: IComponentContext) => {
   const contentFunctions: ContentFunctions = new Proxy(

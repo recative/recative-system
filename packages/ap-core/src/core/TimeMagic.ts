@@ -76,7 +76,7 @@ export class TimeMagic {
 
   playing: boolean = false;
 
-  private rateLevelMap: Map<TickCallback | Symbol, FrameRateLevel> = new Map();
+  private rateLevelMap: Map<TickCallback | symbol, FrameRateLevel> = new Map();
 
   private orderLevelMap: Map<FrameOrderLevel, TickCallback[]> = new Map();
 

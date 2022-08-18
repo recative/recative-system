@@ -8,7 +8,9 @@
     },
     {
       "files": ["*.ts", "*.tsx"],
-      "rules": {}
+      "rules": {
+        "react-hooks/rules-of-hooks":"off"
+      }
     },
     {
       "files": ["*.js", "*.jsx"],

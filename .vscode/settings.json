@@ -14,5 +14,6 @@
         "unplugin",
         "UPLOADERS",
         "Uson"
-    ]
+    ],
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
 }

@@ -39,8 +39,8 @@ export const tryValidResourceUrl = async <
       : null;
 
     try {
-      const availability = trustedUploaders.includes(uploader)  
-        ? OK 
+      const availability = trustedUploaders.includes(uploader)
+        ? OK
         : await fetch(url, {
           method: 'HEAD',
           cache: 'no-cache',

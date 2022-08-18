@@ -248,7 +248,7 @@ export class Core<
       resources: new ResourceListForClient(
         data.resources,
         data.trustedUploaders ?? [],
-        this
+        this,
       ),
       preloader: new PreloadManager(this),
     };
@@ -388,7 +388,7 @@ export class Core<
       resources: new ResourceListForClient(
         [],
         [],
-        this
+        this,
       ),
       preferredUploaders: [],
       preloader: new PreloadManager(this),

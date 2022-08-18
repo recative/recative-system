@@ -4,7 +4,10 @@
     "**/*"
   ],
   "plugins": [
-    "@nrwl/nx"
+    "@nrwl/nx",
+    "react",
+    "jsx-a11y",
+    "react-hooks"
   ],
   "extends": [
     "airbnb-base",
@@ -51,7 +54,11 @@
       "extends": [
         "plugin:@nrwl/nx/typescript",
         "airbnb-base",
-        "airbnb-typescript/base"
+        "airbnb-typescript/base",
+        "plugin:react/recommended",
+        "plugin:react/jsx-runtime",
+        "plugin:jsx-a11y/recommended",
+        "plugin:react-hooks/recommended"
       ],
       "rules": {
         "arrow-body-style": "off",
@@ -77,7 +84,30 @@
         "import/no-unresolved": "off",
         "import/prefer-default-export": "off",
         "import/no-dynamic-require": "off",
-        "@typescript-eslint/naming-convention": "off"
+        "import/no-cycle": "warn",
+        "@typescript-eslint/naming-convention": "off",
+        "@typescript-eslint/ban-ts-comment": "off",
+        "@typescript-eslint/no-empty-interface":"off",
+        "@typescript-eslint/ban-types": [
+          "error",
+          {
+            "types": {
+              "{}": false,
+              "Function": false
+            },
+            "extendDefaults": true
+          }
+        ],
+        "@typescript-eslint/no-non-null-assertion":"off",
+        "@typescript-eslint/no-inferrable-types":"off",
+        "react/no-typos": "error",
+        "react/prop-types": "off",
+        "react/display-name": "off",
+        "react/forbid-dom-props": [2, { "forbid": ["style"] }],
+        "react-hooks/exhaustive-deps": "off",
+        "jsx-a11y/iframe-has-title": "warn",
+        "jsx-a11y/media-has-caption": "warn",
+        "jsx-a11y/alt-text": "warn"
       }
     },
     {
@@ -87,7 +117,11 @@
       ],
       "extends": [
         "plugin:@nrwl/nx/javascript",
-        "airbnb-base"
+        "airbnb-base",
+        "plugin:react/recommended",
+        "plugin:react/jsx-runtime",
+        "plugin:jsx-a11y/recommended",
+        "plugin:react-hooks/recommended"
       ],
       "rules": {}
     }

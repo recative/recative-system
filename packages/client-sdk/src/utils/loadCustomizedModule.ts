@@ -39,17 +39,17 @@ export const loadCustomizedModule = (
   scriptName: string,
   pathPattern: string,
   dataType: string,
-  baseUrl = ''
+  baseUrl = '',
 ) => {
   const requires = createRequires(dependencies);
   const loadRemoteModule = createLoadRemoteModule({ requires });
 
   return loadRemoteModule(
     postProcessUrl(
-      joinPath(baseUrl, scriptName), 
+      joinPath(baseUrl, scriptName),
       pathPattern,
       dataType,
-      true
-    )
+      true,
+    ),
   );
 };

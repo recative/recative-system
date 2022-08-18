@@ -46,7 +46,8 @@ export const defaultQueryFn = async<K, V>(url: K | null) => {
 
 // Network hook inspired by react-query
 export const useQuery = <Key, Value>(
-  subscribeQueryKey: Subscribable<Key>, queryFn: (key: Key | null) => Promise<Value> = defaultQueryFn,
+  subscribeQueryKey: Subscribable<Key>,
+  queryFn: (key: Key | null) => Promise<Value> = defaultQueryFn,
 ) => {
   const keyDataSource = useDataSource<Key | null>(null);
   const queryKeyController = subscribeQueryKey((key) => {

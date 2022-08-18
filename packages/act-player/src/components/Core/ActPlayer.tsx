@@ -260,10 +260,10 @@ const InternalActPlayer = <
   const lastDocumentHidden = React.useRef(document.hidden);
   const playingBeforeHiddenRef = React.useRef(false);
   const handleVisibilityChange = React.useCallback(() => {
-    if(lastDocumentHidden.current === document.hidden){
+    if (lastDocumentHidden.current === document.hidden) {
       return;
     }
-    lastDocumentHidden.current = document.hidden
+    lastDocumentHidden.current = document.hidden;
     if (props.pauseWhenNotVisible ?? true) {
       if (document.hidden) {
         playingBeforeHiddenRef.current = core.manager.playing.get();

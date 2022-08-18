@@ -13,11 +13,12 @@ export const notImplemented = (x: string) => {
   log(`ERROR: ${x} is not implemented!`);
 };
 
-export const useResetAssetStatusCallback = () => React.useCallback(() => {
+export const useResetAssetStatusCallback = () => {
   const config = useSdkConfig();
-
-  config.setClientSdkConfig({ ...config, initialAssetStatus: undefined });
-}, []);
+  return React.useCallback(() => {
+    config.setClientSdkConfig({ ...config, initialAssetStatus: undefined });
+  }, []);
+};
 
 export interface InjectedFunctions {
   navigate: (url: string) => void;

@@ -8,9 +8,9 @@ import {
 } from '@recative/definitions';
 import { OpenPromise } from '@recative/open-promise';
 import { getMatchedResource } from '@recative/smart-resource';
-import type { 
-  IResourceItemForClient, 
-  IDetailedResourceItemForClient, 
+import type {
+  IResourceItemForClient,
+  IDetailedResourceItemForClient,
   IDetailedResourceGroupForClient,
 } from '@recative/definitions';
 
@@ -205,7 +205,9 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
       || finalResource.cacheToHardDisk
     );
 
-    return this.getResourceByUrlMap(finalResource.url, postProcess, taskId, shouldCacheToGlobal, useSlowQueue)
+    return this.getResourceByUrlMap(
+      finalResource.url, postProcess, taskId, shouldCacheToGlobal, useSlowQueue,
+    );
   };
 
   /**

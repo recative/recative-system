@@ -155,14 +155,12 @@ export const cleanUpResourceListForClient = <FormatFileField extends boolean>(
     (resource) => {
       if (resource.type === 'file') {
         return resource;
-      } else if (resource.type === 'group') {
+      } if (resource.type === 'group') {
         return {
           ...resource,
-          files: resource.files.map((file) => 
-            typeof file === 'string'
-              ? fileMap.get(file)!
-              : file
-          ).filter(Boolean),
+          files: resource.files.map((file) => (typeof file === 'string'
+            ? fileMap.get(file)!
+            : file)).filter(Boolean),
         } as IDetailedResourceGroupForClient;
       }
       throw new TypeError('Invalid resource type');

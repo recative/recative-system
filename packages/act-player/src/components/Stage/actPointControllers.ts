@@ -113,7 +113,7 @@ export const getController = (id: string) => {
             resourceId: string,
             type: 'label' | 'id',
           ) => {
-            const resources = coreFunctions!.core.getEpisodeData()!.resources;
+            const { resources } = coreFunctions!.core.getEpisodeData()!;
 
             const resource = getResourceMetadata(resourceId, type);
             if (!resource) return null;

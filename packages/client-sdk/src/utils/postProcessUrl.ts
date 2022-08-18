@@ -1,18 +1,19 @@
-import { 
+import {
   BUNDLE_ID,
   PROFILE_ID,
   DATA_TYPE,
-  DISABLE_REQUEST_EXTENSION_NAME
+  DISABLE_REQUEST_EXTENSION_NAME,
 } from '../constant/storageKeys';
 
 const bundleId = localStorage.getItem(BUNDLE_ID) ?? 'latest';
 const profileId = localStorage.getItem(PROFILE_ID) ?? null;
 const initialDataType = localStorage.getItem(DATA_TYPE) ?? 'uson';
 const initialDisableRequestExtensionName = !!localStorage.getItem(
-  DISABLE_REQUEST_EXTENSION_NAME ) ?? false;
+  DISABLE_REQUEST_EXTENSION_NAME,
+) ?? false;
 
 export const postProcessUrl = (
-  fileName: string, 
+  fileName: string,
   pathPattern: string,
   dataType = initialDataType,
   disableRequestExtensionName = initialDisableRequestExtensionName,

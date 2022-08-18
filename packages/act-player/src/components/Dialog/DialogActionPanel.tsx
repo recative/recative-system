@@ -4,6 +4,7 @@ import type { StyleObject } from 'styletron-react';
 import { Button } from 'baseui/button';
 import { Block } from 'baseui/block';
 import type { DialogActions, DialogActionTriggerResponse } from '@recative/act-protocol';
+import React from 'react';
 
 export interface IDialogActionsProps {
   actions:DialogActions,
