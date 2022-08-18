@@ -50,7 +50,7 @@
     }
   });
 
-  const loadConstants = () => fetch(`<%= htmlWebpackPlugin.options.transformPath("/constants.json") %>`)
+  const loadConstants = () => fetch(`<%= htmlWebpackPlugin.options.transformPath("/.constants") %>`)
     .then((response) => response.json())
     .then((data) => {
       Reflect.set(window, 'constant', data);
