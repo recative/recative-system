@@ -4444,16 +4444,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@recative/act-player@^0.1.0, @recative/act-player@workspace:packages/act-player":
+"@recative/act-player@^0.1.1, @recative/act-player@^0.1.2, @recative/act-player@workspace:packages/act-player":
   version: 0.0.0-use.local
   resolution: "@recative/act-player@workspace:packages/act-player"
   dependencies:
     "@nanostores/react": 0.2.0
     "@paciolan/remote-module-loader": ^3.0.2
     "@react-hookz/web": ^12.3.0
-    "@recative/act-protocol": ^0.2.6
-    "@recative/core-manager": ^0.4.0
-    "@recative/definitions": ^0.3.0
+    "@recative/act-protocol": ^0.2.7
+    "@recative/core-manager": ^0.4.5
+    "@recative/definitions": ^0.4.0
     "@recative/smart-resource": ^0.2.0
     "@rollup/plugin-commonjs": ^21.0.2
     "@rollup/plugin-node-resolve": ^13.3.0
@@ -4514,11 +4514,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/act-protocol@^0.2.6, @recative/act-protocol@workspace:packages/act-protocol":
+"@recative/act-protocol@^0.2.7, @recative/act-protocol@workspace:packages/act-protocol":
   version: 0.0.0-use.local
   resolution: "@recative/act-protocol@workspace:packages/act-protocol"
   dependencies:
-    "@recative/definitions": ^0.3.0
+    "@recative/definitions": ^0.4.0
     "@rollup/plugin-node-resolve": ^13.3.0
     "@rollup/plugin-sucrase": ^4.0.3
     "@types/debug": ^4.1.7
@@ -4543,10 +4543,10 @@ __metadata:
   resolution: "@recative/ap-core@workspace:packages/ap-core"
   dependencies:
     "@nanostores/persistent": ^0.5.1
-    "@recative/act-protocol": ^0.2.6
-    "@recative/definitions": ^0.3.0
+    "@recative/act-protocol": ^0.2.7
+    "@recative/definitions": ^0.4.0
     "@recative/open-promise": ^0.2.0
-    "@recative/resource-bridge": ^0.2.2
+    "@recative/resource-bridge": ^0.2.3
     "@recative/smart-resource": ^0.2.0
     "@rollup/plugin-node-resolve": ^13.3.0
     "@rollup/plugin-sucrase": ^4.0.3
@@ -4596,7 +4596,7 @@ __metadata:
     "@babel/preset-typescript": 7.16.7
     "@babel/runtime-corejs3": 7.16.8
     "@paciolan/remote-module-loader": ^3.0.2
-    "@recative/act-player": ^0.1.0
+    "@recative/act-player": ^0.1.2
     "@recative/resource-bridge": ^0.2.2
     "@types/fs-extra": 9.0.13
     "@types/mkdirp": 1.0.2
@@ -4650,9 +4650,9 @@ __metadata:
     "@parcel/transformer-react-refresh-wrap": ^2.0.1
     "@parcel/transformer-typescript-types": ^2.0.0
     "@react-hookz/web": ^12.3.0
-    "@recative/act-protocol": ^0.2.6
-    "@recative/core-manager": ^0.4.0
-    "@recative/definitions": ^0.3.0
+    "@recative/act-protocol": ^0.2.7
+    "@recative/core-manager": ^0.4.5
+    "@recative/definitions": ^0.4.0
     "@recative/smart-resource": ^0.2.0
     "@types/debug": ^4.1.7
     "@types/fs-extra": ^9.0.13
@@ -4733,10 +4733,10 @@ __metadata:
     "@nanostores/react": ^0.1.5
     "@paciolan/remote-module-loader": ^3.0.2
     "@react-hookz/web": ^13.0.0
-    "@recative/act-player": ^0.1.0
-    "@recative/act-protocol": ^0.2.6
-    "@recative/core-manager": ^0.4.0
-    "@recative/definitions": ^0.3.0
+    "@recative/act-player": ^0.1.1
+    "@recative/act-protocol": ^0.2.7
+    "@recative/core-manager": ^0.4.5
+    "@recative/definitions": ^0.4.0
     "@recative/open-promise": ^0.2.0
     "@recative/smart-resource": ^0.2.0
     "@recative/ugly-json": "workspace:^"
@@ -4788,16 +4788,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/core-manager@^0.4.0, @recative/core-manager@workspace:packages/core-manager":
+"@recative/core-manager@^0.4.5, @recative/core-manager@workspace:packages/core-manager":
   version: 0.0.0-use.local
   resolution: "@recative/core-manager@workspace:packages/core-manager"
   dependencies:
     "@nanostores/persistent": ^0.5.2
-    "@recative/act-protocol": ^0.2.6
+    "@recative/act-protocol": ^0.2.7
     "@recative/audio-station": ^0.2.0
-    "@recative/definitions": ^0.3.0
+    "@recative/definitions": ^0.4.0
     "@recative/open-promise": ^0.2.0
-    "@recative/resource-loader": ^0.2.1
+    "@recative/resource-loader": ^0.2.2
     "@recative/smart-resource": ^0.2.0
     "@recative/time-schedule": ^0.2.0
     "@rollup/plugin-node-resolve": ^13.3.0
@@ -4823,7 +4823,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/definitions@^0.3.0, @recative/definitions@workspace:packages/definitions":
+"@recative/definitions@^0.4.0, @recative/definitions@workspace:packages/definitions":
   version: 0.0.0-use.local
   resolution: "@recative/definitions@workspace:packages/definitions"
   dependencies:
@@ -4885,11 +4885,13 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^5.29.0
     "@typescript-eslint/parser": ^5.29.0
     eslint: ~8.15.0
-    eslint-config-prettier: 8.1.0
+    eslint-config-airbnb-base: ^14.2.1
+    eslint-config-airbnb-typescript: ^15.0.0
+    eslint-plugin-import: ^2.25.2
     husky: ^8.0.0
     jest: 27.5.1
     nx: 14.5.2
-    prettier: ^2.6.2
+    prettier: ^2.7.1
     ts-jest: 27.1.4
     ts-node: ~10.8.0
     tslib: ^2.3.0
@@ -4897,15 +4899,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/resource-bridge@^0.2.2, @recative/resource-bridge@workspace:packages/resource-bridge":
+"@recative/resource-bridge@^0.2.2, @recative/resource-bridge@^0.2.3, @recative/resource-bridge@workspace:packages/resource-bridge":
   version: 0.0.0-use.local
   resolution: "@recative/resource-bridge@workspace:packages/resource-bridge"
   dependencies:
     "@parcel/packager-ts": 2.3.0
     "@parcel/transformer-typescript-tsc": 2.2.1
     "@parcel/transformer-typescript-types": 2.3.0
-    "@recative/act-protocol": ^0.2.6
-    "@recative/definitions": ^0.3.0
+    "@recative/act-protocol": ^0.2.7
+    "@recative/definitions": ^0.4.0
     "@recative/open-promise": ^0.2.0
     "@types/debug": ^4.1.7
     "@typescript-eslint/eslint-plugin": ^5.3.0
@@ -4925,11 +4927,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/resource-loader@^0.2.1, @recative/resource-loader@workspace:packages/resource-loader":
+"@recative/resource-loader@^0.2.2, @recative/resource-loader@workspace:packages/resource-loader":
   version: 0.0.0-use.local
   resolution: "@recative/resource-loader@workspace:packages/resource-loader"
   dependencies:
-    "@recative/definitions": ^0.3.0
+    "@recative/definitions": ^0.4.0
     "@recative/open-promise": ^0.2.0
     "@rollup/plugin-node-resolve": ^13.3.0
     "@rollup/plugin-sucrase": ^4.0.3
@@ -9806,17 +9808,6 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^5.0.0
     "@typescript-eslint/parser": ^5.0.0
   checksum: 83d863f62c9863139b8cb276fb5016587c996962306dfdae30ca664803479e5d79da868837d2732d96b4783bfd433727cfe06b039f3b7c9cca88ee68fc5d1706
-  languageName: node
-  linkType: hard
-
-"eslint-config-prettier@npm:8.1.0":
-  version: 8.1.0
-  resolution: "eslint-config-prettier@npm:8.1.0"
-  peerDependencies:
-    eslint: ">=7.0.0"
-  bin:
-    eslint-config-prettier: bin/cli.js
-  checksum: 277b42e4d5b4a65dc8224a26b082373b846f7b2148dc342fd69f9f00ea36f58affacf7bbade3f2512295f371620b3d57380e27de32e492632b516c310ce51c04
   languageName: node
   linkType: hard
 
@@ -15740,9 +15731,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^2.6.2":
+"prettier@npm:^2.7.1":
   version: 2.7.1
-  resolution: "prettier@npm:2.7.1"
+  resolution: "prettier@npm:2.7.1::__archiveUrl=https%3A%2F%2Fregistry.npmmirror.com%2Fprettier%2F-%2Fprettier-2.7.1.tgz"
   bin:
     prettier: bin-prettier.js
   checksum: 55a4409182260866ab31284d929b3cb961e5fdb91fe0d2e099dac92eaecec890f36e524b4c19e6ceae839c99c6d7195817579cdffc8e2c80da0cb794463a748b

@@ -1,10 +1,30 @@
 {
   "root": true,
-  "ignorePatterns": ["**/*"],
-  "plugins": ["@nrwl/nx"],
+  "ignorePatterns": [
+    "**/*"
+  ],
+  "plugins": [
+    "@nrwl/nx"
+  ],
+  "extends": [
+    "airbnb-base",
+    "airbnb-typescript/base"
+  ],
+  "parserOptions": {
+    "project": [
+      "packages/*/tsconfig(.*)?json"
+    ],
+    "sourceType": "module",
+    "ecmaVersion": 12
+  },
   "overrides": [
     {
-      "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
+      "files": [
+        "*.ts",
+        "*.tsx",
+        "*.js",
+        "*.jsx"
+      ],
       "rules": {
         "@nrwl/nx/enforce-module-boundaries": [
           "error",
@@ -14,7 +34,9 @@
             "depConstraints": [
               {
                 "sourceTag": "*",
-                "onlyDependOnLibsWithTags": ["*"]
+                "onlyDependOnLibsWithTags": [
+                  "*"
+                ]
               }
             ]
           }
@@ -22,13 +44,51 @@
       }
     },
     {
-      "files": ["*.ts", "*.tsx"],
-      "extends": ["plugin:@nrwl/nx/typescript"],
-      "rules": {}
+      "files": [
+        "*.ts",
+        "*.tsx"
+      ],
+      "extends": [
+        "plugin:@nrwl/nx/typescript",
+        "airbnb-base",
+        "airbnb-typescript/base"
+      ],
+      "rules": {
+        "arrow-body-style": "off",
+        "consistent-return": "off",
+        "global-require": "off",
+        "linebreak-style": [
+          "off",
+          "windows"
+        ],
+        "no-bitwise": "off",
+        "no-continue": "off",
+        "no-param-reassign": [
+          "error",
+          {
+            "props": false
+          }
+        ],
+        "max-classes-per-file": "off",
+        "no-await-in-loop": "off",
+        "operator-assignment": "off",
+        "no-underscore-dangle": "off",
+        "import/extensions": "off",
+        "import/no-unresolved": "off",
+        "import/prefer-default-export": "off",
+        "import/no-dynamic-require": "off",
+        "@typescript-eslint/naming-convention": "off"
+      }
     },
     {
-      "files": ["*.js", "*.jsx"],
-      "extends": ["plugin:@nrwl/nx/javascript"],
+      "files": [
+        "*.js",
+        "*.jsx"
+      ],
+      "extends": [
+        "plugin:@nrwl/nx/javascript",
+        "airbnb-base"
+      ],
       "rules": {}
     }
   ]
