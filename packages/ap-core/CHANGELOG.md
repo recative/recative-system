@@ -1,5 +1,11 @@
 # @recative/ap-core
 
+## 0.2.1
+
+### Patch Changes
+
+- chore: Update key of smart resource
+
 ## 0.2.0
 
 ### Minor Changes
