@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.3
+
+### Patch Changes
+
+- dfe2193: fix: Incorrect constant path
+
 ## 0.3.2
 
 ### Patch Changes
