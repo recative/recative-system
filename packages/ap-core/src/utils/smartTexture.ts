@@ -17,12 +17,12 @@ export interface SmartTextureInfo {
   rotate?: number
 }
 
-export const ATLAS_EX_KEY = '@recative/extension-rs-atlas/AtlasResourceProcessor~~ex';
-export const ATLAS_EY_KEY = '@recative/extension-rs-atlas/AtlasResourceProcessor~~ey';
-export const ATLAS_EW_KEY = '@recative/extension-rs-atlas/AtlasResourceProcessor~~ew';
-export const ATLAS_EH_KEY = '@recative/extension-rs-atlas/AtlasResourceProcessor~~eh';
-export const ATLAS_TW_KEY = '@recative/extension-rs-atlas/AtlasResourceProcessor~~tw';
-export const ATLAS_TH_KEY = '@recative/extension-rs-atlas/AtlasResourceProcessor~~th';
+export const ATLAS_EX_KEY = '@recative/extension-rs-atlas/TextureAnalysisProcessor~~ex';
+export const ATLAS_EY_KEY = '@recative/extension-rs-atlas/TextureAnalysisProcessor~~ey';
+export const ATLAS_EW_KEY = '@recative/extension-rs-atlas/TextureAnalysisProcessor~~ew';
+export const ATLAS_EH_KEY = '@recative/extension-rs-atlas/TextureAnalysisProcessor~~eh';
+export const ATLAS_TW_KEY = '@recative/extension-rs-atlas/TextureAnalysisProcessor~~tw';
+export const ATLAS_TH_KEY = '@recative/extension-rs-atlas/TextureAnalysisProcessor~~th';
 export const ATLAS_X_KEY = '@recative/extension-rs-atlas/AtlasResourceProcessor~~x';
 export const ATLAS_Y_KEY = '@recative/extension-rs-atlas/AtlasResourceProcessor~~y';
 export const ATLAS_W_KEY = '@recative/extension-rs-atlas/AtlasResourceProcessor~~w';
