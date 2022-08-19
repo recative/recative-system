@@ -179,12 +179,25 @@ export class SmartSprite extends PIXI.Sprite {
     }
     const oldTexture = super.texture;
     const oldUrl = oldTexture.baseTexture.cacheId;
-    super.texture = this.createTextureFromSmartTextureInfo(smartTextureInfo);
+    const texture = this.createTextureFromSmartTextureInfo(smartTextureInfo);
+    super.texture = texture;
     super.texture.on('update', this.onTextureUpdate);
     oldTexture.off('update', this.onTextureUpdate);
     oldTexture.destroy();
     this.smartTextureRc.release(oldUrl);
-    this.emit('textureupdate', {});
+
+    const emitUpdate = () => {
+      this.emit('textureupdate', {});
+    };
+
+    if (texture) {
+      // wait for the texture to load
+      if (texture.baseTexture.valid) {
+        emitUpdate();
+      } else {
+        texture.once('update', emitUpdate, this);
+      }
+    }
   };
 
   private checkTextureRelease = () => {
