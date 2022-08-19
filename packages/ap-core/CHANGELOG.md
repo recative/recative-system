@@ -1,5 +1,11 @@
 # @recative/ap-core
 
+## 0.2.3
+
+### Patch Changes
+
+- e7b5ff1: fix: Texture update timing
+
 ## 0.2.2
 
 ### Patch Changes
