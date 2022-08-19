@@ -1,5 +1,11 @@
 # @recative/ap-core
 
+## 0.2.2
+
+### Patch Changes
+
+- 39dbb03: fix: Update texture scale
+
 ## 0.2.1
 
 ### Patch Changes
