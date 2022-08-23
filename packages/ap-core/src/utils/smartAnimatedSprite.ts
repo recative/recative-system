@@ -1,3 +1,4 @@
+import { utils } from 'pixi.js-legacy';
 import * as PIXI from 'pixi.js-legacy';
 import { IResourceFileForClient } from '@recative/definitions';
 import { getMatchedResource, ResourceEntry } from '@recative/smart-resource';
@@ -203,7 +204,8 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
     }
     const { playing } = this;
     const oldTextures = super.textures;
-    super.textures = this.createTexturesFromSmartTextureInfo(smartTextureInfo);
+    const textures = this.createTexturesFromSmartTextureInfo(smartTextureInfo);
+    super.textures = textures;
     const oldUrls: string[] = [];
     oldTextures.forEach((oldTexture) => {
       if (oldTexture instanceof PIXI.Texture) {
@@ -217,10 +219,25 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
     oldUrls.forEach((oldUrl) => {
       this.smartTextureRc.release(oldUrl);
     });
+
     // Animated sprite won't update scale with saved width/height
     // after setting the textures
     // so we should manually update it here
-    this._onTextureUpdate();
+    const onTextureUpdate = () => {
+      if (this._width) {
+        this.scale.x = utils.sign(this.scale.x) * (this._width / textures[0].orig.width);
+      }
+      if (this._height) {
+        this.scale.y = utils.sign(this.scale.y) * (this._height / textures[0].orig.height);
+      }
+    };
+
+    if (textures[0].baseTexture.valid) {
+      onTextureUpdate();
+    } else {
+      textures[0].once('update', onTextureUpdate, this);
+    }
+
     // Animated sprite will stop automatically after reset the textures
     // so restore playing state here
     if (playing) {
