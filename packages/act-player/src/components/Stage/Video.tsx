@@ -70,6 +70,7 @@ const hasEnoughBuffer = (video: HTMLVideoElement) => {
 export const InternalVideo: AssetExtensionComponent = (props) => {
   const [css] = useStyletron();
   const videoRef = React.useRef<HTMLVideoElement>(null);
+  const videoSourceRef = React.useRef<HTMLSourceElement>(null);
   const audioRef = React.useRef<string>('');
   const subtitleRef = React.useRef<string | null>('');
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -177,9 +178,13 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
 
   const episodeData = props.core.getEpisodeData()!;
 
-  const queryFn = 'resourceLabel' in props.spec
+  const queryUrlFn = 'resourceLabel' in props.spec
     ? episodeData.resources.getResourceByLabel
     : episodeData.resources.getResourceById;
+
+  const resourceMap = 'resourceLabel' in props.spec
+    ? episodeData.resources.filesByLabel
+    : episodeData.resources.filesById;
 
   const query = props.spec.resourceLabel ?? props.spec.resourceId;
 
@@ -188,7 +193,13 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
   }
 
   React.useLayoutEffect(() => {
-    const matchedResource = queryFn(
+    const resourceDefinition = resourceMap.get(query);
+
+    if (!resourceDefinition) {
+      throw new TypeError(`Resource with query "${query}" was not found`);
+    }
+
+    const matchedResourceUrl = queryUrlFn(
       query,
       {
         category: 'video',
@@ -196,23 +207,24 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
       RESOURCE_QUERY_WEIGHTS,
     );
 
-    log('Matched resource is:', matchedResource);
+    log('Matched resource is:', matchedResourceUrl);
 
-    Promise.resolve(matchedResource)
+    Promise.resolve(matchedResourceUrl)
       .then((selectedVideo) => {
         if (!selectedVideo) {
           throw new Error('Invalid audio URL');
         }
 
-        if (selectedVideo !== videoRef.current!.src) {
-          videoRef.current!.src = selectedVideo;
+        if (selectedVideo !== videoSourceRef.current!.src) {
+          videoSourceRef.current!.src = selectedVideo;
+          videoSourceRef.current!.type = resourceDefinition.mimeType;
           clearUnstuckCheckInterval();
         }
       });
-  }, [query, queryFn, resolution, contentLanguage]);
+  }, [query, queryUrlFn, resourceMap, resolution, contentLanguage]);
 
   React.useLayoutEffect(() => {
-    const matchedResource = queryFn(
+    const matchedResource = queryUrlFn(
       query,
       {
         category: 'audio',
@@ -235,7 +247,7 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
 
   React.useLayoutEffect(() => {
     if (subtitleLanguage !== 'null') {
-      const matchedResource = queryFn(
+      const matchedResource = queryUrlFn(
         query,
         {
           category: 'subtitle',
@@ -285,38 +297,50 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
    */
   useInterval(core.controller.forceCheckup, IS_SAFARI ? 100 : null);
 
+  const handleCanPlay = React.useCallback(() => {
+    scheduleUnstuckCheck();
+    core.coreFunctions.updateContentState('ready');
+    core.controller.setVideoReady();
+  }, []);
+
+  const handleLoadedMetadata = React.useCallback(() => {
+    // For iOS Safari: the browser won't load the data until the video start to play
+    // For other browser: the browser only load the first some frames
+    // when the video is never played so the browser may not load the more buffer
+    // when there is not enough buffer
+    videoRef.current!.play();
+  }, []);
+
+  const handleTimeUpdate = React.useCallback(() => {
+    core.controller.updateSyncTime();
+    core.coreFunctions.reportProgress(
+      videoRef.current!.currentTime * 1000,
+    );
+    core.controller.checkVideoPlayingState();
+  }, []);
+
+  const handleWaiting = React.useCallback(() => {
+    stuck();
+  }, []);
+
   return (
     <ModuleContainer hidden={!props.show}>
       <Block ref={containerRef} className={cn(fullSizeStyle)}>
+        {/* Caption was implemented in another component */}
+        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
         <video
           ref={videoRef}
           className={fullSizeStyle}
           preload="auto"
           poster={BLANK_POSTER}
-          onCanPlay={() => {
-            scheduleUnstuckCheck();
-            core.coreFunctions.updateContentState('ready');
-            core.controller.setVideoReady();
-          }}
-          onLoadedMetadata={() => {
-            // For iOS Safari: the browser won't load the data until the video start to play
-            // For other browser: the browser only load the first some frames
-            // when the video is never played so the browser may not load the more buffer
-            // when there is not enough buffer
-            videoRef.current!.play();
-          }}
-          onTimeUpdate={() => {
-            core.controller.updateSyncTime();
-            core.coreFunctions.reportProgress(
-              videoRef.current!.currentTime * 1000,
-            );
-            core.controller.checkVideoPlayingState();
-          }}
+          onCanPlay={handleCanPlay}
+          onLoadedMetadata={handleLoadedMetadata}
+          onTimeUpdate={handleTimeUpdate}
           onEnded={core.coreFunctions.finishItself}
-          onWaiting={() => {
-            stuck();
-          }}
-        />
+          onWaiting={handleWaiting}
+        >
+          <source ref={videoSourceRef} />
+        </video>
       </Block>
     </ModuleContainer>
   );
