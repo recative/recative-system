@@ -4680,6 +4680,7 @@ __metadata:
     "@types/react-dom": 18.0.5
     "@types/react-slider": ^1.3.1
     "@types/styletron-engine-atomic": ^1.1.1
+    "@types/styletron-engine-monolithic": ^0.0.0
     "@types/styletron-react": ^5.0.3
     "@types/styletron-standard": ^2.0.2
     "@typescript-eslint/eslint-plugin": ^5.3.0
@@ -4710,7 +4711,7 @@ __metadata:
     react-use: ^17.3.1
     rimraf: ^3.0.2
     stream-http: ^3.2.0
-    styletron-engine-atomic: ^1.4.8
+    styletron-engine-monolithic: ^1.0.0
     styletron-react: ^6.0.2
     ts-node: ^10.4.0
     typescript: ">=3.0.0"
@@ -5795,6 +5796,15 @@ __metadata:
   dependencies:
     "@types/styletron-standard": "*"
   checksum: 1ab97af7ed95d247c5e14c07dd78b1ccfe816946758e846eedfd13a83df417c0549412ec62d77dd922ad46774e34529ea03574a9c79d799f8b4fbdb42b308f64
+  languageName: node
+  linkType: hard
+
+"@types/styletron-engine-monolithic@npm:^0.0.0":
+  version: 0.0.0
+  resolution: "@types/styletron-engine-monolithic@npm:0.0.0::__archiveUrl=https%3A%2F%2Fregistry.npmmirror.com%2F%40types%2Fstyletron-engine-monolithic%2F-%2Fstyletron-engine-monolithic-0.0.0.tgz"
+  dependencies:
+    "@types/styletron-standard": "*"
+  checksum: 7a677bd36563f403551fc17f36569c4dc2e0dccae0ba50727b2cd6badc24a3bc05525b246fa4daa1b29963a0594b7c927fffca1a9c459fd8af24f392babc7abb
   languageName: node
   linkType: hard
 
@@ -18291,6 +18301,16 @@ __metadata:
     inline-style-prefixer: ^5.1.0
     styletron-standard: ^3.1.0
   checksum: 12133ebf16645a8b5aed5dc16a263e05fa60e079ce780c959a636495b1e481dfdcec09469abd945c89d7d68afef7f32fcd58025c04bef6eb0a8f771d5c7be293
+  languageName: node
+  linkType: hard
+
+"styletron-engine-monolithic@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "styletron-engine-monolithic@npm:1.0.0::__archiveUrl=https%3A%2F%2Fregistry.npmmirror.com%2Fstyletron-engine-monolithic%2F-%2Fstyletron-engine-monolithic-1.0.0.tgz"
+  dependencies:
+    inline-style-prefixer: ^5.1.0
+    styletron-standard: ^3.1.0
+  checksum: ffccfd821af948566f55f5fd528632172e2922b98c36356e442f0c86b0905513039963e8ddfd1a1103fbef7d32d03206a943b1cc0ae2e7c3515e473b8c4e511e
   languageName: node
   linkType: hard
 
