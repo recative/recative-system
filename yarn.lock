@@ -4723,6 +4723,28 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@recative/atlas@workspace:packages/atlas":
+  version: 0.0.0-use.local
+  resolution: "@recative/atlas@workspace:packages/atlas"
+  dependencies:
+    "@rollup/plugin-node-resolve": ^13.3.0
+    "@rollup/plugin-sucrase": ^4.0.3
+    "@types/node": ^18.0.0
+    "@typescript-eslint/eslint-plugin": ^5.3.0
+    "@typescript-eslint/parser": ^5.3.0
+    eslint: ^8.2.0
+    eslint-config-airbnb-base: ^14.2.1
+    eslint-config-airbnb-typescript: ^15.0.0
+    eslint-plugin-import: ^2.25.2
+    rimraf: ^3.0.2
+    rollup: ^2.72.1
+    rollup-plugin-dts: ^4.2.1
+    rollup-plugin-peer-deps-external: ^2.2.4
+    ts-node: ^10.8.1
+    typescript: ">=3.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@recative/audio-station@^0.2.0, @recative/audio-station@workspace:packages/audio-station":
   version: 0.0.0-use.local
   resolution: "@recative/audio-station@workspace:packages/audio-station"
@@ -5621,6 +5643,13 @@ __metadata:
   version: 17.0.45
   resolution: "@types/node@npm:17.0.45"
   checksum: aa04366b9103b7d6cfd6b2ef64182e0eaa7d4462c3f817618486ea0422984c51fc69fd0d436eae6c9e696ddfdbec9ccaa27a917f7c2e8c75c5d57827fe3d95e8
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^18.0.0":
+  version: 18.7.13
+  resolution: "@types/node@npm:18.7.13"
+  checksum: 45431e7e89ecaf85c7d2c180d801c132a7c59e2f8ad578726b6d71cc74e3267c18f9ccdcad738bc0479790c078f0c79efb0e58da2c6be535c15995dbb19050c9
   languageName: node
   linkType: hard
 

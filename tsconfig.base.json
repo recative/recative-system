@@ -20,6 +20,7 @@
       "@recative/ap-core": ["packages/ap-core/src/index.ts"],
       "@recative/ap-pack": ["packages/ap-pack/src/main.ts"],
       "@recative/ap-preview": ["packages/ap-preview/src/index.tsx"],
+      "@recative/atlas": ["packages/atlas/src/index.ts"],
       "@recative/audio-station": ["packages/audio-station/src/index.ts"],
       "@recative/client-sdk": ["packages/client-sdk/src/index.ts"],
       "@recative/core-manager": ["packages/core-manager/src/index.ts"],
