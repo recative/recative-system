@@ -3,7 +3,9 @@ import {
   atom, computed, ReadableAtom, WritableAtom,
 } from 'nanostores';
 import { nanoid } from 'nanoid';
-import { OpenPromise, OpenPromiseState, TimeSlicingQueue } from '@recative/open-promise';
+import {
+  allSettled, OpenPromise, OpenPromiseState, TimeSlicingQueue,
+} from '@recative/open-promise';
 import { AudioStation } from '@recative/audio-station';
 import EventTarget from '@ungap/event-target';
 import { ComponentFunctions, Progress } from './types';
@@ -71,9 +73,9 @@ export class ContentSequence {
   /**
    * If the first asset instance ready.
    */
-  firstAssetInstanceReady = new OpenPromise<boolean>();
+  firstAssetInstanceReady = new OpenPromise<void>();
 
-  dependencyReady = new OpenPromise<boolean>();
+  dependencyReady = new OpenPromise<void>();
 
   lastSegment = -2;
 
@@ -89,7 +91,13 @@ export class ContentSequence {
 
   switchingBlocker = new Set<string>();
 
+  switchingUnblocked :OpenPromise<void> | null = null;
+
   nextContentSetupBlocker = new Set<string>();
+
+  nextContentSetupUnblocked :OpenPromise<void> | null = null;
+
+  currentContentReady :OpenPromise<void> | null = null;
 
   selfPlaying = atom(false);
 
@@ -177,7 +185,7 @@ export class ContentSequence {
 
   private setDependencyReady = () => {
     try {
-      this.dependencyReady.resolve(true);
+      this.dependencyReady.resolve();
       // eslint-disable-next-line no-empty
     } catch { }
   };
@@ -350,7 +358,7 @@ export class ContentSequence {
 
   private handleAssetInstanceReady(instance: ContentInstance) {
     if (this.firstAssetInstanceReady.state === OpenPromiseState.Idle) {
-      this.firstAssetInstanceReady.resolve(true);
+      this.firstAssetInstanceReady.resolve();
     }
 
     const currentContent = this.contentList[this.currentSegment];
@@ -359,7 +367,7 @@ export class ContentSequence {
     // ready signal only means the preload process is finished.
     if (currentContent.instance === instance) {
       this.logContent(`Current content ${instance.id} ready`);
-      this.tryStartCurrentContent();
+      this.currentContentReady?.resolve();
     }
   }
 
@@ -378,21 +386,51 @@ export class ContentSequence {
     this.option.contentInstances.delete(instance.id);
   }
 
-  private trySetupCurrentContent() {
-    if (!this.switching && this.nextContentSetup) {
-      return;
-    }
+  private setupContentSwitchBlocker() {
+    this.nextContentSetupUnblocked = new OpenPromise();
+    this.switchingUnblocked = new OpenPromise();
+    const blocker = this.option.getContentSwitchBlocker(this.lastSegment, this.currentSegment);
+    blocker.forEach((name) => {
+      this.nextContentSetupBlocker.add(name);
+      this.switchingBlocker.add(name);
+      this.logProgress(`Switching block by ${name}`);
+    });
     if (this.nextContentSetupBlocker.size <= 0) {
-      this.logContent('Next content setup is not block, setup next content');
-      this.setupCurrentContent();
+      this.nextContentSetupUnblocked?.resolve();
+    }
+    if (this.switchingBlocker.size <= 0) {
+      this.switchingUnblocked?.resolve();
     }
   }
 
-  private setupCurrentContent() {
-    if (this.destroyed) {
-      return;
+  private setupCurrentContentReady() {
+    this.currentContentReady = new OpenPromise();
+    const content = this.contentList[this.currentSegment];
+    if (content?.instance?.state === 'ready') {
+      this.currentContentReady.resolve();
     }
+  }
+
+  private async contentSwitching() {
+    this.ensureNotDestroyed();
+    this.pauseCurrentContent();
+    this.switching = true;
+    this.nextContentSetup = false;
+    this.lastSegment = this.currentSegment;
+    this.currentSegment = this.nextSegment;
+    this.nextSegment = this.currentSegment + 1;
+    this.logProgress('Started content switching');
+
+    this.setupContentSwitchBlocker();
+
+    this.logProgress(`New segment ${this.currentSegment}`);
+    this.updateProgress();
     this.updateStuck();
+
+    await this.nextContentSetupUnblocked;
+    this.nextContentSetupUnblocked = null;
+    this.ensureNotDestroyed();
+
     this.nextContentSetup = true;
     if (this.contentList.length <= this.currentSegment) {
       this.logContent('No more content to play');
@@ -410,33 +448,17 @@ export class ContentSequence {
     if (content.instance === null) {
       this.createContent(content);
     }
-    this.tryStartCurrentContent();
-  }
+    this.setupCurrentContentReady();
 
-  private tryStartCurrentContent() {
-    if (!this.switching) {
-      return;
-    }
-    const content = this.contentList[this.currentSegment];
-    if (
-      content?.instance?.state === 'ready'
-      && this.switchingBlocker.size <= 0
-    ) {
-      this.dependencyReady.finally(() => {
-        this.logContent(
-          `Current content ${content.id} already ready and the switching is not block, complete switching...`,
-        );
-        this.startCurrentContent();
-      });
-    }
-  }
+    await allSettled([
+      this.switchingUnblocked!,
+      this.currentContentReady!,
+      this.dependencyReady,
+    ]);
+    this.switchingUnblocked = null;
+    this.currentContentReady = null;
+    this.ensureNotDestroyed();
 
-  private startCurrentContent() {
-    if (this.destroyed) {
-      return;
-    }
-    const lastContent = this.contentList[this.lastSegment];
-    const content = this.contentList[this.currentSegment];
     this.showContent(content);
     this.eventTarget.dispatchEvent(
       new CustomEvent('segmentStart', { detail: this.currentSegment }),
@@ -463,33 +485,14 @@ export class ContentSequence {
     }
   }
 
-  private async contentSwitching() {
-    this.pauseCurrentContent();
-    this.switching = true;
-    this.nextContentSetup = false;
-    this.lastSegment = this.currentSegment;
-    this.currentSegment = this.nextSegment;
-    this.nextSegment = this.currentSegment + 1;
-    this.logProgress('Started content switching');
-    const blocker = this.option.getContentSwitchBlocker(this.lastSegment, this.currentSegment);
-    blocker.forEach((name) => {
-      this.nextContentSetupBlocker.add(name);
-      this.switchingBlocker.add(name);
-      this.logProgress(`Switching block by ${name}`);
-    });
-
-    this.logProgress(`New segment ${this.currentSegment}`);
-    this.updateProgress();
-    this.updateStuck();
-    this.trySetupCurrentContent();
-  }
-
   unblockSwitching(name: string) {
     this.unblockNextContentSetup(name);
     if (this.switchingBlocker.has(name)) {
       this.switchingBlocker.delete(name);
       this.logProgress(`Switching unblock by ${name}`);
-      this.tryStartCurrentContent();
+      if (this.switchingBlocker.size <= 0) {
+        this.switchingUnblocked?.resolve();
+      }
     }
   }
 
@@ -497,7 +500,9 @@ export class ContentSequence {
     if (this.nextContentSetupBlocker.has(name)) {
       this.nextContentSetupBlocker.delete(name);
       this.logProgress(`Next content setup unblock by ${name}`);
-      this.trySetupCurrentContent();
+      if (this.nextContentSetupBlocker.size <= 0) {
+        this.nextContentSetupUnblocked?.resolve();
+      }
     }
   }
 
@@ -658,6 +663,12 @@ export class ContentSequence {
           }
         }
       });
+    }
+  }
+
+  private ensureNotDestroyed() {
+    if (this.destroyed) {
+      throw new Error('The sequence was destroyed');
     }
   }
 }
