@@ -5,12 +5,12 @@ export * from './hooks/useCustomizedModule';
 export * from './hooks/useUserImplementedFunctions';
 export { useSdkConfig, useEpisodes } from './hooks/useSdkConfig';
 
-export * from './types/IEpisodeDetail';
 export * from './types/IEpisodeSave';
 export * from './types/IRpcFunction';
+export * from './types/IEpisodeDetail';
 
-export * from './utils/getDiagnosisInformation';
 export * from './utils/loadCustomizedModule';
+export * from './utils/getDiagnosisInformation';
 
 export * from './components/Content';
 

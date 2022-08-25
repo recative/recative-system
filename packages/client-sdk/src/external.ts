@@ -20,9 +20,9 @@ export * from './hooks/useEpisodeDetail';
 export * from './hooks/useUserImplementedFunctions';
 export { useSdkConfig, useEpisodes } from './hooks/useSdkConfig';
 
-export * from './types/IEpisodeDetail';
 export * from './types/IEpisodeSave';
 export * from './types/IRpcFunction';
+export * from './types/IEpisodeDetail';
 
 export * from './utils/getDiagnosisInformation';
 

@@ -4,8 +4,8 @@ import debug from 'debug';
 import { useAsync } from '@react-hookz/web';
 
 import { fetch } from './utils/fetch';
-import type { IEpisodeAbstraction } from './types/IEpisodeDetail';
 import type { IClientSdkConfig } from './types/IClientSdkConfig';
+import type { IEpisodeAbstraction } from './types/IEpisodeDetail';
 
 const log = debug('client:provider');
 

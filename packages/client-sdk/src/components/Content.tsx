@@ -80,13 +80,15 @@ export const ContentModuleFactory = <
     dataType: string,
     baseUrl = '',
   ) => React.lazy(async () => {
+    const debugContainerComponents = localStorage.getItem(CONTAINER_COMPONENT);
+
     const containerModule = await (async () => {
       try {
         return (await loadCustomizedModule(
-          localStorage.getItem(CONTAINER_COMPONENT) ?? 'containerComponents.js',
+          debugContainerComponents || 'containerComponents.js',
           pathPattern,
           dataType,
-          baseUrl,
+          debugContainerComponents ? null : baseUrl,
         )) as IContentModule<ContentModule>;
       } catch (e) {
         console.warn('Failed to load customized module!');
