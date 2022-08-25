@@ -1,5 +1,11 @@
 # @recative/ap-preview
 
+## 0.3.1
+
+### Patch Changes
+
+- d9362db: fix: Use monolith css instead of atomic css
+
 ## 0.3.0
 
 ### Minor Changes
