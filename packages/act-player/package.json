@@ -61,7 +61,7 @@
     "@recative/act-protocol": "^0.2.7",
     "@recative/core-manager": "^0.4.5",
     "@recative/definitions": "^0.4.0",
-    "@recative/smart-resource": "^0.2.0",
+    "@recative/smart-resource": "workspace:^",
     "classnames": "^2.3.1",
     "debug": "^4.3.4",
     "lodash": "^4.17.21",

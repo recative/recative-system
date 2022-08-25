@@ -4473,7 +4473,7 @@ __metadata:
     "@recative/act-protocol": ^0.2.7
     "@recative/core-manager": ^0.4.5
     "@recative/definitions": ^0.4.0
-    "@recative/smart-resource": ^0.2.0
+    "@recative/smart-resource": "workspace:^"
     "@rollup/plugin-commonjs": ^21.0.2
     "@rollup/plugin-node-resolve": ^13.3.0
     "@rollup/plugin-sucrase": ^4.0.3
@@ -4996,7 +4996,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/smart-resource@^0.2.0, @recative/smart-resource@workspace:packages/smart-resource":
+"@recative/smart-resource@^0.2.0, @recative/smart-resource@workspace:^, @recative/smart-resource@workspace:packages/smart-resource":
   version: 0.0.0-use.local
   resolution: "@recative/smart-resource@workspace:packages/smart-resource"
   dependencies:

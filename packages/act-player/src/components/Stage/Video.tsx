@@ -2,12 +2,15 @@ import * as React from 'react';
 import cn from 'classnames';
 import debug from 'debug';
 import useConstant from 'use-constant';
+
 import { useStore } from '@nanostores/react';
-import { useStyletron } from 'baseui';
 import { useInterval } from 'react-use';
+import { useStyletron } from 'baseui';
+
 import { Block } from 'baseui/block';
 
 import { convertSRTToStates } from '@recative/core-manager';
+import { getMatchedResource } from '@recative/smart-resource';
 
 import { isSafari } from '../../variables/safari';
 import { ModuleContainer } from '../Layout/ModuleContainer';
@@ -27,6 +30,10 @@ const BUFFER_SIZE_DELTA = 1;
 
 // data url for one pixel black png
 const BLANK_POSTER = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAWJQAAFiUBSVIk8AAAABNJREFUCB1jZGBg+A/EDEwgAgQADigBA//q6GsAAAAASUVORK5CYII%3D';
+
+const VIDEO_QUERY_CONFIG = {
+  category: 'video',
+};
 
 const RESOURCE_QUERY_WEIGHTS = {
   category: 1e4,
@@ -178,13 +185,15 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
 
   const episodeData = props.core.getEpisodeData()!;
 
+  const queryMethod = 'resourceLabel' in props.spec ? 'label' : 'id';
+
   const queryUrlFn = 'resourceLabel' in props.spec
     ? episodeData.resources.getResourceByLabel
     : episodeData.resources.getResourceById;
 
   const resourceMap = 'resourceLabel' in props.spec
-    ? episodeData.resources.filesByLabel
-    : episodeData.resources.filesById;
+    ? episodeData.resources.itemsByLabel
+    : episodeData.resources.itemsById;
 
   const query = props.spec.resourceLabel ?? props.spec.resourceId;
 
@@ -196,16 +205,33 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
     const resourceDefinition = resourceMap.get(query);
 
     if (!resourceDefinition) {
-      throw new TypeError(`Resource with query "${query}" was not found`);
+      throw new TypeError(`Resource with ${queryMethod} query "${query}" was not found`);
     }
 
     const matchedResourceUrl = queryUrlFn(
       query,
-      {
-        category: 'video',
-      },
+      VIDEO_QUERY_CONFIG,
       RESOURCE_QUERY_WEIGHTS,
     );
+
+    let mime: string;
+    if (resourceDefinition.type === 'group') {
+      const mimesInGroup = resourceDefinition.files
+        .map((x) => ({
+          selector: x.tags,
+          item: x.mimeType,
+        }));
+
+      mime = getMatchedResource(
+        mimesInGroup,
+        VIDEO_QUERY_CONFIG,
+        RESOURCE_QUERY_WEIGHTS,
+      );
+    } else if (resourceDefinition.type === 'file') {
+      mime = resourceDefinition.mimeType;
+    } else {
+      throw new TypeError('Unknown resource type');
+    }
 
     log('Matched resource is:', matchedResourceUrl);
 
@@ -217,7 +243,7 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
 
         if (selectedVideo !== videoSourceRef.current!.src) {
           videoSourceRef.current!.src = selectedVideo;
-          videoSourceRef.current!.type = resourceDefinition.mimeType;
+          videoSourceRef.current!.type = mime;
           clearUnstuckCheckInterval();
         }
       });
