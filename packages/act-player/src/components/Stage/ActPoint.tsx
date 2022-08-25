@@ -55,6 +55,19 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
 
   const [{ result: entryPoint }, entryPointAction] = useAsync(getEntryPointUrl);
 
+  const injectedEntryPoint = React.useMemo(() => {
+    if (!entryPoint) return null;
+
+    const formattedEntryPoint = new URL(entryPoint, window.location.href);
+    const currentPage = new URL(window.location.href);
+
+    formattedEntryPoint.searchParams.forEach((value, key) => {
+      return currentPage.searchParams.set(key, value);
+    });
+
+    return formattedEntryPoint.toString();
+  }, [entryPoint]);
+
   React.useEffect(() => {
     entryPointAction.execute();
   }, []);
@@ -224,14 +237,15 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
         ref={containerRef}
         className={blockStyle}
       >
-        {entryPoint ? (
+        {injectedEntryPoint ? (
           <iframe
+            title="Interactive Content"
             hidden={!props.show}
             ref={iFrameRef}
             className={cn(iFrameStyles, iFrameSizeStyles)}
             width={iFrameWidth}
             height={iFrameHeight}
-            src={entryPoint}
+            src={injectedEntryPoint}
           />
         ) : (
           loading
