@@ -75,15 +75,15 @@ export class ContentSequence {
 
   dependencyReady = new OpenPromise<boolean>();
 
-  lastSegment = -1;
+  lastSegment = -2;
 
-  currentSegment = 0;
+  currentSegment = -1;
 
-  nextSegment = 1;
+  nextSegment = 0;
 
   nextSegmentStartTime = 0;
 
-  switching = true;
+  switching = false;
 
   nextContentSetup = false;
 
@@ -134,17 +134,6 @@ export class ContentSequence {
       this.setDependencyReady();
     }
 
-    this.playing.subscribe((playing) => {
-      if (playing) {
-        if (!this.switching) {
-          this.playCurrentContent();
-        }
-      } else if (!this.switching) {
-        this.time.forceUpdate();
-        this.pauseCurrentContent();
-      }
-    });
-
     this.showing = option.showing ?? true;
 
     const contentInfos: ContentInfo[] = option.assets.map((asset) => ({
@@ -171,24 +160,34 @@ export class ContentSequence {
     );
     this.time = throttledAtom(this.preciseTime);
 
-    this.currentSegment = option.initialAssetStatus?.order ?? 0;
+    this.playing.subscribe((playing) => {
+      if (playing) {
+        if (!this.switching) {
+          this.playCurrentContent();
+        }
+      } else if (!this.switching) {
+        this.time.forceUpdate();
+        this.pauseCurrentContent();
+      }
+    });
+
+    this.nextSegment = option.initialAssetStatus?.order ?? 0;
     this.nextSegmentStartTime = option.initialAssetStatus?.time ?? 0;
   }
 
   private setDependencyReady = () => {
     try {
       this.dependencyReady.resolve(true);
-    // eslint-disable-next-line no-empty
-    } catch {}
+      // eslint-disable-next-line no-empty
+    } catch { }
   };
 
   destroy() {
     this.destroyed = true;
+    this.switching = false;
     this.nextContentSetupBlocker.clear();
     this.setDependencyReady();
-    this.trySetupCurrentContent();
     this.switchingBlocker.clear();
-    this.tryStartCurrentContent();
     this.contents.forEach((content) => {
       if (content.instance !== null) {
         this.hideContent(content);
@@ -371,7 +370,7 @@ export class ContentSequence {
       this.eventTarget.dispatchEvent(
         new CustomEvent('segmentEnd', { detail: this.currentSegment }),
       );
-      this.switchToNextContent();
+      this.contentSwitching();
     }
   }
 
@@ -390,6 +389,9 @@ export class ContentSequence {
   }
 
   private setupCurrentContent() {
+    if (this.destroyed) {
+      return;
+    }
     this.updateStuck();
     this.nextContentSetup = true;
     if (this.contentList.length <= this.currentSegment) {
@@ -430,6 +432,9 @@ export class ContentSequence {
   }
 
   private startCurrentContent() {
+    if (this.destroyed) {
+      return;
+    }
     const lastContent = this.contentList[this.lastSegment];
     const content = this.contentList[this.currentSegment];
     this.showContent(content);
@@ -458,15 +463,14 @@ export class ContentSequence {
     }
   }
 
-  private switchToNextContent() {
+  private async contentSwitching() {
+    this.pauseCurrentContent();
     this.switching = true;
     this.nextContentSetup = false;
-    this.logProgress('Started content switching');
-    this.pauseCurrentContent();
     this.lastSegment = this.currentSegment;
     this.currentSegment = this.nextSegment;
     this.nextSegment = this.currentSegment + 1;
-
+    this.logProgress('Started content switching');
     const blocker = this.option.getContentSwitchBlocker(this.lastSegment, this.currentSegment);
     blocker.forEach((name) => {
       this.nextContentSetupBlocker.add(name);
@@ -498,10 +502,10 @@ export class ContentSequence {
   }
 
   private playCurrentContent() {
-    if (this.contentList.length <= this.currentSegment) {
+    const instance = this.contentList[this.currentSegment]?.instance ?? null;
+    if (instance === null) {
       return;
     }
-    const instance = this.contentList[this.currentSegment].instance!;
     if (instance.state === 'ready') {
       instance.timeline.play();
       instance.subsequenceManager.play();
@@ -509,10 +513,10 @@ export class ContentSequence {
   }
 
   private pauseCurrentContent() {
-    if (this.contentList.length <= this.currentSegment) {
+    const instance = this.contentList[this.currentSegment]?.instance ?? null;
+    if (instance === null) {
       return;
     }
-    const instance = this.contentList[this.currentSegment].instance!;
     if (instance.state === 'ready') {
       instance.timeline.pause();
       instance.subsequenceManager.pause();
@@ -532,21 +536,12 @@ export class ContentSequence {
   }
 
   switchToFirstContent() {
-    this.updateStuck();
     if (this.firstContentSwitched) {
+      this.updateStuck();
       return;
     }
     this.firstContentSwitched = true;
-    this.logProgress('Switch into first content');
-    this.logProgress(`New segment ${this.currentSegment}`);
-    const blocker = this.option.getContentSwitchBlocker(this.lastSegment, this.currentSegment);
-    blocker.forEach((name) => {
-      this.nextContentSetupBlocker.add(name);
-      this.switchingBlocker.add(name);
-      this.logProgress(`Switching block by ${name}`);
-    });
-
-    this.trySetupCurrentContent();
+    this.contentSwitching();
   }
 
   play() {
@@ -560,12 +555,12 @@ export class ContentSequence {
   }
 
   parentPlay() {
-    this.logProgress('Play');
+    this.logProgress('Parent Play');
     this.parentPlaying.set(true);
   }
 
   parentPause() {
-    this.logProgress('Pause');
+    this.logProgress('Parent Pause');
     this.parentPlaying.set(false);
   }
 
@@ -578,13 +573,17 @@ export class ContentSequence {
       this.logProgress('Seek when switching content, ignored');
       return;
     }
+    if (!this.firstContentSwitched) {
+      this.logProgress('Seek before first content switched, ignored');
+      return;
+    }
     this.logProgress(`Seek to ${time} at segment ${segment}`);
     if (segment === this.currentSegment) {
       this.contentList[this.currentSegment].instance!.timeline.time = time;
     } else {
       this.nextSegment = segment;
       this.nextSegmentStartTime = time;
-      this.switchToNextContent();
+      this.contentSwitching();
     }
   }
 
