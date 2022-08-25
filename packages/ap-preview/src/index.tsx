@@ -18,7 +18,7 @@ import {
   useParams,
   useNavigate,
 } from 'react-router-dom';
-import { Client as Styletron } from 'styletron-engine-atomic';
+import { Client as Styletron } from 'styletron-engine-monolithic';
 import { DarkTheme, BaseProvider } from 'baseui';
 import { Provider as StyletronProvider } from 'styletron-react';
 
