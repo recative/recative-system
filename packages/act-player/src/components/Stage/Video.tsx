@@ -244,6 +244,7 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
         if (selectedVideo !== videoSourceRef.current!.src) {
           videoSourceRef.current!.src = selectedVideo;
           videoSourceRef.current!.type = mime;
+          videoRef.current!.load();
           clearUnstuckCheckInterval();
         }
       });
