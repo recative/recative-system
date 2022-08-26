@@ -21,6 +21,8 @@
   --ifm-font-size-small: 13px;
   --ifm-font-weight-semibold: 550;
   --ifm-breadcrumb-border-radius: 0;
+  --ifm-footer-padding-vertical: 1rem;
+  --ifm-footer-padding-horizontal: 1rem;
   --light-background: #ECEFF1;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
   --ifm-navbar-shadow: none;
@@ -228,6 +230,10 @@ footer.footer {
   text-align: right;
   font-size: var(--ifm-font-size-base);
   font-weight: 500;
+}
+
+footer.footer .container.container-fluid {
+  padding: 0;
 }
 
 .navbar__toggle {
