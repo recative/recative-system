@@ -70,6 +70,8 @@ export class ContentSequence {
    */
   contentList: ContentInfo[] = [];
 
+  managedContentInstance = new Set<ContentInstance>();
+
   /**
    * If the first asset instance ready.
    */
@@ -282,6 +284,7 @@ export class ContentSequence {
       showingContentCount: this.option.showingContentCount,
     });
     content.instance = instance;
+    this.managedContentInstance.add(instance);
     this.logContent(`\`createContent\` ${instance.id}`);
     return content.instance;
   }
@@ -373,7 +376,7 @@ export class ContentSequence {
   }
 
   private handleAssetInstanceDestroy(instance: ContentInstance) {
-    this.option.contentInstances.delete(instance.id);
+    this.managedContentInstance.delete(instance);
   }
 
   private setupContentSwitchBlocker() {

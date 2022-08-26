@@ -173,7 +173,10 @@ export class ContentInstance extends WithLogger {
     if (oldState === 'preloading' && newState !== 'ready') {
       return false;
     }
-    if (oldState === 'ready' && newState !== 'destroyed') {
+    if (oldState === 'ready' && newState !== 'destroying' && newState !== 'destroyed') {
+      return false;
+    }
+    if (oldState === 'destroying' && newState !== 'destroyed') {
       return false;
     }
     if (oldState === 'destroyed') {
@@ -197,8 +200,11 @@ export class ContentInstance extends WithLogger {
     this.state = state;
     if (state === 'preloading') {
       this.timeline.addTrack(new RemoteTrack(this.remote, 100), -1);
+    } else if (state === 'destroying') {
+      this.destroy();
     } else if (state === 'destroyed') {
       this.releaseResource();
+      this.option.contentInstances.delete(this.id);
     }
     this.option.handleStateChange(state);
   }

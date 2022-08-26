@@ -107,7 +107,7 @@ export interface CoreFunctions {
   log(...x: unknown[]): void;
 }
 
-export type ContentState = 'idle' | 'preloading' | 'ready' | 'destroyed';
+export type ContentState = 'idle' | 'preloading' | 'ready' | 'destroying' | 'destroyed';
 
 export type CoreState =
   | 'waitingForCriticalComponent'
