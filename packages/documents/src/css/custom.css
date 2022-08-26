@@ -216,6 +216,7 @@ footer.footer {
 
 .navbar__toggle svg,
 .navbar-sidebar__close svg,
+.menu__link svg,
 .navbar__item.navbar__link svg {
   display: none;
 }
@@ -239,22 +240,31 @@ footer.footer {
   background-size: contain;
 }
 
-.navbar__item.navbar__link[href^="http"] {
+.navbar__item.navbar__link[href^="http"],
+.menu__link[href^="http"] {
   padding-right: 24px;
   position: relative;
 }
 
 .navbar__item.navbar__link[href^="http"]::after {
-  content: " ";
   right: 0;
+  position: absolute;
   top: 50%;
+  transform: translateY(-50%);
+}
+
+.navbar__item.navbar__link[href^="http"]::after,
+.menu__link[href^="http"]::after {
+  content: " ";
   width: 20px;
   height: 20px;
   background: transparent url('/img/icons/link.svg') center center no-repeat;
   background-size: contain;
   display: inline-block;
-  position: absolute;
-  transform: translateY(-50%);
+}
+
+.menu__link[href^="http"]::after {
+  margin-left: 6px;
 }
 
 .theme-edit-this-page {
