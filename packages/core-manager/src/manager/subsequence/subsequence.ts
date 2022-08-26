@@ -40,7 +40,7 @@ export class SubsequenceManager extends WithLogger {
     });
   }
 
-  async internalDestroy() {
+  private async internalDestroy() {
     this.destroyed = true;
     this.pause();
     await allSettled(

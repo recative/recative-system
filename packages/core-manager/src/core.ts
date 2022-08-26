@@ -89,9 +89,7 @@ export class Core<
    */
   private contentInstances = new Map<string, ContentInstance>();
 
-  private criticalComponentReady: Promise<void>;
-
-  private onCriticalComponentReady: (() => void) | null = null;
+  private criticalComponentReady: OpenPromise<void>;
 
   private episodeData: OpenPromise<InternalEpisodeData>;
 
@@ -117,6 +115,8 @@ export class Core<
   readonly coreState = readonlyAtom(this.state);
 
   private destroyed = false;
+
+  private destroyPromise: Promise<void> | null = null;
 
   private showingContentCount = atom(0);
 
@@ -205,9 +205,7 @@ export class Core<
       config.defaultSubtitleLanguage ?? DEFAULT_LANGUAGE,
     );
 
-    this.criticalComponentReady = new Promise((res) => {
-      this.onCriticalComponentReady = res;
-    });
+    this.criticalComponentReady = new OpenPromise();
     this.episodeData = new OpenPromise();
     this.bgmManager = new BGMManager(this.audioStation);
     this.bgmManager.logger = this.logCollector.Logger('bgmManager');
@@ -364,35 +362,50 @@ export class Core<
     this.eventTarget.dispatchEvent(new CustomEvent(event.type, event));
   };
 
-  destroy() {
+  private async internalDestroy() {
+    this.updateState();
+    if (
+      this.episodeData.state === OpenPromiseState.Idle
+      || this.episodeData.state === OpenPromiseState.Pending
+    ) {
+      this.episodeData.resolve({
+        assets: [],
+        resources: new ResourceListForClient(
+          [],
+          [],
+          this,
+        ),
+        preferredUploaders: [],
+        preloader: new PreloadManager(this),
+      });
+    }
     if (this.nextRafId !== null) {
       cancelAnimationFrame(this.nextRafId);
       this.nextRafId = null;
     }
-    this.destroyed = true;
-    this.updateState();
-    this.mainSequence?.destroy();
+    await this.mainSequence?.destroy();
     this.components.clear();
     this.contentInstances.forEach((instance) => {
       instance.releaseResource();
     });
     this.contentInstances.clear();
     this.userImplementedFunctions = null;
-    this.criticalComponentReady = Promise.resolve();
-    this.episodeData = new OpenPromise();
+    if (this.criticalComponentReady.state === OpenPromiseState.Idle
+      || this.criticalComponentReady.state === OpenPromiseState.Pending) {
+      this.criticalComponentReady.resolve();
+    }
 
     this.envVariableManager.destroy();
+    this.destroyed = true;
+    this.updateState();
+  }
 
-    this.episodeData.resolve({
-      assets: [],
-      resources: new ResourceListForClient(
-        [],
-        [],
-        this,
-      ),
-      preferredUploaders: [],
-      preloader: new PreloadManager(this),
-    });
+  destroy() {
+    if (this.destroyPromise === null) {
+      this.destroyPromise = this.internalDestroy();
+    }
+    this.updateState();
+    return this.destroyPromise;
   }
 
   private ensureNotDestroyed() {
@@ -405,9 +418,11 @@ export class Core<
     let state: CoreState = 'waitingForResource';
     if (this.destroyed) {
       state = 'destroyed';
+    } else if (this.destroyPromise !== null) {
+      state = 'destroying';
     } else if (this.ready) {
       state = 'working';
-    } else if (this.onCriticalComponentReady !== null) {
+    } else if (this.criticalComponentReady.state !== OpenPromiseState.Fulfilled) {
       state = 'waitingForCriticalComponent';
     } else if (this.episodeData.state === OpenPromiseState.Rejected) {
       state = 'panic';
@@ -692,12 +707,12 @@ export class Core<
     this.components.set(name, component);
     this.logComponent(`Component ${name} registered`);
 
-    if (this.onCriticalComponentReady !== null) {
+    if (this.criticalComponentReady.state === OpenPromiseState.Idle
+      || this.criticalComponentReady.state === OpenPromiseState.Pending) {
       // TODO: more
       if (this.components.has('stage')) {
         this.logMain('Critical component ready');
-        this.onCriticalComponentReady();
-        this.onCriticalComponentReady = null;
+        this.criticalComponentReady.resolve();
         this.updateState();
       }
     }

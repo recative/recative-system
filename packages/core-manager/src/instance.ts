@@ -250,7 +250,7 @@ export class ContentInstance extends WithLogger {
     await this.subsequenceManager.destroy();
   }
 
-  async internalDestroy() {
+  private async internalDestroy() {
     await this.option.getComponent(this.id)!.destroyItself?.()?.finally(() => {});
     this.option.forEachComponent((component) => {
       component.destroyContent?.(this.id);

@@ -192,7 +192,7 @@ export class ContentSequence {
     } catch { }
   };
 
-  async internalDestroy() {
+  private async internalDestroy() {
     this.switching = false;
     this.nextContentSetupBlocker.clear();
     this.setDependencyReady();

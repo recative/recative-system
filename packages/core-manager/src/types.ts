@@ -115,6 +115,7 @@ export type CoreState =
   | 'waitingForResource'
   | 'working'
   | 'panic'
+  | 'destroying'
   | 'destroyed';
 
 export interface ComponentFunctions {
