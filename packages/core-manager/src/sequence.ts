@@ -127,9 +127,9 @@ export class ContentSequence {
 
   managedStateEnabled = false;
 
-  destroyed = false;
-
   showing = true;
+
+  private destroyPromise: Promise<void> | null = null;
 
   constructor(private option: SequenceOption) {
     this.logProgress = option.logger.extend('progress');
@@ -192,8 +192,7 @@ export class ContentSequence {
     } catch { }
   };
 
-  destroy() {
-    this.destroyed = true;
+  async internalDestroy() {
     this.switching = false;
     this.nextContentSetupBlocker.clear();
     this.setDependencyReady();
@@ -201,11 +200,18 @@ export class ContentSequence {
     this.contents.forEach((content) => {
       if (content.instance !== null) {
         this.hideContent(content);
-        this.destroyContent(content);
       }
     });
+    await allSettled(Array.from(this.managedContentInstance).map((instance) => instance.destroy()));
     this.contents.clear();
     this.contentList = [];
+  }
+
+  destroy() {
+    if (this.destroyPromise === null) {
+      this.destroyPromise = this.internalDestroy();
+    }
+    return this.destroyPromise;
   }
 
   private getCurrentInstance() {
@@ -662,7 +668,7 @@ export class ContentSequence {
   }
 
   private ensureNotDestroyed() {
-    if (this.destroyed) {
+    if (this.destroyPromise !== null) {
       throw new Error('The sequence was destroyed');
     }
   }
