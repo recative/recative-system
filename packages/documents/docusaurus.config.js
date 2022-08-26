@@ -12,11 +12,13 @@ const config = {
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
-
+  
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'recative', // Usually your GitHub org/user name.
-  projectName: 'recative-system', // Usually your repo name.
+  projectName: 'recative.github.io',
+  organizationName: 'recative',
+  trailingSlash: false,
+  deploymentBranch: 'main',
 
   // Even if you don't use internalization, you can use this field to set useful
   // metadata like html lang. For example, if your site is Chinese, you may want
@@ -35,7 +37,6 @@ const config = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          showReadingTime: true,
           editUrl:
             'https://github.com/recative/recative-system/tree/master/packages/documents/docs',
         },
