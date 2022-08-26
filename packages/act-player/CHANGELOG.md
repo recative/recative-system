@@ -1,5 +1,12 @@
 # @recative/act-player
 
+## 0.1.3
+
+### Patch Changes
+
+- a6d0d58: feat: Improve compatibility via setting mimeType of video
+- 9056efd: feat: Inject search parameter of host page into container
+
 ## 0.1.2
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.4.1
+
+### Patch Changes
+
+- cfe9cd2: fix: Incorrect debug container component url
+- Updated dependencies [a6d0d58]
+- Updated dependencies [9056efd]
+  - @recative/act-player@0.1.3
+
 ## 3.4.0
 
 ### Minor Changes
