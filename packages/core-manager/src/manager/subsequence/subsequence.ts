@@ -1,4 +1,5 @@
 import { AssetForClient } from '@recative/definitions';
+import { allSettled } from '@recative/open-promise';
 import type { InstanceOption } from '../../instance';
 import { WithLogger } from '../../LogCollector';
 // eslint-disable-next-line import/no-cycle
@@ -16,6 +17,8 @@ export class SubsequenceManager extends WithLogger {
   managedCoreStateDirty = true;
 
   managedStateEnabled = false;
+
+  private destroyPromise: Promise<void> | null = null;
 
   constructor(private instanceId: string, private option: InstanceOption) {
     super();
@@ -37,13 +40,20 @@ export class SubsequenceManager extends WithLogger {
     });
   }
 
-  destroy() {
+  async internalDestroy() {
     this.destroyed = true;
     this.pause();
-    this.subsequences.forEach((subsequence) => {
-      subsequence.destroy();
-    });
+    await allSettled(
+      Array.from(this.subsequences.values()).map((subsequence) => subsequence.destroy()),
+    );
     this.subsequences.clear();
+  }
+
+  destroy() {
+    if (this.destroyPromise === null) {
+      this.destroyPromise = this.internalDestroy();
+    }
+    return this.destroyPromise;
   }
 
   async createSequence(id: string, assets: AssetForClient[]) {

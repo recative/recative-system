@@ -11,7 +11,7 @@ import {
 } from '@recative/definitions';
 import { AudioStation } from '@recative/audio-station';
 
-import { TimeSlicingQueue } from '@recative/open-promise';
+import { OpenPromise, TimeSlicingQueue } from '@recative/open-promise';
 import { WritableAtom } from 'nanostores';
 // eslint-disable-next-line import/no-cycle
 import { SubsequenceManager } from './manager/subsequence/subsequence';
@@ -75,6 +75,8 @@ export class ContentInstance extends WithLogger {
   subsequenceManager: SubsequenceManager;
 
   private destroyPromise: Promise<void> | null = null;
+
+  private enterDestroyedState = new OpenPromise<void>();
 
   constructor(public id: string, private option: InstanceOption) {
     super();
@@ -203,8 +205,9 @@ export class ContentInstance extends WithLogger {
     } else if (state === 'destroying') {
       this.destroy();
     } else if (state === 'destroyed') {
-      this.releaseResource();
+      this.destroy();
       this.option.contentInstances.delete(this.id);
+      this.enterDestroyedState.resolve();
     }
     this.option.handleStateChange(state);
   }
@@ -240,11 +243,11 @@ export class ContentInstance extends WithLogger {
     this.subsequenceManager.setVolume(volume);
   }
 
-  releaseResource() {
+  async releaseResource() {
     this.timeline.pause();
     this.audioTrack.destroy();
     this.audioHost.destroy();
-    this.subsequenceManager.destroy();
+    await this.subsequenceManager.destroy();
   }
 
   async internalDestroy() {
@@ -252,6 +255,8 @@ export class ContentInstance extends WithLogger {
     this.option.forEachComponent((component) => {
       component.destroyContent?.(this.id);
     });
+    await this.enterDestroyedState;
+    await this.releaseResource();
   }
 
   destroy() {
