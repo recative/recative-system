@@ -132,7 +132,7 @@ export interface ComponentFunctions {
   // content lifecycle, for content
   showItself(): void;
   hideItself(): void;
-  destroyItself(): void;
+  destroyItself(): Promise<void>;
   // switching blocker
   /** will blocks both preload and showing of next asset instance when it returns true
    * see unblockNextContentSetup and unblockContentSwitch on CoreFunctions */

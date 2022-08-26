@@ -314,7 +314,7 @@ export const getController = (id: string) => {
     handleDialogActionTrigger(action) {
       connector?.connector.dialogActionTriggered(action);
     },
-    destroyItself() {
+    async destroyItself() {
       connector?.channel.destroy();
       connector = null;
       $actPoint!.src = 'about:blank';

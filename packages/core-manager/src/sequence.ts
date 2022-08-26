@@ -293,13 +293,13 @@ export class ContentSequence {
     });
   }
 
-  private destroyContent(content: ContentInfo) {
+  private async destroyContent(content: ContentInfo) {
     const instance = content.instance!;
     if (instance === null) {
       return;
     }
     this.logContent(`\`destroyContent\` ${instance.id}`);
-    this.option.getComponent(instance.id)!.destroyItself?.();
+    await this.option.getComponent(instance.id)!.destroyItself?.();
     this.option.forEachComponent((component) => {
       component.destroyContent?.(instance.id);
     });
@@ -441,7 +441,8 @@ export class ContentSequence {
     if (lastContent !== undefined) {
       if (lastContent.earlyDestroyOnSwitch) {
         this.hideContent(lastContent);
-        this.destroyContent(lastContent);
+        await this.destroyContent(lastContent);
+        this.ensureNotDestroyed();
       }
     }
     const content = this.contentList[this.currentSegment];
@@ -465,6 +466,7 @@ export class ContentSequence {
     );
     if (lastContent !== undefined) {
       this.hideContent(lastContent);
+      // here we do not wait for destroy so the content transit smoothly
       this.destroyContent(lastContent);
     }
     this.logProgress('Finished content switching');

@@ -17,10 +17,13 @@ const stageFunctions: Partial<ComponentFunctions> = {
       hideItself: () => {
       },
       destroyItself: () => {
-        setTimeout(() => {
-          contents.get(id)!.updateContentState('destroyed');
-          core.unregisterComponent(id);
-        }, 2000);
+        return new Promise((res) => {
+          setTimeout(() => {
+            contents.get(id)!.updateContentState('destroyed');
+            core.unregisterComponent(id);
+            res();
+          }, 2000);
+        });
       },
     }));
     contents.get(id)!.updateContentState('preloading');
