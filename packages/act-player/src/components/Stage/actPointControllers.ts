@@ -2,7 +2,7 @@
 /* eslint-disable no-await-in-loop */
 import { debug } from 'debug';
 
-import { UserImplementedFunctions } from '@recative/definitions';
+import { RawUserImplementedFunctions } from '@recative/definitions';
 import { createHostConnector, HostFunctions } from '@recative/act-protocol';
 import type { ResourceLoaderCacheLevel } from '@recative/definitions';
 import type { ComponentFunctions, CoreFunctions } from '@recative/core-manager';
@@ -41,9 +41,9 @@ export const getController = (id: string) => {
     };
 
   const forwardToUserImplementedFunctions = <
-      T extends keyof UserImplementedFunctions,
+      T extends keyof RawUserImplementedFunctions,
       F extends Extract<
-      UserImplementedFunctions[T],
+      RawUserImplementedFunctions[T],
       (...args: never[]) => unknown
       >,
       P extends Parameters<F>,

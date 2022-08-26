@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useEpisodes } from '@recative/client-sdk';
 import { IInitialAssetStatus } from '@recative/core-manager';
-import type { UserImplementedFunctions } from '@recative/definitions';
+import type { RawUserImplementedFunctions, UserImplementedFunctions } from '@recative/definitions';
 
 const log = debug('example:user-impl-fn');
 
@@ -17,8 +17,8 @@ export const useUserImplementedFunctions = (episodeId: string | undefined) => {
   const navigate = useNavigate();
   const episodes = useEpisodes();
 
-  const gotoEpisode: UserImplementedFunctions['gotoEpisode'] = React.useCallback(
-    (seek, episodeOrder, forceReload, assetOrder, assetTime) => {
+  const gotoEpisode: RawUserImplementedFunctions['gotoEpisode'] = React.useCallback(
+    async (seek, episodeOrder, forceReload, assetOrder, assetTime, destroyOldEpisode) => {
       const episode = [...episodes.values()].find(
         (x) => x.order.toString() === episodeOrder,
       );
@@ -47,6 +47,7 @@ export const useUserImplementedFunctions = (episodeId: string | undefined) => {
 
       const nextUrl = `/episode/${episode.id}`;
       log(`Will navigate to ${nextUrl}`);
+      await destroyOldEpisode?.();
       if (!forceReload) {
         navigate(nextUrl);
       } else {

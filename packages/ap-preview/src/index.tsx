@@ -34,14 +34,12 @@ import { Drawer, SIZE as DRAWER_SIZE } from 'baseui/drawer';
 import { Button, KIND, SIZE as BUTTON_SIZE } from 'baseui/button';
 import type { ButtonOverrides } from 'baseui/button';
 
+import { Error, Loading } from '@recative/act-player';
 import { useEnvVariable } from './utils/useEnvVariable';
 import {
   useUserImplementedFunctions,
   INITIAL_ASSET_STATUS_ATOM,
 } from './utils/useUserImplementedFunctions';
-
-import { Error } from '@recative/act-player';
-import { Loading } from '@recative/act-player';
 
 window.React = React;
 
@@ -52,7 +50,7 @@ const PREFERRED_UPLOADERS = [
 
 const TRUSTED_UPLOADERS = [
   '@recative/uploader-extension-studio/ResourceManager',
-]
+];
 
 if (window.localStorage.getItem('@recative/act-player/error-request')) {
   PREFERRED_UPLOADERS.push('@recative/uploader-extension-error/not-exists');
@@ -99,6 +97,11 @@ const Player: React.FC = () => {
 
   const config = useSdkConfig();
 
+  const Content = React.useMemo(
+    () => ContentModuleFactory(config.pathPattern, config.dataType),
+    [config.pathPattern, config.dataType],
+  );
+
   if (
     window.location.protocol !== 'https:'
     && window.location.hostname !== 'localhost'
@@ -106,11 +109,6 @@ const Player: React.FC = () => {
   ) {
     return <Error>HTTPS Protocol Required</Error>;
   }
-
-  const Content = React.useMemo(
-    () => ContentModuleFactory(config.pathPattern, config.dataType),
-    [config.pathPattern, config.dataType],
-  );
 
   return (
     <React.Suspense fallback={<Loading />}>

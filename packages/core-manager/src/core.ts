@@ -17,6 +17,7 @@ import type {
 import {
   ManagedCoreState,
   ManagedCoreStateManager,
+  RawUserImplementedFunctions,
   UserImplementedFunctions,
 } from '@recative/definitions';
 
@@ -57,6 +58,7 @@ export interface CoreConfig<T> {
   attemptAutoplay?: boolean;
   defaultContentLanguage?: string;
   defaultSubtitleLanguage?: string;
+  episodeId: string;
 }
 
 export class Core<
@@ -93,7 +95,7 @@ export class Core<
 
   private episodeData: OpenPromise<InternalEpisodeData>;
 
-  private userImplementedFunctions: Partial<UserImplementedFunctions> | null = null;
+  private userImplementedFunctions: Partial<RawUserImplementedFunctions> | null = null;
 
   // Dialog Related
 
@@ -195,7 +197,10 @@ export class Core<
 
   private nextRafId: number | null = null;
 
+  private episodeId: string;
+
   constructor(config: CoreConfig<AdditionalEnvVariable>) {
+    this.episodeId = config.episodeId;
     this.contentLanguage = jsonAtom(
       '@recative/core-manager/content-lang',
       config.defaultSubtitleLanguage ?? DEFAULT_LANGUAGE,
@@ -268,16 +273,32 @@ export class Core<
     return this.episodeData.resolvedValue;
   }
 
-  setUserImplementedFunctions(functions: Partial<UserImplementedFunctions>) {
+  setUserImplementedFunctions(functions: Partial<RawUserImplementedFunctions>) {
     this.ensureNotDestroyed();
     this.userImplementedFunctions = functions;
   }
 
-  getUserImplementedFunctions() {
+  getUserImplementedFunctions():Partial<UserImplementedFunctions> {
     if (!this.userImplementedFunctions) {
       throw new Error('User implemented functions not set');
     }
-    return this.userImplementedFunctions;
+    const { userImplementedFunctions } = this;
+    const { gotoEpisode } = userImplementedFunctions;
+    return {
+      ...userImplementedFunctions,
+      gotoEpisode: async (
+        seek: (assetOrder: number, assetTime: number) => void,
+        episode: string,
+        forceReload?: boolean,
+        assetOrder?: number,
+        assetTime?: number,
+      ) => {
+        if (gotoEpisode === undefined) {
+          return;
+        }
+        gotoEpisode(seek, episode, forceReload, assetOrder, assetTime, () => this.destroy());
+      },
+    };
   }
 
   private async launchPreloader() {

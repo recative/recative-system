@@ -9,7 +9,7 @@ import { Core } from '@recative/core-manager';
 import {
   AssetForClient,
   IResourceItemForClient,
-  UserImplementedFunctions,
+  RawUserImplementedFunctions,
 } from '@recative/definitions';
 import type {
   IInitialAssetStatus,
@@ -41,6 +41,7 @@ interface IInternalActPlayerProps<
   T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
 > {
   coreRef?: React.MutableRefObject<Core<T> | null>;
+  episodeId: string;
   interfaceComponents?: InterfaceExtensionComponent[];
   interfaceComponentProps?: Record<string, unknown>;
   assets: PlayerAssetProp[];
@@ -50,7 +51,7 @@ interface IInternalActPlayerProps<
   userData: IUserRelatedEnvVariable | undefined;
   envVariable: T;
   initialAsset?: IInitialAssetStatus;
-  userImplementedFunctions: Partial<UserImplementedFunctions>;
+  userImplementedFunctions: Partial<RawUserImplementedFunctions>;
   disableAutoPlay?: boolean;
   pauseWhenNotVisible?: boolean;
   loadingComponent?: React.FC;
@@ -85,6 +86,7 @@ const InternalActPlayer = <
       initialEnvVariable: props.envVariable,
       initialAssetStatus: props.initialAsset,
       attemptAutoplay: !props.disableAutoPlay,
+      episodeId: props.episodeId,
     });
     props.onInitialized?.();
     return { manager };
@@ -344,7 +346,7 @@ export const ActPlayer = <
     episodeId,
     ...props
   }: IActPointProps<T>) => {
-  return <InternalActPlayer<T> key={episodeId} {...props} />;
+  return <InternalActPlayer<T> key={episodeId} {...props} episodeId={episodeId} />;
 };
 
 ActPlayer.whyDidYouRender = true;

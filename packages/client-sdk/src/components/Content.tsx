@@ -4,7 +4,7 @@ import debug from 'debug';
 
 import { ActPlayer } from '@recative/act-player';
 import type { IActPointProps } from '@recative/act-player';
-import type { UserImplementedFunctions } from '@recative/definitions';
+import type { RawUserImplementedFunctions } from '@recative/definitions';
 import type { Core, IInitialAssetStatus } from '@recative/core-manager';
 
 import { fetch } from '../utils/fetch';
@@ -50,7 +50,7 @@ interface IContentModule<PlayerPropsInjectedDependencies> {
     episodeId?: string;
     dependencies: PlayerPropsInjectedDependencies;
     coreRef: React.RefObject<Core>;
-    userImplementedFunctions: Partial<UserImplementedFunctions> | undefined;
+    userImplementedFunctions: Partial<RawUserImplementedFunctions> | undefined;
   }) => {
     injectToPlayer?: Partial<IActPointProps>;
     injectToContainer?: Record<string, unknown>;
@@ -60,7 +60,7 @@ interface IContentModule<PlayerPropsInjectedDependencies> {
 export interface IContentProps<EnvVariable> {
   episodeId: string | undefined;
   initialAsset: IInitialAssetStatus | undefined;
-  userImplementedFunctions: Partial<UserImplementedFunctions> | undefined;
+  userImplementedFunctions: Partial<RawUserImplementedFunctions> | undefined;
   preferredUploaders: string[];
   trustedUploaders: string[];
   envVariable: EnvVariable | undefined;

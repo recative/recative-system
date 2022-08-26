@@ -3,7 +3,7 @@ import type {
   ResourceLoaderCacheLevel,
   IResourceItemForClient,
   IDetailedResourceItemForClient,
-  UserImplementedFunctions,
+  RawUserImplementedFunctions,
   ShowVideoModalUrlRequest,
   ShowVideoModalIdRequest,
   ShowVideoModalLabelRequest,
@@ -100,7 +100,7 @@ export interface AddAudioByIdRequest {
 
 export type AddAudioRequest = AddAudioByLabelRequest | AddAudioByIdRequest;
 
-export type HostFunctions = Omit<UserImplementedFunctions, 'gotoEpisode'> & {
+export type HostFunctions = Omit<RawUserImplementedFunctions, 'gotoEpisode'> & {
   // lifecycle
   /**
    * Should be called when the content was ready
