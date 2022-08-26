@@ -19,7 +19,7 @@ import { AudioHost } from './audio/audioHost';
 import { AudioTrack } from './audio/audioTrack';
 import { TaskQueueManager } from './manager/taskQueue/TaskQueueManager';
 import { Logger, WithLogger } from './LogCollector';
-import { ComponentFunctions, ContentState } from './types';
+import type { ComponentFunctions, ContentState } from './types';
 
 export interface ProgressReporter {
   reportProgress(progress: number, time?: number): void;

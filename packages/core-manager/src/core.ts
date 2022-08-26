@@ -30,7 +30,7 @@ import { isNotNullable } from './utils/isNullable';
 import { filterBGMState } from './utils/managedCoreState';
 import { connect, readonlyAtom } from './utils/nanostore';
 import { selectUrlAudioTypePostProcess } from './utils/selectUrlAudioTypePostProcess';
-import {
+import type {
   CoreState,
   EpisodeData,
   ContentState,

@@ -15,7 +15,7 @@ import type {
 } from '@recative/definitions';
 import { ResourceEntry } from '@recative/smart-resource';
 
-import { Core } from './core';
+import type { Core } from './core';
 
 import type { PreloadManager } from './manager/preload/PreloadManager';
 import type { ResourceListForClient } from './manager/resource/ResourceListForClient';

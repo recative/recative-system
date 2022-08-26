@@ -7,7 +7,7 @@ import {
 } from '@recative/definitions';
 
 import { BGMSpec } from '../audio/bgmManager';
-import { BGMStateSpec, InternalEpisodeData } from '../types';
+import type { BGMStateSpec, InternalEpisodeData } from '../types';
 
 import { selectUrlAudioTypePostProcess } from './selectUrlAudioTypePostProcess';
 

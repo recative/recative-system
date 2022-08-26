@@ -8,7 +8,7 @@ import {
 } from '@recative/open-promise';
 import { AudioStation } from '@recative/audio-station';
 import EventTarget from '@ungap/event-target';
-import { ComponentFunctions, Progress } from './types';
+import type { ComponentFunctions, Progress } from './types';
 // eslint-disable-next-line import/no-cycle
 import { ContentInstance } from './instance';
 import { distinctAtom, throttledAtom, ThrottledAtomReturnType } from './utils/nanostore';
