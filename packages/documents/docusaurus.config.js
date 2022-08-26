@@ -38,14 +38,14 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/recative/recative-system/tree/master/packages/documents/docs',
+            'https://github.com/recative/recative-system/tree/master/packages/documents',
         },
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/recative/recative-system/tree/master/packages/documents/blog',
+            'https://github.com/recative/recative-system/tree/master/packages/documents',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),

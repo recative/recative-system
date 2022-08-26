@@ -4,15 +4,30 @@
  */
 
 .heroBanner {
-  padding: 4rem 0;
+  padding: 26vh 0 26px 0;
   text-align: center;
   position: relative;
   overflow: hidden;
+  background: var(--ifm-color-primary-lightest) url('/img/background.svg') center center no-repeat;
+  color: var(--ifm-color-primary-darker);
+  text-align: left;
+}
+
+.heroBanner h1 {
+  font-size: 44px;
+  font-weight: 800;
+  margin-bottom: 8px;
 }
 
 @media screen and (max-width: 996px) {
-  .heroBanner {
-    padding: 2rem;
+  .heroBanner h1 {
+    font-size: 36px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  .heroBanner p {
+    font-size: 14px;
   }
 }
 

@@ -12,8 +12,8 @@ function HomepageHeader() {
   return (
     <header className={clsx('hero hero--primary', styles.heroBanner)}>
       <div className="container">
-        <h1 className="hero__title">{siteConfig.title}</h1>
-        <p className="hero__subtitle">{siteConfig.tagline}</p>
+        <h1 className={styles.title}>Recative System</h1>
+        <p className={styles.subtitle}>A comprehensive toolchain to build interactive content for the Web platform.</p>
       </div>
     </header>
   );
