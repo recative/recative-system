@@ -71,11 +71,31 @@ nav.menu {
 
 .menu__list-item-collapsible {
   background: transparent;
+  flex-direction: row-reverse;
 }
 
 .menu__list-item-collapsible:hover {
   background: transparent;
   text-decoration: underline;
+}
+
+.menu__list-item-collapsible > button {
+  padding: 0 6px 0 10px;
+}
+
+.menu__list-item-collapsible > button:hover {
+  background: transparent;
+}
+
+.menu__list-item-collapsible > a {
+  padding-left: 0;
+}
+
+.menu__list-item ul.menu__list {
+  margin-top: 0;
+  border-left: 1px solid var(--ifm-toc-border-color);
+  margin-left: 18px;
+  padding-left: 4px;
 }
 
 .menu__caret:before {
