@@ -74,6 +74,8 @@ export class ContentInstance extends WithLogger {
 
   subsequenceManager: SubsequenceManager;
 
+  private destroyPromise: Promise<void> | null = null;
+
   constructor(public id: string, private option: InstanceOption) {
     super();
 
@@ -239,10 +241,17 @@ export class ContentInstance extends WithLogger {
     this.subsequenceManager.destroy();
   }
 
-  async destroy() {
+  async internalDestroy() {
     await this.option.getComponent(this.id)!.destroyItself?.();
     this.option.forEachComponent((component) => {
       component.destroyContent?.(this.id);
     });
+  }
+
+  destroy() {
+    if (this.destroyPromise === null) {
+      this.destroyPromise = this.internalDestroy();
+    }
+    return this.destroyPromise;
   }
 }
