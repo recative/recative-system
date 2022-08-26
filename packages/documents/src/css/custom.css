@@ -1,0 +1,211 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  font-family: 'Raleway', sans-serif;
+  --ifm-global-radius: 0;
+  --ifm-heading-font-family: 'Raleway';
+  --ifm-color-primary: #546E7A;
+  --ifm-color-primary-dark: #455A64;
+  --ifm-color-primary-darker: #37474F;
+  --ifm-color-primary-darkest: #263238;
+  --ifm-color-primary-light: #78909C;
+  --ifm-color-primary-lighter: #90A4AE;
+  --ifm-color-primary-lightest: #B0BEC5;
+  --ifm-code-font-size: 95%;
+  --ifm-font-size-base: 14px;
+  --ifm-font-size-small: 13px;
+  --ifm-font-weight-semibold: 550;
+  --ifm-breadcrumb-border-radius: 0;
+  --light-background: #ECEFF1;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --ifm-navbar-shadow: none;
+  --ifm-global-shadow-lw: none;
+  --ifm-menu-link-sublist-icon: url('/img/icons/arrow-right.svg');
+}
+
+nav.menu {
+  margin: 0;
+  padding: 12px;
+  overflow-y: overlay;
+  scrollbar-gutter: auto;
+}
+
+.navbar {
+  border-bottom: 1px solid var(--ifm-toc-border-color);
+}
+
+.navbar__item.navbar__link:hover {
+  color: var(--ifm-color-primary-darkest);
+  text-decoration: underline;
+}
+
+.navbar__item.navbar__link.navbar__link--active {
+  color: var(--ifm-color-primary-darkest);
+  font-weight: var(--ifm-font-weight-bold);
+}
+
+.menu__link:hover {
+  background: none;
+  text-decoration: underline;
+}
+
+.menu__link, .menu__caret, .menu__list-item-collapsible  {
+  line-height: 1.5;
+  border-radius: 0;
+}
+
+.menu__link.menu__link--active{
+  background: none;
+  color: var(--ifm-color-primary-darkest);
+  font-weight: var(--ifm-font-weight-bold);
+}
+
+.menu__list-item:not(:first-child) {
+  margin: 0;
+}
+
+.menu__list-item-collapsible {
+  background: transparent;
+}
+
+.menu__list-item-collapsible:hover {
+  background: transparent;
+  text-decoration: underline;
+}
+
+.menu__caret:before {
+  background: var(--ifm-menu-link-sublist-icon) no-repeat 50% / 1rem 1rem;
+}
+
+.breadcrumbs__link {
+  font-size: var(--ifm-font-size-base);
+}
+
+.breadcrumbs__item:not(:last-child)::after {
+  content: "/";
+  background: none;
+}
+
+.breadcrumbs__item {
+  font-size: var(--ifm-font-size-base);
+  font-weight: 500;
+  color: var(--ifm-color-primary-darker);
+}
+
+.breadcrumbs__item:last-child {
+  display: none;
+}
+
+.breadcrumbs__item:first-child svg {
+  display: none;
+}
+
+.breadcrumbs__item:first-child a::after {
+  content: "Docs";
+}
+
+.breadcrumbs__link:any-link:hover {
+  background: none;
+  text-decoration: underline;
+}
+
+.breadcrumbs__item--active .breadcrumbs__link {
+  background: none;
+  color: var(--ifm-color-primary-darkest);
+  font-weight: var(--ifm-font-weight-bold);
+}
+
+.theme-doc-markdown.markdown {
+  padding: 0 12px;
+}
+
+.pagination-nav {
+  display: none !important;
+}
+
+main > .container > .row > div.col.col--3 {
+  --ifm-col-width: calc(4 / 12 * 100%);
+  max-width: 360px;
+}
+
+.table-of-contents {
+  border: 1px solid var(--ifm-toc-border-color);
+  padding: 0;
+}
+
+.table-of-contents li a {
+  font-size: var(--ifm-font-size-small);
+  font-weight: 500;
+}
+
+.theme-doc-toc-desktop>ul::before {
+  content: "In this article";
+  padding: 7px;
+  background: var(--light-background);
+  font-size: var(--ifm-font-size-base);
+  font-weight: 600;
+  display: block;
+}
+
+.toc-highlight, .table-of-contents__link--active {
+  color: var(--ifm-color-primary-darkest);
+}
+
+.toc-highlight {
+  font-weight: var(--ifm-font-weight-bold);
+}
+
+.table-of-contents li a.table-of-contents__link--active {
+  font-weight: 600;
+}
+
+.toc-highlight:hover, .table-of-contents__link--active:hover {
+  color: var(--ifm-color-primary-darkest);
+  text-decoration: underline;
+}
+
+div.main-wrapper > div > main > div > div > header {
+  padding: 0 12px;
+}
+
+div.main-wrapper > div > main > div > div > article > section > article,
+div.main-wrapper > div > main > div > div > article > section > article:nth-last-child(-n + 2) {
+  --ifm-col-width: 100%;
+  margin-left: 12px;
+  margin-bottom: 16px !important;
+}
+
+div.main-wrapper > div > main > div > div > article > section > article a,
+div.main-wrapper > div > main > div > div > article > section > article a:hover {
+  padding: 16px !important;
+  box-shadow: none;
+}
+
+div.main-wrapper > div > main > div > div > article > section > article a h2 {
+  margin-left: -0.5ch;
+  margin-bottom: 0.25em;
+}
+
+div.main-wrapper > div > main > div > div > article > section > article a h2::first-letter {
+  font-size: 0%;
+}
+
+pre {
+  border: 1px solid var(--ifm-toc-border-color);
+}
+
+footer.footer {
+  border-top: 1px solid var(--ifm-toc-border-color);
+  background: none;
+}
+
+.footer__copyright {
+  text-align: right;
+  font-size: var(--ifm-font-size-base);
+  font-weight: 500;
+}

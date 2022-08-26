@@ -25,6 +25,7 @@
       "@recative/client-sdk": ["packages/client-sdk/src/index.ts"],
       "@recative/core-manager": ["packages/core-manager/src/index.ts"],
       "@recative/definitions": ["packages/definitions/src/index.ts"],
+      "@recative/documents": ["packages/documents/src/index.ts"],
       "@recative/open-promise": ["packages/open-promise/src/index.ts"],
       "@recative/resource-bridge": ["packages/resource-bridge/src/index.ts"],
       "@recative/resource-loader": ["packages/resource-loader/src/index.ts"],
