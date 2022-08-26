@@ -5,6 +5,7 @@ import {
   MonitorTrack,
 } from '@recative/time-schedule';
 import {
+  ContentSpec,
   ManagedCoreStateList,
   ManagedCoreStateManager,
 } from '@recative/definitions';
@@ -27,6 +28,7 @@ export interface ProgressReporter {
 }
 
 export interface InstanceOption {
+  spec: ContentSpec;
   audioStation: AudioStation;
   volume: number;
   taskQueue: TimeSlicingQueue;
@@ -144,6 +146,10 @@ export class ContentInstance extends WithLogger {
     this.audioHost.logger = this.logger.extend('audioHost');
     this.subsequenceManager = new SubsequenceManager(this.id, option);
     this.subsequenceManager.setVolume(option.volume);
+    this.option.contentInstances.set(this.id, this);
+    this.option.forEachComponent((component) => {
+      component.createContent?.(this.id, option.spec);
+    });
   }
 
   private static validateContentStateChange(
@@ -190,7 +196,7 @@ export class ContentInstance extends WithLogger {
     if (state === 'preloading') {
       this.timeline.addTrack(new RemoteTrack(this.remote, 100), -1);
     } else if (state === 'destroyed') {
-      this.destroy();
+      this.releaseResource();
     }
     this.option.handleStateChange(state);
   }
@@ -226,10 +232,17 @@ export class ContentInstance extends WithLogger {
     this.subsequenceManager.setVolume(volume);
   }
 
-  destroy() {
+  releaseResource() {
     this.timeline.pause();
     this.audioTrack.destroy();
     this.audioHost.destroy();
     this.subsequenceManager.destroy();
+  }
+
+  async destroy() {
+    await this.option.getComponent(this.id)!.destroyItself?.();
+    this.option.forEachComponent((component) => {
+      component.destroyContent?.(this.id);
+    });
   }
 }

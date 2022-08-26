@@ -374,7 +374,7 @@ export class Core<
     this.mainSequence?.destroy();
     this.components.clear();
     this.contentInstances.forEach((instance) => {
-      instance.destroy();
+      instance.releaseResource();
     });
     this.contentInstances.clear();
     this.userImplementedFunctions = null;

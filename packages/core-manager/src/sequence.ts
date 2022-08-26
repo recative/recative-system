@@ -246,9 +246,10 @@ export class ContentSequence {
     this.progress.set(progress);
   }
 
-  private createInstanceFromContentInfo(content: ContentInfo) {
+  private createContent(content: ContentInfo) {
     const instanceId = `${this.option.id}|content-${content.id}|${nanoid()}`;
     const instance = new ContentInstance(instanceId, {
+      spec: content.spec,
       audioStation: this.option.audioStation,
       managedCoreStateManager: this.option.managedCoreStateManager,
       volume: this.volume,
@@ -281,16 +282,8 @@ export class ContentSequence {
       showingContentCount: this.option.showingContentCount,
     });
     content.instance = instance;
-    return content.instance;
-  }
-
-  private createContent(content: ContentInfo) {
-    const instance = this.createInstanceFromContentInfo(content);
-    this.option.contentInstances.set(instance.id, instance);
     this.logContent(`\`createContent\` ${instance.id}`);
-    this.option.forEachComponent((component) => {
-      component.createContent?.(instance.id, content.spec);
-    });
+    return content.instance;
   }
 
   private async destroyContent(content: ContentInfo) {
@@ -298,12 +291,9 @@ export class ContentSequence {
     if (instance === null) {
       return;
     }
-    this.logContent(`\`destroyContent\` ${instance.id}`);
-    await this.option.getComponent(instance.id)!.destroyItself?.();
-    this.option.forEachComponent((component) => {
-      component.destroyContent?.(instance.id);
-    });
     content.instance = null;
+    this.logContent(`\`destroyContent\` ${instance.id}`);
+    await instance.destroy();
   }
 
   private showContent(content: ContentInfo) {
