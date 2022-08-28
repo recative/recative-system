@@ -20,4 +20,5 @@ yarn-debug.log*
 yarn-error.log*
 
 # Generated Files
-/docs/api
+docs/api/**/*
+!docs/api/index.md

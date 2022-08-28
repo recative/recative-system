@@ -2,6 +2,8 @@
 
 const lightCodeTheme = require('prism-react-renderer/themes/github');
 
+const labels = require('./packages');
+
 const tsDocsConfig = (packageName, label) => [
   'docusaurus-plugin-typedoc',
   {
@@ -88,9 +90,9 @@ const config = {
             label: 'Tutorial',
           },
           {
-            to: 'docs/api/core-manager',
-            activeBasePath: 'docs/api',
+            to: 'docs/api',
             label: 'API',
+            activeBasePath: 'docs/api',
             position: 'left',
           },
           { to: '/blog', label: 'Blog', position: 'left' },
@@ -114,16 +116,7 @@ const config = {
         theme: lightCodeTheme,
       },
     }),
-  plugins: [
-    tsDocsConfig('core-manager', 'Core Manager'),
-    tsDocsConfig('audio-station', 'Audio Station'),
-    tsDocsConfig('act-protocol', 'Act Protocol'),
-    tsDocsConfig('client-sdk', 'Client SDK'),
-    tsDocsConfig('open-promise', 'Open Promise'),
-    tsDocsConfig('smart-resource', 'Smart Resource'),
-    tsDocsConfig('atlas', 'Atlas'),
-    tsDocsConfig('ugly-json', 'Ugly JSON'),
-  ],
+  plugins: labels.map(({ id, label }) => tsDocsConfig(id, label)),
 };
 
 module.exports = config;

@@ -43,6 +43,7 @@ nav.menu {
   border-bottom: 1px solid var(--ifm-toc-border-color);
 }
 
+
 .navbar__item.navbar__link:hover {
   color: var(--ifm-color-primary-darkest);
   text-decoration: underline;
@@ -51,6 +52,25 @@ nav.menu {
 .navbar__item.navbar__link.navbar__link--active {
   color: var(--ifm-color-primary-darkest);
   font-weight: var(--ifm-font-weight-bold);
+}
+
+.dropdown > .navbar__link:after {
+  display: none;
+}
+
+.dropdown__link--active,
+.dropdown__link:hover {
+  background: transparent;
+}
+
+.dropdown__link--active,
+.dropdown__link--active:hover {
+  color: var(--ifm-color-primary-darkest);
+  font-weight: var(--ifm-font-weight-bold);
+}
+
+.dropdown__link:hover {
+  text-decoration: underline;
 }
 
 .menu__link:hover {
@@ -78,12 +98,14 @@ nav.menu {
   flex-direction: row-reverse;
 }
 
-ul.menu__list ul.menu__list a.menu__link--sublist {
+ul.menu__list ul.menu__list a.menu__link--sublist,
+.theme-doc-sidebar-item-category .menu__link--sublist-caret {
   padding-left: 34px;
   position: relative;
 }
 
-ul.menu__list ul.menu__list a.menu__link--sublist::after {
+ul.menu__list ul.menu__list a.menu__link--sublist::after,
+.theme-doc-sidebar-item-category .menu__link--sublist-caret::after {
   left: 10px;
   position: absolute;
   background: var(--ifm-menu-link-sublist-icon) no-repeat 50% / 1rem 1rem;
@@ -111,6 +133,49 @@ ul.menu__list ul.menu__list a.menu__link--sublist::after {
   border-left: 1px solid var(--ifm-toc-border-color);
   margin-left: 18px;
   padding-left: 4px;
+}
+
+.recative-package::before {
+  content: " ";
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  background: transparent url('/img/icons/package.svg') center center no-repeat;
+  background-size: contain;
+  opacity: 0.7;
+  display: block;
+}
+
+.theme-doc-sidebar-item-link-level-2 > a[href*="/classes/"]::before,
+.theme-doc-sidebar-item-link-level-2 > a[href*="/interfaces/"]::before,
+.theme-doc-sidebar-item-link-level-2 > a[href*="/enums/"]::before {
+  min-width: 1.16em;
+  min-height: 1.16em;
+  line-height: 1.16em;
+  border: 1.5px solid var(--ifm-menu-color);
+  border-radius: 4px;
+  font-size: 0.9em;
+  margin-right: 6px;
+  text-align: center;
+  display: block;
+}
+
+.theme-doc-sidebar-item-link-level-2 > .menu__link--active[href*="/classes/"]::before,
+.theme-doc-sidebar-item-link-level-2 > .menu__link--active[href*="/interfaces/"]::before,
+.theme-doc-sidebar-item-link-level-2 > .menu__link--active[href*="/enums/"]::before{
+  border: 1.5px solid var(--ifm-color-primary-darkest);
+}
+
+.theme-doc-sidebar-item-link-level-2 > a[href*="/classes/"]::before {
+  content: "C";
+}
+
+.theme-doc-sidebar-item-link-level-2 > a[href*="/interfaces/"]::before {
+  content: "I";
+}
+
+.theme-doc-sidebar-item-link-level-2 > a[href*="/enums/"]::before {
+  content: "E";
 }
 
 .menu__caret:before {
@@ -173,6 +238,12 @@ main > .container > .row > div.col.col--3 {
   padding: 0;
 }
 
+@media (max-width: 1008px) {
+  .table-of-contents {
+    display: none;
+  }
+}
+
 .table-of-contents li a {
   font-size: var(--ifm-font-size-small);
   font-weight: 500;
@@ -180,8 +251,9 @@ main > .container > .row > div.col.col--3 {
 
 .theme-doc-toc-desktop>ul::before {
   content: "In this article";
-  padding: 7px;
-  background: var(--light-background);
+  padding: 7px 7px 7px 32px;
+  background: var(--light-background) url('/img/icons/list.svg') 7px center no-repeat;
+  background-size: 1.4em;
   font-size: var(--ifm-font-size-base);
   font-weight: 600;
   display: block;
