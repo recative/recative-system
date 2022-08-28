@@ -330,6 +330,11 @@ footer.footer {
   font-weight: 500;
 }
 
+.navbar.navbar--fixed-top  {
+  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.7);
+}
+
 footer.footer .container.container-fluid {
   max-width: 100%;
   padding: 0;
