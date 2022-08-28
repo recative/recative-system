@@ -15,7 +15,7 @@ export class BidirectionalMap<T, P> {
   }
 
   get<Q extends T | P>(x: Q): (Q extends T ? P : T) | undefined {
-    if (this.directionA.has(x as T)) {
+    if (this.directionA.has(x as unknown as T)) {
       // @ts-ignore
       return this.directionA.get(x as T);
     }

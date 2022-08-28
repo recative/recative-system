@@ -7,8 +7,10 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "jsx": "react-jsx",
   },
-  "files": [],
-  "include": []
+  "include": [
+    "../**/*"
+  ]
 }

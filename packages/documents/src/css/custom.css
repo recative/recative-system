@@ -78,6 +78,17 @@ nav.menu {
   flex-direction: row-reverse;
 }
 
+ul.menu__list ul.menu__list a.menu__link--sublist {
+  padding-left: 34px;
+  position: relative;
+}
+
+ul.menu__list ul.menu__list a.menu__link--sublist::after {
+  left: 10px;
+  position: absolute;
+  background: var(--ifm-menu-link-sublist-icon) no-repeat 50% / 1rem 1rem;
+}
+
 .menu__list-item-collapsible:hover {
   background: transparent;
   text-decoration: underline;
@@ -351,6 +362,12 @@ footer.footer .container.container-fluid {
   padding-left: calc(var(--ifm-menu-link-padding-horizontal) + 12px);
   flex-grow: 1;
   --ifm-col-width: 100%;
+}
+
+@media (max-width: 996px) {
+  .blog-wrapper .main-wrapper > .container > .row > main {
+    max-width: 100% !important;
+  }
 }
 
 .blog-wrapper .main-wrapper > .container > .row > main article h2 a {

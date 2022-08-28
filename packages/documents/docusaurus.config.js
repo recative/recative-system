@@ -1,7 +1,25 @@
-// @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
 const lightCodeTheme = require('prism-react-renderer/themes/github');
+
+const tsDocsConfig = (packageName, label) => [
+  'docusaurus-plugin-typedoc',
+  {
+    id: `api-doc-${packageName}`,
+    out: `api/${packageName}`,
+    entryPoints: [
+      `../${packageName}`,
+    ],
+    readme: `../${packageName}/README.md`,
+    sidebar: {
+      categoryLabel: label,
+      fullNames: true,
+    },
+    entryPointStrategy: 'packages',
+    tsconfig: './tsconfig.typedoc.json',
+    excludeExternals: true,
+  },
+];
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -12,7 +30,7 @@ const config = {
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
-  
+
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   projectName: 'recative.github.io',
@@ -64,12 +82,18 @@ const config = {
         },
         items: [
           {
-            type: 'doc',
-            docId: 'intro',
+            to: 'docs/tutorial/intro',
+            activeBasePath: 'docs/tutorial',
             position: 'left',
             label: 'Tutorial',
           },
-          {to: '/blog', label: 'Blog', position: 'left'},
+          {
+            to: 'docs/api/core-manager',
+            activeBasePath: 'docs/api',
+            label: 'API',
+            position: 'left',
+          },
+          { to: '/blog', label: 'Blog', position: 'left' },
           {
             href: 'https://github.com/recative/recative-system',
             label: 'GitHub',
@@ -90,6 +114,16 @@ const config = {
         theme: lightCodeTheme,
       },
     }),
+  plugins: [
+    tsDocsConfig('core-manager', 'Core Manager'),
+    tsDocsConfig('audio-station', 'Audio Station'),
+    tsDocsConfig('act-protocol', 'Act Protocol'),
+    tsDocsConfig('client-sdk', 'Client SDK'),
+    tsDocsConfig('open-promise', 'Open Promise'),
+    tsDocsConfig('smart-resource', 'Smart Resource'),
+    tsDocsConfig('atlas', 'Atlas'),
+    tsDocsConfig('ugly-json', 'Ugly JSON'),
+  ],
 };
 
 module.exports = config;

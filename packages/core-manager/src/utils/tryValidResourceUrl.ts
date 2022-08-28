@@ -1,5 +1,6 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-constant-condition */
+// @ts-ignore
 import objectEntries from 'object.entries';
 
 import { NoMoreURLAvailableError } from './NoMoreURLAvailableError';

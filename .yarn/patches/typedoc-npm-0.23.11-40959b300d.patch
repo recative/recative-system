@@ -1,0 +1,13 @@
+diff --git a/dist/lib/utils/entry-point.js b/dist/lib/utils/entry-point.js
+index 6e390bcc076d36c4de373f049a0336365c3365a5..c3a5a3dad96de9df42e0aa8b5bcf1b33a534281a 100644
+--- a/dist/lib/utils/entry-point.js
++++ b/dist/lib/utils/entry-point.js
+@@ -203,7 +203,7 @@ function getEntryPointsForPackages(logger, packageGlobPaths, options) {
+     const exclude = (0, paths_1.createMinimatch)(options.getValue("exclude"));
+     // packages arguments are workspace tree roots, or glob patterns
+     // This expands them to leave only leaf packages
+-    const expandedPackages = (0, package_manifest_1.expandPackages)(logger, ".", packageGlobPaths, exclude);
++    const expandedPackages = (0, package_manifest_1.expandPackages)(logger, "..", packageGlobPaths, exclude);
+     for (const packagePath of expandedPackages) {
+         const packageJsonPath = (0, path_1.resolve)(packagePath, "package.json");
+         const packageJson = (0, package_manifest_1.loadPackageManifest)(logger, packageJsonPath);
