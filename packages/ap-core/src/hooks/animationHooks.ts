@@ -8,7 +8,7 @@ import {
   useResourceTracker,
 } from './baseHooks';
 import { DataSource } from '../core/DataSource';
-import type { FrameRateLevel, TickCallback } from '../core/TimeMagic';
+import { FrameRateLevel, TickCallback } from '../core/TimeMagic';
 
 const { timeline } = anime;
 
@@ -16,7 +16,7 @@ type IAnimeParameters = AnimeParams & { target?: never };
 
 export const useAnime = (
   x: IAnimeParameters,
-  frameRateLevel?: FrameRateLevel,
+  frameRateLevel: FrameRateLevel = FrameRateLevel.D1,
 ) => {
   const ticker = useTicker();
   const resourceTracker = useResourceTracker();
@@ -108,7 +108,7 @@ export const useToggleAnime = (
 
 export const useAnimeTimeline = (
   x: AnimeParams,
-  frameRateLevel?: FrameRateLevel,
+  frameRateLevel: FrameRateLevel = FrameRateLevel.D1,
 ) => {
   const ticker = useTicker();
   const resourceTracker = useResourceTracker();
@@ -165,7 +165,7 @@ export const useLerp = (
   updateFn: (x: number) => void,
   damping: number = 0.15,
   threshold: number = 1e-5,
-  frameRateLevel?: FrameRateLevel,
+  frameRateLevel: FrameRateLevel = FrameRateLevel.D1,
 ) => {
   let targetValue = getCurrentValFn();
   let cachedDamping = damping;
