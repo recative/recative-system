@@ -384,6 +384,9 @@ export class Core<
   };
 
   private async internalDestroy() {
+    this.logMain(
+      'Core start to destroy',
+    );
     this.updateState();
     if (
       this.episodeData.state === OpenPromiseState.Idle
@@ -419,6 +422,9 @@ export class Core<
     this.envVariableManager.destroy();
     this.destroyed = true;
     this.updateState();
+    this.logMain(
+      'Core fully destroyed',
+    );
   }
 
   destroy() {

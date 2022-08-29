@@ -197,7 +197,7 @@ export class ContentInstance extends WithLogger {
       );
     }
     this.log(
-      `Content instance ${this.id} transit from ${this.state} to ${state}`,
+      `Content instance transit from ${this.state} to ${state}`,
     );
     this.state = state;
     if (state === 'preloading') {
@@ -251,12 +251,18 @@ export class ContentInstance extends WithLogger {
   }
 
   private async internalDestroy() {
+    this.log(
+      'Content instance start to destroy',
+    );
     await this.option.getComponent(this.id)!.destroyItself?.()?.finally(() => {});
     this.option.forEachComponent((component) => {
       component.destroyContent?.(this.id);
     });
     await this.enterDestroyedState;
     await this.releaseResource();
+    this.log(
+      'Content instance fully destroyed',
+    );
   }
 
   destroy() {

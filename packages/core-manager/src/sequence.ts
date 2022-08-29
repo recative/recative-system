@@ -193,6 +193,9 @@ export class ContentSequence {
   };
 
   private async internalDestroy() {
+    this.logProgress(
+      'Sequence start to destroy',
+    );
     this.switching = false;
     this.nextContentSetupBlocker.clear();
     this.setDependencyReady();
@@ -205,6 +208,9 @@ export class ContentSequence {
     await allSettled(Array.from(this.managedContentInstance).map((instance) => instance.destroy()));
     this.contents.clear();
     this.contentList = [];
+    this.logProgress(
+      'Sequence fully destroyed',
+    );
   }
 
   destroy() {
