@@ -69,7 +69,7 @@ export const useResourceManagerResourceDataSourceFallbackMode = (
 };
 
 const ANY_SELECTOR = ['*'];
-const EMPTY_STRING_ARRAY: string[] = [];
+const EMPTY_RESOURCE_ENTRY_LIST: ResourceEntry<string>[] = [];
 
 export const useResourceManagerResourceDataSourceNormalMode = (
   label: string,
@@ -108,7 +108,7 @@ export const useResourceManagerResourceDataSourceNormalMode = (
         : metadata.files?.map((file) => ({
           selector: file.tags,
           item: getFileUrl(file.id, suffix),
-        })) ?? EMPTY_STRING_ARRAY;
+        })) ?? EMPTY_RESOURCE_ENTRY_LIST;
 
       const result = getMatchedResource(
         config,

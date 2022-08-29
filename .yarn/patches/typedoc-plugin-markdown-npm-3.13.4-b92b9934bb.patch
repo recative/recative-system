@@ -1,0 +1,12 @@
+diff --git a/dist/groups.js b/dist/groups.js
+index 15125ba8e6b888443b5380383180f5d9e2ab02e3..942bd03bf4ead5b67152ac736cac7d0b2c86c7a8 100644
+--- a/dist/groups.js
++++ b/dist/groups.js
+@@ -8,6 +8,7 @@ const PLURALS = {
+     [typedoc_1.ReflectionKind.Enum]: 'Enumerations',
+     [typedoc_1.ReflectionKind.EnumMember]: 'Enumeration members',
+     [typedoc_1.ReflectionKind.TypeAlias]: 'Type aliases',
++    [typedoc_1.ReflectionKind.Function]: 'Functions',
+ };
+ function getKindPlural(kind) {
+     if (kind in PLURALS) {

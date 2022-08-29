@@ -96,6 +96,7 @@ const useStyles = () => {
 };
 interface IControllerProps {
   core: Core;
+  loadingComponent?: React.FC;
 }
 interface IControllerConfig {
   languageAvailable?: boolean;

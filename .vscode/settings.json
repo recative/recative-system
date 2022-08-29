@@ -2,19 +2,25 @@
     "cSpell.words": [
         "baseui",
         "bson",
+        "clsx",
         "hookz",
         "nanostore",
         "nanostores",
         "nrwl",
         "paciolan",
+        "PIXI",
         "playsinline",
         "polyv",
         "recative",
+        "sublist",
         "Transferables",
         "ungap",
         "unplugin",
         "UPLOADERS",
         "Uson"
     ],
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    }
 }

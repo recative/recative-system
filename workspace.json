@@ -12,6 +12,7 @@
     "client-sdk": "packages/client-sdk",
     "core-manager": "packages/core-manager",
     "definitions": "packages/definitions",
+    "documents": "packages/documents",
     "open-promise": "packages/open-promise",
     "resource-bridge": "packages/resource-bridge",
     "resource-loader": "packages/resource-loader",

@@ -1,4 +1,5 @@
 import debug from 'debug';
+// @ts-ignore
 import objectEntries from 'object.entries';
 
 import {
