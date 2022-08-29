@@ -1,5 +1,11 @@
 # @recative/ap-core
 
+## 0.3.0
+
+### Minor Changes
+
+- BREAKING: Change default framerate level to ~30fps for all animations
+
 ## 0.2.3
 
 ### Patch Changes
