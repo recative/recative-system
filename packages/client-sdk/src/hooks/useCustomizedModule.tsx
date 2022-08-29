@@ -33,7 +33,7 @@ export interface ICustomizedModule<T = any> {
   default: T;
 }
 
-export const DEFAULT_COMPONENTS: React.FC = ({ children }) => (
+export const DEFAULT_COMPONENTS: React.FC<React.PropsWithChildren<{}>> = ({ children }) => (
   <div>{children}</div>
 );
 
