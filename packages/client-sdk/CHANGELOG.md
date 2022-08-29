@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.0.0
+
+### Patch Changes
+
+- Updated dependencies [141ccfb]
+  - @recative/act-player@0.2.0
+
 ## 3.4.1
 
 ### Patch Changes
