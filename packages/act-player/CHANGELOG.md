@@ -1,5 +1,11 @@
 # @recative/act-player
 
+## 0.1.4
+
+### Patch Changes
+
+- c1c3f5d: feat: Force video load after set source
+
 ## 0.1.3
 
 ### Patch Changes
