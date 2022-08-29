@@ -144,6 +144,10 @@ ul.menu__list ul.menu__list a.menu__link--sublist::after,
   border-color: var(--ifm-link-color);
 }
 
+.tsd-panel-header {
+  background-color: transparent !important;
+}
+
 .tsd-footer {
   display: none;
 }
