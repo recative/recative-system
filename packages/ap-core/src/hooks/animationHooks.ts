@@ -24,7 +24,10 @@ export const useAnime = (
 
   const animeTicker = result.tick.bind(result);
   const tickFunction = (timestamp: number) => {
-    if (result.paused) return;
+    if (result.paused){
+      ticker.removeFn(tickFunction);
+      return;
+    };
     animeTicker(timestamp);
   };
 
@@ -41,13 +44,12 @@ export const useAnime = (
     if (result.completed) { result.reset(); }
     result.pause();
     result.paused = false;
+    ticker.addFn(tickFunction, frameRateLevel);
   };
 
   if (x.autoplay !== false) {
     result.play();
   }
-
-  ticker.addFn(tickFunction, frameRateLevel);
 
   return result;
 };
@@ -116,7 +118,10 @@ export const useAnimeTimeline = (
 
   const animeTicker = result.tick.bind(result);
   const tickFunction = (timestamp: number) => {
-    if (result.paused) return;
+    if (result.paused){
+      ticker.removeFn(tickFunction);
+      return;
+    };
     animeTicker(timestamp);
   };
 
@@ -133,11 +138,10 @@ export const useAnimeTimeline = (
     if (result.completed) { result.reset(); }
     result.pause();
     result.paused = false;
+    ticker.addFn(tickFunction, frameRateLevel);
   };
 
   result.autoplay = x.autoplay !== false;
-
-  ticker.addFn(tickFunction, frameRateLevel);
 
   return result;
 };
