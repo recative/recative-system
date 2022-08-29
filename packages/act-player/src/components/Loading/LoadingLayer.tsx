@@ -9,20 +9,20 @@ import { ModuleContainer } from '../Layout/ModuleContainer';
 import { Loading } from './Loading';
 
 const useStyles = () => {
-  const [css] = useStyletron();
+  const [css, theme] = useStyletron();
 
   const stageContainerStyles = React.useMemo(() => css({
     height: '100%',
   }), []);
 
   const elementContainerStyles = React.useMemo(() => css({
-    backgroundColor: 'black',
+    backgroundColor: theme.colors.backgroundAlwaysDark,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     overflowX: 'hidden',
     overflowY: 'hidden',
     pointerEvents: 'auto',
-  }), []);
+  }), [theme.colors.backgroundAlwaysDark]);
 
   return { stageContainerStyles, elementContainerStyles };
 };
