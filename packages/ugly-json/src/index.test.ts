@@ -21,4 +21,3 @@ describe('parse', () => {
     expect(parsedData).toEqual(originalData);
   });
 });
-  

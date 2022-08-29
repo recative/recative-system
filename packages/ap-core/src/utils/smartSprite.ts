@@ -3,7 +3,7 @@ import * as PIXI from 'pixi.js-legacy';
 import { IResourceFileForClient } from '@recative/definitions';
 import { getMatchedResource, ResourceEntry } from '@recative/smart-resource';
 
-import { useQuery } from '../hooks/fetchDataHooks';
+import { IFailedResponse, useQuery } from '../hooks/fetchDataHooks';
 import { DataSource, useCombinator, useSelector } from '../core/DataSource';
 import {
   DefaultTagDataSource,
@@ -45,7 +45,10 @@ const useSmartTextureInfo = (
         return null;
       }
       if (!metadataResponse?.success) {
-        console.warn('Failed to get metadata:', metadataResponse.error);
+        console.warn(
+          'Failed to get metadata:',
+          (metadataResponse as IFailedResponse).error,
+        );
         return null;
       }
       const metadata = metadataResponse.data;
@@ -95,7 +98,10 @@ const useSmartTextureInfo = (
         return null;
       }
       if (!textureInfoResponse?.success) {
-        console.warn('Failed to generate SmartTextureInfo:', textureInfoResponse.error);
+        console.warn(
+          'Failed to generate SmartTextureInfo:',
+          (textureInfoResponse as IFailedResponse).error
+        );
         return {};
       }
       return textureInfoResponse.data;

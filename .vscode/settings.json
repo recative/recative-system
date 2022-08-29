@@ -3,6 +3,7 @@
         "baseui",
         "bson",
         "clsx",
+        "codicon",
         "hookz",
         "nanostore",
         "nanostores",

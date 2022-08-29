@@ -32,7 +32,7 @@ const usePlayerPropsDefaultHook = () => ({
   injectToContainer: undefined,
 });
 
-const DefaultContainerComponent: React.FC = ({ children }) => (
+const DefaultContainerComponent: React.FC<React.PropsWithChildren<{}>> = ({ children }) => (
   // eslint-disable-next-line react/forbid-dom-props
   <div className="demoContainer" style={{ width: '100%', height: '100%' }}>
     {children}

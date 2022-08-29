@@ -22,13 +22,19 @@ export const useRemoteJsonDataSource = <T>(url: string, init?: RequestInit) => {
   return [fetchData, subscribeDataUpdate] as const;
 };
 
-export type QueryResult<V> = {
+export interface ISuccessResponse<V> {
   success: true,
   data: V,
-} | {
+}
+
+export interface IFailedResponse {
   success: false,
   error: unknown,
-};
+}
+
+export type QueryResult<V> =
+ | ISuccessResponse<V>
+ | IFailedResponse;
 
 export const defaultQueryFn = async<K, V>(url: K | null) => {
   if (url === null) {

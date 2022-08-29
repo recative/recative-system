@@ -50,7 +50,6 @@
     "serve": "^11.3.2",
     "three": "^0.140.2",
     "ts-loader": "^8.0.14",
-    "typedoc-plugin-pages-fork": "^0.0.1",
     "typescript": ">=3.0.0"
   },
   "files": [

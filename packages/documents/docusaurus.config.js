@@ -1,27 +1,9 @@
 // Note: type annotations allow type checking and IDEs autocompletion
 
+const path = require('path');
 const lightCodeTheme = require('prism-react-renderer/themes/github');
 
 const labels = require('./packages');
-
-const tsDocsConfig = (packageName, label) => [
-  'docusaurus-plugin-typedoc',
-  {
-    id: `api-doc-${packageName}`,
-    out: `api/${packageName}`,
-    entryPoints: [
-      `../${packageName}`,
-    ],
-    readme: `../${packageName}/README.md`,
-    sidebar: {
-      categoryLabel: label,
-      fullNames: true,
-    },
-    entryPointStrategy: 'packages',
-    tsconfig: './tsconfig.typedoc.json',
-    excludeExternals: true,
-  },
-];
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -90,9 +72,9 @@ const config = {
             label: 'Tutorial',
           },
           {
-            to: 'docs/api',
+            to: 'api',
             label: 'API',
-            activeBasePath: 'docs/api',
+            activeBasePath: 'api',
             position: 'left',
           },
           { to: '/blog', label: 'Blog', position: 'left' },
@@ -116,7 +98,19 @@ const config = {
         theme: lightCodeTheme,
       },
     }),
-  plugins: labels.map(({ id, label }) => tsDocsConfig(id, label)),
+  plugins: [
+    [
+      'docusaurus-plugin-typedoc-api',
+      {
+        projectRoot: path.join(__dirname, '..', '..'),
+        packages: labels.map(({ id }) => ({
+          path: `packages/${id}`,
+          entry: 'src/index.ts',
+        })),
+        exclude: ['*.spec.ts', '*.test.ts'],
+      },
+    ],
+  ],
 };
 
 module.exports = config;
