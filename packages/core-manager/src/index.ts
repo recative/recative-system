@@ -1,4 +1,4 @@
-export { Core } from './core';
+export { EpisodeCore as Core } from './episodeCore';
 
 export * from './types';
 

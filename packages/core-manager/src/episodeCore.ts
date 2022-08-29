@@ -61,7 +61,7 @@ export interface CoreConfig<T> {
   episodeId: string;
 }
 
-export class Core<
+export class EpisodeCore<
   AdditionalEnvVariable extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable,
 > {
   private logCollector = new LogCollector('core');

@@ -10,7 +10,7 @@ import {
 
 import { isNotNullable } from '../../utils/isNullable';
 
-import type { Core } from '../../core';
+import type { EpisodeCore } from '../../episodeCore';
 
 const log = debug('core:preload');
 
@@ -27,7 +27,7 @@ export class PreloadManager {
 
   readonly nonBlockingResourceCacheScheduled = atom(false);
 
-  constructor(private core: Core) {}
+  constructor(private core: EpisodeCore) {}
 
   private ensureEpisodeData = () => {
     const episodeData = this.core.getEpisodeData();

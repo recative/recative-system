@@ -15,7 +15,7 @@ import type {
 } from '@recative/definitions';
 import { ResourceEntry } from '@recative/smart-resource';
 
-import type { Core } from './core';
+import type { EpisodeCore } from './episodeCore';
 
 import type { PreloadManager } from './manager/preload/PreloadManager';
 import type { ResourceListForClient } from './manager/resource/ResourceListForClient';
@@ -58,7 +58,7 @@ export interface VideoOverlaySpec {
 
 export interface CoreFunctions {
   // for component independent functions
-  core: Core;
+  core: EpisodeCore;
   // switching blocker
   /** Unblock creating and loading of the new asset instance,
    * aka setup of next content or the preload */

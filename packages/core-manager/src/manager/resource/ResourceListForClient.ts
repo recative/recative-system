@@ -18,7 +18,7 @@ import type {
 import { selectUrl } from '../../utils/resource';
 import { tryValidResourceUrl } from '../../utils/tryValidResourceUrl';
 import type { PostProcessCallback } from '../../utils/tryValidResourceUrl';
-import type { Core } from '../../core';
+import type { EpisodeCore } from '../../episodeCore';
 
 const log = debug('core:resource-list');
 
@@ -41,7 +41,7 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
   constructor(
     public readonly rawResourceList: IResourceItemForClient[],
     private trustedUploaders: string[],
-    private core: Core,
+    private core: EpisodeCore,
     private enableGlobalCache = true,
   ) {
     super(cleanUpResourceListForClient(rawResourceList, true));
