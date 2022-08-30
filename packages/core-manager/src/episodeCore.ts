@@ -52,7 +52,7 @@ import { ContentSequence, IInitialAssetStatus } from './sequence';
 
 import type { IDefaultAdditionalEnvVariable } from './manager/envVariable/EnvVariableManager';
 
-export interface CoreConfig<T> {
+export interface EpisodeCoreConfig<T> {
   initialEnvVariable: T;
   initialAssetStatus?: IInitialAssetStatus;
   attemptAutoplay?: boolean;
@@ -197,9 +197,9 @@ export class EpisodeCore<
 
   private nextRafId: number | null = null;
 
-  private episodeId: string;
+  readonly episodeId: string;
 
-  constructor(config: CoreConfig<AdditionalEnvVariable>) {
+  constructor(config: EpisodeCoreConfig<AdditionalEnvVariable>) {
     this.episodeId = config.episodeId;
     this.contentLanguage = jsonAtom(
       '@recative/core-manager/content-lang',
@@ -296,7 +296,11 @@ export class EpisodeCore<
         if (gotoEpisode === undefined) {
           return;
         }
-        gotoEpisode(seek, episode, forceReload, assetOrder, assetTime, () => this.destroy());
+        gotoEpisode(seek, episode, forceReload, assetOrder, assetTime, async () => {
+          if (this.episodeId !== episode) {
+            await this.destroy();
+          }
+        });
       },
     };
   }
@@ -310,7 +314,7 @@ export class EpisodeCore<
     episodeData.preloader.fetchNonBlockingResources();
   }
 
-  private async init(config: CoreConfig<AdditionalEnvVariable>) {
+  private async init(config: EpisodeCoreConfig<AdditionalEnvVariable>) {
     this.audioStation.activate().then(() => {
       this.logAudio('Audio station activated');
       this.internalAutoplayReady.set(true);
