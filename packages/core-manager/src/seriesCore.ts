@@ -5,12 +5,12 @@ import { IDefaultAdditionalEnvVariable, IUserRelatedEnvVariable } from './manage
 import { EpisodeData } from './types';
 import { readonlyAtom } from './utils/nanostore';
 
-export interface SeriesCoreConfig{
-  navigate:(episodeId:string, forceReload?:boolean)=>Promise<void>;
-  getEpisodeMetadata:(episodeId:string)=>EpisodeMetadata;
+export interface SeriesCoreConfig {
+  navigate: (episodeId: string, forceReload?: boolean) => Promise<void>;
+  getEpisodeMetadata: (episodeId: string) => EpisodeMetadata;
 }
 
-export interface EpisodeMetadata{
+export interface EpisodeMetadata {
   attemptAutoplay?: boolean;
   defaultContentLanguage?: string;
   defaultSubtitleLanguage?: string;
@@ -19,8 +19,8 @@ export interface EpisodeMetadata{
 
 export interface PlayerProps<
   T extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable,
-  >{
-  episodeCore:EpisodeCore<T>
+  > {
+  episodeCore: EpisodeCore<T>
 }
 
 export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable> {
@@ -38,7 +38,9 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
 
   readonly userImplementedFunction = atom<Partial<RawUserImplementedFunctions>>({});
 
-  private updateEnvVariable = (envVariable:T) => {
+  readonly eventTarget = new EventTarget();
+
+  private updateEnvVariable = (envVariable: T) => {
     this.ensureNotDestroying();
     const playProps = this.playerProps.get();
     if (playProps !== null) {
@@ -46,7 +48,7 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
     }
   };
 
-  private updateUserData = (userData:IUserRelatedEnvVariable | undefined) => {
+  private updateUserData = (userData: IUserRelatedEnvVariable | undefined) => {
     this.ensureNotDestroying();
     const playProps = this.playerProps.get();
     if (playProps !== null && userData !== undefined) {
@@ -55,7 +57,7 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
   };
 
   private updateUserImplementedFunction = (
-    userImplementedFunction:Partial<RawUserImplementedFunctions>,
+    userImplementedFunction: Partial<RawUserImplementedFunctions>,
   ) => {
     this.ensureNotDestroying();
     const playProps = this.playerProps.get();
@@ -64,14 +66,14 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
     }
   };
 
-  constructor(private config:SeriesCoreConfig) {
+  constructor(private config: SeriesCoreConfig) {
     this.envVariable.subscribe(this.updateEnvVariable);
     this.userData.subscribe(this.updateUserData);
     this.userImplementedFunction.subscribe(this.updateUserImplementedFunction);
   }
 
   setEpisode = async (
-    episodeId:string, forceReload?:boolean, assetOrder?:number, assetTime?:number,
+    episodeId: string, forceReload?: boolean, assetOrder?: number, assetTime?: number,
   ) => {
     this.ensureNotDestroying();
     if (this.switching) {
@@ -108,11 +110,35 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
     this.updateEnvVariable(this.envVariable.get());
     this.updateUserData(this.userData.get());
     this.updateUserImplementedFunction(this.userImplementedFunction.get());
+    newEpisodeCore.eventTarget.addEventListener('segmentStart', (event) => {
+      this.eventTarget.dispatchEvent(new CustomEvent('segmentStart', {
+        detail: {
+          episodeId,
+          segment: (event as CustomEvent<number>).detail,
+        },
+      }));
+    });
+    newEpisodeCore.eventTarget.addEventListener('segmentEnd', (event) => {
+      this.eventTarget.dispatchEvent(new CustomEvent('segmentEnd', {
+        detail: {
+          episodeId,
+          segment: (event as CustomEvent<number>).detail,
+        },
+      }));
+    });
+    newEpisodeCore.eventTarget.addEventListener('end', () => {
+      this.eventTarget.dispatchEvent(new CustomEvent('end', {
+        detail: {
+          episodeId,
+        },
+      }));
+    });
     // Even through the episode data is not ready, episode switching is finished
     // So do not await it here.
     metadata.episodeData.then((data) => {
       newEpisodeCore.initializeEpisode(data);
     });
+    this.eventTarget.dispatchEvent(new CustomEvent('end', { detail: { episodeId } }));
     this.switching = false;
   };
 
