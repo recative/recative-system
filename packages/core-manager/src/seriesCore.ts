@@ -1,27 +1,25 @@
+import { RawUserImplementedFunctions } from '@recative/definitions';
 import { atom } from 'nanostores';
 import { EpisodeCore } from './episodeCore';
-import { IDefaultAdditionalEnvVariable } from './manager/envVariable/EnvVariableManager';
+import { IDefaultAdditionalEnvVariable, IUserRelatedEnvVariable } from './manager/envVariable/EnvVariableManager';
+import { EpisodeData } from './types';
 import { readonlyAtom } from './utils/nanostore';
 
-export interface SeriesCoreConfig<
-  T extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable,
->{
-  navigate:(episodeId:string, forceReload?:boolean)=>Promise<void>
-  getEpisodeMetadata:(episodeId:string)=>Promise<EpisodeMetadata<T>>
+export interface SeriesCoreConfig{
+  navigate:(episodeId:string, forceReload?:boolean)=>Promise<void>;
+  getEpisodeMetadata:(episodeId:string)=>EpisodeMetadata;
 }
 
-export interface EpisodeMetadata<
-  T extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable,
->{
-  initialEnvVariable: T;
+export interface EpisodeMetadata{
   attemptAutoplay?: boolean;
   defaultContentLanguage?: string;
   defaultSubtitleLanguage?: string;
+  episodeData: Promise<EpisodeData>;
 }
 
 export interface PlayerProps<
   T extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable,
->{
+  >{
   episodeCore:EpisodeCore<T>
 }
 
@@ -34,8 +32,42 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
 
   private switching: boolean = false;
 
-  constructor(private config:SeriesCoreConfig<T>) {
+  readonly envVariable = atom<T>({} as T);
 
+  readonly userData = atom<IUserRelatedEnvVariable | undefined>();
+
+  readonly userImplementedFunction = atom<Partial<RawUserImplementedFunctions>>({});
+
+  private updateEnvVariable = (envVariable:T) => {
+    this.ensureNotDestroying();
+    const playProps = this.playerProps.get();
+    if (playProps !== null) {
+      playProps.episodeCore.additionalEnvVariable.set(envVariable);
+    }
+  };
+
+  private updateUserData = (userData:IUserRelatedEnvVariable | undefined) => {
+    this.ensureNotDestroying();
+    const playProps = this.playerProps.get();
+    if (playProps !== null && userData !== undefined) {
+      playProps.episodeCore.envVariableManager.userRelatedEnvVariableAtom.set(userData);
+    }
+  };
+
+  private updateUserImplementedFunction = (
+    userImplementedFunction:Partial<RawUserImplementedFunctions>,
+  ) => {
+    this.ensureNotDestroying();
+    const playProps = this.playerProps.get();
+    if (playProps !== null) {
+      playProps.episodeCore.setUserImplementedFunctions(userImplementedFunction);
+    }
+  };
+
+  constructor(private config:SeriesCoreConfig) {
+    this.envVariable.subscribe(this.updateEnvVariable);
+    this.userData.subscribe(this.updateUserData);
+    this.userImplementedFunction.subscribe(this.updateUserImplementedFunction);
   }
 
   setEpisode = async (
@@ -58,10 +90,9 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
     }
     await this.config.navigate(episodeId, forceReload);
     this.ensureNotDestroying();
-    const metadata = await this.config.getEpisodeMetadata(episodeId);
-    this.ensureNotDestroying();
+    const metadata = this.config.getEpisodeMetadata(episodeId);
     const newEpisodeCore = new EpisodeCore<T>({
-      initialEnvVariable: metadata.initialEnvVariable,
+      initialEnvVariable: this.envVariable.get(),
       initialAssetStatus: {
         order: assetOrder,
         time: assetTime,
@@ -74,13 +105,21 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
     this.internalPlayerProps.set({
       episodeCore: newEpisodeCore,
     });
+    this.updateEnvVariable(this.envVariable.get());
+    this.updateUserData(this.userData.get());
+    this.updateUserImplementedFunction(this.userImplementedFunction.get());
+    // Even through the episode data is not ready, episode switching is finished
+    // So do not await it here.
+    metadata.episodeData.then((data) => {
+      newEpisodeCore.initializeEpisode(data);
+    });
     this.switching = false;
   };
 
   private async internalDestroy() {
-    const oldPlayProps = this.playerProps.get();
-    if (oldPlayProps !== null) {
-      await oldPlayProps.episodeCore.destroy();
+    const playProps = this.playerProps.get();
+    if (playProps !== null) {
+      await playProps.episodeCore.destroy();
     }
   }
 

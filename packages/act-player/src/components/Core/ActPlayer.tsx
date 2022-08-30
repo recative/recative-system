@@ -68,6 +68,7 @@ export const ManagedPlayerProps = [
   'preferredUploaders',
   'trustedUploaders',
   'userData',
+  'envVariable',
   'initialAsset',
   'userImplementedFunctions',
   'disableAutoPlay',
