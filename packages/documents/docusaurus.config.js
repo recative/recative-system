@@ -66,10 +66,10 @@ const config = {
         },
         items: [
           {
-            to: 'docs/tutorial/intro',
-            activeBasePath: 'docs/tutorial',
+            to: 'docs/technotes/intro',
+            activeBasePath: 'docs/technotes',
             position: 'left',
-            label: 'Tutorial',
+            label: 'Technotes',
           },
           {
             to: 'api',
