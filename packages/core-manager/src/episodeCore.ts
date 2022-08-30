@@ -197,7 +197,7 @@ export class EpisodeCore<
 
   private nextRafId: number | null = null;
 
-  private episodeId: string;
+  readonly episodeId: string;
 
   constructor(config: EpisodeCoreConfig<AdditionalEnvVariable>) {
     this.episodeId = config.episodeId;
