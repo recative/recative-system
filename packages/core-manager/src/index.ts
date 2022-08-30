@@ -1,4 +1,11 @@
-export { EpisodeCore as Core } from './episodeCore';
+import { EpisodeCore } from './episodeCore';
+
+export { EpisodeCore } from './episodeCore';
+
+/**
+ * @deprecated Core was renamed to EpisodeCore, this will be removed in the future.
+ */
+export const Core = EpisodeCore;
 
 export * from './types';
 

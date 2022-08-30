@@ -5,7 +5,7 @@ import useConstant from 'use-constant';
 import { atom } from 'nanostores';
 import { useStore } from '@nanostores/react';
 
-import { Core } from '@recative/core-manager';
+import { EpisodeCore } from '@recative/core-manager';
 import {
   AssetForClient,
   IResourceItemForClient,
@@ -40,7 +40,7 @@ export type PlayerResourceProp = IResourceItemForClient;
 interface IInternalActPlayerProps<
   T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
 > {
-  coreRef?: React.MutableRefObject<Core<T> | null>;
+  coreRef?: React.MutableRefObject<EpisodeCore<T> | null>;
   episodeId: string;
   interfaceComponents?: InterfaceExtensionComponent[];
   interfaceComponentProps?: Record<string, unknown>;
@@ -60,6 +60,28 @@ interface IInternalActPlayerProps<
   onSegmentStart?: (segment: number) => void;
   onInitialized?: () => void;
 }
+
+export const ManagedPlayerProps = [
+  'episodeId',
+  'assets',
+  'resources',
+  'preferredUploaders',
+  'trustedUploaders',
+  'userData',
+  'initialAsset',
+  'userImplementedFunctions',
+  'disableAutoPlay',
+  'onEnd',
+  'onSegmentEnd',
+  'onSegmentStart',
+  'onInitialized',
+] as const;
+
+export interface IInternalManagedActPlayerProps<
+  T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
+> extends Omit<IInternalActPlayerProps<T>,
+  (typeof ManagedPlayerProps)[number]
+  > {}
 
 const DEFAULT_INTERFACE_COMPONENTS = [
   LoadingLayer,
@@ -82,7 +104,7 @@ const InternalActPlayer = <
   const [episodeData, setEpisodeData] = React.useState<InternalEpisodeData | null>(null);
 
   const core = useConstant(() => {
-    const manager = new Core<T>({
+    const manager = new EpisodeCore<T>({
       initialEnvVariable: props.envVariable,
       initialAssetStatus: props.initialAsset,
       attemptAutoplay: !props.disableAutoPlay,
