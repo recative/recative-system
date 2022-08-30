@@ -1,5 +1,11 @@
 # @recative/act-player
 
+## 0.2.0
+
+### Minor Changes
+
+- 141ccfb: BREAKING: LoadingLayer, Error, PanicLayer, Stage will use design token of baseui instead of pure black color
+
 ## 0.1.4
 
 ### Patch Changes

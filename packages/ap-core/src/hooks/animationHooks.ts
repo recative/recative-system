@@ -8,7 +8,7 @@ import {
   useResourceTracker,
 } from './baseHooks';
 import { DataSource } from '../core/DataSource';
-import type { FrameRateLevel, TickCallback } from '../core/TimeMagic';
+import { FrameRateLevel, TickCallback } from '../core/TimeMagic';
 
 const { timeline } = anime;
 
@@ -16,7 +16,7 @@ type IAnimeParameters = AnimeParams & { target?: never };
 
 export const useAnime = (
   x: IAnimeParameters,
-  frameRateLevel?: FrameRateLevel,
+  frameRateLevel: FrameRateLevel = FrameRateLevel.D1,
 ) => {
   const ticker = useTicker();
   const resourceTracker = useResourceTracker();
@@ -24,7 +24,10 @@ export const useAnime = (
 
   const animeTicker = result.tick.bind(result);
   const tickFunction = (timestamp: number) => {
-    if (result.paused) return;
+    if (result.paused){
+      ticker.removeFn(tickFunction);
+      return;
+    };
     animeTicker(timestamp);
   };
 
@@ -41,13 +44,12 @@ export const useAnime = (
     if (result.completed) { result.reset(); }
     result.pause();
     result.paused = false;
+    ticker.addFn(tickFunction, frameRateLevel);
   };
 
   if (x.autoplay !== false) {
     result.play();
   }
-
-  ticker.addFn(tickFunction, frameRateLevel);
 
   return result;
 };
@@ -108,7 +110,7 @@ export const useToggleAnime = (
 
 export const useAnimeTimeline = (
   x: AnimeParams,
-  frameRateLevel?: FrameRateLevel,
+  frameRateLevel: FrameRateLevel = FrameRateLevel.D1,
 ) => {
   const ticker = useTicker();
   const resourceTracker = useResourceTracker();
@@ -116,7 +118,10 @@ export const useAnimeTimeline = (
 
   const animeTicker = result.tick.bind(result);
   const tickFunction = (timestamp: number) => {
-    if (result.paused) return;
+    if (result.paused){
+      ticker.removeFn(tickFunction);
+      return;
+    };
     animeTicker(timestamp);
   };
 
@@ -133,11 +138,10 @@ export const useAnimeTimeline = (
     if (result.completed) { result.reset(); }
     result.pause();
     result.paused = false;
+    ticker.addFn(tickFunction, frameRateLevel);
   };
 
   result.autoplay = x.autoplay !== false;
-
-  ticker.addFn(tickFunction, frameRateLevel);
 
   return result;
 };
@@ -165,7 +169,7 @@ export const useLerp = (
   updateFn: (x: number) => void,
   damping: number = 0.15,
   threshold: number = 1e-5,
-  frameRateLevel?: FrameRateLevel,
+  frameRateLevel: FrameRateLevel = FrameRateLevel.D1,
 ) => {
   let targetValue = getCurrentValFn();
   let cachedDamping = damping;

@@ -48,6 +48,7 @@ interface IErrorProps {
 }
 
 export const Error: React.FC<IErrorProps> = ({ children }) => {
+  const [, theme] = useStyletron();
   const { containerStyles, loaderStyles, textStyles } = useStyles();
 
   return (
@@ -55,7 +56,7 @@ export const Error: React.FC<IErrorProps> = ({ children }) => {
       width="100%"
       height="100%"
       position="relative"
-      backgroundColor="black"
+      backgroundColor={theme.colors.backgroundAlwaysDark}
     >
       <NoisyBackground />
       <Block className={containerStyles} display="flex" alignItems="center">
