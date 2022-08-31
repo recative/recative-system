@@ -27,16 +27,21 @@ export interface InjectedProps<PlayerPropsInjectedDependencies> {
   userImplementedFunctions: Partial<RawUserImplementedFunctions> | undefined;
 }
 
-const ON_END: IContentProps<unknown, unknown>['onEnd'] = () => log('[DEFAULT] All content ended');
-const ON_SEGMENT_END: IContentProps<unknown, unknown>['onSegmentEnd'] = ({ episodeId, segment }: SegmentEndEventDetail) => log(`[DEFAULT] Segment ${segment} of ${episodeId} ended`);
-const ON_SEGMENT_START: IContentProps<unknown, unknown>['onSegmentStart'] = ({ episodeId, segment }: SegmentStartEventDetail) => log(`[DEFAULT] Segment ${segment} of ${episodeId} ended`);
+type UnknownRecord = Record<string, unknown>;
 
-export type PlayerPropsInjectorHook<PlayerPropsInjectedDependencies, EnvVariable> = (
+const ON_END: IContentProps<unknown, UnknownRecord>['onEnd'] = () => log('[DEFAULT] All content ended');
+const ON_SEGMENT_END: IContentProps<unknown, UnknownRecord>['onSegmentEnd'] = ({ episodeId, segment }: SegmentEndEventDetail) => log(`[DEFAULT] Segment ${segment} of ${episodeId} ended`);
+const ON_SEGMENT_START: IContentProps<unknown, UnknownRecord>['onSegmentStart'] = ({ episodeId, segment }: SegmentStartEventDetail) => log(`[DEFAULT] Segment ${segment} of ${episodeId} ended`);
+
+export type PlayerPropsInjectorHook<
+  PlayerPropsInjectedDependencies,
+  EnvVariable extends Record<string, unknown>,
+> = (
   props: InjectedProps<PlayerPropsInjectedDependencies>
 ) => {
   episodeId?: string;
-  injectToPlayer?: Partial<IManagedActPointProps>;
-  injectToSdk?: Partial<IContentProps<EnvVariable, PlayerPropsInjectedDependencies>>;
+  injectToPlayer?: Partial<IManagedActPointProps<EnvVariable>>;
+  injectToSdk?: Partial<IContentProps<PlayerPropsInjectedDependencies, EnvVariable>>;
   injectToContainer?: Record<string, unknown>;
   getEpisodeMetadata?: (x: IEpisodeMetadata) => IEpisodeMetadata;
 };
@@ -128,12 +133,17 @@ export const useInjector = <
   } = usePlayerProps(playerPropsHookProps);
 
   const {
-    hookOnEnd, hookOnSegmentEnd, hookOnSegmentStart, hookInjectToSdk,
+    hookOnEnd,
+    hookOnSegmentEnd,
+    hookOnSegmentStart,
+    hookInjectToSdk,
+    hookUserImplementedFunctions,
   } = React.useMemo(() => {
     const {
       onEnd: hookOnEnd0,
       onSegmentEnd: hookOnSegmentEnd0,
       onSegmentStart: hookOnSegmentStart0,
+      userImplementedFunctions: hookUserImplementedFunctions0,
       ...injectToSdk0
     } = injectToSdk ?? {};
 
@@ -141,6 +151,7 @@ export const useInjector = <
       hookOnEnd: hookOnEnd0,
       hookOnSegmentEnd: hookOnSegmentEnd0,
       hookOnSegmentStart: hookOnSegmentStart0,
+      hookUserImplementedFunctions: hookUserImplementedFunctions0,
       hookInjectToSdk: injectToSdk0,
     };
   }, [injectToSdk]);
@@ -156,6 +167,7 @@ export const useInjector = <
     hookOnEnd,
     hookOnSegmentEnd,
     hookOnSegmentStart,
+    hookUserImplementedFunctions,
     injectToSdk: hookInjectToSdk,
     injectToContainer,
     injectToPlayer,

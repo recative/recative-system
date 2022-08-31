@@ -3,6 +3,7 @@ import useConstant from 'use-constant';
 import { useStore } from '@nanostores/react';
 
 import { SeriesCore } from '@recative/core-manager';
+import type { RawUserImplementedFunctions } from '@recative/definitions';
 import type { ISeriesCoreConfig, IEpisodeMetadata } from '@recative/core-manager';
 
 import { useDataFetcher } from './useDataFetcher';
@@ -11,6 +12,7 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
   preferredUploaders: string[],
   trustedUploaders: string[],
   rawEpisodeMetadata: Omit<IEpisodeMetadata, 'episodeData'>,
+  userImplementedFunctions: Partial<RawUserImplementedFunctions> | undefined,
   getInjectedEpisodeMetadata: ((x: IEpisodeMetadata) => IEpisodeMetadata) | undefined,
   navigate: ISeriesCoreConfig['navigate'],
 ) => {
@@ -50,6 +52,12 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
   React.useEffect(() => {
     seriesCore.config.navigate = navigate;
   }, [navigate, seriesCore.config]);
+
+  React.useEffect(() => {
+    if (userImplementedFunctions) {
+      seriesCore.userImplementedFunction.set(userImplementedFunctions);
+    }
+  }, [seriesCore.userImplementedFunction, userImplementedFunctions]);
 
   const episodeCore = useStore(seriesCore.currentEpisodeCore);
 

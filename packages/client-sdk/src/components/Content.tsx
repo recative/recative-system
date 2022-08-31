@@ -1,4 +1,5 @@
 import * as React from 'react';
+import debug from 'debug';
 
 import { ActPlayer, InterfaceExtensionComponent } from '@recative/act-player';
 import {
@@ -30,13 +31,21 @@ import { useResetAssetStatusCallback } from '../hooks/useResetAssetStatusCallbac
 
 import { CONTAINER_COMPONENT } from '../constant/storageKeys';
 
-export interface IContentProps<PlayerPropsInjectedDependencies, EnvVariable> {
+const error = debug('sdk:content:error');
+// This is on purpose
+// eslint-disable-next-line no-console
+error.log = console.error.bind(console);
+
+export interface IContentProps<
+  PlayerPropsInjectedDependencies,
+  EnvVariable extends Record<string, unknown>,
+> {
   episodeId: string | undefined;
   userImplementedFunctions: Partial<RawUserImplementedFunctions> | undefined;
   preferredUploaders: string[];
   trustedUploaders: string[];
   envVariable: EnvVariable | undefined;
-  loadingComponent?: React.FC<{}>;
+  loadingComponent?: React.FC;
   initialAsset: IEpisodeMetadata['initialAssetStatus'];
   attemptAutoplay?: IEpisodeMetadata['attemptAutoplay'];
   defaultContentLanguage?: IEpisodeMetadata['defaultContentLanguage'];
@@ -61,7 +70,10 @@ const DefaultContainerComponent: React.FC<React.PropsWithChildren<{}>> = ({ chil
 const DefaultContainerModule = {
   Container: DefaultContainerComponent,
 };
-interface IContentModule<PlayerPropsInjectedDependencies, EnvVariable> {
+interface IContentModule<
+  PlayerPropsInjectedDependencies,
+  EnvVariable extends Record<string, unknown>,
+> {
   Container?: React.FC<React.PropsWithChildren>;
   interfaceComponents?: InterfaceExtensionComponent[];
   usePlayerProps?: PlayerPropsInjectorHook<PlayerPropsInjectedDependencies, EnvVariable>;
@@ -86,8 +98,7 @@ EnvVariable extends Record<string, unknown>,
           debugContainerComponents ? null : baseUrl,
         )) as IContentModule<PlayerPropsInjectedDependencies, EnvVariable>;
       } catch (e) {
-        console.warn('Failed to load customized module!');
-        console.error(e);
+        error('Failed to load customized module!', e);
         return DefaultContainerModule as IContentModule<
         PlayerPropsInjectedDependencies, EnvVariable
         >;
@@ -135,6 +146,7 @@ EnvVariable extends Record<string, unknown>,
         hookOnEnd,
         hookOnSegmentEnd,
         hookOnSegmentStart,
+        hookUserImplementedFunctions,
         injectToSdk,
         injectToContainer,
         injectToPlayer,
@@ -168,6 +180,7 @@ EnvVariable extends Record<string, unknown>,
         preferredUploaders,
         trustedUploaders,
         rawEpisodeMetadata,
+        hookUserImplementedFunctions,
         getInjectedEpisodeMetadata,
         onEpisodeIdUpdate,
       );
@@ -203,9 +216,7 @@ EnvVariable extends Record<string, unknown>,
             playerReady ? (
                 <ActPlayer<true, EnvVariable>
                   core={episodeCore}
-                  userImplementedFunctions={userImplementedFunctions}
                   interfaceComponents={interfaceComponents}
-                  userData={undefined}
                   loadingComponent={loadingComponent}
                   {...injectToPlayer}
                 />
