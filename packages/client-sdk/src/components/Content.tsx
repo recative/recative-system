@@ -6,7 +6,7 @@ import useConstant from 'use-constant';
 
 import { ActPlayer } from '@recative/act-player';
 import { SeriesCore } from '@recative/core-manager';
-import type { IActPointProps } from '@recative/act-player';
+import type { IUnmanagedActPointProps } from '@recative/act-player';
 import type { RawUserImplementedFunctions } from '@recative/definitions';
 import type {
   EpisodeCore,
@@ -61,7 +61,7 @@ interface IContentModule<PlayerPropsInjectedDependencies> {
     coreRef: React.RefObject<EpisodeCore>;
     userImplementedFunctions: Partial<RawUserImplementedFunctions> | undefined;
   }) => {
-    injectToPlayer?: Partial<IActPointProps>;
+    injectToPlayer?: Partial<IUnmanagedActPointProps>;
     injectToContainer?: Record<string, unknown>;
   };
 }

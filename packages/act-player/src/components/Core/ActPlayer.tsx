@@ -17,6 +17,7 @@ import type {
 import { Block } from 'baseui/block';
 
 import { useFullScreen } from './hooks/useFullScreen';
+import { useLoadingStatus } from './hooks/useLoadingStatus';
 import { useCustomEventWrapper } from './hooks/useCustomEventWrapper';
 import { useEnvVariableHandler } from './hooks/useEnvVariableHandler';
 import { usePageVisibilityHandler } from './hooks/usePageVisibilityHandler';
@@ -37,7 +38,7 @@ import { useEpisodeInitializer } from './hooks/useEpisodeInitializer';
 
 export type PlayerResourceProp = IResourceItemForClient;
 
-interface IInternalActPlayerProps<
+interface IInternalUnmanagedActPlayerProps<
   T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
 > {
   coreRef?: React.MutableRefObject<EpisodeCore<T> | null>;
@@ -67,22 +68,19 @@ export const ManagedPlayerProps = [
   'resources',
   'preferredUploaders',
   'trustedUploaders',
-  'userData',
-  'envVariable',
   'initialAsset',
   'userImplementedFunctions',
   'disableAutoPlay',
-  'onEnd',
-  'onSegmentEnd',
-  'onSegmentStart',
   'onInitialized',
 ] as const;
 
 export interface IInternalManagedActPlayerProps<
   T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
-> extends Omit<IInternalActPlayerProps<T>,
+> extends Omit<IInternalUnmanagedActPlayerProps<T>,
   (typeof ManagedPlayerProps)[number]
-  > {}
+  > {
+  core: EpisodeCore<T>;
+}
 
 const DEFAULT_INTERFACE_COMPONENTS = [
   LoadingLayer,
@@ -93,74 +91,42 @@ const DEFAULT_INTERFACE_COMPONENTS = [
   PanicLayer,
 ];
 
-const InternalUnmanagedActPlayer = <
+export const InternalManagedActPlayer = <
   T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
 >(
     {
+      core,
       coreRef,
-      episodeId,
-      interfaceComponents,
-      interfaceComponentProps,
-      assets,
-      resources,
-      preferredUploaders,
-      trustedUploaders,
       userData,
       envVariable,
-      initialAsset,
-      userImplementedFunctions,
-      disableAutoPlay,
+      interfaceComponents,
+      interfaceComponentProps,
       pauseWhenNotVisible,
       loadingComponent,
       onEnd,
       onSegmentEnd,
       onSegmentStart,
-      onInitialized,
-    }: IInternalActPlayerProps<T>,
+    }: IInternalManagedActPlayerProps<T>,
   ) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  const core = useConstant(() => {
-    const manager = new EpisodeCore<T>({
-      initialEnvVariable: envVariable,
-      initialAssetStatus: initialAsset,
-      attemptAutoplay: !disableAutoPlay,
-      episodeId,
-    });
-    onInitialized?.();
-
-    return { manager };
-  });
-
-  React.useImperativeHandle(coreRef, () => core.manager);
-
-  const { playerLoading } = useEpisodeInitializer(
-    assets,
-    resources,
-    preferredUploaders,
-    trustedUploaders,
-    core.manager,
-  );
+  React.useImperativeHandle(coreRef, () => core);
 
   const internalInterfaceComponents = interfaceComponents ?? DEFAULT_INTERFACE_COMPONENTS;
 
-  const fullScreen = useStore(core.manager.fullScreen);
-  useFullScreen(fullScreen, core.manager, containerRef);
+  const fullScreen = useStore(core.fullScreen);
+  useFullScreen(fullScreen, core, containerRef);
 
   useContextMenuRemovalHandler(containerRef);
 
-  React.useLayoutEffect(() => {
-    core.manager.setUserImplementedFunctions(
-      userImplementedFunctions,
-    );
-  }, [core.manager, userImplementedFunctions]);
+  useCustomEventWrapper(onEnd, 'end', core);
+  useCustomEventWrapper(onSegmentEnd, 'segmentEnd', core);
+  useCustomEventWrapper(onSegmentStart, 'segmentStart', core);
 
-  useCustomEventWrapper(onEnd, 'end', core.manager);
-  useCustomEventWrapper(onSegmentEnd, 'segmentEnd', core.manager);
-  useCustomEventWrapper(onSegmentStart, 'segmentStart', core.manager);
+  usePageVisibilityHandler(!!pauseWhenNotVisible, core);
+  useEnvVariableHandler(userData, envVariable, core);
 
-  usePageVisibilityHandler(!!pauseWhenNotVisible, core.manager);
-  useEnvVariableHandler(userData, envVariable, core.manager);
+  const playerLoading = useLoadingStatus(core);
 
   if (playerLoading) {
     const LoadingComponent = loadingComponent ?? Loading;
@@ -189,7 +155,7 @@ const InternalUnmanagedActPlayer = <
     >
       {internalInterfaceComponents.map((Component, index) => (
         <Component
-          core={core.manager}
+          core={core}
           key={index}
           loadingComponent={loadingComponent}
           {...interfaceComponentProps}
@@ -200,9 +166,83 @@ const InternalUnmanagedActPlayer = <
   );
 };
 
-export interface IActPointProps<
+const InternalUnmanagedActPlayer = <
   T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
-> extends IInternalActPlayerProps<T> {
+>(
+    {
+      coreRef,
+      episodeId,
+      interfaceComponents,
+      interfaceComponentProps,
+      assets,
+      resources,
+      preferredUploaders,
+      trustedUploaders,
+      userData,
+      envVariable,
+      initialAsset,
+      userImplementedFunctions,
+      disableAutoPlay,
+      pauseWhenNotVisible,
+      loadingComponent,
+      onEnd,
+      onSegmentEnd,
+      onSegmentStart,
+      onInitialized,
+    }: IInternalUnmanagedActPlayerProps<T>,
+  ) => {
+  const core = useConstant(() => {
+    const manager = new EpisodeCore<T>({
+      initialEnvVariable: envVariable,
+      initialAssetStatus: initialAsset,
+      attemptAutoplay: !disableAutoPlay,
+      episodeId,
+    });
+    onInitialized?.();
+
+    return { manager };
+  });
+
+  useEpisodeInitializer(
+    assets,
+    resources,
+    preferredUploaders,
+    trustedUploaders,
+    core.manager,
+  );
+
+  React.useLayoutEffect(() => {
+    core.manager.setUserImplementedFunctions(
+      userImplementedFunctions,
+    );
+  }, [core.manager, userImplementedFunctions]);
+
+  return (
+    <InternalManagedActPlayer<T>
+      core={core.manager}
+      coreRef={coreRef}
+      userData={userData}
+      envVariable={envVariable}
+      interfaceComponents={interfaceComponents}
+      interfaceComponentProps={interfaceComponentProps}
+      pauseWhenNotVisible={pauseWhenNotVisible}
+      loadingComponent={loadingComponent}
+      onEnd={onEnd}
+      onSegmentEnd={onSegmentEnd}
+      onSegmentStart={onSegmentStart}
+    />
+  );
+};
+
+export interface IUnmanagedActPointProps<
+  T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
+> extends IInternalUnmanagedActPlayerProps<T> {
+  episodeId: string;
+}
+
+export interface IManagedActPointProps<
+  T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
+> extends IInternalManagedActPlayerProps<T> {
   episodeId: string;
 }
 
@@ -211,6 +251,10 @@ export const ActPlayer = <
 >({
     episodeId,
     ...props
-  }: IActPointProps<T>) => {
+  }: IUnmanagedActPointProps<T> | IManagedActPointProps<T>) => {
+  if ('core' in props) {
+    return <InternalManagedActPlayer<T> key={episodeId} {...props} />;
+  }
+
   return <InternalUnmanagedActPlayer<T> key={episodeId} {...props} episodeId={episodeId} />;
 };

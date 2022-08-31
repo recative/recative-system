@@ -1,7 +1,4 @@
 import * as React from 'react';
-import debug from 'debug';
-
-import { atom } from 'nanostores';
 
 import type {
   EpisodeCore,
@@ -14,15 +11,9 @@ import type {
 
 import useConstant from 'use-constant';
 
-import { useBugFreeStore } from '../../../hooks/useBugFreeStore';
-
-const log = debug('player:initializer');
-
 export interface PlayerAssetProp extends Omit<AssetForClient, 'duration'> {
   duration: number | null;
 }
-
-const FALSE_STORE = atom(false);
 
 export const useEpisodeInitializer = (
   assets: PlayerAssetProp[],
@@ -53,14 +44,5 @@ export const useEpisodeInitializer = (
     setEpisodeData(nextEpisodeData);
   }, [assets, core, episodeInitialized, preferredUploaders, resources, trustedUploaders]);
 
-  const urlCached = useBugFreeStore(episodeData?.preloader.urlCached ?? FALSE_STORE);
-  const blockingResourcesCached = useBugFreeStore(
-    episodeData?.preloader.blockingResourceCached ?? FALSE_STORE,
-  );
-
-  const playerLoading = !urlCached || !blockingResourcesCached;
-
-  log(`Loading screen showed, reason: urlCached -> ${urlCached}, blockingResourcesCached -> ${blockingResourcesCached}`);
-
-  return { episodeData, episodeInitialized, playerLoading };
+  return { episodeData, episodeInitialized };
 };
