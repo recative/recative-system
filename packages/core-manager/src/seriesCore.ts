@@ -106,6 +106,7 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
       return;
     }
     this.switching = true;
+    const metadata = this.config.getEpisodeMetadata(episodeId);
     const oldPlayProps = this.playerProps.get();
     if (oldPlayProps !== null) {
       if (oldPlayProps.episodeCore.episodeId === episodeId) {
@@ -118,7 +119,6 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
     }
     await this.config.navigate(episodeId, forceReload);
     this.ensureNotDestroying();
-    const metadata = this.config.getEpisodeMetadata(episodeId);
     const newEpisodeCore = new EpisodeCore<T>({
       initialEnvVariable: this.envVariable.get(),
       initialAssetStatus: {
