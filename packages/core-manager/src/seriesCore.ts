@@ -58,7 +58,9 @@ export interface IEpisodeMetadata {
 export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable> {
   private internalCurrentEpisodeCore = atom<EpisodeCore<T> | null>(null);
 
-  readonly currentEpisodeCore = readonlyAtom(this.internalCurrentEpisodeCore);
+  readonly currentEpisodeCore = readonlyAtom<EpisodeCore<T> | null>(
+    this.internalCurrentEpisodeCore,
+  );
 
   private destroyPromise: Promise<void> | null = null;
 
