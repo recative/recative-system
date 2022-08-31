@@ -155,6 +155,10 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
     }
   }
 
+  updateConfig(newConfig:Partial<SeriesCoreConfig>) {
+    this.config = { ...this.config, ...newConfig };
+  }
+
   destroy() {
     if (this.destroyPromise === null) {
       this.destroyPromise = this.internalDestroy();
