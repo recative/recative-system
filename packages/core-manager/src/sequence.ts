@@ -8,7 +8,7 @@ import {
 } from '@recative/open-promise';
 import { AudioStation } from '@recative/audio-station';
 import EventTarget from '@ungap/event-target';
-import type { ComponentFunctions, Progress } from './types';
+import type { ComponentFunctions, CustomEventHandler, Progress } from './types';
 // eslint-disable-next-line import/no-cycle
 import { ContentInstance } from './instance';
 import { distinctAtom, throttledAtom, ThrottledAtomReturnType } from './utils/nanostore';
@@ -47,6 +47,12 @@ export interface SequenceOption {
   getContentSwitchBlocker: (lastSegment: number, currentSegment: number) => Set<string>
 }
 
+export type ContentSequenceEventTarget = EventTarget & {
+  addEventListener(type: 'segmentStart', callback:CustomEventHandler<number>):void,
+  addEventListener(type: 'segmentEnd', callback:CustomEventHandler<number>):void,
+  addEventListener(type: 'end', callback:CustomEventHandler<undefined>):void,
+};
+
 /**
  * This should only be used in this package
  */
@@ -57,7 +63,7 @@ export class ContentSequence {
 
   logInstance: Logger;
 
-  eventTarget = new EventTarget();
+  eventTarget = new EventTarget() as ContentSequenceEventTarget;
 
   /**
    * All contents (or 'assets') available in the episode

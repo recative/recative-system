@@ -39,6 +39,7 @@ import type {
   ComponentFunctions,
   InternalEpisodeData,
   Progress,
+  CustomEventHandler,
 } from './types';
 import { BGMManager } from './audio/bgmManager';
 import { LogCollector } from './LogCollector';
@@ -61,6 +62,12 @@ export interface EpisodeCoreConfig<T> {
   episodeId: string;
 }
 
+export type EpisodeCoreEventTarget = EventTarget & {
+  addEventListener(type: 'segmentStart', callback:CustomEventHandler<number>):void,
+  addEventListener(type: 'segmentEnd', callback:CustomEventHandler<number>):void,
+  addEventListener(type: 'end', callback:CustomEventHandler<undefined>):void,
+};
+
 export class EpisodeCore<
   AdditionalEnvVariable extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable,
 > {
@@ -72,7 +79,7 @@ export class EpisodeCore<
 
   private logAudio = this.logCollector.Logger('audio');
 
-  readonly eventTarget = new EventTarget();
+  readonly eventTarget = new EventTarget() as EpisodeCoreEventTarget;
 
   readonly resourceLoader = ResourceLoader.getInstance();
 

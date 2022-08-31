@@ -1,9 +1,35 @@
 import { RawUserImplementedFunctions } from '@recative/definitions';
 import { atom } from 'nanostores';
+import EventTarget from '@ungap/event-target';
 import { EpisodeCore } from './episodeCore';
 import { IDefaultAdditionalEnvVariable, IUserRelatedEnvVariable } from './manager/envVariable/EnvVariableManager';
-import { EpisodeData } from './types';
+import { CustomEventHandler, EpisodeData } from './types';
 import { readonlyAtom } from './utils/nanostore';
+
+export interface SegmentStartEventDetail{
+  episodeId:string,
+  segment:number,
+}
+
+export interface SegmentEndEventDetail{
+  episodeId:string,
+  segment:number,
+}
+
+export interface EndEventDetail{
+  episodeId:string,
+}
+
+export interface InitializedEventDetail{
+  episodeId:string,
+}
+
+export type SeriesCoreEventTarget = EventTarget & {
+  addEventListener(type: 'segmentStart', callback:CustomEventHandler<SegmentStartEventDetail>):void,
+  addEventListener(type: 'segmentEnd', callback:CustomEventHandler<SegmentEndEventDetail>):void,
+  addEventListener(type: 'end', callback:CustomEventHandler<EndEventDetail>):void,
+  addEventListener(type: 'initialized', callback:CustomEventHandler<InitializedEventDetail>):void,
+};
 
 export interface ISeriesCoreConfig {
   navigate: (episodeId: string, forceReload?: boolean) => Promise<void>;
@@ -38,7 +64,7 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
 
   readonly userImplementedFunction = atom<Partial<RawUserImplementedFunctions>>({});
 
-  readonly eventTarget = new EventTarget();
+  readonly eventTarget = new EventTarget() as SeriesCoreEventTarget;
 
   private updateEnvVariable = (envVariable: T) => {
     this.ensureNotDestroying();
@@ -114,7 +140,7 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
       this.eventTarget.dispatchEvent(new CustomEvent('segmentStart', {
         detail: {
           episodeId,
-          segment: (event as CustomEvent<number>).detail,
+          segment: event.detail,
         },
       }));
     });
@@ -122,7 +148,7 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
       this.eventTarget.dispatchEvent(new CustomEvent('segmentEnd', {
         detail: {
           episodeId,
-          segment: (event as CustomEvent<number>).detail,
+          segment: event.detail,
         },
       }));
     });
@@ -138,7 +164,7 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
     metadata.episodeData.then((data) => {
       newEpisodeCore.initializeEpisode(data);
     });
-    this.eventTarget.dispatchEvent(new CustomEvent('end', { detail: { episodeId } }));
+    this.eventTarget.dispatchEvent(new CustomEvent('initialized', { detail: { episodeId } }));
     this.switching = false;
   };
 
