@@ -77,6 +77,7 @@ export interface IContentProps<EnvVariable> {
   attemptAutoplay?: IEpisodeMetadata['attemptAutoplay'];
   defaultContentLanguage?: IEpisodeMetadata['defaultContentLanguage'];
   defaultSubtitleLanguage?: IEpisodeMetadata['defaultSubtitleLanguage'];
+  navigate: ISeriesCoreConfig['navigate'],
   playerPropsHookDependencies?: any;
   onEnd?: () => void;
   onSegmentEnd?: (segment: number) => void;
@@ -90,7 +91,6 @@ export const ContentModuleFactory = <
 >(
     pathPattern: string,
     dataType: string,
-    navigate: ISeriesCoreConfig['navigate'],
     baseUrl = '',
   ) => React.lazy(async () => {
     const debugContainerComponents = localStorage.getItem(CONTAINER_COMPONENT);
@@ -128,6 +128,7 @@ export const ContentModuleFactory = <
       trustedUploaders,
       userImplementedFunctions,
       playerPropsHookDependencies,
+      navigate,
       attemptAutoplay,
       defaultContentLanguage,
       defaultSubtitleLanguage,
@@ -159,9 +160,8 @@ export const ContentModuleFactory = <
         [dataType, pathPattern, setClientSdkConfig]
       );
 
-      const seriesCore = useConstant(() => new SeriesCore({
-        navigate,
-        getEpisodeMetadata: (nextEpisodeId: string) => ({
+      const getEpisodeMetadata = React.useCallback(
+        (nextEpisodeId: string) => ({
           attemptAutoplay,
           defaultContentLanguage,
           defaultSubtitleLanguage,
@@ -171,8 +171,28 @@ export const ContentModuleFactory = <
             preferredUploaders,
             trustedUploaders
           })),
-        })
+        }),
+        [
+          attemptAutoplay,
+          defaultContentLanguage,
+          defaultSubtitleLanguage,
+          fetchData,
+          preferredUploaders,
+          trustedUploaders
+        ]
+      );
+
+      const seriesCore = useConstant(() => new SeriesCore({
+        navigate,
+        getEpisodeMetadata
       }));
+
+      React.useEffect(() => {
+        seriesCore.updateConfig({
+          navigate,
+          getEpisodeMetadata
+        });
+      }, [navigate, getEpisodeMetadata]);
 
       const playerPropsHookProps = React.useMemo(
         () => ({

@@ -104,7 +104,6 @@
         "react/prop-types": "off",
         "react/display-name": "off",
         "react/forbid-dom-props": [2, { "forbid": ["style"] }],
-        "react-hooks/exhaustive-deps": "off",
         "jsx-a11y/iframe-has-title": "warn",
         "jsx-a11y/media-has-caption": "warn",
         "jsx-a11y/alt-text": "warn"

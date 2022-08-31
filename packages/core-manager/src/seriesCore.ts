@@ -155,7 +155,7 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
     }
   }
 
-  updateConfig(newConfig:Partial<SeriesCoreConfig>) {
+  updateConfig(newConfig: Partial<ISeriesCoreConfig>) {
     this.config = { ...this.config, ...newConfig };
   }
 
