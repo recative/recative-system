@@ -147,17 +147,20 @@ export const ContentModuleFactory = <
 
       const episodeDetail = useEpisodeDetail(episodeId ?? null);
 
-      // eslint-disable-next-line @typescript-eslint/no-shadow
-      const { pathPattern, dataType, setClientSdkConfig } = useSdkConfig();
+      const {
+        pathPattern: internalPathPattern,
+        dataType: internalDataType,
+        setClientSdkConfig
+      } = useSdkConfig();
 
       const fetchData = React.useCallback(
         (fileName: string) => fetch(
           fileName,
-          dataType,
-          pathPattern,
+          internalDataType,
+          internalPathPattern,
           setClientSdkConfig
         ) as Promise<IEpisodeDetail>,
-        [dataType, pathPattern, setClientSdkConfig]
+        [internalDataType, internalPathPattern, setClientSdkConfig]
       );
 
       const getEpisodeMetadata = React.useCallback(
@@ -192,7 +195,7 @@ export const ContentModuleFactory = <
           navigate,
           getEpisodeMetadata
         });
-      }, [navigate, getEpisodeMetadata]);
+      }, [navigate, getEpisodeMetadata, seriesCore]);
 
       const playerPropsHookProps = React.useMemo(
         () => ({
@@ -238,7 +241,7 @@ export const ContentModuleFactory = <
         log('Episode Detail', episodeDetail);
         log('Props for hook', playerPropsHookProps);
         log('Injected player props', playerProps);
-      }, [playerProps]);
+      }, [episodeDetail, episodeId, playerProps, playerPropsHookProps]);
 
       const onEnd = React.useCallback(() => {
         playerOnEnd?.();

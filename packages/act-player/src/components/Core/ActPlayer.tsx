@@ -66,11 +66,16 @@ export const ManagedPlayerProps = [
   'episodeId',
   'assets',
   'resources',
+  'userData',
+  'envVariable',
   'preferredUploaders',
   'trustedUploaders',
   'initialAsset',
   'userImplementedFunctions',
   'disableAutoPlay',
+  'onEnd',
+  'onSegmentEnd',
+  'onSegmentStart',
   'onInitialized',
 ] as const;
 
@@ -97,15 +102,10 @@ export const InternalManagedActPlayer = <
     {
       core,
       coreRef,
-      userData,
-      envVariable,
       interfaceComponents,
       interfaceComponentProps,
       pauseWhenNotVisible,
       loadingComponent,
-      onEnd,
-      onSegmentEnd,
-      onSegmentStart,
     }: IInternalManagedActPlayerProps<T>,
   ) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -119,12 +119,7 @@ export const InternalManagedActPlayer = <
 
   useContextMenuRemovalHandler(containerRef);
 
-  useCustomEventWrapper(onEnd, 'end', core);
-  useCustomEventWrapper(onSegmentEnd, 'segmentEnd', core);
-  useCustomEventWrapper(onSegmentStart, 'segmentStart', core);
-
   usePageVisibilityHandler(!!pauseWhenNotVisible, core);
-  useEnvVariableHandler(userData, envVariable, core);
 
   const playerLoading = useLoadingStatus(core);
 
@@ -211,6 +206,12 @@ const InternalUnmanagedActPlayer = <
     core.manager,
   );
 
+  useEnvVariableHandler(userData, envVariable, core.manager);
+
+  useCustomEventWrapper(onEnd, 'end', core.manager);
+  useCustomEventWrapper(onSegmentEnd, 'segmentEnd', core.manager);
+  useCustomEventWrapper(onSegmentStart, 'segmentStart', core.manager);
+
   React.useLayoutEffect(() => {
     core.manager.setUserImplementedFunctions(
       userImplementedFunctions,
@@ -221,15 +222,10 @@ const InternalUnmanagedActPlayer = <
     <InternalManagedActPlayer<T>
       core={core.manager}
       coreRef={coreRef}
-      userData={userData}
-      envVariable={envVariable}
       interfaceComponents={interfaceComponents}
       interfaceComponentProps={interfaceComponentProps}
       pauseWhenNotVisible={pauseWhenNotVisible}
       loadingComponent={loadingComponent}
-      onEnd={onEnd}
-      onSegmentEnd={onSegmentEnd}
-      onSegmentStart={onSegmentStart}
     />
   );
 };
