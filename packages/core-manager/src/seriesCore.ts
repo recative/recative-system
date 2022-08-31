@@ -92,7 +92,7 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
     }
   };
 
-  constructor(private config: ISeriesCoreConfig) {
+  constructor(public config: ISeriesCoreConfig) {
     this.envVariable.subscribe(this.updateEnvVariable);
     this.userData.subscribe(this.updateUserData);
     this.userImplementedFunction.subscribe(this.updateUserImplementedFunction);

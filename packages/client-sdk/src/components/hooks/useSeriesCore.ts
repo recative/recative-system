@@ -43,6 +43,14 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
     getEpisodeMetadata,
   }));
 
+  React.useEffect(() => {
+    seriesCore.config.getEpisodeMetadata = getEpisodeMetadata;
+  }, [getEpisodeMetadata, seriesCore.config]);
+
+  React.useEffect(() => {
+    seriesCore.config.navigate = navigate;
+  }, [navigate, seriesCore.config]);
+
   const episodeCore = useStore(seriesCore.currentEpisodeCore);
 
   React.useEffect(() => {
