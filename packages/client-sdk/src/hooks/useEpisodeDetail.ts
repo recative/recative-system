@@ -12,7 +12,7 @@ export const useEpisodeDetail = (episodeId: string | null): IEpisodeDetail | nul
     if (episodeId !== null) {
       episodeDetailController.execute();
     }
-  }, [episodeId]);
+  }, [episodeDetailController, episodeId]);
 
   return episodeDetail.result;
 };

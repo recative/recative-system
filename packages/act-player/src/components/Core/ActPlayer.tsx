@@ -38,53 +38,34 @@ import { useEpisodeInitializer } from './hooks/useEpisodeInitializer';
 
 export type PlayerResourceProp = IResourceItemForClient;
 
-interface IInternalUnmanagedActPlayerProps<
+export interface IInternalManagedActPlayerProps<
   T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
 > {
+  core: EpisodeCore<T>;
   coreRef?: React.MutableRefObject<EpisodeCore<T> | null>;
-  episodeId: string;
   interfaceComponents?: InterfaceExtensionComponent[];
   interfaceComponentProps?: Record<string, unknown>;
+  pauseWhenNotVisible?: boolean;
+  loadingComponent?: React.FC;
+}
+
+interface IInternalUnmanagedActPlayerProps<
+  T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
+> extends Omit<IInternalManagedActPlayerProps<T>, 'core'> {
+  episodeId: string;
   assets: PlayerAssetProp[];
   resources: IResourceItemForClient[];
-  preferredUploaders: string[];
-  trustedUploaders: string[];
   userData: IUserRelatedEnvVariable | undefined;
   envVariable: T;
+  preferredUploaders: string[];
+  trustedUploaders: string[];
   initialAsset?: IInitialAssetStatus;
   userImplementedFunctions: Partial<RawUserImplementedFunctions>;
   disableAutoPlay?: boolean;
-  pauseWhenNotVisible?: boolean;
-  loadingComponent?: React.FC;
   onEnd?: () => void;
   onSegmentEnd?: (segment: number) => void;
   onSegmentStart?: (segment: number) => void;
   onInitialized?: () => void;
-}
-
-export const ManagedPlayerProps = [
-  'episodeId',
-  'assets',
-  'resources',
-  'userData',
-  'envVariable',
-  'preferredUploaders',
-  'trustedUploaders',
-  'initialAsset',
-  'userImplementedFunctions',
-  'disableAutoPlay',
-  'onEnd',
-  'onSegmentEnd',
-  'onSegmentStart',
-  'onInitialized',
-] as const;
-
-export interface IInternalManagedActPlayerProps<
-  T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
-> extends Omit<IInternalUnmanagedActPlayerProps<T>,
-  (typeof ManagedPlayerProps)[number]
-  > {
-  core: EpisodeCore<T>;
 }
 
 const DEFAULT_INTERFACE_COMPONENTS = [
@@ -242,8 +223,9 @@ export interface IManagedActPointProps<
 }
 
 export const ActPlayer = <
+  Managed extends boolean,
   T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
->(props: IUnmanagedActPointProps<T> | IManagedActPointProps<T>) => {
+>(props: Managed extends true ? IManagedActPointProps<T> : IUnmanagedActPointProps<T>) => {
   if ('core' in props) {
     return <InternalManagedActPlayer<T> key={props.core.episodeId} {...props} />;
   }

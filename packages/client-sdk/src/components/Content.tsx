@@ -1,26 +1,26 @@
-/* eslint-disable @typescript-eslint/comma-dangle */
 import * as React from 'react';
-import debug from 'debug';
 
-import useConstant from 'use-constant';
-
-import { ActPlayer } from '@recative/act-player';
+import { ActPlayer, InterfaceExtensionComponent } from '@recative/act-player';
 import {
-  EndEventDetail, InitializedEventDetail, SegmentStartEventDetail, SeriesCore
+  EndEventDetail,
+  InitializedEventDetail,
+  SegmentEndEventDetail,
+  SegmentStartEventDetail,
+  SeriesCore,
 } from '@recative/core-manager';
 
-import type { IUnmanagedActPointProps } from '@recative/act-player';
 import type { RawUserImplementedFunctions } from '@recative/definitions';
 import type {
-  EpisodeCore,
   IEpisodeMetadata,
   ISeriesCoreConfig,
-  IInitialAssetStatus,
 } from '@recative/core-manager';
 
+import { useInjector } from './hooks/useInjector';
+import { useSeriesCore } from './hooks/useSeriesCore';
 import { useCustomEventWrapper } from './hooks/useCustomEventWrapper';
 
-import { fetch } from '../utils/fetch';
+import type { PlayerPropsInjectorHook } from './hooks/useInjector';
+
 import { loadCustomizedModule } from '../utils/loadCustomizedModule';
 
 import { useSdkConfig } from '../hooks/useSdkConfig';
@@ -29,45 +29,31 @@ import { useMemoryLeakFixer } from '../hooks/useMemoryLeakFixer';
 import { useResetAssetStatusCallback } from '../hooks/useResetAssetStatusCallback';
 
 import { CONTAINER_COMPONENT } from '../constant/storageKeys';
-import { IEpisodeDetail } from '../external';
 
-const log = debug('client:content-sdk');
-
-export interface IContentProps<EnvVariable> {
+export interface IContentProps<PlayerPropsInjectedDependencies, EnvVariable> {
   episodeId: string | undefined;
-  initialAsset: IInitialAssetStatus | undefined;
   userImplementedFunctions: Partial<RawUserImplementedFunctions> | undefined;
   preferredUploaders: string[];
   trustedUploaders: string[];
   envVariable: EnvVariable | undefined;
   loadingComponent?: React.FC<{}>;
+  initialAsset: IEpisodeMetadata['initialAssetStatus'];
   attemptAutoplay?: IEpisodeMetadata['attemptAutoplay'];
   defaultContentLanguage?: IEpisodeMetadata['defaultContentLanguage'];
   defaultSubtitleLanguage?: IEpisodeMetadata['defaultSubtitleLanguage'];
-  navigate: ISeriesCoreConfig['navigate'],
-  playerPropsHookDependencies?: any;
+  playerPropsHookDependencies: PlayerPropsInjectedDependencies;
+  onEpisodeIdUpdate: ISeriesCoreConfig['navigate'],
   onEnd?: (x: EndEventDetail) => void;
-  onSegmentEnd?: (x: SegmentStartEventDetail) => void;
+  onSegmentEnd?: (x: SegmentEndEventDetail) => void;
   onSegmentStart?: (x: SegmentStartEventDetail) => void;
   onInitialized?: (x: InitializedEventDetail) => void;
 }
 
-const ON_END: IContentProps<unknown>['onEnd'] = () => log('[DEFAULT] All content ended');
-const ON_SEGMENT_END: IContentProps<unknown>['onSegmentEnd'] = ({ episodeId, segment }: SegmentStartEventDetail) => log(`[DEFAULT] Segment ${segment} of ${episodeId} ended`);
-const ON_SEGMENT_START: IContentProps<unknown>['onSegmentStart'] = ({ episodeId, segment }: SegmentStartEventDetail) => log(`[DEFAULT] Segment ${segment} of ${episodeId} ended`);
-
-const usePlayerPropsDefaultHook = () => ({
-  injectToPlayer: {
-    onEnd: ON_END,
-    onSegmentEnd: ON_SEGMENT_END,
-    onSegmentStart: ON_SEGMENT_START,
-  },
-  injectToContainer: undefined,
-});
+const FULL_WIDTH_STYLE = { width: '100%', height: '100%' };
 
 const DefaultContainerComponent: React.FC<React.PropsWithChildren<{}>> = ({ children }) => (
   // eslint-disable-next-line react/forbid-dom-props
-  <div className="demoContainer" style={{ width: '100%', height: '100%' }}>
+  <div className="demoContainer" style={FULL_WIDTH_STYLE}>
     {children}
   </div>
 );
@@ -75,24 +61,15 @@ const DefaultContainerComponent: React.FC<React.PropsWithChildren<{}>> = ({ chil
 const DefaultContainerModule = {
   Container: DefaultContainerComponent,
 };
-
-interface IContentModule<PlayerPropsInjectedDependencies> {
-  Container?: React.FC<any>;
-  interfaceComponents?: React.FC<any>[];
-  usePlayerProps?: (props: {
-    episodeId?: string;
-    dependencies: PlayerPropsInjectedDependencies;
-    coreRef: React.RefObject<EpisodeCore>;
-    userImplementedFunctions: Partial<RawUserImplementedFunctions> | undefined;
-  }) => {
-    injectToPlayer?: Partial<IUnmanagedActPointProps>;
-    injectToContainer?: Record<string, unknown>;
-  };
+interface IContentModule<PlayerPropsInjectedDependencies, EnvVariable> {
+  Container?: React.FC<React.PropsWithChildren>;
+  interfaceComponents?: InterfaceExtensionComponent[];
+  usePlayerProps?: PlayerPropsInjectorHook<PlayerPropsInjectedDependencies, EnvVariable>;
 }
 
 export const ContentModuleFactory = <
-  EnvVariable extends Record<string, unknown>,
-  ContentModule
+PlayerPropsInjectedDependencies,
+EnvVariable extends Record<string, unknown>,
 >(
     pathPattern: string,
     dataType: string,
@@ -107,21 +84,27 @@ export const ContentModuleFactory = <
           pathPattern,
           dataType,
           debugContainerComponents ? null : baseUrl,
-        )) as IContentModule<ContentModule>;
+        )) as IContentModule<PlayerPropsInjectedDependencies, EnvVariable>;
       } catch (e) {
         console.warn('Failed to load customized module!');
         console.error(e);
-        return DefaultContainerModule as IContentModule<ContentModule>;
+        return DefaultContainerModule as IContentModule<
+        PlayerPropsInjectedDependencies, EnvVariable
+        >;
       }
     })();
 
     const {
-      usePlayerProps: internalUsePlayerProps,
+      usePlayerProps: internalUsePlayerPropsHook,
       Container,
       interfaceComponents,
     } = containerModule;
-    const ContainerComponent: React.FC<any> = Container || DefaultContainerComponent;
-    const usePlayerProps = internalUsePlayerProps ?? usePlayerPropsDefaultHook;
+
+    const ContainerComponent: React.FC<
+    React.PropsWithChildren<Record<string, unknown>>
+    > = Container || DefaultContainerComponent;
+
+    type ContentProps = IContentProps<PlayerPropsInjectedDependencies, EnvVariable>;
 
     const Content = ({
       children,
@@ -133,7 +116,7 @@ export const ContentModuleFactory = <
       trustedUploaders,
       userImplementedFunctions,
       playerPropsHookDependencies,
-      navigate,
+      onEpisodeIdUpdate,
       attemptAutoplay,
       defaultContentLanguage,
       defaultSubtitleLanguage,
@@ -142,111 +125,52 @@ export const ContentModuleFactory = <
       onSegmentStart: playerOnSegmentStart,
       onInitialized: playerOnInitialized,
       ...props
-    }: React.PropsWithChildren<IContentProps<EnvVariable>>) => {
-      const config = useSdkConfig();
-      const episodeCoreRef: React.MutableRefObject<
-      EpisodeCore<EnvVariable> | null
-      > = React.useRef(null);
-
+    }: React.PropsWithChildren<ContentProps>) => {
       useMemoryLeakFixer();
+
+      const config = useSdkConfig();
+      const seriesCoreRef = React.useRef<SeriesCore<EnvVariable>>();
+
+      const {
+        hookOnEnd,
+        hookOnSegmentEnd,
+        hookOnSegmentStart,
+        injectToSdk,
+        injectToContainer,
+        injectToPlayer,
+        getEpisodeMetadata: getInjectedEpisodeMetadata,
+      } = useInjector<PlayerPropsInjectedDependencies, EnvVariable>(
+        episodeId ?? null,
+        internalUsePlayerPropsHook,
+        playerPropsHookDependencies,
+        userImplementedFunctions,
+        seriesCoreRef,
+      );
 
       const episodeDetail = useEpisodeDetail(episodeId ?? null);
 
-      const {
-        pathPattern: internalPathPattern,
-        dataType: internalDataType,
-        setClientSdkConfig
-      } = useSdkConfig();
+      const rawEpisodeMetadata = React.useMemo(() => ({
+        initialAssetStatus: injectToSdk?.initialAsset ?? initialAsset,
+        attemptAutoplay: injectToSdk?.attemptAutoplay ?? attemptAutoplay,
+        defaultContentLanguage: injectToSdk?.defaultContentLanguage ?? defaultContentLanguage,
+        defaultSubtitleLanguage: injectToSdk?.defaultSubtitleLanguage,
+      }), [
+        attemptAutoplay,
+        defaultContentLanguage,
+        initialAsset,
+        injectToSdk?.attemptAutoplay,
+        injectToSdk?.defaultContentLanguage,
+        injectToSdk?.defaultSubtitleLanguage,
+        injectToSdk?.initialAsset,
+      ]);
 
-      const fetchData = React.useCallback(
-        (fileName: string) => fetch(
-          fileName,
-          internalDataType,
-          internalPathPattern,
-          setClientSdkConfig
-        ) as Promise<IEpisodeDetail>,
-        [internalDataType, internalPathPattern, setClientSdkConfig]
+      const { episodeCore, seriesCore } = useSeriesCore<EnvVariable>(
+        preferredUploaders,
+        trustedUploaders,
+        rawEpisodeMetadata,
+        getInjectedEpisodeMetadata,
+        onEpisodeIdUpdate,
       );
-
-      const getEpisodeMetadata = React.useCallback(
-        (nextEpisodeId: string) => ({
-          attemptAutoplay,
-          defaultContentLanguage,
-          defaultSubtitleLanguage,
-          episodeData: fetchData(nextEpisodeId).then(({ resources, assets }) => ({
-            resources,
-            assets,
-            preferredUploaders,
-            trustedUploaders
-          })),
-        }),
-        [
-          attemptAutoplay,
-          defaultContentLanguage,
-          defaultSubtitleLanguage,
-          fetchData,
-          preferredUploaders,
-          trustedUploaders
-        ]
-      );
-
-      const seriesCore = useConstant(() => new SeriesCore({
-        navigate,
-        getEpisodeMetadata
-      }));
-
-      React.useEffect(() => {
-        seriesCore.updateConfig({
-          navigate,
-          getEpisodeMetadata
-        });
-      }, [navigate, getEpisodeMetadata, seriesCore]);
-
-      const playerPropsHookProps = React.useMemo(
-        () => ({
-          dependencies: { ...playerPropsHookDependencies, fetchData },
-          coreRef: episodeCoreRef,
-          userImplementedFunctions,
-          episodeId,
-          envVariable,
-          assets: episodeDetail?.assets,
-        }),
-        [
-          playerPropsHookDependencies,
-          userImplementedFunctions,
-          episodeId,
-          envVariable,
-          episodeDetail,
-          fetchData,
-        ]
-      );
-
-      const { injectToPlayer, injectToContainer } = usePlayerProps(playerPropsHookProps);
-
-      const {
-        hookOnEnd, hookOnSegmentEnd, hookOnSegmentStart, playerProps
-      } = React.useMemo(() => {
-        const {
-          onEnd: hookOnEnd0,
-          onSegmentEnd: hookOnSegmentEnd0,
-          onSegmentStart: hookOnSegmentStart0,
-          ...playerProps0
-        } = injectToPlayer ?? {};
-
-        return {
-          hookOnEnd: hookOnEnd0,
-          hookOnSegmentEnd: hookOnSegmentEnd0,
-          hookOnSegmentStart: hookOnSegmentStart0,
-          playerProps: playerProps0,
-        };
-      }, [injectToPlayer]);
-
-      React.useEffect(() => {
-        log('Episode #', episodeId);
-        log('Episode Detail', episodeDetail);
-        log('Props for hook', playerPropsHookProps);
-        log('Injected player props', playerProps);
-      }, [episodeDetail, episodeId, playerProps, playerPropsHookProps]);
 
       const resetInitialAsset = useResetAssetStatusCallback();
 
@@ -254,6 +178,15 @@ export const ContentModuleFactory = <
       useCustomEventWrapper(playerOnSegmentEnd, hookOnSegmentEnd, 'segmentEnd', seriesCore);
       useCustomEventWrapper(playerOnSegmentStart, hookOnSegmentStart, 'segmentStart', seriesCore);
       useCustomEventWrapper(resetInitialAsset, playerOnInitialized, 'initialized', seriesCore);
+
+      const playerReady = episodeDetail
+      && episodeCore
+      && episodeDetail.assets
+      && userImplementedFunctions
+      && episodeId;
+
+      const LoadingComponent = loadingComponent;
+      const loadingElement = LoadingComponent ? <LoadingComponent /> : <div />;
 
       return (
         <ContainerComponent
@@ -267,36 +200,23 @@ export const ContentModuleFactory = <
           {...injectToContainer}
         >
           {
-            episodeDetail
-            && episodeDetail.assets
-            && userImplementedFunctions
-            && episodeId
-              ? (
-                <ActPlayer<EnvVariable>
-                  coreRef={episodeCoreRef as any}
-                  episodeId={episodeDetail.episode.id || ''}
-                  assets={episodeDetail.assets}
-                  resources={episodeDetail.resources}
-                  preferredUploaders={preferredUploaders}
-                  trustedUploaders={trustedUploaders}
-                  initialAsset={initialAsset || config.initialAssetStatus}
+            playerReady ? (
+                <ActPlayer<true, EnvVariable>
+                  core={episodeCore}
                   userImplementedFunctions={userImplementedFunctions}
                   interfaceComponents={interfaceComponents}
                   userData={undefined}
-                  envVariable={envVariable as any}
                   loadingComponent={loadingComponent}
-                  {...playerProps}
+                  {...injectToPlayer}
                 />
-              )
-              : (
-                loadingComponent ?? <div />
-              )
+            )
+              : loadingElement
           }
         </ContainerComponent>
       );
     };
 
     return {
-      default: Content as React.FC<IContentProps<EnvVariable>>,
+      default: Content as React.FC<ContentProps>,
     };
   });

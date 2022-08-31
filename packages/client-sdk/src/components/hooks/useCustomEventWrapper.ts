@@ -6,7 +6,9 @@ export const useCustomEventWrapper = <T extends Function>(
   callback0: T | undefined,
   callback1: T | undefined,
   eventName: string,
-  core: EpisodeCore | SeriesCore,
+  // This could be any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  core: EpisodeCore<any> | SeriesCore<any>,
 ) => {
   const convertedCallback = React.useCallback(({ detail }: CustomEvent<any>) => {
     callback0?.(detail);

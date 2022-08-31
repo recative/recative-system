@@ -30,7 +30,7 @@ export const useEnvVariable = <T>(
 
   React.useEffect(() => {
     episodesDataController.execute();
-  }, [episodeIdInOrder]);
+  }, [episodeIdInOrder, episodesDataController]);
 
   const beforeProcess = React.useMemo<IEnvVariable>(
     () => ({
@@ -41,7 +41,7 @@ export const useEnvVariable = <T>(
       episodes: episodesData.result || [],
       diagnosisInformation,
     }),
-    [episodeIdInOrder, episodeIdInDatabase, diagnosisInformation],
+    [episodesData.result, episodeIdInOrder, episodeIdInDatabase, diagnosisInformation],
   );
 
   const postProcessed = React.useMemo(

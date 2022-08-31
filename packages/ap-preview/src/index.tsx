@@ -119,7 +119,7 @@ const Player: React.FC = () => {
         envVariable={envVariable}
         trustedUploaders={TRUSTED_UPLOADERS}
         preferredUploaders={PREFERRED_UPLOADERS}
-        loadingComponent={Loading}
+        LoadingComponent={Loading}
         playerPropsHookDependencies={dependencies}
       />
     </React.Suspense>

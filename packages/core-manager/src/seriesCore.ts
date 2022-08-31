@@ -44,7 +44,7 @@ export interface IEpisodeMetadata {
   attemptAutoplay?: boolean;
   defaultContentLanguage?: string;
   defaultSubtitleLanguage?: string;
-  episodeData: Promise<EpisodeData>;
+  episodeData: Promise<EpisodeData> | EpisodeData;
 }
 
 export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable> {
@@ -159,7 +159,7 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
     });
     // Even through the episode data is not ready, episode switching is finished
     // So do not await it here.
-    metadata.episodeData.then((data) => {
+    Promise.resolve(metadata.episodeData).then((data) => {
       newEpisodeCore.initializeEpisode(data);
     });
     this.eventTarget.dispatchEvent(new CustomEvent('initialized', { detail: { episodeId } }));
