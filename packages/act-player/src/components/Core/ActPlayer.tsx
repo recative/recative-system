@@ -11,7 +11,6 @@ import {
 import type {
   IInitialAssetStatus,
   IUserRelatedEnvVariable,
-  IDefaultAdditionalEnvVariable,
 } from '@recative/core-manager';
 
 import { Block } from 'baseui/block';
@@ -39,7 +38,7 @@ import { useEpisodeInitializer } from './hooks/useEpisodeInitializer';
 export type PlayerResourceProp = IResourceItemForClient;
 
 export interface IInternalManagedActPlayerProps<
-  T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
+  T extends Record<string, unknown>,
 > {
   core: EpisodeCore<T>;
   coreRef?: React.MutableRefObject<EpisodeCore<T> | null>;
@@ -50,7 +49,7 @@ export interface IInternalManagedActPlayerProps<
 }
 
 interface IInternalUnmanagedActPlayerProps<
-  T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
+  T extends Record<string, unknown>,
 > extends Omit<IInternalManagedActPlayerProps<T>, 'core'> {
   episodeId: string;
   assets: PlayerAssetProp[];
@@ -78,7 +77,7 @@ const DEFAULT_INTERFACE_COMPONENTS = [
 ];
 
 export const InternalManagedActPlayer = <
-  T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
+  T extends Record<string, unknown>,
 >(
     {
       core,
@@ -143,7 +142,7 @@ export const InternalManagedActPlayer = <
 };
 
 const InternalUnmanagedActPlayer = <
-  T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
+  T extends Record<string, unknown>,
 >(
     {
       coreRef,
@@ -212,19 +211,19 @@ const InternalUnmanagedActPlayer = <
 };
 
 export interface IUnmanagedActPointProps<
-  T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
+  T extends Record<string, unknown>,
 > extends IInternalUnmanagedActPlayerProps<T> {
   episodeId: string;
 }
 
 export interface IManagedActPointProps<
-  T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
+  T extends Record<string, unknown>,
 > extends IInternalManagedActPlayerProps<T> {
 }
 
 export const ActPlayer = <
   Managed extends boolean,
-  T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
+  T extends Record<string, unknown>,
 >(props: Managed extends true ? IManagedActPointProps<T> : IUnmanagedActPointProps<T>) => {
   if ('core' in props) {
     return <InternalManagedActPlayer<T> key={props.core.episodeId} {...props} />;
