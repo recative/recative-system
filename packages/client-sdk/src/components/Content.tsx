@@ -5,7 +5,10 @@ import debug from 'debug';
 import useConstant from 'use-constant';
 
 import { ActPlayer } from '@recative/act-player';
-import { SeriesCore } from '@recative/core-manager';
+import {
+  EndEventDetail, InitializedEventDetail, SegmentStartEventDetail, SeriesCore
+} from '@recative/core-manager';
+
 import type { IUnmanagedActPointProps } from '@recative/act-player';
 import type { RawUserImplementedFunctions } from '@recative/definitions';
 import type {
@@ -14,6 +17,8 @@ import type {
   ISeriesCoreConfig,
   IInitialAssetStatus,
 } from '@recative/core-manager';
+
+import { useCustomEventWrapper } from './hooks/useCustomEventWrapper';
 
 import { fetch } from '../utils/fetch';
 import { loadCustomizedModule } from '../utils/loadCustomizedModule';
@@ -28,9 +33,28 @@ import { IEpisodeDetail } from '../external';
 
 const log = debug('client:content-sdk');
 
-const ON_END = () => log('[DEFAULT] All content ended');
-const ON_SEGMENT_END = (segment: number) => log(`[DEFAULT] Segment ${segment} ended`);
-const ON_SEGMENT_START = (segment: number) => log(`[DEFAULT] Segment ${segment} started`);
+export interface IContentProps<EnvVariable> {
+  episodeId: string | undefined;
+  initialAsset: IInitialAssetStatus | undefined;
+  userImplementedFunctions: Partial<RawUserImplementedFunctions> | undefined;
+  preferredUploaders: string[];
+  trustedUploaders: string[];
+  envVariable: EnvVariable | undefined;
+  loadingComponent?: React.FC<{}>;
+  attemptAutoplay?: IEpisodeMetadata['attemptAutoplay'];
+  defaultContentLanguage?: IEpisodeMetadata['defaultContentLanguage'];
+  defaultSubtitleLanguage?: IEpisodeMetadata['defaultSubtitleLanguage'];
+  navigate: ISeriesCoreConfig['navigate'],
+  playerPropsHookDependencies?: any;
+  onEnd?: (x: EndEventDetail) => void;
+  onSegmentEnd?: (x: SegmentStartEventDetail) => void;
+  onSegmentStart?: (x: SegmentStartEventDetail) => void;
+  onInitialized?: (x: InitializedEventDetail) => void;
+}
+
+const ON_END: IContentProps<unknown>['onEnd'] = () => log('[DEFAULT] All content ended');
+const ON_SEGMENT_END: IContentProps<unknown>['onSegmentEnd'] = ({ episodeId, segment }: SegmentStartEventDetail) => log(`[DEFAULT] Segment ${segment} of ${episodeId} ended`);
+const ON_SEGMENT_START: IContentProps<unknown>['onSegmentStart'] = ({ episodeId, segment }: SegmentStartEventDetail) => log(`[DEFAULT] Segment ${segment} of ${episodeId} ended`);
 
 const usePlayerPropsDefaultHook = () => ({
   injectToPlayer: {
@@ -64,25 +88,6 @@ interface IContentModule<PlayerPropsInjectedDependencies> {
     injectToPlayer?: Partial<IUnmanagedActPointProps>;
     injectToContainer?: Record<string, unknown>;
   };
-}
-
-export interface IContentProps<EnvVariable> {
-  episodeId: string | undefined;
-  initialAsset: IInitialAssetStatus | undefined;
-  userImplementedFunctions: Partial<RawUserImplementedFunctions> | undefined;
-  preferredUploaders: string[];
-  trustedUploaders: string[];
-  envVariable: EnvVariable | undefined;
-  loadingComponent?: React.FC<{}>;
-  attemptAutoplay?: IEpisodeMetadata['attemptAutoplay'];
-  defaultContentLanguage?: IEpisodeMetadata['defaultContentLanguage'];
-  defaultSubtitleLanguage?: IEpisodeMetadata['defaultSubtitleLanguage'];
-  navigate: ISeriesCoreConfig['navigate'],
-  playerPropsHookDependencies?: any;
-  onEnd?: () => void;
-  onSegmentEnd?: (segment: number) => void;
-  onSegmentStart?: (segment: number) => void;
-  onInitialized?: () => void;
 }
 
 export const ContentModuleFactory = <
@@ -243,32 +248,12 @@ export const ContentModuleFactory = <
         log('Injected player props', playerProps);
       }, [episodeDetail, episodeId, playerProps, playerPropsHookProps]);
 
-      const onEnd = React.useCallback(() => {
-        playerOnEnd?.();
-        hookOnEnd?.();
-      }, [hookOnEnd, playerOnEnd]);
-
-      const onSegmentEnd = React.useCallback(
-        (segment: number) => {
-          playerOnSegmentEnd?.(segment);
-          hookOnSegmentEnd?.(segment);
-        },
-        [hookOnSegmentEnd, playerOnSegmentEnd]
-      );
-
-      const onSegmentStart = React.useCallback(
-        (segment: number) => {
-          playerOnSegmentStart?.(segment);
-          hookOnSegmentStart?.(segment);
-        },
-        [hookOnSegmentStart, playerOnSegmentStart]
-      );
-
       const resetInitialAsset = useResetAssetStatusCallback();
-      const onInitialized = React.useCallback(() => {
-        resetInitialAsset();
-        playerOnInitialized?.();
-      }, [playerOnInitialized, resetInitialAsset]);
+
+      useCustomEventWrapper(playerOnEnd, hookOnEnd, 'end', seriesCore);
+      useCustomEventWrapper(playerOnSegmentEnd, hookOnSegmentEnd, 'segmentEnd', seriesCore);
+      useCustomEventWrapper(playerOnSegmentStart, hookOnSegmentStart, 'segmentStart', seriesCore);
+      useCustomEventWrapper(resetInitialAsset, playerOnInitialized, 'initialized', seriesCore);
 
       return (
         <ContainerComponent
@@ -299,10 +284,6 @@ export const ContentModuleFactory = <
                   interfaceComponents={interfaceComponents}
                   userData={undefined}
                   envVariable={envVariable as any}
-                  onEnd={onEnd}
-                  onSegmentEnd={onSegmentEnd}
-                  onSegmentStart={onSegmentStart}
-                  onInitialized={onInitialized}
                   loadingComponent={loadingComponent}
                   {...playerProps}
                 />

@@ -6,29 +6,41 @@ import { IDefaultAdditionalEnvVariable, IUserRelatedEnvVariable } from './manage
 import { CustomEventHandler, EpisodeData } from './types';
 import { readonlyAtom } from './utils/nanostore';
 
-export interface SegmentStartEventDetail{
+export interface SegmentStartEventDetail {
   episodeId:string,
   segment:number,
 }
 
-export interface SegmentEndEventDetail{
+export interface SegmentEndEventDetail {
   episodeId:string,
   segment:number,
 }
 
-export interface EndEventDetail{
+export interface EndEventDetail {
   episodeId:string,
 }
 
-export interface InitializedEventDetail{
+export interface InitializedEventDetail {
   episodeId:string,
 }
 
 export type SeriesCoreEventTarget = EventTarget & {
-  addEventListener(type: 'segmentStart', callback:CustomEventHandler<SegmentStartEventDetail>):void,
-  addEventListener(type: 'segmentEnd', callback:CustomEventHandler<SegmentEndEventDetail>):void,
-  addEventListener(type: 'end', callback:CustomEventHandler<EndEventDetail>):void,
-  addEventListener(type: 'initialized', callback:CustomEventHandler<InitializedEventDetail>):void,
+  addEventListener(
+    type: 'segmentStart',
+    callback: CustomEventHandler<SegmentStartEventDetail>
+  ): void,
+  addEventListener(
+    type: 'segmentEnd',
+    callback: CustomEventHandler<SegmentEndEventDetail>
+  ): void,
+  addEventListener(
+    type: 'end',
+    callback:CustomEventHandler<EndEventDetail>
+  ): void,
+  addEventListener(
+    type: 'initialized',
+    callback: CustomEventHandler<InitializedEventDetail>
+  ): void,
 };
 
 export interface ISeriesCoreConfig {

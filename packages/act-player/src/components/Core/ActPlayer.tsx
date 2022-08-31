@@ -239,18 +239,19 @@ export interface IUnmanagedActPointProps<
 export interface IManagedActPointProps<
   T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
 > extends IInternalManagedActPlayerProps<T> {
-  episodeId: string;
 }
 
 export const ActPlayer = <
   T extends Record<string, unknown> = IDefaultAdditionalEnvVariable,
->({
-    episodeId,
-    ...props
-  }: IUnmanagedActPointProps<T> | IManagedActPointProps<T>) => {
+>(props: IUnmanagedActPointProps<T> | IManagedActPointProps<T>) => {
   if ('core' in props) {
-    return <InternalManagedActPlayer<T> key={episodeId} {...props} />;
+    return <InternalManagedActPlayer<T> key={props.core.episodeId} {...props} />;
   }
 
-  return <InternalUnmanagedActPlayer<T> key={episodeId} {...props} episodeId={episodeId} />;
+  return (
+    <InternalUnmanagedActPlayer<T>
+      key={props.episodeId}
+      {...props}
+    />
+  );
 };
