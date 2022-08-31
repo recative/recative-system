@@ -32,16 +32,16 @@ Recative System manage its content with such a three level model:
   alt="The three level model of the Recative System"
 />
 
-* **Asset**: Asset is the minimum unit of an independent content, it could be a
+* **Asset:** Asset is the minimum unit of an independent content, it could be a
   piece of video, or a small piece of web application based on PIXI.js. You can
   expect there would be more possible options in the future.
-* **Episode**: Episode is the minium unit of data loading, resource
+* **Episode:** Episode is the minium unit of data loading, resource
   management and lifecycle management. while an episode is initializing, we will
   trying to download an asset definition list, preload all resources if the
   resource definition required. If your enviroment implemented an cache method,
   the episode manager will also try to download the resource to local hard-disk,
   which will boost the initialize speed for further visits.
-* **Series**: If your content is too complex to be handled in one single episode,
+* **Series:** If your content is too complex to be handled in one single episode,
   you can split your assets into different episodes, and add all episodes into
   one single series. The series manager will manage the lifecycle of each single
   episode. Since loading a new episode needs fetching additional data,
@@ -60,7 +60,7 @@ lifecycles , RAM consumption and performance issue.
   alt="Four level of packages for the three level model"
 />
 
-* **`ap-core`**: `@recative/ap-core` is a set of toolkits for building 
+* **`ap-core`:** `@recative/ap-core` is a set of toolkits for building 
   simple interactive content, we implemented several scheduling machnism to help
   developers building an web application with less performance issue. Currently,
   there's an official support of [PIXI.js](https://pixijs.com/),
@@ -75,11 +75,27 @@ trying to disassemble `@recative/ap-core` into multiple smaller packages, to
 reduce the complexity of the whole solution.
 :::
 
-* **Act Player**: `@recative/act-player` is a React component which can render
+* **Act Player:** `@recative/act-player` is a React component which can render
   a lot of *assets*. You can stack multiple *assets* at the same time, or play 
   multiple *assets* in one by one. The underlying lifecycle management task is
-  processed by [`EpisodeCode`](/api/core-manager/class/EpisodeCore) of 
+  processed by [`EpisodeCore`](/api/core-manager/class/EpisodeCore) of 
   [`@recative/core-manager`](http://localhost:3000/api/core-manager). the core
   manager is "ui-frame neutral", it is useful if your team is not using
   [React](https://reactjs.org/) or want to build a different product based on
   the existing system.
+
+* **SDK:** `@recative/client-sdk` is a React component for managing multiple
+  episodes, client sdk will take care of data fetching and life cycle management,
+  and interface customize. If you are building a product which have multple
+  episodes, SDK could be helpful. *SDK* also support interface customize, by
+  building an ESM module which exports a React hook, you can customize all
+  possible behavior and visual experience with this feature without hacking
+  the source code of *act player*.
+
+## Use Cases
+
+Since episode core manager includes many media manage feature, you can also use
+act player as a naïve video player with cross-browser and cross-platform
+consistent auto play behavior.
+Such a use case is supported, but we are still trying to improve its autoplay
+ability.
