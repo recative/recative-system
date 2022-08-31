@@ -371,5 +371,3 @@ export const ActPlayer = <
   }: IActPointProps<T>) => {
   return <InternalActPlayer<T> key={episodeId} {...props} episodeId={episodeId} />;
 };
-
-ActPlayer.whyDidYouRender = true;

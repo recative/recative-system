@@ -2,10 +2,18 @@
 import * as React from 'react';
 import debug from 'debug';
 
+import useConstant from 'use-constant';
+
 import { ActPlayer } from '@recative/act-player';
+import { SeriesCore } from '@recative/core-manager';
 import type { IActPointProps } from '@recative/act-player';
 import type { RawUserImplementedFunctions } from '@recative/definitions';
-import type { Core, IInitialAssetStatus } from '@recative/core-manager';
+import type {
+  EpisodeCore,
+  IEpisodeMetadata,
+  ISeriesCoreConfig,
+  IInitialAssetStatus,
+} from '@recative/core-manager';
 
 import { fetch } from '../utils/fetch';
 import { loadCustomizedModule } from '../utils/loadCustomizedModule';
@@ -16,6 +24,7 @@ import { useMemoryLeakFixer } from '../hooks/useMemoryLeakFixer';
 import { useResetAssetStatusCallback } from '../hooks/useResetAssetStatusCallback';
 
 import { CONTAINER_COMPONENT } from '../constant/storageKeys';
+import { IEpisodeDetail } from '../external';
 
 const log = debug('client:content-sdk');
 
@@ -49,7 +58,7 @@ interface IContentModule<PlayerPropsInjectedDependencies> {
   usePlayerProps?: (props: {
     episodeId?: string;
     dependencies: PlayerPropsInjectedDependencies;
-    coreRef: React.RefObject<Core>;
+    coreRef: React.RefObject<EpisodeCore>;
     userImplementedFunctions: Partial<RawUserImplementedFunctions> | undefined;
   }) => {
     injectToPlayer?: Partial<IActPointProps>;
@@ -65,6 +74,9 @@ export interface IContentProps<EnvVariable> {
   trustedUploaders: string[];
   envVariable: EnvVariable | undefined;
   loadingComponent?: React.FC<{}>;
+  attemptAutoplay?: IEpisodeMetadata['attemptAutoplay'];
+  defaultContentLanguage?: IEpisodeMetadata['defaultContentLanguage'];
+  defaultSubtitleLanguage?: IEpisodeMetadata['defaultSubtitleLanguage'];
   playerPropsHookDependencies?: any;
   onEnd?: () => void;
   onSegmentEnd?: (segment: number) => void;
@@ -78,6 +90,7 @@ export const ContentModuleFactory = <
 >(
     pathPattern: string,
     dataType: string,
+    navigate: ISeriesCoreConfig['navigate'],
     baseUrl = '',
   ) => React.lazy(async () => {
     const debugContainerComponents = localStorage.getItem(CONTAINER_COMPONENT);
@@ -115,6 +128,9 @@ export const ContentModuleFactory = <
       trustedUploaders,
       userImplementedFunctions,
       playerPropsHookDependencies,
+      attemptAutoplay,
+      defaultContentLanguage,
+      defaultSubtitleLanguage,
       onEnd: playerOnEnd,
       onSegmentEnd: playerOnSegmentEnd,
       onSegmentStart: playerOnSegmentStart,
@@ -122,7 +138,9 @@ export const ContentModuleFactory = <
       ...props
     }: React.PropsWithChildren<IContentProps<EnvVariable>>) => {
       const config = useSdkConfig();
-      const coreRef = React.useRef<Core<EnvVariable>>(null);
+      const episodeCoreRef: React.MutableRefObject<
+      EpisodeCore<EnvVariable> | null
+      > = React.useRef(null);
 
       useMemoryLeakFixer();
 
@@ -132,14 +150,34 @@ export const ContentModuleFactory = <
       const { pathPattern, dataType, setClientSdkConfig } = useSdkConfig();
 
       const fetchData = React.useCallback(
-        (fileName: string) => fetch(fileName, dataType, pathPattern, setClientSdkConfig),
+        (fileName: string) => fetch(
+          fileName,
+          dataType,
+          pathPattern,
+          setClientSdkConfig
+        ) as Promise<IEpisodeDetail>,
         [dataType, pathPattern, setClientSdkConfig]
       );
+
+      const seriesCore = useConstant(() => new SeriesCore({
+        navigate,
+        getEpisodeMetadata: (nextEpisodeId: string) => ({
+          attemptAutoplay,
+          defaultContentLanguage,
+          defaultSubtitleLanguage,
+          episodeData: fetchData(nextEpisodeId).then(({ resources, assets }) => ({
+            resources,
+            assets,
+            preferredUploaders,
+            trustedUploaders
+          })),
+        })
+      }));
 
       const playerPropsHookProps = React.useMemo(
         () => ({
           dependencies: { ...playerPropsHookDependencies, fetchData },
-          coreRef,
+          coreRef: episodeCoreRef,
           userImplementedFunctions,
           episodeId,
           envVariable,
@@ -227,7 +265,7 @@ export const ContentModuleFactory = <
             && episodeId
               ? (
                 <ActPlayer<EnvVariable>
-                  coreRef={coreRef as any}
+                  coreRef={episodeCoreRef as any}
                   episodeId={episodeDetail.episode.id || ''}
                   assets={episodeDetail.assets}
                   resources={episodeDetail.resources}

@@ -5,26 +5,26 @@ import { IDefaultAdditionalEnvVariable, IUserRelatedEnvVariable } from './manage
 import { EpisodeData } from './types';
 import { readonlyAtom } from './utils/nanostore';
 
-export interface SeriesCoreConfig {
+export interface ISeriesCoreConfig {
   navigate: (episodeId: string, forceReload?: boolean) => Promise<void>;
-  getEpisodeMetadata: (episodeId: string) => EpisodeMetadata;
+  getEpisodeMetadata: (episodeId: string) => IEpisodeMetadata;
 }
 
-export interface EpisodeMetadata {
+export interface IEpisodeMetadata {
   attemptAutoplay?: boolean;
   defaultContentLanguage?: string;
   defaultSubtitleLanguage?: string;
   episodeData: Promise<EpisodeData>;
 }
 
-export interface PlayerProps<
+export interface IPlayerProps<
   T extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable,
   > {
   episodeCore: EpisodeCore<T>
 }
 
 export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable> {
-  private internalPlayerProps = atom<PlayerProps<T> | null>(null);
+  private internalPlayerProps = atom<IPlayerProps<T> | null>(null);
 
   readonly playerProps = readonlyAtom(this.internalPlayerProps);
 
@@ -66,7 +66,7 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
     }
   };
 
-  constructor(private config: SeriesCoreConfig) {
+  constructor(private config: ISeriesCoreConfig) {
     this.envVariable.subscribe(this.updateEnvVariable);
     this.userData.subscribe(this.updateUserData);
     this.userImplementedFunction.subscribe(this.updateUserImplementedFunction);

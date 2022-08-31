@@ -1,6 +1,7 @@
 import { EpisodeCore } from './episodeCore';
 
-export { EpisodeCore } from './episodeCore';
+export * from './seriesCore';
+export * from './episodeCore';
 
 /**
  * @deprecated Core was renamed to EpisodeCore, this will be removed in the future.
