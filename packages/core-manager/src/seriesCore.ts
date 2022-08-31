@@ -55,16 +55,10 @@ export interface IEpisodeMetadata {
   episodeData: Promise<EpisodeData>;
 }
 
-export interface IPlayerProps<
-  T extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable,
-  > {
-  episodeCore: EpisodeCore<T>
-}
-
 export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable> {
-  private internalPlayerProps = atom<IPlayerProps<T> | null>(null);
+  private internalCurrentEpisodeCore = atom<EpisodeCore<T> | null>(null);
 
-  readonly playerProps = readonlyAtom(this.internalPlayerProps);
+  readonly currentEpisodeCore = readonlyAtom(this.internalCurrentEpisodeCore);
 
   private destroyPromise: Promise<void> | null = null;
 
@@ -80,17 +74,17 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
 
   private updateEnvVariable = (envVariable: T) => {
     this.ensureNotDestroying();
-    const playProps = this.playerProps.get();
+    const playProps = this.currentEpisodeCore.get();
     if (playProps !== null) {
-      playProps.episodeCore.additionalEnvVariable.set(envVariable);
+      playProps.additionalEnvVariable.set(envVariable);
     }
   };
 
   private updateUserData = (userData: IUserRelatedEnvVariable | undefined) => {
     this.ensureNotDestroying();
-    const playProps = this.playerProps.get();
+    const playProps = this.currentEpisodeCore.get();
     if (playProps !== null && userData !== undefined) {
-      playProps.episodeCore.envVariableManager.userRelatedEnvVariableAtom.set(userData);
+      playProps.envVariableManager.userRelatedEnvVariableAtom.set(userData);
     }
   };
 
@@ -98,9 +92,9 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
     userImplementedFunction: Partial<RawUserImplementedFunctions>,
   ) => {
     this.ensureNotDestroying();
-    const playProps = this.playerProps.get();
+    const playProps = this.currentEpisodeCore.get();
     if (playProps !== null) {
-      playProps.episodeCore.setUserImplementedFunctions(userImplementedFunction);
+      playProps.setUserImplementedFunctions(userImplementedFunction);
     }
   };
 
@@ -115,18 +109,18 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
   ) => {
     this.ensureNotDestroying();
     if (this.switching) {
-      return this.playerProps.get();
+      return this.currentEpisodeCore.get();
     }
     this.switching = true;
     const metadata = this.config.getEpisodeMetadata(episodeId);
-    const oldPlayProps = this.playerProps.get();
-    if (oldPlayProps !== null) {
-      if (oldPlayProps.episodeCore.episodeId === episodeId) {
-        oldPlayProps.episodeCore.seek(assetOrder ?? 0, assetTime ?? 0);
+    const oldEpisodeCore = this.currentEpisodeCore.get();
+    if (oldEpisodeCore !== null) {
+      if (oldEpisodeCore.episodeId === episodeId) {
+        oldEpisodeCore.seek(assetOrder ?? 0, assetTime ?? 0);
         this.switching = false;
-        return oldPlayProps;
+        return oldEpisodeCore;
       }
-      await oldPlayProps.episodeCore.destroy();
+      await oldEpisodeCore.destroy();
       this.ensureNotDestroying();
     }
     await this.config.navigate(episodeId, forceReload);
@@ -142,9 +136,7 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
       defaultSubtitleLanguage: metadata.defaultSubtitleLanguage,
       episodeId,
     });
-    this.internalPlayerProps.set({
-      episodeCore: newEpisodeCore,
-    });
+    this.internalCurrentEpisodeCore.set(newEpisodeCore);
     this.updateEnvVariable(this.envVariable.get());
     this.updateUserData(this.userData.get());
     this.updateUserImplementedFunction(this.userImplementedFunction.get());
@@ -178,13 +170,13 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
     });
     this.eventTarget.dispatchEvent(new CustomEvent('initialized', { detail: { episodeId } }));
     this.switching = false;
-    return this.playerProps.get();
+    return this.currentEpisodeCore.get();
   };
 
   private async internalDestroy() {
-    const playProps = this.playerProps.get();
+    const playProps = this.currentEpisodeCore.get();
     if (playProps !== null) {
-      await playProps.episodeCore.destroy();
+      await playProps.destroy();
     }
   }
 
