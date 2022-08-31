@@ -5,38 +5,42 @@ import { EpisodeCore } from './episodeCore';
 import { IDefaultAdditionalEnvVariable, IUserRelatedEnvVariable } from './manager/envVariable/EnvVariableManager';
 import { CustomEventHandler, EpisodeData } from './types';
 import { readonlyAtom } from './utils/nanostore';
+import { IInitialAssetStatus } from './sequence';
 
-export interface SegmentStartEventDetail{
-  episodeId:string,
-  segment:number,
+export interface SegmentStartEventDetail {
+  episodeId: string,
+  segment: number,
 }
 
-export interface SegmentEndEventDetail{
-  episodeId:string,
-  segment:number,
+export interface SegmentEndEventDetail {
+  episodeId: string,
+  segment: number,
 }
 
-export interface EndEventDetail{
-  episodeId:string,
+export interface EndEventDetail {
+  episodeId: string,
 }
 
-export interface InitializedEventDetail{
-  episodeId:string,
+export interface InitializedEventDetail {
+  episodeId: string,
 }
 
 export type SeriesCoreEventTarget = EventTarget & {
-  addEventListener(type: 'segmentStart', callback:CustomEventHandler<SegmentStartEventDetail>):void,
-  addEventListener(type: 'segmentEnd', callback:CustomEventHandler<SegmentEndEventDetail>):void,
-  addEventListener(type: 'end', callback:CustomEventHandler<EndEventDetail>):void,
-  addEventListener(type: 'initialized', callback:CustomEventHandler<InitializedEventDetail>):void,
+  addEventListener(type: 'segmentStart', callback: CustomEventHandler<SegmentStartEventDetail>): void,
+  addEventListener(type: 'segmentEnd', callback: CustomEventHandler<SegmentEndEventDetail>): void,
+  addEventListener(type: 'end', callback: CustomEventHandler<EndEventDetail>): void,
+  addEventListener(type: 'initialized', callback: CustomEventHandler<InitializedEventDetail>): void,
 };
 
 export interface ISeriesCoreConfig {
   navigate: (episodeId: string, forceReload?: boolean) => Promise<void>;
-  getEpisodeMetadata: (episodeId: string) => IEpisodeMetadata;
+  getEpisodeMetadata: (
+    episodeId: string, assetOrder?: number, assetTime?: number
+  ) => IEpisodeMetadata;
 }
 
 export interface IEpisodeMetadata {
+  initialAssetStatus?: IInitialAssetStatus;
   attemptAutoplay?: boolean;
   defaultContentLanguage?: string;
   defaultSubtitleLanguage?: string;
@@ -102,11 +106,14 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
       return this.currentEpisodeCore.get();
     }
     this.switching = true;
-    const metadata = this.config.getEpisodeMetadata(episodeId);
+    const metadata = this.config.getEpisodeMetadata(episodeId, assetOrder, assetTime);
     const oldEpisodeCore = this.currentEpisodeCore.get();
     if (oldEpisodeCore !== null) {
       if (oldEpisodeCore.episodeId === episodeId) {
-        oldEpisodeCore.seek(assetOrder ?? 0, assetTime ?? 0);
+        oldEpisodeCore.seek(
+          metadata.initialAssetStatus?.order ?? 0,
+          metadata.initialAssetStatus?.time ?? 0,
+        );
         this.switching = false;
         return oldEpisodeCore;
       }
@@ -117,10 +124,7 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
     this.ensureNotDestroying();
     const newEpisodeCore = new EpisodeCore<T>({
       initialEnvVariable: this.envVariable.get(),
-      initialAssetStatus: {
-        order: assetOrder,
-        time: assetTime,
-      },
+      initialAssetStatus: metadata.initialAssetStatus,
       attemptAutoplay: metadata.attemptAutoplay,
       defaultContentLanguage: metadata.defaultContentLanguage,
       defaultSubtitleLanguage: metadata.defaultSubtitleLanguage,
