@@ -6,7 +6,7 @@
   "scripts": {
     "build": "nx run-many --target=build",
     "changelog": "yarn changeset",
-    "version": "yarn changeset version",
+    "version": "yarn changeset version --tag",
     "publish": "nx run-many --target=publish",
     "prepare": "husky install"
   },
