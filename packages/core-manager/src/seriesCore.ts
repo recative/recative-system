@@ -115,7 +115,7 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
   ) => {
     this.ensureNotDestroying();
     if (this.switching) {
-      return;
+      return this.playerProps.get();
     }
     this.switching = true;
     const metadata = this.config.getEpisodeMetadata(episodeId);
@@ -124,7 +124,7 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
       if (oldPlayProps.episodeCore.episodeId === episodeId) {
         oldPlayProps.episodeCore.seek(assetOrder ?? 0, assetTime ?? 0);
         this.switching = false;
-        return;
+        return oldPlayProps;
       }
       await oldPlayProps.episodeCore.destroy();
       this.ensureNotDestroying();
@@ -178,6 +178,7 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
     });
     this.eventTarget.dispatchEvent(new CustomEvent('initialized', { detail: { episodeId } }));
     this.switching = false;
+    return this.playerProps.get();
   };
 
   private async internalDestroy() {
