@@ -9,6 +9,7 @@
   font-family: 'Raleway', sans-serif;
   --ifm-global-radius: 0;
   --ifm-heading-font-family: 'Raleway';
+  --ifm-mono-font-family: 'Azeret Mono';
   --ifm-color-primary: #546E7A;
   --ifm-color-primary-dark: #455A64;
   --ifm-color-primary-darker: #37474F;
@@ -20,6 +21,7 @@
   --ifm-font-size-base: 14px;
   --ifm-font-size-small: 13px;
   --ifm-font-weight-semibold: 550;
+  --ifm-code-padding-horizontal: 0.2em;
   --ifm-breadcrumb-border-radius: 0;
   --ifm-footer-height: 60px;
   --ifm-footer-padding-vertical: 1rem;
@@ -30,6 +32,21 @@
   --ifm-global-shadow-lw: none;
   --ifm-menu-link-sublist-icon: url('/img/icons/arrow-right.svg');
   --ifm-font-family-base: 'Raleway', sans-serif;
+}
+
+code {
+  border: 0;
+  margin: 0;
+  font-family: var(--ifm-mono-font-family);
+  vertical-align: initial;
+}
+
+p code {
+  font-weight: 300;
+}
+
+h1 code, h2 code, h3 code, h4 code, h5 code, h6 code {
+  font-weight: 600;
 }
 
 nav.menu {
@@ -339,6 +356,10 @@ main > .container > .row > div.col.col--3 {
 
 .theme-doc-toc-mobile > button::after {
   background-size: contain;
+}
+
+.table-of-contents__link code {
+  font-weight: 400;
 }
 
 .toc-highlight, .table-of-contents__link--active {

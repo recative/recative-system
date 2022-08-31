@@ -1,0 +1,85 @@
+---
+sidebar_position: 2
+---
+
+# Content Scheduling
+
+The `Core` is a monolith that manages states and resources throughout the whole player.
+
+## `Core` and Components
+
+Since the core does not directly manage the user interface of the player, all the user interface elements should be registered as a component of the core.
+
+To register a component, pass a name and an object that implements some functions on the ComponentFunctions interface to the registerComponent method. After that, you will get a CoreFunctions object as a handle to call functions on core from your component.
+
+### Stage
+
+The stage is a critical component that creates and manages all the content instances on the user interface side. Since the player won't work without the stage, the core will wait for the registration of the stage before starting working.
+
+The stage should implement methods that create/destroy/show/hide content in its ComponentFunctions.
+
+### Instance components
+
+The user interface side of every ContentInstance is also a component. For more information, see "Content and ContentInstance" section below.
+
+### Other components
+
+There can be other kinds of components. The most notable kind is the transition animation components that can temporarily block the content switching process. See "Switching between contents" section below.
+
+## `Content` and `ContentInstance`
+
+Content is the internal type used to describe the specification of content, which means a video, an interactive program or something else. When the Core needs to play content, it creates a `ContentInstance` from the Content, and asks the stage component to create the user interface side of it.
+
+The ContentInstance contains all the resources it needs to play the content, and manages the lifecycle of the playback progress of the content.
+
+### Lifecycle
+
+The `ContentInstance` has 5 different states:
+- idle, which means the `ContentInstance` is created, but it is not usable since the user interface counterpart is not created yet.
+- preloading, which means the `ContentInstance` is created and its user interface counterpart is loading the required resources so it's not ready to show.
+- ready, which means the `ContentInstance` is ready to be shown to the user.
+- destroying(not present in the current version), which means the `ContentInstance` is destroying itself. This state will be used once we have the async destroying support
+- destroyed, which means the `ContentInstance` is completely destroyed, all the resources it used are released.
+
+`ContentInstance` also can be shown or hidden, which is independent of the states above. However, in practice, the `ContentInstance` should not be shown to the user when its state is not ready.
+
+### Resources
+
+ContentInstance holds some resources to be used by the Content. This includes:
+- The `Timeline`, which coordinates the time of different tracks, like the RemoteTrack that represents the time of the user interface counterpart, and the AudioTrack below.
+- The `AudioTrack`, which plays the audio track of a video. The `Timeline` will synchronize the time of the user interface counterpart (like the video element) to the `AudioTrack` if it has audio to play.
+- The `AudioHost`, which plays sound effects for the interactive program.
+- The `SubsequenceManager`, which allows the interactive program to create and control subsequences. For more information, see the Subsequence section below.
+- The `managedCoreStateList`, which manages subtitles and other states in the content.
+
+The `ContentInstance` also keeps references to some global resources, like the `TaskQueue`, which schedules async tasks around the Core.
+
+## `Sequence` and Subsequence
+
+The Sequence is a sequence of Content. Contents in Sequence are also called segments, since they are parts of the sequence. It controls creation, destruction, showing and hiding of ContentInstance, switching process between the contents, calculation of time and process.
+
+### Time calculation
+
+Every segment in the Sequence has a duration. Some segments do not have a meaningful duration (like an interactive program), their duration should be infinite.
+
+The Sequence does not keep track of time itself. It only manages which segment is playing. To know the time of the sequence, we just add up all the finite duration of played segments, and then add the time from the Timeline of the current segment if its duration is finite. To seek a specific time in the sequence, we find the segment that the time falls in, and calculate the time in that segment.
+
+### Switching between contents
+
+Content switching is the most complicated part in Sequence. It manages seeking, transition between Contents in normal playback and starting of the first Content.
+
+To start the internal process of Content switching, set the nextSegment to the order of the next Content, set nextSegmentStartTime to the start time of next Content after switching, then all the internal `switchToNextContent` method.
+
+The `switchToNextContent` method will first get the blocker of this content switching. After that, it will wait for the blocker to unblock new content setup. When there are no more blockers for the new content setup, it will destroy old content if old content has the `earlyDestroyOnSwitch` property, and then create the new content.
+
+After the creation of the new content, it will wait for the ready of new content, the blocker to unblock final switching, and dependency of the content to complete. After that, it will show the new content, destroy the old content if it is not destroyed, then set the time and playing state on the new content. If the next content does not have `preloadDisabled`, it will be preloaded at this position.
+
+The starting of the first content also uses the Content switching process. However, the sequence is already switching when it is constructed.
+
+Also, it is possible to switch from or switch to undefined content. When the sequence switches to undefined content, it will fire an 'end' event.
+
+### Subsequence
+
+It's possible for `Content`s (especially interactive programs) to create subsequences. The subsequence is nearly the same as the main sequence, but some aspects of the subsequence are affected by the parent sequence. The subsequence will be completely hidden if its parent content is hidden. Also, it won't play if its parent content is not playing. The subsequence should also be destroyed when its parent content is destroyed.
+
+There is a limited set of API for the user interface counterpart to create and control the subsequences, like how the player controls the main sequence directly from Core.
