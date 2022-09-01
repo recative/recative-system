@@ -70,7 +70,7 @@ const DefaultContainerComponent: React.FC<React.PropsWithChildren<{}>> = ({ chil
 const DefaultContainerModule = {
   Container: DefaultContainerComponent,
 };
-interface IContentModule<
+export interface IContentModule<
   PlayerPropsInjectedDependencies,
   EnvVariable extends Record<string, unknown>,
 > {
