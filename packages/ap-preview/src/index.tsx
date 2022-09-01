@@ -37,10 +37,6 @@ import type { ButtonOverrides } from 'baseui/button';
 
 import { Error, Loading } from '@recative/act-player';
 import { useEnvVariable } from './utils/useEnvVariable';
-import {
-  useUserImplementedFunctions,
-  INITIAL_ASSET_STATUS_ATOM,
-} from './utils/useUserImplementedFunctions';
 
 window.React = React;
 
@@ -102,8 +98,6 @@ const Player: React.FC = () => {
     }
   }, [navigate]);
 
-  const initialAsset = useStore(INITIAL_ASSET_STATUS_ATOM);
-  const userImplementedFunctions = useUserImplementedFunctions(episodeId);
   const envVariable = useEnvVariable();
   const dependencies = React.useMemo(() => ({ navigate }), [navigate]);
 
@@ -127,8 +121,6 @@ const Player: React.FC = () => {
       <Content
         episodeId={episodeId}
         onEpisodeIdUpdate={handleEpisodeIdUpdate}
-        initialAsset={initialAsset}
-        userImplementedFunctions={userImplementedFunctions}
         envVariable={envVariable}
         userData={undefined}
         trustedUploaders={TRUSTED_UPLOADERS}
