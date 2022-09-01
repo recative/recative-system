@@ -11,19 +11,102 @@ import type { RawAudioClipResponse } from '../utils/selectUrlAudioTypePostProces
 
 import { WithLogger } from '../LogCollector';
 
-/**
- * Audio track for video component
- */
-export class AudioTrack extends WithLogger implements Track {
+class BasicAudioElement {
   private clip: AudioClip | null = null;
-
-  private pendingBuffer: Promise<RawAudioClipResponse | null> | null = null;
 
   private source: AudioSource | null = null;
 
-  private playing = false;
+  private mixer: AudioMixer | null = null;
 
-  private mixer: AudioMixer | null;
+  constructor(station: AudioStation) {
+    this.mixer = new AudioMixer(station);
+  }
+
+  suspend() {
+    this.mixer?.suspend();
+  }
+
+  resume() {
+    this.mixer?.resume();
+  }
+
+  isSuspended() {
+    return this.mixer?.isSuspended() ?? false;
+  }
+
+  play() {
+    this.source?.play();
+  }
+
+  pause() {
+    this.source?.pause();
+  }
+
+  isPlaying() {
+    return this.source?.isPlaying() ?? false;
+  }
+
+  get loaded() {
+    return this.source !== null;
+  }
+
+  destroy() {
+    this.source?.destroy();
+    this.clip?.destroy();
+    this.mixer?.destroy();
+    this.source = null;
+    this.clip = null;
+    this.mixer = null;
+  }
+
+  get destroyed() {
+    return this.mixer == null;
+  }
+
+  setVolume(volume: number) {
+    if (this.mixer !== null) {
+      this.mixer.volume = volume;
+    }
+  }
+
+  setAudio(audioClipResponse:AudioClip | null) {
+    if (this.destroyed) {
+      return;
+    }
+    this.source?.destroy();
+    this.clip?.destroy();
+    this.source = null;
+    this.clip = null;
+    if (audioClipResponse !== null) {
+      this.clip = audioClipResponse;
+      this.source = new AudioSource(this.mixer!, this.clip);
+    }
+  }
+
+  get hasAudio() {
+    return this.source !== null;
+  }
+
+  get time() {
+    return this.source?.time ?? 0;
+  }
+
+  set time(value) {
+    if (this.source !== null) {
+      this.source.time = value;
+    }
+  }
+}
+
+/**
+ * Audio track for video component
+ */
+export class BasicAudioTrack extends WithLogger implements Track {
+  private audioElement: BasicAudioElement;
+
+  private pendingBuffer: Promise<RawAudioClipResponse | null> | null = null;
+
+  private playing = false;
 
   private lastProgress = 0;
 
@@ -35,19 +118,19 @@ export class AudioTrack extends WithLogger implements Track {
 
   private lastStuck = false;
 
-  constructor(station: AudioStation, private id: string) {
+  constructor(private station: AudioStation, private id: string) {
     super();
-    this.mixer = new AudioMixer(station);
+    this.audioElement = new BasicAudioElement(station);
   }
 
   suspend() {
     this.updateTime();
-    this.mixer?.suspend();
+    this.audioElement?.suspend();
   }
 
   resume() {
     this.updateTime();
-    this.mixer?.resume();
+    this.audioElement?.resume();
   }
 
   seek(time: number, progress: number) {
@@ -58,36 +141,37 @@ export class AudioTrack extends WithLogger implements Track {
     this.cachedProgress = progress;
     const audioTime = performance.now();
     const target = progress + audioTime - time;
-    if (this.source !== null) {
-      this.source.time = target / 1000;
+    if (this.audioElement.loaded) {
+      this.audioElement.time = target / 1000;
       this.updateTime(true);
     }
   }
 
   private updateTime(force: boolean = false) {
-    if (this.source === null || this.mixer === null) {
+    if (!this.audioElement?.loaded) {
       this.lastUpdateTime = this.cachedUpdateTime;
       this.lastProgress = this.cachedProgress;
       return;
     }
     const time = performance.now();
-    if (this.source.isPlaying() && !this.mixer.isSuspended()) {
+    if (this.audioElement.isPlaying() && !this.audioElement.isSuspended()) {
       if (
-        force || this.source.time * 1000 - this.lastProgress > (time - this.lastUpdateTime) * 0.01
+        force
+        || this.audioElement.time * 1000 - this.lastProgress > (time - this.lastUpdateTime) * 0.01
       ) {
-        this.lastProgress = this.source.time * 1000;
+        this.lastProgress = this.audioElement.time * 1000;
         this.lastUpdateTime = time;
       }
     } else {
-      if (force || this.source.time * 1000 - this.lastProgress > 0) {
-        this.lastProgress = this.source.time * 1000;
+      if (force || this.audioElement.time * 1000 - this.lastProgress > 0) {
+        this.lastProgress = this.audioElement.time * 1000;
       }
       this.lastUpdateTime = time;
     }
   }
 
   check() {
-    if (this.source !== null) {
+    if (this.audioElement.hasAudio) {
       this.updateTime();
       return {
         time: this.lastUpdateTime, progress: this.lastProgress,
@@ -102,30 +186,30 @@ export class AudioTrack extends WithLogger implements Track {
     }
     // Note: some browser (like iOS safari) will suspend the audioContext without notify you.
     // This is used as a workaround
-    if (this.mixer?.station.audioContext?.state !== 'running') {
-      this.mixer?.station.audioContext?.resume();
+    if (this.station.audioContext?.state !== 'running') {
+      this.station.audioContext?.resume();
     }
     this.cachedUpdateTime = time;
     this.cachedProgress = progress;
-    if (this.source !== null && this.mixer !== null) {
+    if (this.audioElement.hasAudio) {
       this.updateTime();
       const now = performance.now();
       const target = progress + now - time;
       const current = this.lastProgress + now - this.lastUpdateTime;
       if (Math.abs(target - current) > 33) {
         this.log(`Audio track ${this.id} resync from ${current} to ${target}`);
-        this.source.time = target / 1000;
+        this.audioElement.time = target / 1000;
         this.updateTime(true);
       }
     }
-    if (this.pendingBuffer !== null && this.source === null) {
+    if (this.pendingBuffer !== null && this.audioElement.hasAudio) {
       if (!this.lastStuck) {
         this.log(`Audio track ${this.id} stuck, reason: not loaded`);
       }
       this.lastStuck = true;
       return true;
     }
-    if (this.mixer?.station.audioContext?.state === 'suspended') {
+    if (this.station.audioContext?.state === 'suspended') {
       if (!this.lastStuck) {
         this.log(`Audio track ${this.id} stuck, reason: audio station suspended`);
       }
@@ -142,20 +226,17 @@ export class AudioTrack extends WithLogger implements Track {
   play(): void {
     this.updateTime();
     this.playing = true;
-    this.source?.play();
+    this.audioElement?.play();
   }
 
   pause(): void {
     this.updateTime();
     this.playing = false;
-    this.source?.pause();
+    this.audioElement?.pause();
   }
 
   setAudio(audioClipResponsePromise: Promise<RawAudioClipResponse | null> | null) {
-    this.source?.destroy();
-    this.clip?.destroy();
-    this.source = null;
-    this.clip = null;
+    this.audioElement.setAudio(null);
     this.pendingBuffer = audioClipResponsePromise;
     if (this.pendingBuffer !== null) {
       this.loadAudio(this.pendingBuffer);
@@ -177,40 +258,32 @@ export class AudioTrack extends WithLogger implements Track {
       // setAudio when audio is loading or destroyed
       return;
     }
-    this.clip = audioClipResponse.audioClip;
+    this.audioElement.setAudio(audioClipResponse.audioClip);
     this.log(`Audio track for ${this.id} loaded`);
-    this.source = new AudioSource(this.mixer!, this.clip);
-    if (this.playing && !this.mixer?.isSuspended()) {
-      this.source.play();
+    let targetTime = (this.cachedProgress) / 1000;
+    if (this.playing && !this.audioElement?.isSuspended()) {
+      this.audioElement.play();
       const now = performance.now();
-      this.source.time = (this.cachedProgress + now - this.cachedUpdateTime) / 1000;
-    } else {
-      this.source.time = (this.cachedProgress) / 1000;
+      targetTime = (this.cachedProgress + now - this.cachedUpdateTime) / 1000;
     }
     if (this.playing) {
-      this.source.play();
+      this.audioElement.play();
     }
+    this.audioElement.time = targetTime;
     this.updateTime();
     this.pendingBuffer = null;
   }
 
   destroy() {
-    this.source?.destroy();
-    this.clip?.destroy();
-    this.mixer?.destroy();
-    this.source = null;
-    this.clip = null;
-    this.mixer = null;
+    this.audioElement.destroy();
     this.pendingBuffer = null;
   }
 
   get destroyed() {
-    return this.mixer == null;
+    return this.audioElement.destroyed;
   }
 
   setVolume(volume: number) {
-    if (this.mixer !== null) {
-      this.mixer.volume = volume;
-    }
+    this.audioElement.setVolume(volume);
   }
 }

@@ -16,7 +16,7 @@ import { WritableAtom } from 'nanostores';
 // eslint-disable-next-line import/no-cycle
 import { SubsequenceManager } from './manager/subsequence/subsequence';
 import { AudioHost } from './audio/audioHost';
-import { AudioTrack } from './audio/audioTrack';
+import { BasicAudioTrack } from './audio/audioTrack';
 import { TaskQueueManager } from './manager/taskQueue/TaskQueueManager';
 import { Logger, WithLogger } from './LogCollector';
 import type { ComponentFunctions, ContentState } from './types';
@@ -74,12 +74,10 @@ export class ContentInstance extends WithLogger {
    */
   progressReporter: ProgressReporter;
 
-  /**
-   * The Audio track that synchronized with the timeline
-   */
-  audioTrack: AudioTrack;
-
+  // state on the main timeline
   managedCoreStateList = new ManagedCoreStateList();
+
+  audioTrack: BasicAudioTrack;
 
   managedStateEnabled = false;
 
@@ -134,8 +132,10 @@ export class ContentInstance extends WithLogger {
     this.remote = remote;
     // Since the RemoteTrack initialization requires the component,
     // we delay addition of remote track at component preload
-    this.timeline.addTrack(new MonitorTrack(option.onUpdate, option.onStuckChange), -Infinity);
-    this.audioTrack = new AudioTrack(option.audioStation, id);
+    this.timeline.addTrack(
+      new MonitorTrack(option.onUpdate, option.onStuckChange), -Infinity,
+    );
+    this.audioTrack = new BasicAudioTrack(option.audioStation, id);
     this.audioTrack.logger = this.logger?.extend(`audioTrack(${id})`) || null;
     this.audioTrack.setVolume(option.volume);
     this.timeline.addTrack(this.audioTrack, 1);
