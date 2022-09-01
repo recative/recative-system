@@ -22,7 +22,6 @@ interface AudioElement {
   destroy(): void;
   get destroyed(): boolean;
   setVolume(volume: number): void;
-  get hasAudio(): boolean;
   get time(): number;
   set time(value: number);
 }
@@ -85,10 +84,6 @@ class BasicAudioElement implements AudioElement {
     if (this.mixer !== null) {
       this.mixer.volume = volume;
     }
-  }
-
-  get hasAudio() {
-    return this.source !== null;
   }
 
   get time() {
@@ -174,7 +169,7 @@ export class AudioTrack extends WithLogger implements Track {
   }
 
   check() {
-    if (this.audioElement?.hasAudio) {
+    if (this.audioElement !== null) {
       this.updateTime();
       return {
         time: this.lastUpdateTime, progress: this.lastProgress,
@@ -194,7 +189,7 @@ export class AudioTrack extends WithLogger implements Track {
     }
     this.cachedUpdateTime = time;
     this.cachedProgress = progress;
-    if (this.audioElement?.hasAudio) {
+    if (this.audioElement !== null) {
       this.updateTime();
       const now = performance.now();
       const target = progress + now - time;
@@ -205,7 +200,7 @@ export class AudioTrack extends WithLogger implements Track {
         this.updateTime(true);
       }
     }
-    if (this.pendingBuffer !== null && this.audioElement?.hasAudio) {
+    if (this.pendingBuffer !== null && this.audioElement !== null) {
       if (!this.lastStuck) {
         this.log(`Audio track ${this.id} stuck, reason: not loaded`);
       }
