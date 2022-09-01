@@ -5,6 +5,8 @@ export * from './hooks/useCustomizedModule';
 export * from './hooks/useUserImplementedFunctions';
 export { useSdkConfig, useEpisodes } from './hooks/useSdkConfig';
 
+export type { PlayerPropsInjectorHook } from './components/hooks/useInjector';
+
 export * from './types/IEpisodeSave';
 export * from './types/IRpcFunction';
 export * from './types/IEpisodeDetail';
