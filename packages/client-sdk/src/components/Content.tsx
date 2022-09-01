@@ -42,13 +42,13 @@ export interface IContentProps<
   EnvVariable extends Record<string, unknown>,
 > {
   episodeId: string | undefined;
-  userImplementedFunctions: Partial<RawUserImplementedFunctions> | undefined;
+  userImplementedFunctions?: Partial<RawUserImplementedFunctions>;
   preferredUploaders: string[];
   trustedUploaders: string[];
   envVariable: EnvVariable | undefined;
   userData: IUserRelatedEnvVariable | undefined;
   LoadingComponent?: React.FC;
-  initialAsset: IEpisodeMetadata['initialAssetStatus'];
+  initialAsset?: IEpisodeMetadata['initialAssetStatus'];
   attemptAutoplay?: IEpisodeMetadata['attemptAutoplay'];
   defaultContentLanguage?: IEpisodeMetadata['defaultContentLanguage'];
   defaultSubtitleLanguage?: IEpisodeMetadata['defaultSubtitleLanguage'];
@@ -145,6 +145,19 @@ EnvVariable extends Record<string, unknown>,
       const config = useSdkConfig();
       const seriesCoreRef = React.useRef<SeriesCore<EnvVariable>>();
 
+      const injectedUserImplementedFunctions = React.useMemo<
+      Partial<RawUserImplementedFunctions>
+      >(() => ({
+        ...userImplementedFunctions,
+        gotoEpisode: (_, nextEpisodeId, forceReload, assetOrder, assetTime) => {
+          if (!seriesCoreRef.current) {
+            throw new TypeError('Series core is not initialized, this is not allowed');
+          }
+
+          seriesCoreRef.current.setEpisode(nextEpisodeId, forceReload, assetOrder, assetTime);
+        },
+      }), []);
+
       const {
         hookOnEnd,
         hookOnSegmentEnd,
@@ -160,7 +173,7 @@ EnvVariable extends Record<string, unknown>,
         episodeId ?? null,
         internalUsePlayerPropsHook,
         playerPropsHookDependencies,
-        userImplementedFunctions,
+        injectedUserImplementedFunctions,
         seriesCoreRef,
       );
 
@@ -191,6 +204,7 @@ EnvVariable extends Record<string, unknown>,
         getInjectedEpisodeMetadata,
         onEpisodeIdUpdate,
       );
+      React.useImperativeHandle(seriesCoreRef, () => seriesCore, [seriesCore]);
 
       const resetInitialAsset = useResetAssetStatusCallback();
 
