@@ -35,7 +35,6 @@ export const useUserImplementedFunctions = (
   injectedFunctions: InjectedFunctions,
   server: IRpcFunction,
 ): Partial<UserImplementedFunctions> | undefined => {
-  const sdkConfig = useSdkConfig();
   const episodeMap = React.useMemo(() => {
     const result = new Map<string | number, IEpisode>();
 
@@ -47,52 +46,6 @@ export const useUserImplementedFunctions = (
 
     return result;
   }, [episodes]);
-
-  const episode = episodeMap.get(episodeId);
-
-  const gotoEpisode: UserImplementedFunctions['gotoEpisode'] = React.useCallback(
-    (seek, episodeOrder, forceReload, assetOrder, assetTime) => {
-      log(`Received go to episode request, episode order: ${episodeOrder}`);
-      if (episode?.order.toString() === episodeOrder) {
-        log(`gotoEpisode Will seek: ${episodeOrder}`);
-        if (assetOrder !== undefined && assetTime !== undefined) {
-          seek(assetOrder, assetTime);
-        }
-
-        return;
-      }
-
-      const nextEpisode = [...episodeMap.values()].find((x) => x.order.toString() === episodeOrder);
-
-      if (!nextEpisode) {
-        log(`gotoEpisode episode NOT FOUND: ${episodeOrder}`);
-        return;
-      }
-
-      log(`gotoEpisode Will jump: ${episodeOrder}`);
-      const initialAssetStatus = assetOrder !== undefined && assetTime !== undefined
-        ? {
-          time: assetTime,
-          order: assetOrder,
-        }
-        : undefined;
-
-      sdkConfig.setClientSdkConfig({
-        ...sdkConfig,
-        initialAssetStatus,
-      });
-
-      const nextUrl = injectedFunctions.constructEpisodeUrl(nextEpisode.id);
-      log(`Next URL is: ${nextUrl}`);
-
-      if (!forceReload) {
-        injectedFunctions.navigate(nextUrl);
-      } else {
-        window.location.href = nextUrl;
-      }
-    },
-    [injectedFunctions],
-  );
 
   const finishEpisode: UserImplementedFunctions['finishEpisode'] = React.useCallback(async () => {
     if (!assets) return;
@@ -237,7 +190,6 @@ export const useUserImplementedFunctions = (
 
   const memorizedFunctions = React.useMemo(
     () => ({
-      gotoEpisode,
       finishEpisode,
       unlockEpisode,
       unlockAsset,
@@ -256,7 +208,6 @@ export const useUserImplementedFunctions = (
       enableAppFullScreenMode,
       finishEpisode,
       getSavedData,
-      gotoEpisode,
       gotoSeries,
       requestPayment,
       setSavedData,

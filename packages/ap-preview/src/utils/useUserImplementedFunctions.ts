@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-alert */
 import * as React from 'react';
 import { atom } from 'nanostores';
@@ -7,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useEpisodes } from '@recative/client-sdk';
 import { IInitialAssetStatus } from '@recative/core-manager';
-import type { RawUserImplementedFunctions, UserImplementedFunctions } from '@recative/definitions';
+import type { RawUserImplementedFunctions } from '@recative/definitions';
 
 const log = debug('example:user-impl-fn');
 

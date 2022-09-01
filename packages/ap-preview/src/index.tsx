@@ -1,4 +1,5 @@
 /* eslint-disable no-alert */
+/* eslint-disable import/no-extraneous-dependencies */
 import * as React from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -90,6 +91,17 @@ const Player: React.FC = () => {
   const navigate = useNavigate();
   const { episodeId } = useParams<{ episodeId: string }>();
 
+  const handleEpisodeIdUpdate = React.useCallback(async (
+    id: string, forceReload?: boolean,
+  ) => {
+    const url = `/episode/${id}`;
+    if (forceReload) {
+      window.location.href = url;
+    } else {
+      navigate(url);
+    }
+  }, [navigate]);
+
   const initialAsset = useStore(INITIAL_ASSET_STATUS_ATOM);
   const userImplementedFunctions = useUserImplementedFunctions(episodeId);
   const envVariable = useEnvVariable();
@@ -114,9 +126,11 @@ const Player: React.FC = () => {
     <React.Suspense fallback={<Loading />}>
       <Content
         episodeId={episodeId}
+        onEpisodeIdUpdate={handleEpisodeIdUpdate}
         initialAsset={initialAsset}
         userImplementedFunctions={userImplementedFunctions}
         envVariable={envVariable}
+        userData={undefined}
         trustedUploaders={TRUSTED_UPLOADERS}
         preferredUploaders={PREFERRED_UPLOADERS}
         LoadingComponent={Loading}
@@ -144,7 +158,7 @@ const App: React.FC = () => {
         },
       }))
       : [];
-  }, [episodes]);
+  }, [episodes, navigate]);
 
   const initialEpisode = React.useMemo(() => {
     return [...episodes.values()].find(
@@ -186,7 +200,6 @@ const App: React.FC = () => {
       </Block>
       <Drawer
         isOpen={drawerOpen}
-        autoFocus
         size={DRAWER_SIZE.auto}
         onClose={() => setDrawerOpen(false)}
       >
