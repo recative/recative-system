@@ -3,11 +3,12 @@ import debug from 'debug';
 
 import { ActPlayer, InterfaceExtensionComponent } from '@recative/act-player';
 import {
-  EndEventDetail,
-  InitializedEventDetail,
-  SegmentEndEventDetail,
-  SegmentStartEventDetail,
   SeriesCore,
+  EndEventDetail,
+  SegmentEndEventDetail,
+  InitializedEventDetail,
+  SegmentStartEventDetail,
+  IUserRelatedEnvVariable,
 } from '@recative/core-manager';
 
 import type { RawUserImplementedFunctions } from '@recative/definitions';
@@ -45,6 +46,7 @@ export interface IContentProps<
   preferredUploaders: string[];
   trustedUploaders: string[];
   envVariable: EnvVariable | undefined;
+  userData: IUserRelatedEnvVariable | undefined;
   loadingComponent?: React.FC;
   initialAsset: IEpisodeMetadata['initialAssetStatus'];
   attemptAutoplay?: IEpisodeMetadata['attemptAutoplay'];
@@ -121,6 +123,7 @@ EnvVariable extends Record<string, unknown>,
       children,
       episodeId,
       envVariable,
+      userData,
       initialAsset,
       loadingComponent,
       preferredUploaders,
@@ -147,6 +150,8 @@ EnvVariable extends Record<string, unknown>,
         hookOnSegmentEnd,
         hookOnSegmentStart,
         hookUserImplementedFunctions,
+        hookEnvVariable,
+        hookUserData,
         injectToSdk,
         injectToContainer,
         injectToPlayer,
@@ -181,6 +186,8 @@ EnvVariable extends Record<string, unknown>,
         trustedUploaders,
         rawEpisodeMetadata,
         hookUserImplementedFunctions,
+        hookEnvVariable ?? envVariable,
+        hookUserData ?? userData,
         getInjectedEpisodeMetadata,
         onEpisodeIdUpdate,
       );
@@ -214,12 +221,12 @@ EnvVariable extends Record<string, unknown>,
         >
           {
             playerReady ? (
-                <ActPlayer<true, EnvVariable>
-                  core={episodeCore}
-                  interfaceComponents={interfaceComponents}
-                  loadingComponent={loadingComponent}
-                  {...injectToPlayer}
-                />
+              <ActPlayer<true, EnvVariable>
+                core={episodeCore}
+                interfaceComponents={interfaceComponents}
+                loadingComponent={loadingComponent}
+                {...injectToPlayer}
+              />
             )
               : loadingElement
           }

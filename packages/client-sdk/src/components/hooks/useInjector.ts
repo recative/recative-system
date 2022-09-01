@@ -47,7 +47,7 @@ export type PlayerPropsInjectorHook<
   injectToPlayer?: Partial<IManagedActPointProps<EnvVariable>>;
   injectToSdk?: Partial<IContentProps<PlayerPropsInjectedDependencies, EnvVariable>>;
   injectToContainer?: Record<string, unknown>;
-  getEpisodeMetadata?: (x: IEpisodeMetadata) => IEpisodeMetadata;
+  getEpisodeMetadata?: (x: IEpisodeMetadata) => IEpisodeMetadata | Promise<IEpisodeMetadata>;
 };
 
 // This could be any!
@@ -131,12 +131,16 @@ export const useInjector = <
     hookOnSegmentStart,
     hookInjectToSdk,
     hookUserImplementedFunctions,
+    hookEnvVariable,
+    hookUserData,
   } = React.useMemo(() => {
     const {
       onEnd: hookOnEnd0,
       onSegmentEnd: hookOnSegmentEnd0,
       onSegmentStart: hookOnSegmentStart0,
       userImplementedFunctions: hookUserImplementedFunctions0,
+      envVariable: envVariable0,
+      userData: userData0,
       ...injectToSdk0
     } = injectToSdk ?? {};
 
@@ -146,6 +150,8 @@ export const useInjector = <
       hookOnSegmentStart: hookOnSegmentStart0,
       hookUserImplementedFunctions: hookUserImplementedFunctions0,
       hookInjectToSdk: injectToSdk0,
+      hookEnvVariable: envVariable0,
+      hookUserData: userData0,
     };
   }, [injectToSdk]);
 
@@ -162,6 +168,8 @@ export const useInjector = <
     hookOnSegmentStart,
     hookUserImplementedFunctions,
     injectToSdk: hookInjectToSdk,
+    hookEnvVariable,
+    hookUserData,
     injectToContainer,
     injectToPlayer,
     getEpisodeMetadata,

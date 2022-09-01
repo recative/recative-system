@@ -5,7 +5,10 @@ export * from './hooks/useCustomizedModule';
 export * from './hooks/useUserImplementedFunctions';
 export { useSdkConfig, useEpisodes } from './hooks/useSdkConfig';
 
-export type { PlayerPropsInjectorHook } from './components/hooks/useInjector';
+export type {
+  PlayerPropsInjectorHook,
+  InjectedProps,
+} from './components/hooks/useInjector';
 
 export * from './types/IEpisodeSave';
 export * from './types/IRpcFunction';

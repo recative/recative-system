@@ -1,11 +1,15 @@
-import { RawUserImplementedFunctions } from '@recative/definitions';
-import { atom } from 'nanostores';
 import EventTarget from '@ungap/event-target';
+import { atom } from 'nanostores';
+import type { RawUserImplementedFunctions } from '@recative/definitions';
+
 import { EpisodeCore } from './episodeCore';
-import { IDefaultAdditionalEnvVariable, IUserRelatedEnvVariable } from './manager/envVariable/EnvVariableManager';
-import { CustomEventHandler, EpisodeData } from './types';
 import { readonlyAtom } from './utils/nanostore';
-import { IInitialAssetStatus } from './sequence';
+import type { IInitialAssetStatus } from './sequence';
+import type { CustomEventHandler, EpisodeData } from './types';
+import type {
+  IUserRelatedEnvVariable,
+  IDefaultAdditionalEnvVariable,
+} from './manager/envVariable/EnvVariableManager';
 
 export interface SegmentStartEventDetail {
   episodeId: string,
@@ -36,7 +40,7 @@ export interface ISeriesCoreConfig {
   navigate: (episodeId: string, forceReload?: boolean) => Promise<void>;
   getEpisodeMetadata: (
     episodeId: string, assetOrder?: number, assetTime?: number
-  ) => IEpisodeMetadata;
+  ) => IEpisodeMetadata | Promise<IEpisodeMetadata>;
 }
 
 export interface IEpisodeMetadata {
@@ -44,7 +48,7 @@ export interface IEpisodeMetadata {
   attemptAutoplay?: boolean;
   defaultContentLanguage?: string;
   defaultSubtitleLanguage?: string;
-  episodeData: Promise<EpisodeData> | EpisodeData;
+  episodeData: EpisodeData;
 }
 
 export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable> {
@@ -106,10 +110,11 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
       return this.currentEpisodeCore.get();
     }
     this.switching = true;
-    const metadata = this.config.getEpisodeMetadata(episodeId, assetOrder, assetTime);
+    const metadataPromise = this.config.getEpisodeMetadata(episodeId, assetOrder, assetTime);
     const oldEpisodeCore = this.currentEpisodeCore.get();
     if (oldEpisodeCore !== null) {
       if (oldEpisodeCore.episodeId === episodeId) {
+        const metadata = await metadataPromise;
         oldEpisodeCore.seek(
           metadata.initialAssetStatus?.order ?? 0,
           metadata.initialAssetStatus?.time ?? 0,
@@ -122,6 +127,7 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
     }
     await this.config.navigate(episodeId, forceReload);
     this.ensureNotDestroying();
+    const metadata = await metadataPromise;
     const newEpisodeCore = new EpisodeCore<T>({
       initialEnvVariable: this.envVariable.get(),
       initialAssetStatus: metadata.initialAssetStatus,
@@ -157,11 +163,7 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
         },
       }));
     });
-    // Even through the episode data is not ready, episode switching is finished
-    // So do not await it here.
-    Promise.resolve(metadata.episodeData).then((data) => {
-      newEpisodeCore.initializeEpisode(data);
-    });
+    newEpisodeCore.initializeEpisode(metadata.episodeData);
     this.eventTarget.dispatchEvent(new CustomEvent('initialized', { detail: { episodeId } }));
     this.switching = false;
     return this.currentEpisodeCore.get();

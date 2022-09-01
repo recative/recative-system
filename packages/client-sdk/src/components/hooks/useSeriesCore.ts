@@ -4,7 +4,11 @@ import { useStore } from '@nanostores/react';
 
 import { SeriesCore } from '@recative/core-manager';
 import type { RawUserImplementedFunctions } from '@recative/definitions';
-import type { ISeriesCoreConfig, IEpisodeMetadata } from '@recative/core-manager';
+import type {
+  IEpisodeMetadata,
+  ISeriesCoreConfig,
+  IUserRelatedEnvVariable,
+} from '@recative/core-manager';
 
 import { useDataFetcher } from './useDataFetcher';
 
@@ -13,22 +17,29 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
   trustedUploaders: string[],
   rawEpisodeMetadata: Omit<IEpisodeMetadata, 'episodeData'>,
   userImplementedFunctions: Partial<RawUserImplementedFunctions> | undefined,
-  getInjectedEpisodeMetadata: ((x: IEpisodeMetadata) => IEpisodeMetadata) | undefined,
+  envVariable: EnvVariable | undefined,
+  userData: IUserRelatedEnvVariable | undefined,
+  getInjectedEpisodeMetadata:
+  | ((x: IEpisodeMetadata) => IEpisodeMetadata | Promise<IEpisodeMetadata>)
+  | undefined,
   navigate: ISeriesCoreConfig['navigate'],
 ) => {
   const fetchData = useDataFetcher();
 
   const getEpisodeMetadata = React.useCallback(
-    (nextEpisodeId: string): IEpisodeMetadata => {
+    async (nextEpisodeId: string): Promise<IEpisodeMetadata> => {
+      const episodeDetail = await fetchData(nextEpisodeId);
+
       const notInjectedEpisodeMetadata = {
         ...rawEpisodeMetadata,
-        episodeData: fetchData(nextEpisodeId).then(({ resources, assets }) => ({
-          resources,
-          assets,
+        episodeData: {
+          resources: episodeDetail.resources,
+          assets: episodeDetail.assets,
           preferredUploaders,
           trustedUploaders,
-        })),
+        },
       };
+
       return getInjectedEpisodeMetadata?.(notInjectedEpisodeMetadata) ?? notInjectedEpisodeMetadata;
     },
     [
