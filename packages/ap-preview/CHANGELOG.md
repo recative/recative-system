@@ -1,5 +1,12 @@
 # @recative/ap-preview
 
+## 0.3.2-beta.0
+
+### Patch Changes
+
+- Updated dependencies [775f617]
+  - @recative/core-manager@0.5.0-beta.0
+
 ## 0.3.1
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # Changelog
 
+## 5.0.0-beta.0
+
+### Minor Changes
+
+- 775f617: BREAKING: Implemented series core manager, this will change the way to initialize the system
+
+### Patch Changes
+
+- Updated dependencies [775f617]
+  - @recative/act-player@0.3.0-beta.0
+  - @recative/core-manager@0.5.0-beta.0
+
 ## 4.0.0
 
 ### Patch Changes

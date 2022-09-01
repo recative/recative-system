@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0-beta.0
+
+### Minor Changes
+
+- 775f617: BREAKING: Implemented series core manager, this will change the way to initialize the system
+
 ## 0.4.5
 
 ### Patch Changes
