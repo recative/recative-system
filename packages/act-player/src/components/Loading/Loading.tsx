@@ -19,7 +19,7 @@ const useStyles = () => {
     transform: 'translate(-50%, -50%)',
     position: 'absolute',
     display: 'inline-block',
-  }), []);
+  }), [css]);
   return { loaderStyles };
 };
 

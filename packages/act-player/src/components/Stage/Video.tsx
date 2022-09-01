@@ -114,7 +114,7 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
       clearInterval(unstuckCheckInterval.current);
       unstuckCheckInterval.current = null;
     }
-  }, [core]);
+  }, []);
 
   const unstuckCheck = React.useCallback(() => {
     if (hasEnoughBuffer(videoRef.current!)) {
@@ -131,7 +131,7 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
       );
       unstuckCheck();
     }
-  }, [core, unstuckCheck]);
+  }, [unstuckCheck]);
 
   const stuck = React.useCallback(() => {
     if (!isVideoWaiting(videoRef.current!)) {
@@ -157,7 +157,7 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
 
   React.useEffect(() => {
     return () => clearUnstuckCheckInterval();
-  }, [core]);
+  }, [clearUnstuckCheckInterval, core]);
 
   React.useLayoutEffect(() => {
     if (videoComponentInitialized.current) return;
@@ -181,7 +181,7 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
     return () => {
       core.controller.removeVideoTag();
     };
-  }, []);
+  }, [core.controller, fullSizeStyle]);
 
   const episodeData = props.core.getEpisodeData()!;
 
@@ -248,7 +248,15 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
           clearUnstuckCheckInterval();
         }
       });
-  }, [query, queryUrlFn, resourceMap, resolution, contentLanguage]);
+  }, [
+    query,
+    queryUrlFn,
+    resourceMap,
+    resolution,
+    contentLanguage,
+    queryMethod,
+    clearUnstuckCheckInterval,
+  ]);
 
   React.useLayoutEffect(() => {
     const matchedResource = queryUrlFn(
@@ -270,7 +278,13 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
           audioRef.current = selectedAudio;
         }
       });
-  }, [props.spec, contentLanguage]);
+  }, [
+    props.spec,
+    contentLanguage,
+    queryUrlFn,
+    query,
+    core.coreFunctions,
+  ]);
 
   React.useLayoutEffect(() => {
     if (subtitleLanguage !== 'null') {
@@ -309,13 +323,21 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
             });
         });
     }
-  }, [props.spec, props.core, subtitleLanguage]);
+  }, [
+    props.spec,
+    props.core,
+    subtitleLanguage,
+    queryUrlFn,
+    query,
+    core.coreFunctions,
+    props.id,
+  ]);
 
   React.useEffect(() => {
     core.coreFunctions.updateContentState('preloading');
 
     return () => props.core.unregisterComponent(props.id);
-  }, [props.id]);
+  }, [core.coreFunctions, props.core, props.id]);
 
   /**
    * This is a dirty fix for a bug in the Safari browser (iOS 14.4), it
@@ -328,7 +350,7 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
     scheduleUnstuckCheck();
     core.coreFunctions.updateContentState('ready');
     core.controller.setVideoReady();
-  }, []);
+  }, [core.controller, core.coreFunctions, scheduleUnstuckCheck]);
 
   const handleLoadedMetadata = React.useCallback(() => {
     // For iOS Safari: the browser won't load the data until the video start to play
@@ -344,11 +366,11 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
       videoRef.current!.currentTime * 1000,
     );
     core.controller.checkVideoPlayingState();
-  }, []);
+  }, [core.controller, core.coreFunctions]);
 
   const handleWaiting = React.useCallback(() => {
     stuck();
-  }, []);
+  }, [stuck]);
 
   return (
     <ModuleContainer hidden={!props.show}>

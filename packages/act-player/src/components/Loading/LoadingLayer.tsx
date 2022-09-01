@@ -13,7 +13,7 @@ const useStyles = () => {
 
   const stageContainerStyles = React.useMemo(() => css({
     height: '100%',
-  }), []);
+  }), [css]);
 
   const elementContainerStyles = React.useMemo(() => css({
     backgroundColor: theme.colors.backgroundAlwaysDark,
@@ -22,7 +22,7 @@ const useStyles = () => {
     overflowX: 'hidden',
     overflowY: 'hidden',
     pointerEvents: 'auto',
-  }), [theme.colors.backgroundAlwaysDark]);
+  }), [css, theme.colors.backgroundAlwaysDark]);
 
   return { stageContainerStyles, elementContainerStyles };
 };

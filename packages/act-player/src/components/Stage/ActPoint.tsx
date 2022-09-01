@@ -51,7 +51,7 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
     const entryPoints = props.spec.entryPoints as Record<string, string>;
 
     return episodeData.resources.getResourceByUrlMap(entryPoints);
-  }, [props.spec.entryPoints]);
+  }, [props.core, props.spec.entryPoints]);
 
   const [{ result: entryPoint }, entryPointAction] = useAsync(getEntryPointUrl);
 
@@ -70,7 +70,7 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
 
   React.useEffect(() => {
     entryPointAction.execute();
-  }, []);
+  }, [entryPointAction]);
 
   const { iFrameWidth, iFrameHeight } = React.useMemo(() => {
     const specResolution = props.spec.resolutionMode as ResolutionMode;
@@ -92,7 +92,7 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
       iFrameWidth: width === undefined ? -1 : width,
       iFrameHeight: height === undefined ? -1 : height,
     };
-  }, []);
+  }, [height, props.spec.height, props.spec.resolutionMode, props.spec.width, width]);
 
   const updateActPointScale = useThrottledCallback(
     () => {
@@ -136,7 +136,7 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
       position: 'absolute' as const,
       transform: `scale(${scale})`,
     };
-  }, [scale]);
+  }, [iFrameHeight, iFrameWidth, scale]);
 
   React.useEffect(() => {
     window.addEventListener('resize', updateActPointScale);
@@ -146,7 +146,7 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
 
   React.useEffect(() => {
     setTimeout(updateActPointScale, 0);
-  }, [width, height, props.show]);
+  }, [width, height, props.show, updateActPointScale]);
 
   const fullSizeStyles = css(FULL_SIZE_STYLES);
   const visibleStyles = css(VISIBLE_STYLES);
@@ -181,13 +181,13 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
     if (event.data === 'ap-script-load-error') {
       props.core.panicCode.set('Unable to Load the Script');
     }
-  }, []);
+  }, [core.coreFunctions, props.core.panicCode]);
 
   React.useEffect(() => {
     return () => {
       core.destroyConnector();
     };
-  }, []);
+  }, [core]);
 
   React.useLayoutEffect(() => {
     if (videoComponentInitialized.current) return;
@@ -215,13 +215,13 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
       );
       messageChannel.port1.close();
     };
-  }, [entryPoint]);
+  }, [core.controller, entryPoint, handleEmergencyMessage]);
 
   React.useEffect(() => {
     core.coreFunctions.updateContentState('preloading');
 
     return () => props.core.unregisterComponent(props.id);
-  }, [props.id]);
+  }, [core.coreFunctions, props.core, props.id]);
 
   const LoadingComponent = props.loadingComponent ?? Loading;
 

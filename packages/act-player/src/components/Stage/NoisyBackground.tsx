@@ -16,7 +16,7 @@ const useBackgroundStyles = () => {
     width: '100%',
     height: '100%',
     transform: 'translate(-50%, -50%)',
-  }), []);
+  }), [css]);
 
   const backgroundPatternStyles = React.useMemo(() => css({
     position: 'absolute',
@@ -36,7 +36,7 @@ const useBackgroundStyles = () => {
         backgroundPosition: '100% 100%',
       },
     } as unknown as string,
-  }), []);
+  }), [css]);
 
   return { backgroundContainerStyles, backgroundPatternStyles };
 };
@@ -50,9 +50,9 @@ export const NoisyBackground: React.FC = () => {
   const backgroundPositionStyles = React.useMemo(() => css({
     width: `${resolution[0]}px`,
     height: `${resolution[1]}px`,
-  }), [resolution]);
+  }), [css, resolution]);
 
-  const updateResolution = () => {
+  const updateResolution = React.useCallback(() => {
     if (!containerRef.current) return;
     const $container = containerRef.current;
     const containerWidth = $container.clientWidth;
@@ -63,7 +63,7 @@ export const NoisyBackground: React.FC = () => {
     } else {
       setResolution([containerWidth, containerWidth / aspectRatio]);
     }
-  };
+  }, []);
 
   React.useEffect(() => {
     window.addEventListener('resize', updateResolution);
@@ -73,7 +73,7 @@ export const NoisyBackground: React.FC = () => {
 
   React.useEffect(() => {
     setTimeout(updateResolution, 0);
-  }, []);
+  }, [updateResolution]);
 
   return (
     <Block ref={containerRef} className={backgroundContainerStyles}>

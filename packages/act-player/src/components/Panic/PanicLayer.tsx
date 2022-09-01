@@ -15,7 +15,7 @@ const useStyles = () => {
     () => css({
       height: '100%',
     }),
-    [],
+    [css],
   );
 
   const elementContainerStyles = React.useMemo(
@@ -27,7 +27,7 @@ const useStyles = () => {
       overflowY: 'hidden',
       pointerEvents: 'auto',
     }),
-    [theme.colors.backgroundAlwaysDark],
+    [css, theme.colors.backgroundAlwaysDark],
   );
 
   return { stageContainerStyles, elementContainerStyles };

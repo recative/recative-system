@@ -19,7 +19,7 @@ const useStyles = () => {
       position: 'absolute',
       display: 'inline-block',
     }),
-    [],
+    [css],
   );
   return { loaderStyles };
 };

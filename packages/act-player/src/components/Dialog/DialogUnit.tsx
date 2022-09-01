@@ -71,7 +71,7 @@ export const DialogUnit: React.FC<IDialogUnitProps> = (props) => {
       animationDuration: theme.animation.timing300,
       animationDelay: `${props.animationDelay}ms`,
     }),
-    [props.animationDelay],
+    [css, props.animationDelay, theme.animation.timing300],
   );
 
   return (

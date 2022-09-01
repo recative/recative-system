@@ -26,7 +26,7 @@ const useStyles = () => {
 
   const stageContainerStyles = React.useMemo(() => css({
     height: '100%',
-  }), []);
+  }), [css]);
 
   const elementContainerStyles = React.useMemo(() => css({
     backgroundColor: theme.colors.backgroundAlwaysDark,
@@ -35,7 +35,7 @@ const useStyles = () => {
     overflowX: 'hidden',
     overflowY: 'hidden',
     pointerEvents: 'auto',
-  }), [theme.colors.backgroundAlwaysDark]);
+  }), [css, theme.colors.backgroundAlwaysDark]);
 
   const bufferingStyles = React.useMemo(() => css({
     position: 'absolute',
@@ -43,7 +43,7 @@ const useStyles = () => {
     height: '100%',
     top: '0',
     left: '0',
-  }), []);
+  }), [css]);
 
   return { stageContainerStyles, elementContainerStyles, bufferingStyles };
 };

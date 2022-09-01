@@ -33,7 +33,7 @@ const useStyles = (miniMode: boolean) => {
       position: 'relative',
       pointerEvents: 'auto',
     } as const),
-    [],
+    [css],
   );
 
   const sliderStyles = React.useMemo(
@@ -46,7 +46,7 @@ const useStyles = (miniMode: boolean) => {
       position: 'relative',
       pointerEvents: 'auto',
     } as const),
-    [miniMode],
+    [css, miniMode],
   );
 
   const thumbStyles = React.useMemo(
@@ -65,12 +65,12 @@ const useStyles = (miniMode: boolean) => {
       transformOrigin: 'left center',
       position: 'absolute',
     } as const),
-    [miniMode, theme.colors.backgroundAccent, theme.animation.timing300],
+    [css, miniMode, theme.colors.backgroundAccent, theme.animation.timing300],
   );
 
   const thumbHoverStyles = React.useMemo(
     () => css({ transform: 'scaleY(1) translateX(-50%)' }),
-    [],
+    [css],
   );
 
   const trackStyles = React.useMemo(
@@ -80,12 +80,12 @@ const useStyles = (miniMode: boolean) => {
       transform: 'scaleY(0.3)',
       transition: `transform ${theme.animation.timing300}`,
     } as const),
-    [theme.colors.accent200, theme.animation.timing300],
+    [css, theme.colors.accent200, theme.animation.timing300],
   );
 
   const trackHoverStyles = React.useMemo(
     () => css({ transform: 'scaleY(1)' }),
-    [],
+    [css],
   );
 
   const markStyles = React.useMemo(
@@ -97,12 +97,12 @@ const useStyles = (miniMode: boolean) => {
       transform: 'scaleY(0.5)',
       transition: `transform ${theme.animation.timing300}`,
     } as const),
-    [theme.colors.backgroundAccent, theme.animation.timing300],
+    [css, theme.colors.backgroundAccent, theme.animation.timing300],
   );
 
   const markHoverStyles = React.useMemo(
     () => css({ transform: 'scaleY(1.05)' }),
-    [],
+    [css],
   );
 
   const trackClassName = useRandomId();
@@ -218,7 +218,20 @@ export const ProgressBar: React.FC<IProgressbarProps> = React.memo((props) => {
         </Block>
       );
     },
-    [marks, props.progress],
+    [
+      markHoverStyles,
+      markStyles,
+      marks,
+      props,
+      rootContainerStyle,
+      sliderStyles,
+      thumbHoverStyles,
+      thumbStyles,
+      trackClassName,
+      trackHoverStyles,
+      trackStyleElement,
+      trackStyles,
+    ],
   );
 
   const [component] = useHover(sliderElement);

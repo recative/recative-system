@@ -20,7 +20,7 @@ const useStyles = () => {
       transform: 'translate(-50%, -50%)',
       position: 'absolute',
     }),
-    [],
+    [css],
   );
 
   const loaderStyles = React.useMemo(
@@ -30,14 +30,14 @@ const useStyles = () => {
 
       display: 'inline-block',
     }),
-    [],
+    [css],
   );
 
   const textStyles = React.useMemo(
     () => css({
       color: 'white',
     }),
-    [],
+    [css],
   );
 
   return { containerStyles, loaderStyles, textStyles };

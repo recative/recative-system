@@ -36,7 +36,7 @@ const useStyles = () => {
         display: 'none',
       },
     }),
-    [],
+    [css],
   );
 
   const sliderStyles = React.useMemo(
@@ -45,7 +45,7 @@ const useStyles = () => {
       height: `${SLIDER_HEIGHT}px`,
       position: 'relative',
     }),
-    [],
+    [css],
   );
 
   const thumbStyles = React.useMemo(
@@ -58,7 +58,7 @@ const useStyles = () => {
       cursor: 'pointer',
       boxSizing: 'border-box',
     }),
-    [theme.colors.backgroundAccent],
+    [css, theme.colors.backgroundAccent],
   );
 
   const trackStyles = React.useMemo(
@@ -66,7 +66,7 @@ const useStyles = () => {
       width: `${TRACK_WIDTH}px`,
       backgroundColor: theme.colors.accent200,
     }),
-    [],
+    [css, theme.colors.accent200],
   );
 
   const trackClassName = useRandomId();
