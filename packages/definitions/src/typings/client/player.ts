@@ -12,13 +12,6 @@ export type RawGoToEpisode = (
   forceReload?: boolean,
   assetOrder?: number,
   assetTime?: number,
-  /**
-   * Implementor of RawGoToEpisode should call this function and await it
-   * to ensure old episode is gracefully destroyed.
-   * Invoker of RawGoToEpisode should make sure that call this function
-   * will gracefully destroyed old episode and call it multiple time won't cause trouble
-   */
-  destroyOldEpisode?:()=>Promise<void>,
 ) => void;
 
 export interface ShowVideoModalUrlRequest {
