@@ -70,6 +70,18 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
     }
   }, [seriesCore.userImplementedFunction, userImplementedFunctions]);
 
+  React.useEffect(() => {
+    if (envVariable) {
+      seriesCore.envVariable.set(envVariable);
+    }
+  }, [envVariable, seriesCore.envVariable]);
+
+  React.useEffect(() => {
+    if (userData) {
+      seriesCore.userData.set(userData);
+    }
+  }, [userData, seriesCore.userData]);
+
   const episodeCore = useStore(seriesCore.currentEpisodeCore);
 
   React.useEffect(() => {
