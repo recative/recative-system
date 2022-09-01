@@ -2,6 +2,9 @@
 sidebar_position: 2
 ---
 
+
+import SequenceStructure from './images/sequence-structure.svg';
+
 # Content Scheduling
 
 The `Core` is a monolith that manages states and resources throughout the whole player.
@@ -79,6 +82,15 @@ The starting of the first content also uses the Content switching process. Howev
 Also, it is possible to switch from or switch to undefined content. When the sequence switches to undefined content, it will fire an 'end' event.
 
 ### Subsequence
+
+<SequenceStructure
+  style={{
+      maxWidth: "200px",
+      padding: '0 16px',
+      float: "right",
+  }}
+  alt="The three level model of the Recative System"
+/>
 
 It's possible for `Content`s (especially interactive programs) to create subsequences. The subsequence is nearly the same as the main sequence, but some aspects of the subsequence are affected by the parent sequence. The subsequence will be completely hidden if its parent content is hidden. Also, it won't play if its parent content is not playing. The subsequence should also be destroyed when its parent content is destroyed.
 
