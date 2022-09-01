@@ -11,15 +11,33 @@ import type { RawAudioClipResponse } from '../utils/selectUrlAudioTypePostProces
 
 import { WithLogger } from '../LogCollector';
 
-class BasicAudioElement {
+interface AudioElement {
+  suspend(): void;
+  resume(): void;
+  isSuspended(): boolean;
+  play(): void;
+  pause(): void;
+  isPlaying(): boolean;
+  get loaded(): boolean;
+  destroy(): void;
+  get destroyed(): boolean;
+  setVolume(volume: number): void;
+  get hasAudio(): boolean;
+  get time(): number;
+  set time(value: number);
+}
+
+class BasicAudioElement implements AudioElement {
   private clip: AudioClip | null = null;
 
   private source: AudioSource | null = null;
 
   private mixer: AudioMixer | null = null;
 
-  constructor(station: AudioStation) {
+  constructor(station: AudioStation, audioClip: AudioClip) {
     this.mixer = new AudioMixer(station);
+    this.clip = audioClip;
+    this.source = new AudioSource(this.mixer!, this.clip);
   }
 
   suspend() {
@@ -69,20 +87,6 @@ class BasicAudioElement {
     }
   }
 
-  setAudio(audioClipResponse:AudioClip | null) {
-    if (this.destroyed) {
-      return;
-    }
-    this.source?.destroy();
-    this.clip?.destroy();
-    this.source = null;
-    this.clip = null;
-    if (audioClipResponse !== null) {
-      this.clip = audioClipResponse;
-      this.source = new AudioSource(this.mixer!, this.clip);
-    }
-  }
-
   get hasAudio() {
     return this.source !== null;
   }
@@ -101,8 +105,8 @@ class BasicAudioElement {
 /**
  * Audio track for video component
  */
-export class BasicAudioTrack extends WithLogger implements Track {
-  private audioElement: BasicAudioElement;
+export class AudioTrack extends WithLogger implements Track {
+  private audioElement: BasicAudioElement | null = null;
 
   private pendingBuffer: Promise<RawAudioClipResponse | null> | null = null;
 
@@ -120,7 +124,6 @@ export class BasicAudioTrack extends WithLogger implements Track {
 
   constructor(private station: AudioStation, private id: string) {
     super();
-    this.audioElement = new BasicAudioElement(station);
   }
 
   suspend() {
@@ -141,14 +144,14 @@ export class BasicAudioTrack extends WithLogger implements Track {
     this.cachedProgress = progress;
     const audioTime = performance.now();
     const target = progress + audioTime - time;
-    if (this.audioElement.loaded) {
+    if (this.audioElement !== null) {
       this.audioElement.time = target / 1000;
       this.updateTime(true);
     }
   }
 
   private updateTime(force: boolean = false) {
-    if (!this.audioElement?.loaded) {
+    if (this.audioElement === null) {
       this.lastUpdateTime = this.cachedUpdateTime;
       this.lastProgress = this.cachedProgress;
       return;
@@ -171,7 +174,7 @@ export class BasicAudioTrack extends WithLogger implements Track {
   }
 
   check() {
-    if (this.audioElement.hasAudio) {
+    if (this.audioElement?.hasAudio) {
       this.updateTime();
       return {
         time: this.lastUpdateTime, progress: this.lastProgress,
@@ -191,7 +194,7 @@ export class BasicAudioTrack extends WithLogger implements Track {
     }
     this.cachedUpdateTime = time;
     this.cachedProgress = progress;
-    if (this.audioElement.hasAudio) {
+    if (this.audioElement?.hasAudio) {
       this.updateTime();
       const now = performance.now();
       const target = progress + now - time;
@@ -202,7 +205,7 @@ export class BasicAudioTrack extends WithLogger implements Track {
         this.updateTime(true);
       }
     }
-    if (this.pendingBuffer !== null && this.audioElement.hasAudio) {
+    if (this.pendingBuffer !== null && this.audioElement?.hasAudio) {
       if (!this.lastStuck) {
         this.log(`Audio track ${this.id} stuck, reason: not loaded`);
       }
@@ -236,7 +239,8 @@ export class BasicAudioTrack extends WithLogger implements Track {
   }
 
   setAudio(audioClipResponsePromise: Promise<RawAudioClipResponse | null> | null) {
-    this.audioElement.setAudio(null);
+    this.audioElement?.destroy();
+    this.audioElement = null;
     this.pendingBuffer = audioClipResponsePromise;
     if (this.pendingBuffer !== null) {
       this.loadAudio(this.pendingBuffer);
@@ -244,9 +248,7 @@ export class BasicAudioTrack extends WithLogger implements Track {
   }
 
   private async loadAudio(
-    audioClipResponsePromise:
-    | RawAudioClipResponse
-    | Promise<RawAudioClipResponse | null>,
+    audioClipResponsePromise: RawAudioClipResponse | Promise<RawAudioClipResponse | null>,
   ) {
     if (this.destroyed) {
       return;
@@ -258,7 +260,11 @@ export class BasicAudioTrack extends WithLogger implements Track {
       // setAudio when audio is loading or destroyed
       return;
     }
-    this.audioElement.setAudio(audioClipResponse.audioClip);
+    this.audioElement?.destroy();
+    this.audioElement = new BasicAudioElement(
+      this.station, audioClipResponse.audioClip,
+    );
+    this.audioElement.setVolume(this.volume);
     this.log(`Audio track for ${this.id} loaded`);
     let targetTime = (this.cachedProgress) / 1000;
     if (this.playing && !this.audioElement?.isSuspended()) {
@@ -275,15 +281,21 @@ export class BasicAudioTrack extends WithLogger implements Track {
   }
 
   destroy() {
-    this.audioElement.destroy();
+    this.audioElement?.destroy();
     this.pendingBuffer = null;
+    this.working = false;
   }
+
+  private working = true;
 
   get destroyed() {
-    return this.audioElement.destroyed;
+    return !this.working;
   }
 
+  private volume = 1;
+
   setVolume(volume: number) {
-    this.audioElement.setVolume(volume);
+    this.audioElement?.setVolume(volume);
+    this.volume = volume;
   }
 }
