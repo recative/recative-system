@@ -47,7 +47,7 @@ export interface IContentProps<
   trustedUploaders: string[];
   envVariable: EnvVariable | undefined;
   userData: IUserRelatedEnvVariable | undefined;
-  loadingComponent?: React.FC;
+  LoadingComponent?: React.FC;
   initialAsset: IEpisodeMetadata['initialAssetStatus'];
   attemptAutoplay?: IEpisodeMetadata['attemptAutoplay'];
   defaultContentLanguage?: IEpisodeMetadata['defaultContentLanguage'];
@@ -125,7 +125,7 @@ EnvVariable extends Record<string, unknown>,
       envVariable,
       userData,
       initialAsset,
-      loadingComponent,
+      LoadingComponent,
       preferredUploaders,
       trustedUploaders,
       userImplementedFunctions,
@@ -205,7 +205,6 @@ EnvVariable extends Record<string, unknown>,
       && userImplementedFunctions
       && episodeId;
 
-      const LoadingComponent = loadingComponent;
       const loadingElement = LoadingComponent ? <LoadingComponent /> : <div />;
 
       return (
@@ -224,7 +223,7 @@ EnvVariable extends Record<string, unknown>,
               <ActPlayer<true, EnvVariable>
                 core={episodeCore}
                 interfaceComponents={interfaceComponents}
-                loadingComponent={loadingComponent}
+                loadingComponent={LoadingComponent}
                 {...injectToPlayer}
               />
             )
