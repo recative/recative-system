@@ -20,10 +20,14 @@ import { useEpisodeDetail } from '../../external';
 
 const log = debug('client:injector');
 
-export interface InjectedProps<PlayerPropsInjectedDependencies> {
+export interface InjectedProps<
+  PlayerPropsInjectedDependencies,
+  EnvVariable extends Record<string, unknown>,
+> {
   episodeId?: string;
+  seriesCore: SeriesCore<EnvVariable> | null;
+  episodeCore: EpisodeCore<EnvVariable> | null;
   dependencies: PlayerPropsInjectedDependencies;
-  coreRef: React.RefObject<EpisodeCore>;
   userImplementedFunctions: Partial<RawUserImplementedFunctions> | undefined;
 }
 
@@ -37,7 +41,7 @@ export type PlayerPropsInjectorHook<
   PlayerPropsInjectedDependencies,
   EnvVariable extends Record<string, unknown>,
 > = (
-  props: InjectedProps<PlayerPropsInjectedDependencies>
+  props: InjectedProps<PlayerPropsInjectedDependencies, EnvVariable>
 ) => {
   episodeId?: string;
   injectToPlayer?: Partial<IManagedActPointProps<EnvVariable>>;
@@ -76,16 +80,6 @@ export const useInjector = <
   const seriesCore = seriesCoreRef.current;
   const episodeCore = seriesCore?.currentEpisodeCore.get();
 
-  type EpisodeCoreType = EpisodeCore<EnvVariable> | null;
-
-  const episodeCoreRef = React.useRef<EpisodeCoreType>(null);
-
-  React.useImperativeHandle<EpisodeCoreType, EpisodeCoreType>(
-    episodeCoreRef,
-    () => episodeCore ?? null,
-    [episodeCore],
-  );
-
   if (
     playerPropsHookDependencies
     && (
@@ -100,28 +94,27 @@ export const useInjector = <
   PlayerPropsInjectedDependencies, EnvVariable
   > = internalUsePlayerPropsHook ?? usePlayerPropsDefaultHook;
 
-  const envVariable = seriesCore?.envVariable.get();
-
   const episodeDetail = useEpisodeDetail(episodeId);
 
   const fetchData = useDataFetcher();
 
   const playerPropsHookProps = React.useMemo(
     () => ({
-      dependencies: { ...playerPropsHookDependencies, fetchData },
-      coreRef: episodeCoreRef,
-      userImplementedFunctions,
       episodeId: episodeCore?.episodeId,
-      envVariable,
-      assets: episodeDetail?.assets,
+      seriesCore: seriesCore ?? null,
+      episodeCore: episodeCore ?? null,
+      dependencies: {
+        ...playerPropsHookDependencies,
+        fetchData,
+      },
+      userImplementedFunctions,
     }),
     [
-      playerPropsHookDependencies,
       fetchData,
+      seriesCore,
+      episodeCore,
       userImplementedFunctions,
-      episodeCore?.episodeId,
-      envVariable,
-      episodeDetail?.assets,
+      playerPropsHookDependencies,
     ],
   );
 
