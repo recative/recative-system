@@ -3,7 +3,7 @@ import cn from 'classnames';
 import { useStore } from '@nanostores/react';
 import { useStyletron } from 'baseui';
 
-import type { Core } from '@recative/core-manager';
+import type { EpisodeCore } from '@recative/core-manager';
 
 import { Block } from 'baseui/block';
 
@@ -95,7 +95,7 @@ const useStyles = () => {
   };
 };
 interface IControllerProps {
-  core: Core;
+  core: EpisodeCore;
   loadingComponent?: React.FC;
 }
 interface IControllerConfig {
