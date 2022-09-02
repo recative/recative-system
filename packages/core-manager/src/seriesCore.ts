@@ -72,17 +72,17 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
 
   private updateEnvVariable = (envVariable: T) => {
     this.ensureNotDestroying();
-    const playProps = this.currentEpisodeCore.get();
-    if (playProps !== null) {
-      playProps.additionalEnvVariable.set(envVariable);
+    const episodeCore = this.currentEpisodeCore.get();
+    if (episodeCore !== null) {
+      episodeCore.additionalEnvVariable.set(envVariable);
     }
   };
 
   private updateUserData = (userData: IUserRelatedEnvVariable | undefined) => {
     this.ensureNotDestroying();
-    const playProps = this.currentEpisodeCore.get();
-    if (playProps !== null && userData !== undefined) {
-      playProps.envVariableManager.userRelatedEnvVariableAtom.set(userData);
+    const episodeCore = this.currentEpisodeCore.get();
+    if (episodeCore !== null && userData !== undefined) {
+      episodeCore.envVariableManager.userRelatedEnvVariableAtom.set(userData);
     }
   };
 
@@ -90,9 +90,11 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
     userImplementedFunction: Partial<RawUserImplementedFunctions>,
   ) => {
     this.ensureNotDestroying();
-    const playProps = this.currentEpisodeCore.get();
-    if (playProps !== null) {
-      playProps.setUserImplementedFunctions(userImplementedFunction);
+    const episodeCore = this.currentEpisodeCore.get();
+    if (episodeCore !== null) {
+      if (episodeCore.coreState.get() !== 'destroyed') {
+        episodeCore.setUserImplementedFunctions(userImplementedFunction);
+      }
     }
   };
 
