@@ -32,6 +32,7 @@ import { useMemoryLeakFixer } from '../hooks/useMemoryLeakFixer';
 import { useResetAssetStatusCallback } from '../hooks/useResetAssetStatusCallback';
 
 import { CONTAINER_COMPONENT } from '../constant/storageKeys';
+import { useDataFetcher } from './hooks/useDataFetcher';
 
 const error = debug('sdk:content:error');
 // This is on purpose
@@ -144,10 +145,13 @@ EnvVariable extends Record<string, unknown>,
       const config = useSdkConfig();
       const seriesCoreRef = React.useRef<SeriesCore<EnvVariable>>();
 
+      const dataFetcher = useDataFetcher();
+
       const injectedUserImplementedFunctions = React.useMemo<
       Partial<RawUserImplementedFunctions>
       >(() => ({
         ...userImplementedFunctions,
+        dataFetcher,
         gotoEpisode: (_, nextEpisodeId, forceReload, assetOrder, assetTime) => {
           if (!seriesCoreRef.current) {
             throw new TypeError('Series core is not initialized, this is not allowed');
@@ -155,7 +159,7 @@ EnvVariable extends Record<string, unknown>,
 
           seriesCoreRef.current.setEpisode(nextEpisodeId, forceReload, assetOrder, assetTime);
         },
-      }), [userImplementedFunctions]);
+      }), [dataFetcher, userImplementedFunctions]);
 
       const wrappedOnEpisodeIdUpdate = useWrappedOnEpisodeUpdate(onEpisodeIdUpdate);
 

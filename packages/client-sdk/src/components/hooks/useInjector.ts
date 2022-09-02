@@ -16,8 +16,6 @@ import type {
 import type { IManagedActPointProps } from '@recative/act-player';
 import type { RawUserImplementedFunctions } from '@recative/definitions';
 
-import { useDataFetcher } from './useDataFetcher';
-
 import type { IContentProps } from '../Content';
 
 import { useEpisodeDetail } from '../../external';
@@ -112,8 +110,6 @@ export const useInjector = <
 
   const episodeDetail = useEpisodeDetail(episodeId);
 
-  const fetchData = useDataFetcher();
-
   const playerPropsHookProps = React.useMemo(
     () => ({
       episodeId: episodeCore?.episodeId,
@@ -121,10 +117,7 @@ export const useInjector = <
       userData,
       seriesCore: seriesCore ?? null,
       episodeCore: episodeCore ?? null,
-      dependencies: {
-        ...playerPropsHookDependencies,
-        fetchData,
-      },
+      dependencies: playerPropsHookDependencies,
       userImplementedFunctions,
     }),
     [
@@ -133,7 +126,6 @@ export const useInjector = <
       userData,
       seriesCore,
       playerPropsHookDependencies,
-      fetchData,
       userImplementedFunctions,
     ],
   );
