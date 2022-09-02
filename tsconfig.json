@@ -1,0 +1,17 @@
+{
+    "extends": "./tsconfig.base.json",
+    "compilerOptions": {
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "moduleResolution": "node",
+      "jsx": "react-jsx",
+      "types": ["react/next", "react-dom/next"]
+    },
+    "exclude": [
+      "packages/documents",
+      "**/*.test.ts",
+      "**/*.spec.ts",
+    ]
+  }
+  

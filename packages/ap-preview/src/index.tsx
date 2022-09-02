@@ -41,8 +41,6 @@ import {
   INITIAL_ASSET_STATUS_ATOM,
 } from './utils/useUserImplementedFunctions';
 
-window.React = React;
-
 const PREFERRED_UPLOADERS = [
   '@recative/uploader-extension-studio/ResourceManager',
   '@recative/uploader-polyv-vod/PolyVUploader',

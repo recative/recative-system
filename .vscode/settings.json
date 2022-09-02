@@ -1,8 +1,10 @@
 {
     "cSpell.words": [
+        "Azeret",
         "baseui",
         "bson",
         "clsx",
+        "codicon",
         "hookz",
         "nanostore",
         "nanostores",
@@ -22,5 +24,8 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "[typescriptreact]": {
         "editor.defaultFormatter": "vscode.typescript-language-features"
-    }
+    },
+    "editor.rulers": [
+        80, 120
+    ]
 }
