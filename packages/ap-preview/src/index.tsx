@@ -227,21 +227,35 @@ export const renderPlayer = (selector = '#app', resourceServerPort = 9999) => {
   }
   const root = createRoot(app);
 
-  root.render(
-    <FixedStyletronProvider value={engine}>
-      <BaseProvider theme={DarkTheme}>
-        <PlayerSdkProvider
-          pathPattern={
-            temporaryPath
-            ?? `${window.location.protocol}//${window.location.hostname}:${resourceServerPort}/preview/$fileName`
-          }
-          dataType={dataType ?? 'json'}
-        >
-          <HashRouter>
-            <App />
-          </HashRouter>
-        </PlayerSdkProvider>
-      </BaseProvider>
-    </FixedStyletronProvider>,
-  );
+  const pathBase = `${window.location.protocol}//${window.location.hostname}:${resourceServerPort}/preview`;
+
+  fetch(`${pathBase}/constants.json`)
+    .then((response) => response.json())
+    .then((data) => {
+      Reflect.set(window, 'constant', data);
+
+      if (typeof data === 'object' && data !== null) {
+        if (typeof data.localStorage === 'object' && data.localStorage !== null) {
+          Object.keys(data.localStorage).forEach((key) => {
+            localStorage.setItem(key, data.localStorage[key]);
+          });
+        }
+      }
+    })
+    .finally(() => {
+      root.render(
+      <FixedStyletronProvider value={engine}>
+        <BaseProvider theme={DarkTheme}>
+          <PlayerSdkProvider
+            pathPattern={temporaryPath ?? `${pathBase}/$fileName`}
+            dataType={dataType ?? 'json'}
+          >
+            <HashRouter>
+              <App />
+            </HashRouter>
+          </PlayerSdkProvider>
+        </BaseProvider>
+      </FixedStyletronProvider>,
+      );
+    });
 };
