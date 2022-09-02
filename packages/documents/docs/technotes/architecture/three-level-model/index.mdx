@@ -76,21 +76,43 @@ reduce the complexity of the whole solution.
 :::
 
 * **Act Player:** `@recative/act-player` is a React component which can render
-  a lot of *assets*. You can stack multiple *assets* at the same time, or play 
-  multiple *assets* in one by one. The underlying lifecycle management task is
-  processed by [`EpisodeCore`](/api/core-manager/class/EpisodeCore) of 
-  [`@recative/core-manager`](http://localhost:3000/api/core-manager). the core
-  manager is "ui-frame neutral", it is useful if your team is not using
+  a lot of *assets*. [`EpisodeCore`](/api/core-manager/class/EpisodeCore) 
+  of [`@recative/core-manager`](http://localhost:3000/api/core-manager) can take
+  care of the task of lifecycle management and RAM management. The implementation
+  of core manager is "ui-frame neutral", it is useful if your team is not using
   [React](https://reactjs.org/) or want to build a different product based on
-  the existing system.
+  the existing system. The interface of this player is full-customizable, you can
+  pass your own implementation of every single component. Reading the following
+  articles for more details about how to customize it. 
 
 * **SDK:** `@recative/client-sdk` is a React component for managing multiple
   episodes, client sdk will take care of data fetching and life cycle management,
   and interface customize. If you are building a product which have multple
   episodes, SDK could be helpful. *SDK* also support interface customize, by
-  building an ESM module which exports a React hook, you can customize all
-  possible behavior and visual experience with this feature without hacking
-  the source code of *act player*.
+  building an interface component - an ESM module which exports a React hook - 
+  you can customize all possible behavior and visual experience with this 
+  feature without hacking the source code of *act player*.
+
+* **Shell:** Shell is the enviroment your application or program running in, it
+  could be a website, a desktop client or a mobile application. There could be 
+  different kind platform-specific capabilities, like in app purchase, resource
+  cache, sharing or deeplink. We're trying our best to build a set of official 
+  shell implementation for most use cases. For users without special requirements, 
+  we encourage you to use the official shell implementation, which is better
+  integrated into *Recative Studio*'s workflow. If you want to customize the
+  capability of shells, please fork our official implementation. We will
+  introduce how the Shell interacts with Recative Studio in the following article.
+
+:::tip
+The source code and implementation will be revealed later, since we are adding
+some final touch to it.
+:::
+
+:::tip
+It's not necessary to fork the shell implementation if you only want to
+customize the visual experience of the player, consider building a *"interface
+component"* can greatly improve the maintainability of the project. 
+:::
 
 ## Use Cases
 
