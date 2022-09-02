@@ -231,6 +231,8 @@ EnvVariable extends Record<string, unknown>,
 
       return (
         <ContainerComponent
+          episodeCore={episodeCore}
+          seriesCore={seriesCore}
           episodeListRequestStatus={config.requestStatus.episodes}
           episodeDetailRequestStatus={
             episodeId && config.requestStatus[episodeId]
