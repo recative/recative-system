@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import * as React from 'react';
 
 import { useAsync } from '@react-hookz/web';
@@ -37,7 +38,7 @@ export const useEnvVariable = (): Record<string, unknown> => {
 
   React.useEffect(() => {
     envVariableActions.execute();
-  }, [episodeId]);
+  }, [envVariableActions, episodeId]);
 
   return envVariable.result || DEFAULT_ENV_VARIABLE;
 };
