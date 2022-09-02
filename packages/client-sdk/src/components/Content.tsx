@@ -147,7 +147,13 @@ EnvVariable extends Record<string, unknown>,
       const normalizeEpisodeId = useEpisodeIdNormalizer();
 
       const episodeId = React.useMemo(
-        () => normalizeEpisodeId(rawEpisodeId),
+        () => {
+          try {
+            return normalizeEpisodeId(rawEpisodeId);
+          } catch (e) {
+            return undefined;
+          }
+        },
         [normalizeEpisodeId, rawEpisodeId],
       );
 
