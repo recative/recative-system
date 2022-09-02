@@ -49,7 +49,6 @@ export interface IContentProps<
   envVariable: EnvVariable | undefined;
   userData: IUserRelatedEnvVariable | undefined;
   LoadingComponent?: React.FC;
-  initialAsset?: IEpisodeMetadata['initialAssetStatus'];
   attemptAutoplay?: IEpisodeMetadata['attemptAutoplay'];
   defaultContentLanguage?: IEpisodeMetadata['defaultContentLanguage'];
   defaultSubtitleLanguage?: IEpisodeMetadata['defaultSubtitleLanguage'];
@@ -125,7 +124,6 @@ EnvVariable extends Record<string, unknown>,
       episodeId,
       envVariable,
       userData,
-      initialAsset,
       LoadingComponent,
       preferredUploaders,
       trustedUploaders,
@@ -185,18 +183,15 @@ EnvVariable extends Record<string, unknown>,
       const episodeDetail = useEpisodeDetail(episodeId ?? null);
 
       const rawEpisodeMetadata = React.useMemo(() => ({
-        initialAssetStatus: injectToSdk?.initialAsset ?? initialAsset,
         attemptAutoplay: injectToSdk?.attemptAutoplay ?? attemptAutoplay,
         defaultContentLanguage: injectToSdk?.defaultContentLanguage ?? defaultContentLanguage,
         defaultSubtitleLanguage: injectToSdk?.defaultSubtitleLanguage,
       }), [
         attemptAutoplay,
         defaultContentLanguage,
-        initialAsset,
         injectToSdk?.attemptAutoplay,
         injectToSdk?.defaultContentLanguage,
         injectToSdk?.defaultSubtitleLanguage,
-        injectToSdk?.initialAsset,
       ]);
 
       const { episodeCore, seriesCore } = useSeriesCore<EnvVariable>(

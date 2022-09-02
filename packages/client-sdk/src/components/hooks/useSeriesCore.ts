@@ -4,7 +4,7 @@ import debug from 'debug';
 import useConstant from 'use-constant';
 import { useStore } from '@nanostores/react';
 
-import { SeriesCore } from '@recative/core-manager';
+import { IInitialAssetStatus, SeriesCore } from '@recative/core-manager';
 import type { RawUserImplementedFunctions } from '@recative/definitions';
 import type {
   EpisodeCore,
@@ -14,8 +14,9 @@ import type {
 } from '@recative/core-manager';
 
 import { useDataFetcher } from './useDataFetcher';
-import { IEpisodeDetail } from '../../external';
+import { useSdkConfig } from '../../external';
 import { useEpisodeIdNormalizer } from './useEpisodeIdNormalizer';
+import type { IEpisodeDetail } from '../../external';
 
 const log = debug('sdk:series-core');
 const logWarn = debug('sdk:series-core');
@@ -52,12 +53,16 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
   | undefined,
   navigate: ISeriesCoreConfig['navigate'],
 ) => {
+  const sdkConfig = useSdkConfig();
   const fetchData = useDataFetcher();
 
   const normalizeEpisodeId = useEpisodeIdNormalizer();
 
   const getEpisodeMetadata = React.useCallback(
-    async (nextEpisodeId: string): Promise<IEpisodeMetadata> => {
+    async (
+      nextEpisodeId: string,
+      initialAssetStatus?: IInitialAssetStatus,
+    ): Promise<IEpisodeMetadata> => {
       const normalizedEpisodeId = normalizeEpisodeId(nextEpisodeId);
       const
         nextEpisodeDetail = (
@@ -70,6 +75,9 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
 
       const notInjectedEpisodeMetadata = {
         ...rawEpisodeMetadata,
+        initialAssetStatus:
+          sdkConfig.initialAssetStatus
+          ?? initialAssetStatus,
         episodeData: {
           resources: nextEpisodeDetail.resources,
           assets: nextEpisodeDetail.assets,
@@ -81,13 +89,14 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
       return getInjectedEpisodeMetadata?.(notInjectedEpisodeMetadata) ?? notInjectedEpisodeMetadata;
     },
     [
+      normalizeEpisodeId,
       episodeDetail,
       fetchData,
-      normalizeEpisodeId,
-      getInjectedEpisodeMetadata,
-      preferredUploaders,
       rawEpisodeMetadata,
+      sdkConfig.initialAssetStatus,
+      preferredUploaders,
       trustedUploaders,
+      getInjectedEpisodeMetadata,
     ],
   );
 

@@ -37,7 +37,7 @@ export const PlayerSdkProvider: React.FC<IPlayerSdkProviderProps> = ({
 
   React.useEffect(() => {
     setClientSdkConfig({ ...clientSdkConfig, pathPattern, dataType });
-  }, [pathPattern, dataType]);
+  }, [pathPattern, dataType, clientSdkConfig]);
 
   const fetchEpisodes = React.useCallback(async () => {
     log(`Fetching episode list with pattern: ${pathPattern} and data type: ${dataType}`);
@@ -61,7 +61,7 @@ export const PlayerSdkProvider: React.FC<IPlayerSdkProviderProps> = ({
 
   React.useEffect(() => {
     episodesController.execute();
-  }, [fetchEpisodes]);
+  }, [episodesController, fetchEpisodes]);
 
   React.useEffect(() => {
     log('Episode list updated: ', episodes.result);
@@ -75,7 +75,7 @@ export const PlayerSdkProvider: React.FC<IPlayerSdkProviderProps> = ({
 
       setClientSdkConfig({ ...clientSdkConfig, episodesMap: result });
     }
-  }, [episodes.result]);
+  }, [clientSdkConfig, episodes.result]);
 
   const contextValue = React.useMemo(
     () => ({
