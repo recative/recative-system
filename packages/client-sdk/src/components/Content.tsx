@@ -20,6 +20,7 @@ import type {
 import { useInjector } from './hooks/useInjector';
 import { useSeriesCore } from './hooks/useSeriesCore';
 import { useCustomEventWrapper } from './hooks/useCustomEventWrapper';
+import { useWrappedOnEpisodeUpdate } from './hooks/useWrappedOnEpisodeIdUpdate';
 
 import type { PlayerPropsInjectorHook } from './hooks/useInjector';
 
@@ -158,6 +159,8 @@ EnvVariable extends Record<string, unknown>,
         },
       }), [userImplementedFunctions]);
 
+      const wrappedOnEpisodeIdUpdate = useWrappedOnEpisodeUpdate(onEpisodeIdUpdate);
+
       const {
         hookOnEnd,
         hookOnSegmentEnd,
@@ -171,6 +174,8 @@ EnvVariable extends Record<string, unknown>,
         getEpisodeMetadata: getInjectedEpisodeMetadata,
       } = useInjector<PlayerPropsInjectedDependencies, EnvVariable>(
         episodeId ?? null,
+        envVariable,
+        userData,
         internalUsePlayerPropsHook,
         playerPropsHookDependencies,
         injectedUserImplementedFunctions,
@@ -204,7 +209,7 @@ EnvVariable extends Record<string, unknown>,
         hookEnvVariable ?? envVariable,
         hookUserData ?? userData,
         getInjectedEpisodeMetadata,
-        onEpisodeIdUpdate,
+        wrappedOnEpisodeIdUpdate,
       );
       React.useImperativeHandle(seriesCoreRef, () => seriesCore, [seriesCore]);
 

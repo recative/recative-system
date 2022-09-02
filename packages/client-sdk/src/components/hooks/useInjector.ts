@@ -11,6 +11,7 @@ import type {
   IDefaultAdditionalEnvVariable,
   SegmentEndEventDetail,
   SegmentStartEventDetail,
+  IUserRelatedEnvVariable,
 } from '@recative/core-manager';
 import type { IManagedActPointProps } from '@recative/act-player';
 import type { RawUserImplementedFunctions } from '@recative/definitions';
@@ -36,6 +37,8 @@ export interface InjectedProps<
   episodeId?: string;
   seriesCore: SeriesCore<EnvVariable> | null;
   episodeCore: EpisodeCore<EnvVariable> | null;
+  envVariable: EnvVariable | undefined;
+  userData: IUserRelatedEnvVariable | undefined;
   dependencies: PlayerPropsInjectedDependencies;
   userImplementedFunctions: Partial<RawUserImplementedFunctions> | undefined;
 }
@@ -82,6 +85,8 @@ export const useInjector = <
     EnvVariable extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable,
   >(
     episodeId: string | null,
+    envVariable: EnvVariable | undefined,
+    userData: IUserRelatedEnvVariable | undefined,
     internalUsePlayerPropsHook:
     PlayerPropsInjectorHook<PlayerPropsInjectedDependencies, EnvVariable> | undefined,
     playerPropsHookDependencies: PlayerPropsInjectedDependencies,
@@ -112,6 +117,8 @@ export const useInjector = <
   const playerPropsHookProps = React.useMemo(
     () => ({
       episodeId: episodeCore?.episodeId,
+      envVariable,
+      userData,
       seriesCore: seriesCore ?? null,
       episodeCore: episodeCore ?? null,
       dependencies: {
@@ -121,11 +128,13 @@ export const useInjector = <
       userImplementedFunctions,
     }),
     [
-      fetchData,
-      seriesCore,
       episodeCore,
-      userImplementedFunctions,
+      envVariable,
+      userData,
+      seriesCore,
       playerPropsHookDependencies,
+      fetchData,
+      userImplementedFunctions,
     ],
   );
 

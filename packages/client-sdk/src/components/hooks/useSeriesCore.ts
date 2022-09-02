@@ -15,6 +15,7 @@ import type {
 
 import { useDataFetcher } from './useDataFetcher';
 import { IEpisodeDetail } from '../../external';
+import { useEpisodeIdNormalizer } from './useEpisodeIdNormalizer';
 
 const log = debug('sdk:series-core');
 const logWarn = debug('sdk:series-core');
@@ -53,11 +54,19 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
 ) => {
   const fetchData = useDataFetcher();
 
+  const normalizeEpisodeId = useEpisodeIdNormalizer();
+
   const getEpisodeMetadata = React.useCallback(
     async (nextEpisodeId: string): Promise<IEpisodeMetadata> => {
-      const nextEpisodeDetail = nextEpisodeId === episodeDetail?.key
-        ? episodeDetail
-        : await fetchData(nextEpisodeId);
+      const normalizedEpisodeId = normalizeEpisodeId(nextEpisodeId);
+      const
+        nextEpisodeDetail = (
+          normalizedEpisodeId === episodeDetail?.key
+          && episodeDetail.resources
+          && episodeDetail.assets
+        )
+          ? episodeDetail
+          : await fetchData(normalizedEpisodeId);
 
       const notInjectedEpisodeMetadata = {
         ...rawEpisodeMetadata,
@@ -74,6 +83,7 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
     [
       episodeDetail,
       fetchData,
+      normalizeEpisodeId,
       getInjectedEpisodeMetadata,
       preferredUploaders,
       rawEpisodeMetadata,
