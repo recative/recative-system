@@ -156,7 +156,7 @@ EnvVariable extends Record<string, unknown>,
 
           seriesCoreRef.current.setEpisode(nextEpisodeId, forceReload, assetOrder, assetTime);
         },
-      }), []);
+      }), [userImplementedFunctions]);
 
       const {
         hookOnEnd,
@@ -195,6 +195,8 @@ EnvVariable extends Record<string, unknown>,
       ]);
 
       const { episodeCore, seriesCore } = useSeriesCore<EnvVariable>(
+        episodeId,
+        episodeDetail,
         preferredUploaders,
         trustedUploaders,
         rawEpisodeMetadata,
@@ -216,10 +218,11 @@ EnvVariable extends Record<string, unknown>,
       const playerReady = episodeDetail
       && episodeCore
       && episodeDetail.assets
-      && userImplementedFunctions
       && episodeId;
 
-      const loadingElement = LoadingComponent ? <LoadingComponent /> : <div />;
+      const loadingElement = LoadingComponent
+        ? <div id="recative-client-sdk--early-return"><LoadingComponent /></div>
+        : <div />;
 
       return (
         <ContainerComponent

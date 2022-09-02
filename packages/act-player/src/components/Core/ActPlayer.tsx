@@ -108,6 +108,7 @@ export const InternalManagedActPlayer = <
 
     return (
       <Block
+        id="recative-act-player--early-return"
         ref={containerRef}
         position="relative"
         width="100%"
