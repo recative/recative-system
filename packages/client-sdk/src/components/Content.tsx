@@ -189,10 +189,11 @@ EnvVariable extends Record<string, unknown>,
       const rawEpisodeMetadata = React.useMemo(() => ({
         attemptAutoplay: injectToSdk?.attemptAutoplay ?? attemptAutoplay,
         defaultContentLanguage: injectToSdk?.defaultContentLanguage ?? defaultContentLanguage,
-        defaultSubtitleLanguage: injectToSdk?.defaultSubtitleLanguage,
+        defaultSubtitleLanguage: injectToSdk?.defaultSubtitleLanguage ?? defaultSubtitleLanguage,
       }), [
         attemptAutoplay,
         defaultContentLanguage,
+        defaultSubtitleLanguage,
         injectToSdk?.attemptAutoplay,
         injectToSdk?.defaultContentLanguage,
         injectToSdk?.defaultSubtitleLanguage,
