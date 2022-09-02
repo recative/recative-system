@@ -43,7 +43,7 @@ export type SeriesCoreEventTarget = EventTarget & {
 export interface ISeriesCoreConfig {
   navigate: (episodeId: string, forceReload?: boolean) => Promise<void>;
   getEpisodeMetadata: (
-    episodeId: string, assetOrder?: number, assetTime?: number
+    episodeId: string, initialAssetStatus?: IInitialAssetStatus
   ) => IEpisodeMetadata | Promise<IEpisodeMetadata>;
 }
 
@@ -116,7 +116,10 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
       return this.currentEpisodeCore.get();
     }
     this.switching = true;
-    const metadataPromise = this.config.getEpisodeMetadata(episodeId, assetOrder, assetTime);
+    const metadataPromise = this.config.getEpisodeMetadata(episodeId, {
+      order: assetOrder,
+      time: assetTime,
+    });
     const oldEpisodeCore = this.currentEpisodeCore.get();
     if (oldEpisodeCore !== null) {
       if (oldEpisodeCore.episodeId === episodeId) {
