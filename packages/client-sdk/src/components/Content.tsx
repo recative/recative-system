@@ -31,8 +31,9 @@ import { useEpisodeDetail } from '../hooks/useEpisodeDetail';
 import { useMemoryLeakFixer } from '../hooks/useMemoryLeakFixer';
 import { useResetAssetStatusCallback } from '../hooks/useResetAssetStatusCallback';
 
-import { CONTAINER_COMPONENT } from '../constant/storageKeys';
 import { useDataFetcher } from './hooks/useDataFetcher';
+import { CONTAINER_COMPONENT } from '../constant/storageKeys';
+import { useEpisodeIdNormalizer } from './hooks/useEpisodeIdNormalizer';
 
 const error = debug('sdk:content:error');
 // This is on purpose
@@ -144,6 +145,7 @@ EnvVariable extends Record<string, unknown>,
 
       const config = useSdkConfig();
       const seriesCoreRef = React.useRef<SeriesCore<EnvVariable>>();
+      const normalizeEpisodeId = useEpisodeIdNormalizer();
 
       const dataFetcher = useDataFetcher();
 
@@ -157,9 +159,16 @@ EnvVariable extends Record<string, unknown>,
             throw new TypeError('Series core is not initialized, this is not allowed');
           }
 
-          seriesCoreRef.current.setEpisode(nextEpisodeId, forceReload, assetOrder, assetTime);
+          const normalizedEpisodeId = normalizeEpisodeId(nextEpisodeId);
+
+          seriesCoreRef.current.setEpisode(
+            normalizedEpisodeId,
+            forceReload,
+            assetOrder,
+            assetTime,
+          );
         },
-      }), [dataFetcher, userImplementedFunctions]);
+      }), [dataFetcher, normalizeEpisodeId, userImplementedFunctions]);
 
       const wrappedOnEpisodeIdUpdate = useWrappedOnEpisodeUpdate(onEpisodeIdUpdate);
 
