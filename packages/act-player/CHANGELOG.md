@@ -1,5 +1,21 @@
 # @recative/act-player
 
+## 0.3.0
+
+### Minor Changes
+
+- 775f617: BREAKING: Implemented series core manager, this will change the way to initialize the system
+- a98f797: BREAKING: Handle legacy episode ID properly
+
+### Patch Changes
+
+- Updated dependencies [ceb427b]
+- Updated dependencies [bda3138]
+- Updated dependencies [775f617]
+- Updated dependencies [a98f797]
+  - @recative/core-manager@0.5.0
+  - @recative/definitions@0.4.2
+
 ## 0.3.0-beta.0
 
 ### Minor Changes

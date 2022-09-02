@@ -1,5 +1,20 @@
 # @recative/ap-preview
 
+## 0.4.0
+
+### Minor Changes
+
+- a98f797: BREAKING: Handle legacy episode ID properly
+
+### Patch Changes
+
+- Updated dependencies [ceb427b]
+- Updated dependencies [bda3138]
+- Updated dependencies [775f617]
+- Updated dependencies [a98f797]
+  - @recative/core-manager@0.5.0
+  - @recative/definitions@0.4.2
+
 ## 0.3.2-beta.0
 
 ### Patch Changes

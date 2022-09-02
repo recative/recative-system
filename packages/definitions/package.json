@@ -1,6 +1,6 @@
 {
   "name": "@recative/definitions",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "source": "src/index.ts",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",

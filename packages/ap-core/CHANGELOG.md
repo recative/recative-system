@@ -1,5 +1,13 @@
 # @recative/ap-core
 
+## 0.3.1
+
+### Patch Changes
+
+- db60c3b: fix: remove frameRateLevel when animation was paused
+- Updated dependencies [bda3138]
+  - @recative/definitions@0.4.2
+
 ## 0.3.1-beta.0
 
 ### Patch Changes

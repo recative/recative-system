@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.2
+
+### Patch Changes
+
+- bda3138: refactor: Rename `AssetForClient` to `IAssetForClient` for better API consistency
+
 ## 0.4.1
 
 ### Patch Changes
