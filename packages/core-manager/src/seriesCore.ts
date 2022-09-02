@@ -1,4 +1,6 @@
 import EventTarget from '@ungap/event-target';
+import debug from 'debug';
+
 import { atom } from 'nanostores';
 import type { RawUserImplementedFunctions } from '@recative/definitions';
 
@@ -10,6 +12,8 @@ import type {
   IUserRelatedEnvVariable,
   IDefaultAdditionalEnvVariable,
 } from './manager/envVariable/EnvVariableManager';
+
+const log = debug('core:series-core');
 
 export interface SegmentStartEventDetail {
   episodeId: string,
@@ -130,6 +134,7 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
     await this.config.navigate(episodeId, forceReload);
     this.ensureNotDestroying();
     const metadata = await metadataPromise;
+    log('Got metadata: ', metadata);
     const newEpisodeCore = new EpisodeCore<T>({
       initialEnvVariable: this.envVariable.get(),
       initialAssetStatus: metadata.initialAssetStatus,
