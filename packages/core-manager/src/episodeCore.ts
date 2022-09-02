@@ -289,27 +289,7 @@ export class EpisodeCore<
     if (!this.userImplementedFunctions) {
       throw new Error('User implemented functions not set');
     }
-    const { userImplementedFunctions } = this;
-    const { gotoEpisode } = userImplementedFunctions;
-    return {
-      ...userImplementedFunctions,
-      gotoEpisode: async (
-        seek: (assetOrder: number, assetTime: number) => void,
-        episode: string,
-        forceReload?: boolean,
-        assetOrder?: number,
-        assetTime?: number,
-      ) => {
-        if (gotoEpisode === undefined) {
-          return;
-        }
-        gotoEpisode(seek, episode, forceReload, assetOrder, assetTime, async () => {
-          if (this.episodeId !== episode) {
-            await this.destroy();
-          }
-        });
-      },
-    };
+    return this.userImplementedFunctions;
   }
 
   private async launchPreloader() {
