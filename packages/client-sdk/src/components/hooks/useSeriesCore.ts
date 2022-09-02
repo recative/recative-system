@@ -1,18 +1,45 @@
 import * as React from 'react';
+import debug from 'debug';
+
 import useConstant from 'use-constant';
 import { useStore } from '@nanostores/react';
 
 import { SeriesCore } from '@recative/core-manager';
 import type { RawUserImplementedFunctions } from '@recative/definitions';
 import type {
+  EpisodeCore,
   IEpisodeMetadata,
   ISeriesCoreConfig,
   IUserRelatedEnvVariable,
 } from '@recative/core-manager';
 
 import { useDataFetcher } from './useDataFetcher';
+import { IEpisodeDetail } from '../../external';
+
+const log = debug('sdk:series-core');
+const logWarn = debug('sdk:series-core');
+// eslint-disable-next-line no-console
+logWarn.log = console.warn;
+
+const useEpisodeDetailReloadDiagnosisTool = (
+  id: string,
+  diagnosisVariable: unknown,
+  // This is acceptable
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  episodeCore: EpisodeCore<any> | null,
+) => {
+  React.useEffect(() => {
+    const episodeData = episodeCore?.getEpisodeData();
+
+    if (episodeData) {
+      logWarn(`${id} updated after episode initialized, this is not allowed`);
+    }
+  }, [diagnosisVariable, episodeCore, id]);
+};
 
 export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
+  episodeId: string | undefined,
+  episodeDetail: IEpisodeDetail | null,
   preferredUploaders: string[],
   trustedUploaders: string[],
   rawEpisodeMetadata: Omit<IEpisodeMetadata, 'episodeData'>,
@@ -28,13 +55,15 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
 
   const getEpisodeMetadata = React.useCallback(
     async (nextEpisodeId: string): Promise<IEpisodeMetadata> => {
-      const episodeDetail = await fetchData(nextEpisodeId);
+      const nextEpisodeDetail = nextEpisodeId === episodeDetail?.key
+        ? episodeDetail
+        : await fetchData(nextEpisodeId);
 
       const notInjectedEpisodeMetadata = {
         ...rawEpisodeMetadata,
         episodeData: {
-          resources: episodeDetail.resources,
-          assets: episodeDetail.assets,
+          resources: nextEpisodeDetail.resources,
+          assets: nextEpisodeDetail.assets,
           preferredUploaders,
           trustedUploaders,
         },
@@ -43,6 +72,7 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
       return getInjectedEpisodeMetadata?.(notInjectedEpisodeMetadata) ?? notInjectedEpisodeMetadata;
     },
     [
+      episodeDetail,
       fetchData,
       getInjectedEpisodeMetadata,
       preferredUploaders,
@@ -55,6 +85,12 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
     navigate,
     getEpisodeMetadata,
   }));
+
+  React.useEffect(() => {
+    if (episodeId && episodeId !== seriesCore.currentEpisodeCore.get()?.episodeId) {
+      seriesCore.setEpisode(episodeId, false);
+    }
+  }, [episodeId, seriesCore]);
 
   React.useEffect(() => {
     seriesCore.config.getEpisodeMetadata = getEpisodeMetadata;
@@ -83,6 +119,45 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
   }, [userData, seriesCore.userData]);
 
   const episodeCore = useStore(seriesCore.currentEpisodeCore);
+
+  React.useEffect(() => {
+    const episodeData = episodeCore?.getEpisodeData();
+
+    if (episodeDetail?.assets && episodeDetail?.resources && episodeId) {
+      const nextEpisodeData = {
+        assets: episodeDetail.assets,
+        resources: episodeDetail.resources,
+        preferredUploaders,
+        trustedUploaders,
+      };
+
+      if (!episodeData) {
+        const initializedData = episodeCore?.initializeEpisode(nextEpisodeData);
+
+        log(
+          'Episode initialized',
+          initializedData,
+        );
+      } else {
+        logWarn(
+          'Suppressed initialize',
+          episodeData, '->',
+          nextEpisodeData,
+        );
+      }
+    }
+  }, [
+    episodeCore,
+    episodeId,
+    episodeDetail,
+    trustedUploaders,
+    preferredUploaders,
+  ]);
+
+  useEpisodeDetailReloadDiagnosisTool('episodeId', episodeId, episodeCore);
+  useEpisodeDetailReloadDiagnosisTool('episodeDetail', episodeDetail, episodeCore);
+  useEpisodeDetailReloadDiagnosisTool('trustedUploaders', trustedUploaders, episodeCore);
+  useEpisodeDetailReloadDiagnosisTool('preferredUploaders', preferredUploaders, episodeCore);
 
   React.useEffect(() => {
     seriesCore.updateConfig({
