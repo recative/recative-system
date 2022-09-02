@@ -64,11 +64,16 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
       initialAssetStatus?: IInitialAssetStatus,
     ): Promise<IEpisodeMetadata> => {
       const normalizedEpisodeId = normalizeEpisodeId(nextEpisodeId);
+
+      if (!normalizedEpisodeId) {
+        throw new TypeError(`${normalizeEpisodeId} is not a valid episode id.`);
+      }
+
       const
         nextEpisodeDetail = (
           normalizedEpisodeId === episodeDetail?.key
-          && episodeDetail.resources
-          && episodeDetail.assets
+          && episodeDetail?.resources
+          && episodeDetail?.assets
         )
           ? episodeDetail
           : await fetchData(normalizedEpisodeId);

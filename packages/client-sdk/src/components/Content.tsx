@@ -20,7 +20,6 @@ import type {
 import { useInjector } from './hooks/useInjector';
 import { useSeriesCore } from './hooks/useSeriesCore';
 import { useCustomEventWrapper } from './hooks/useCustomEventWrapper';
-import { useWrappedOnEpisodeUpdate } from './hooks/useWrappedOnEpisodeIdUpdate';
 
 import type { PlayerPropsInjectorHook } from './hooks/useInjector';
 
@@ -123,7 +122,7 @@ EnvVariable extends Record<string, unknown>,
 
     const Content = ({
       children,
-      episodeId,
+      episodeId: rawEpisodeId,
       envVariable,
       userData,
       LoadingComponent,
@@ -147,6 +146,10 @@ EnvVariable extends Record<string, unknown>,
       const seriesCoreRef = React.useRef<SeriesCore<EnvVariable>>();
       const normalizeEpisodeId = useEpisodeIdNormalizer();
 
+      const episodeId = React.useMemo(
+        () => normalizeEpisodeId(rawEpisodeId),
+        [normalizeEpisodeId, rawEpisodeId],
+      );
       const dataFetcher = useDataFetcher();
 
       const injectedUserImplementedFunctions = React.useMemo<
@@ -159,18 +162,14 @@ EnvVariable extends Record<string, unknown>,
             throw new TypeError('Series core is not initialized, this is not allowed');
           }
 
-          const normalizedEpisodeId = normalizeEpisodeId(nextEpisodeId);
-
           seriesCoreRef.current.setEpisode(
-            normalizedEpisodeId,
+            nextEpisodeId,
             forceReload,
             assetOrder,
             assetTime,
           );
         },
-      }), [dataFetcher, normalizeEpisodeId, userImplementedFunctions]);
-
-      const wrappedOnEpisodeIdUpdate = useWrappedOnEpisodeUpdate(onEpisodeIdUpdate);
+      }), [dataFetcher, userImplementedFunctions]);
 
       const {
         hookOnEnd,
@@ -218,7 +217,7 @@ EnvVariable extends Record<string, unknown>,
         hookEnvVariable ?? envVariable,
         hookUserData ?? userData,
         getInjectedEpisodeMetadata,
-        wrappedOnEpisodeIdUpdate,
+        onEpisodeIdUpdate,
       );
       React.useImperativeHandle(seriesCoreRef, () => seriesCore, [seriesCore]);
 

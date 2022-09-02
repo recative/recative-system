@@ -13,7 +13,9 @@ export const useEpisodeIdNormalizer = () => {
     return result;
   }, [config.episodesMap]);
 
-  return React.useCallback((episodeId: string) => {
+  return React.useCallback((episodeId: string | undefined) => {
+    if (!episodeId) return episodeId;
+
     const nEpisodeId = Number.parseInt(episodeId, 10);
     const parsedEpisodeId = Number.isNaN(nEpisodeId)
       ? episodeId
