@@ -1,4 +1,4 @@
-export interface AssetForClient {
+export interface IAssetForClient {
   id: string;
   duration: number;
   preloadDisabled: boolean;

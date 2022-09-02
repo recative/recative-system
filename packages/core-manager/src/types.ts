@@ -8,7 +8,7 @@ import type {
 } from '@recative/act-protocol';
 import type {
   ContentSpec,
-  AssetForClient,
+  IAssetForClient,
   ManagedCoreState,
   IResourceItemForClient,
   ManagerCoreStateTrigger,
@@ -24,14 +24,14 @@ export type CustomEventHandler<T> = (event:CustomEvent<T>)=>void;
 
 export interface EpisodeData {
   resources: IResourceItemForClient[];
-  assets: AssetForClient[];
+  assets: IAssetForClient[];
   preferredUploaders: string[];
   trustedUploaders: string[];
 }
 
 export interface InternalEpisodeData {
   resources: ResourceListForClient;
-  assets: AssetForClient[];
+  assets: IAssetForClient[];
   preferredUploaders: string[];
   preloader: PreloadManager;
 }
@@ -101,7 +101,7 @@ export interface CoreFunctions {
   // Queued tasks
   requireQueuedTask(id: string, instanceId: string): void;
   // Subsequence control
-  createSequence(id: string, assets: AssetForClient[]): Promise<void>;
+  createSequence(id: string, assets: IAssetForClient[]): Promise<void>;
   startSequence(id: string): void;
   showSequence(id: string): void;
   hideSequence(id: string): void;

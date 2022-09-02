@@ -1,4 +1,4 @@
-import { AssetForClient } from '@recative/definitions';
+import { IAssetForClient } from '@recative/definitions';
 import { allSettled } from '@recative/open-promise';
 import type { InstanceOption } from '../../instance';
 import { WithLogger } from '../../LogCollector';
@@ -56,7 +56,7 @@ export class SubsequenceManager extends WithLogger {
     return this.destroyPromise;
   }
 
-  async createSequence(id: string, assets: AssetForClient[]) {
+  async createSequence(id: string, assets: IAssetForClient[]) {
     if (this.destroyed) {
       return;
     }

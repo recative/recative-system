@@ -1,18 +1,18 @@
 import type {
   IEpisode,
-  AssetForClient,
+  IAssetForClient,
   IResourceItemForClient,
 } from '@recative/definitions';
 
 export interface IEpisodeAbstraction {
   key: string;
   episode: IEpisode;
-  assets: AssetForClient[];
+  assets: IAssetForClient[];
 }
 
 export interface IEpisodeDetail {
   key: string;
   episode: IEpisode;
-  assets: AssetForClient[];
+  assets: IAssetForClient[];
   resources: IResourceItemForClient[];
 }

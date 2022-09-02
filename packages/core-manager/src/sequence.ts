@@ -1,4 +1,4 @@
-import { AssetForClient, ContentSpec, ManagedCoreStateManager } from '@recative/definitions';
+import { IAssetForClient, ContentSpec, ManagedCoreStateManager } from '@recative/definitions';
 import {
   atom, computed, ReadableAtom, WritableAtom,
 } from 'nanostores';
@@ -37,7 +37,7 @@ export interface SequenceOption {
   audioStation: AudioStation;
   managedCoreStateManager: ManagedCoreStateManager;
   volume: number;
-  assets: AssetForClient[];
+  assets: IAssetForClient[];
   taskQueue: TimeSlicingQueue;
   initialAssetStatus?: IInitialAssetStatus;
   contentInstances: Map<string, ContentInstance>;

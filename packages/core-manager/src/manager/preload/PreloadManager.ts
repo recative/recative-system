@@ -46,8 +46,6 @@ export class PreloadManager {
 
     this.urlCacheScheduled.set(true);
 
-    log('URL cache scheduled');
-
     const episodeData = this.ensureEpisodeData();
 
     const resourceFiles = [...episodeData.resources.resourceFiles]
@@ -119,8 +117,6 @@ export class PreloadManager {
 
     this.blockingResourceCacheScheduled.set(true);
 
-    log('Blocking resources scheduled');
-
     const episodeData = this.ensureEpisodeData();
     const resourceFiles = [...episodeData.resources.resourceFiles];
 
@@ -145,8 +141,6 @@ export class PreloadManager {
     }
 
     this.nonBlockingResourceCacheScheduled.set(true);
-
-    log('Non-blocking resources scheduled');
 
     const episodeData = this.ensureEpisodeData();
 

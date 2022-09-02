@@ -5,13 +5,13 @@ import type {
   InternalEpisodeData,
 } from '@recative/core-manager';
 import type {
-  AssetForClient,
+  IAssetForClient,
   IResourceItemForClient,
 } from '@recative/definitions';
 
 import useConstant from 'use-constant';
 
-export interface PlayerAssetProp extends Omit<AssetForClient, 'duration'> {
+export interface PlayerAssetProp extends Omit<IAssetForClient, 'duration'> {
   duration: number | null;
 }
 

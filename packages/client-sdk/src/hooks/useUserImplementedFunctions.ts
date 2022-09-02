@@ -2,7 +2,7 @@
 import React from 'react';
 import debug from 'debug';
 
-import type { IEpisode, AssetForClient, UserImplementedFunctions } from '@recative/definitions';
+import type { IEpisode, IAssetForClient, UserImplementedFunctions } from '@recative/definitions';
 
 import { useSdkConfig } from './useSdkConfig';
 import type { IRpcFunction } from '../types/IRpcFunction';
@@ -30,7 +30,7 @@ export interface InjectedFunctions {
 
 export const useUserImplementedFunctions = (
   episodeId: string,
-  assets: AssetForClient[] | null,
+  assets: IAssetForClient[] | null,
   episodes: IEpisode[] | null,
   injectedFunctions: InjectedFunctions,
   server: IRpcFunction,
