@@ -29,6 +29,7 @@ import {
   PlayerSdkProvider,
   ContentModuleFactory,
 } from '@recative/client-sdk';
+import { Error, Loading } from '@recative/act-player';
 
 import { Block } from 'baseui/block';
 import { Drawer, SIZE as DRAWER_SIZE } from 'baseui/drawer';
@@ -37,8 +38,10 @@ import type { ButtonOverrides } from 'baseui/button';
 
 import { Error, Loading } from '@recative/act-player';
 import { useEnvVariable } from './utils/useEnvVariable';
-
-window.React = React;
+import {
+  useUserImplementedFunctions,
+  INITIAL_ASSET_STATUS_ATOM,
+} from './utils/useUserImplementedFunctions';
 
 const PREFERRED_UPLOADERS = [
   '@recative/uploader-extension-studio/ResourceManager',

@@ -11,7 +11,7 @@
   "include": [
     "src",
     "example"
-  ],
+, "test/index.test.ts"  ],
   "exclude": [
     "node_modules"
   ]

@@ -9,6 +9,7 @@
   font-family: 'Raleway', sans-serif;
   --ifm-global-radius: 0;
   --ifm-heading-font-family: 'Raleway';
+  --ifm-mono-font-family: 'Azeret Mono';
   --ifm-color-primary: #546E7A;
   --ifm-color-primary-dark: #455A64;
   --ifm-color-primary-darker: #37474F;
@@ -20,6 +21,7 @@
   --ifm-font-size-base: 14px;
   --ifm-font-size-small: 13px;
   --ifm-font-weight-semibold: 550;
+  --ifm-code-padding-horizontal: 0.2em;
   --ifm-breadcrumb-border-radius: 0;
   --ifm-footer-height: 60px;
   --ifm-footer-padding-vertical: 1rem;
@@ -30,6 +32,21 @@
   --ifm-global-shadow-lw: none;
   --ifm-menu-link-sublist-icon: url('/img/icons/arrow-right.svg');
   --ifm-font-family-base: 'Raleway', sans-serif;
+}
+
+code {
+  border: 0;
+  margin: 0;
+  font-family: var(--ifm-mono-font-family);
+  vertical-align: initial;
+}
+
+p code {
+  font-weight: 300;
+}
+
+h1 code, h2 code, h3 code, h4 code, h5 code, h6 code {
+  font-weight: 600;
 }
 
 nav.menu {
@@ -135,7 +152,24 @@ ul.menu__list ul.menu__list a.menu__link--sublist::after,
   padding-left: 4px;
 }
 
-.recative-package::before {
+.tsd-panel a {
+  font-weight: var(--ifm-font-weight-semibold);
+}
+
+.tsd-panel a.tsd-kind-icon i.codicon::before {
+  color: var(--ifm-link-color);
+  border-color: var(--ifm-link-color);
+}
+
+.tsd-panel-header {
+  background-color: transparent !important;
+}
+
+.tsd-footer {
+  display: none;
+}
+
+aside.theme-doc-sidebar-container > div > nav.menu > ul.theme-doc-sidebar-menu > li > div.menu__list-item-collapsible > a[href^='#']::before {
   content: " ";
   width: 18px;
   height: 18px;
@@ -146,9 +180,12 @@ ul.menu__list ul.menu__list a.menu__link--sublist::after,
   display: block;
 }
 
-.theme-doc-sidebar-item-link-level-2 > a[href*="/classes/"]::before,
-.theme-doc-sidebar-item-link-level-2 > a[href*="/interfaces/"]::before,
-.theme-doc-sidebar-item-link-level-2 > a[href*="/enums/"]::before {
+.tsd-kind-icon .codicon::before,
+.table-of-contents__link .codicon::before,
+.theme-doc-sidebar-item-link-level-3 > a[href*="/class/"]::before,
+.theme-doc-sidebar-item-link-level-3 > a[href*="/interface/"]::before,
+.theme-doc-sidebar-item-link-level-3 > a[href*="/enum/"]::before,
+.theme-doc-sidebar-item-link-level-3 > a[href*="/function/"]::before {
   min-width: 1.16em;
   min-height: 1.16em;
   line-height: 1.16em;
@@ -157,25 +194,78 @@ ul.menu__list ul.menu__list a.menu__link--sublist::after,
   font-size: 0.9em;
   margin-right: 6px;
   text-align: center;
-  display: block;
+  display: inline-block;
 }
 
-.theme-doc-sidebar-item-link-level-2 > .menu__link--active[href*="/classes/"]::before,
-.theme-doc-sidebar-item-link-level-2 > .menu__link--active[href*="/interfaces/"]::before,
-.theme-doc-sidebar-item-link-level-2 > .menu__link--active[href*="/enums/"]::before{
+
+.table-of-contents__link .codicon::before,
+.tsd-kind-icon .codicon::before {
+  height: 1em;
+  width: 1em;
+  margin-right: 0;
+  color: initial;
+  font-family: var(--ifm-font-family-base);
+  font-size: 0.85em;
+  font-weight: 550;
+  line-height: 1.2em;
+  transform: translateY(-0.15em);
+}
+
+.table-of-contents__link .codicon::first-letter {
+  font-size: 1000em;
+}
+
+.table-of-contents__link .codicon::before {
+  margin-right: 0.5em;
+}
+
+.theme-doc-sidebar-item-link-level-3 > .menu__link--active[href*="/class"]::before,
+.theme-doc-sidebar-item-link-level-3 > .menu__link--active[href*="/interface/"]::before,
+.theme-doc-sidebar-item-link-level-3 > .menu__link--active[href*="/function/"]::before,
+.theme-doc-sidebar-item-link-level-3 > .menu__link--active[href*="/enum/"]::before {
   border: 1.5px solid var(--ifm-color-primary-darkest);
 }
 
-.theme-doc-sidebar-item-link-level-2 > a[href*="/classes/"]::before {
-  content: "C";
+.codicon-symbol-property::before,
+.codicon-symbol-parameter::before {
+  content: "P" !important;
 }
 
-.theme-doc-sidebar-item-link-level-2 > a[href*="/interfaces/"]::before {
-  content: "I";
+.codicon-symbol-variable::before {
+  content: "V" !important;
 }
 
-.theme-doc-sidebar-item-link-level-2 > a[href*="/enums/"]::before {
-  content: "E";
+.codicon-symbol-constructor::before {
+  content: "N" !important;
+}
+
+.codicon-symbol-field::before {
+  content: ": :" !important;
+}
+
+.codicon-symbol-method::before {
+  content: "M" !important;
+}
+
+.codicon-symbol-class::before,
+.theme-doc-sidebar-item-link-level-3 > a[href*="/class/"]::before {
+  content: "C" !important;
+}
+
+.codicon-symbol-interface::before,
+.theme-doc-sidebar-item-link-level-3 > a[href*="/interface/"]::before {
+  content: "I" !important;
+}
+
+.codicon-symbol-enum::before,
+.codicon-symbol-enum-member::before,
+.theme-doc-sidebar-item-link-level-3 > a[href*="/enum/"]::before {
+  content: "E" !important;
+}
+
+.codicon-symbol-function::before,
+.theme-doc-sidebar-item-link-level-3 > a[href*="/function/"]::before {
+  content: "F" !important;
 }
 
 .menu__caret:before {
@@ -266,6 +356,10 @@ main > .container > .row > div.col.col--3 {
 
 .theme-doc-toc-mobile > button::after {
   background-size: contain;
+}
+
+.table-of-contents__link code {
+  font-weight: 400;
 }
 
 .toc-highlight, .table-of-contents__link--active {

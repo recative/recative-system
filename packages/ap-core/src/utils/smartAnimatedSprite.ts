@@ -1,9 +1,9 @@
 import { utils } from 'pixi.js-legacy';
 import * as PIXI from 'pixi.js-legacy';
-import { IResourceFileForClient } from '@recative/definitions';
+import { IDetailedResourceItemForClient, IResourceFileForClient } from '@recative/definitions';
 import { getMatchedResource, ResourceEntry } from '@recative/smart-resource';
 
-import { useQuery } from '../hooks/fetchDataHooks';
+import { IFailedResponse, ISuccessResponse, useQuery } from '../hooks/fetchDataHooks';
 import { DataSource, useCombinator, useSelector } from '../core/DataSource';
 import {
   Subscribable,
@@ -48,10 +48,13 @@ const useSmartTextureInfoSequence = (
         return null;
       }
       if (metadataResponse && !metadataResponse.success) {
-        console.warn('Failed to get metadata:', metadataResponse.error);
+        console.warn(
+          'Failed to get metadata:',
+          (metadataResponse as IFailedResponse).error
+        );
         return null;
       }
-      const metadata = metadataResponse.data;
+      const metadata = (metadataResponse as ISuccessResponse<IDetailedResourceItemForClient>).data;
       if (metadata === null) return null;
       if (!('type' in metadata)) {
         return null;
@@ -65,7 +68,7 @@ const useSmartTextureInfoSequence = (
         item: file,
       }));
 
-      const file = getMatchedResource(
+      const file: IResourceFileForClient = getMatchedResource(
         files,
         {
           ...smartResourceConfig,
@@ -120,7 +123,10 @@ const useSmartTextureInfoSequence = (
         return null;
       }
       if (!frameInfosResponse?.success) {
-        console.warn('Failed to generate SmartTextureInfos:', frameInfosResponse.error);
+        console.warn(
+          'Failed to generate SmartTextureInfos:',
+          (frameInfosResponse as IFailedResponse).error,
+        );
         return [];
       }
       return frameInfosResponse.data;

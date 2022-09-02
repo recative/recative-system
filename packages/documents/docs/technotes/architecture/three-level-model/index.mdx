@@ -1,0 +1,123 @@
+---
+sidebar_position: 1
+---
+
+import { Block } from 'baseui/block';
+
+import ThreeLevelModel from './images/three-level-model-concept.svg';
+import ThreeLevelPackage from './images/three-level-model-package.svg';
+
+# Project Model
+
+## Abstract
+
+To help developers and content creators manage their application properly, we
+built a three-level model. This model can ease the mental burden of maintaining
+your resources, creating enough flexibility for different deploying target.
+
+Developers can choose technology stacks at different levels of complexity to
+solve different tasks. In this article, we will give a brief introduction to
+this three-level model.
+
+## Introduction
+
+Recative System manage its content with such a three level model:
+
+<ThreeLevelModel
+  style={{
+      maxWidth: "184px",
+      padding: '0 16px',
+      float: "right",
+  }}
+  alt="The three level model of the Recative System"
+/>
+
+* **Asset:** Asset is the minimum unit of an independent content, it could be a
+  piece of video, or a small piece of web application based on PIXI.js. You can
+  expect there would be more possible options in the future.
+* **Episode:** Episode is the minium unit of data loading, resource
+  management and lifecycle management. while an episode is initializing, we will
+  trying to download an asset definition list, preload all resources if the
+  resource definition required. If your enviroment implemented an cache method,
+  the episode manager will also try to download the resource to local hard-disk,
+  which will boost the initialize speed for further visits.
+* **Series:** If your content is too complex to be handled in one single episode,
+  you can split your assets into different episodes, and add all episodes into
+  one single series. The series manager will manage the lifecycle of each single
+  episode. Since loading a new episode needs fetching additional data,
+  performance may be compermised, please make a good trade-off between high RAM
+  usage and extended load times.
+
+For different level of abstraction, we have different packages to take care of
+lifecycles , RAM consumption and performance issue.
+
+<ThreeLevelPackage
+  style={{
+      maxWidth: "184px",
+      padding: '0 16px',
+      float: "right",
+  }}
+  alt="Four level of packages for the three level model"
+/>
+
+* **`ap-core`:** `@recative/ap-core` is a set of toolkits for building 
+  simple interactive content, we implemented several scheduling machnism to help
+  developers building an web application with less performance issue. Currently,
+  there's an official support of [PIXI.js](https://pixijs.com/),
+  [Yoga Layout](https://yogalayout.com/), [anime.js](https://animejs.com/),
+  the support for [three.js](https://threejs.org/) and
+  [Tone.js](https://tonejs.github.io/) is under construction.
+
+:::caution
+Although our customers have built quite a few content products using ap-core,
+the API design has not yet reached the level of public availability. We are
+trying to disassemble `@recative/ap-core` into multiple smaller packages, to
+reduce the complexity of the whole solution.
+:::
+
+* **Act Player:** `@recative/act-player` is a React component which can render
+  a lot of *assets*. [`EpisodeCore`](/api/core-manager/class/EpisodeCore) 
+  of [`@recative/core-manager`](http://localhost:3000/api/core-manager) can take
+  care of the task of lifecycle management and RAM management. The implementation
+  of core manager is "ui-frame neutral", it is useful if your team is not using
+  [React](https://reactjs.org/) or want to build a different product based on
+  the existing system. The interface of this player is full-customizable, you can
+  pass your own implementation of every single component. Reading the following
+  articles for more details about how to customize it. 
+
+* **SDK:** `@recative/client-sdk` is a React component for managing multiple
+  episodes, client sdk will take care of data fetching and life cycle management,
+  and interface customize. If you are building a product which have multple
+  episodes, SDK could be helpful. *SDK* also support interface customize, by
+  building an interface component - an ESM module which exports a React hook - 
+  you can customize all possible behavior and visual experience with this 
+  feature without hacking the source code of *act player*.
+
+* **Shell:** Shell is the enviroment your application or program running in, it
+  could be a website, a desktop client or a mobile application. There could be 
+  different kind platform-specific capabilities, like in app purchase, resource
+  cache, sharing or deeplink. We're trying our best to build a set of official 
+  shell implementation for most use cases. For users without special requirements, 
+  we encourage you to use the official shell implementation, which is better
+  integrated into *Recative Studio*'s workflow. If you want to customize the
+  capability of shells, please fork our official implementation. We will
+  introduce how the Shell interacts with Recative Studio in the following article.
+
+:::tip
+The source code and implementation will be revealed later, since we are adding
+some final touch to it.
+:::
+
+:::tip
+It's not necessary to fork the shell implementation if you only want to
+customize the visual experience of the player, consider building a *"interface
+component"* can greatly improve the maintainability of the project. 
+:::
+
+## Use Cases
+
+Since episode core manager includes many media manage feature, you can also use
+act player as a naïve video player with cross-browser and cross-platform
+consistent auto play behavior.
+Such a use case is supported, but we are still trying to improve its autoplay
+ability.
