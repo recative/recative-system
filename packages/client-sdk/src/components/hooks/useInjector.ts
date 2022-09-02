@@ -1,6 +1,9 @@
 import * as React from 'react';
 import debug from 'debug';
 
+import { atom } from 'nanostores';
+import { useStore } from '@nanostores/react';
+
 import type {
   SeriesCore,
   EpisodeCore,
@@ -19,6 +22,12 @@ import type { IContentProps } from '../Content';
 import { useEpisodeDetail } from '../../external';
 
 const log = debug('client:injector');
+
+const logGroup = debug('client:injector');
+// eslint-disable-next-line no-console
+logGroup.log = console.groupCollapsed.bind(console);
+// eslint-disable-next-line no-console
+const endLogGroup = console.groupEnd;
 
 export interface InjectedProps<
   PlayerPropsInjectedDependencies,
@@ -63,6 +72,8 @@ const usePlayerPropsDefaultHook: PlayerPropsInjectorHook<any, any> = () => ({
   injectToEpisodeMetadata: undefined,
 });
 
+const NULL_ATOM = atom(null);
+
 /**
  * Garbage in garbage out.
  */
@@ -78,7 +89,7 @@ export const useInjector = <
     seriesCoreRef: React.MutableRefObject<SeriesCore<EnvVariable> | undefined>,
   ) => {
   const seriesCore = seriesCoreRef.current;
-  const episodeCore = seriesCore?.currentEpisodeCore.get();
+  const episodeCore = useStore(seriesCore?.currentEpisodeCore ?? NULL_ATOM);
 
   if (
     playerPropsHookDependencies
@@ -156,11 +167,28 @@ export const useInjector = <
   }, [injectToSdk]);
 
   React.useEffect(() => {
-    log('Episode #', episodeId);
-    log('Episode Detail', episodeDetail);
-    log('Props for hook', playerPropsHookProps);
-    log('Injected SDK props', hookInjectToSdk);
-  }, [episodeDetail, episodeId, hookInjectToSdk, playerPropsHookProps]);
+    logGroup('Injected parameters changed');
+    logGroup('Episode:');
+    log('#:', episodeId);
+    log('Detail', episodeDetail);
+    endLogGroup();
+    logGroup('Injection:');
+    log('In:', playerPropsHookProps);
+    logGroup('Out:');
+    log('-> SDK:', injectToSdk);
+    log('-> Player:', injectToPlayer);
+    log('-> Container:', injectToContainer);
+    endLogGroup();
+    endLogGroup();
+    endLogGroup();
+  }, [
+    episodeId,
+    episodeDetail,
+    injectToSdk,
+    injectToPlayer,
+    injectToContainer,
+    playerPropsHookProps,
+  ]);
 
   return {
     hookOnEnd,
