@@ -16,7 +16,7 @@ export const useRemoteData = <T>(fileName: string | null) => {
       }
       return fetch<T>(fileName, dataType, pathPattern, setClientSdkConfig);
     },
-    [fileName, pathPattern],
+    [dataType, fileName, pathPattern, setClientSdkConfig],
   );
 
   const [result, controller] = useAsync(fetchData, null);
