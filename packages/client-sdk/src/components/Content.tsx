@@ -150,6 +150,7 @@ EnvVariable extends Record<string, unknown>,
         () => normalizeEpisodeId(rawEpisodeId),
         [normalizeEpisodeId, rawEpisodeId],
       );
+
       const dataFetcher = useDataFetcher();
 
       const injectedUserImplementedFunctions = React.useMemo<

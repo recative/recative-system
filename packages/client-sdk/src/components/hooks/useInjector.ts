@@ -19,6 +19,7 @@ import type { RawUserImplementedFunctions } from '@recative/definitions';
 import type { IContentProps } from '../Content';
 
 import { useEpisodeDetail } from '../../external';
+import { useEpisodeIdNormalizer } from './useEpisodeIdNormalizer';
 
 const log = debug('client:injector');
 
@@ -109,10 +110,11 @@ export const useInjector = <
   > = internalUsePlayerPropsHook ?? usePlayerPropsDefaultHook;
 
   const episodeDetail = useEpisodeDetail(episodeId);
+  const normalizeEpisodeId = useEpisodeIdNormalizer();
 
   const playerPropsHookProps = React.useMemo(
     () => ({
-      episodeId: episodeCore?.episodeId,
+      episodeId: normalizeEpisodeId(episodeCore?.episodeId),
       envVariable,
       userData,
       seriesCore: seriesCore ?? null,
@@ -127,6 +129,7 @@ export const useInjector = <
       seriesCore,
       playerPropsHookDependencies,
       userImplementedFunctions,
+      normalizeEpisodeId,
     ],
   );
 
