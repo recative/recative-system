@@ -5,7 +5,6 @@ const log = debug('client:fetch');
 
 export const fetchUson = async <T>(url: string) => {
   const response = await fetch(url);
-  log(`Got response for file: ${url}`);
 
   const raw = await response.text();
   const data = parse(raw) as T;
