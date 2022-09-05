@@ -14,7 +14,8 @@
     "start:demo": "ts-node ./src/demo.ts"
   },
   "devDependencies": {
-    "ts-node": "^10.8.1"
+    "ts-node": "10.9.1",
+    "typescript": "4.8.2"
   },
   "files": [
     "dist/**/*"

@@ -4856,7 +4856,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@parcel/transformer-typescript-types@npm:^2.0.0":
+"@parcel/transformer-typescript-types@npm:2.6.2, @parcel/transformer-typescript-types@npm:^2.0.0":
   version: 2.6.2
   resolution: "@parcel/transformer-typescript-types@npm:2.6.2"
   dependencies:
@@ -5579,10 +5579,6 @@ __metadata:
     "@recative/core-manager": ^0.5.0
     "@recative/definitions": ^0.4.2
     "@recative/smart-resource": "workspace:^"
-    "@rollup/plugin-commonjs": ^21.0.2
-    "@rollup/plugin-node-resolve": ^13.3.0
-    "@rollup/plugin-sucrase": ^4.0.3
-    "@rollup/plugin-typescript": ^8.3.1
     "@types/debug": ^4.1.7
     "@types/fs-extra": ^9.0.13
     "@types/lodash": ^4.14.177
@@ -5603,12 +5599,9 @@ __metadata:
     react-slider: 2.0.1
     react-tooltip: ^4.2.21
     react-use: ^17.3.1
-    rollup: ^2.72.1
-    rollup-plugin-dts: ^4.2.1
-    rollup-plugin-peer-deps-external: ^2.2.4
-    rollup-plugin-typescript2: ^0.31.2
     stream-http: ^3.2.0
-    ts-node: ^10.4.0
+    ts-node: 10.9.1
+    typescript: 4.8.2
     unplugin-auto-import: ^0.11.1
     url: ^0.11.0
     use-constant: ^1.1.0
@@ -5692,7 +5685,8 @@ __metadata:
     node-polyfill-webpack-plugin: ^1.1.2
     style-loader: ^2.0.0
     ts-loader: 9.2.6
-    ts-node: ^10.4.0
+    ts-node: 10.9.1
+    typescript: 4.8.2
     url-loader: ^4.1.1
     webpack: 5.66.0
     webpack-dev-server: 4.7.3
@@ -5740,7 +5734,8 @@ __metadata:
     react-tooltip: ^4.2.21
     react-use: ^17.3.1
     stream-http: ^3.2.0
-    ts-node: ^10.4.0
+    ts-node: 10.9.1
+    typescript: 4.8.2
     url: ^0.11.0
     use-constant: ^1.1.0
   peerDependencies:
@@ -5756,7 +5751,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@recative/atlas@workspace:packages/atlas"
   dependencies:
-    ts-node: ^10.8.1
+    ts-node: 10.9.1
+    typescript: 4.8.2
   languageName: unknown
   linkType: soft
 
@@ -5838,6 +5834,7 @@ __metadata:
   resolution: "@recative/definitions@workspace:packages/definitions"
   dependencies:
     "@types/xxhashjs": ^0.2.2
+    typescript: 4.8.2
     xxhashjs: ^0.2.2
   languageName: unknown
   linkType: soft
@@ -5887,6 +5884,7 @@ __metadata:
     "@nrwl/web": ^14.5.2
     "@nrwl/workspace": ^14.5.2
     "@parcel/packager-ts": 2.6.2
+    "@parcel/transformer-typescript-types": 2.6.2
     "@rollup/plugin-node-resolve": ^13.3.0
     "@rollup/plugin-sucrase": ^4.0.4
     "@types/jest": ^28.1.8
@@ -5918,7 +5916,7 @@ __metadata:
     styletron-engine-monolithic: 1.0.0
     styletron-react: 6.1.0
     ts-jest: 27.1.4
-    ts-node: ~10.8.0
+    ts-node: 10.9.1
     tslib: ^2.3.0
     typescript: 4.8.2
   languageName: unknown
@@ -6033,23 +6031,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-commonjs@npm:^21.0.2":
-  version: 21.1.0
-  resolution: "@rollup/plugin-commonjs@npm:21.1.0"
-  dependencies:
-    "@rollup/pluginutils": ^3.1.0
-    commondir: ^1.0.1
-    estree-walker: ^2.0.1
-    glob: ^7.1.6
-    is-reference: ^1.2.1
-    magic-string: ^0.25.7
-    resolve: ^1.17.0
-  peerDependencies:
-    rollup: ^2.38.3
-  checksum: e8280f4b6192729f2bdf878c48c451dc441075f2a12f22c688393f48a6b95e8ff83caaacc3df4eb1d81516e08a0e3a669213632879910d85dd630b37bb284df7
-  languageName: node
-  linkType: hard
-
 "@rollup/plugin-image@npm:^2.1.0":
   version: 2.1.1
   resolution: "@rollup/plugin-image@npm:2.1.1"
@@ -6117,7 +6098,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-sucrase@npm:^4.0.3, @rollup/plugin-sucrase@npm:^4.0.4":
+"@rollup/plugin-sucrase@npm:^4.0.4":
   version: 4.0.4
   resolution: "@rollup/plugin-sucrase@npm:4.0.4"
   dependencies:
@@ -6126,23 +6107,6 @@ __metadata:
   peerDependencies:
     rollup: ^2.53.1
   checksum: ccb01d7eb35014497518a42e242dbebfeb721584ad547cf3121b80f99e13110975f19a4fe7d5537a8d82227400501caa396ff9d809af8904c6aa885530f3a6b3
-  languageName: node
-  linkType: hard
-
-"@rollup/plugin-typescript@npm:^8.3.1":
-  version: 8.3.4
-  resolution: "@rollup/plugin-typescript@npm:8.3.4"
-  dependencies:
-    "@rollup/pluginutils": ^3.1.0
-    resolve: ^1.17.0
-  peerDependencies:
-    rollup: ^2.14.0
-    tslib: "*"
-    typescript: ">=3.7.0"
-  peerDependenciesMeta:
-    tslib:
-      optional: true
-  checksum: 3a86664a1c8a00d715bd61fb3b2d739e1a3eb8c7a8e695a2ac9846e0d93872e8db0aa5695f952635bdbea8f1a5c79bdb643ce0d0eaa244e6cbfadce3f50ab8d9
   languageName: node
   linkType: hard
 
@@ -21487,7 +21451,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup-plugin-dts@npm:^4.2.1, rollup-plugin-dts@npm:^4.2.2":
+"rollup-plugin-dts@npm:^4.2.2":
   version: 4.2.2
   resolution: "rollup-plugin-dts@npm:4.2.2"
   dependencies:
@@ -21549,7 +21513,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup-plugin-typescript2@npm:^0.31.1, rollup-plugin-typescript2@npm:^0.31.2":
+"rollup-plugin-typescript2@npm:^0.31.1":
   version: 0.31.2
   resolution: "rollup-plugin-typescript2@npm:0.31.2"
   dependencies:
@@ -21575,7 +21539,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.43.1, rollup@npm:^2.56.2, rollup@npm:^2.72.1, rollup@npm:^2.79.0":
+"rollup@npm:^2.43.1, rollup@npm:^2.56.2, rollup@npm:^2.79.0":
   version: 2.79.0
   resolution: "rollup@npm:2.79.0"
   dependencies:
@@ -23714,7 +23678,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-node@npm:^10.4.0, ts-node@npm:^10.8.1":
+"ts-node@npm:10.9.1, ts-node@npm:^10.8.1":
   version: 10.9.1
   resolution: "ts-node@npm:10.9.1"
   dependencies:

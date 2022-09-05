@@ -21,6 +21,7 @@
     "last 1 Chrome versions"
   ],
   "dependencies": {
+    "typescript": "4.8.2",
     "xxhashjs": "^0.2.2"
   }
 }
