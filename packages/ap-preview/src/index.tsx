@@ -1,12 +1,6 @@
 /* eslint-disable no-alert */
-/* eslint-disable import/no-extraneous-dependencies */
 import * as React from 'react';
 import { createRoot } from 'react-dom/client';
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import type { StandardEngine } from 'styletron-react';
-
 import { persistentAtom } from '@nanostores/persistent';
 
 import { useStore } from '@nanostores/react';
@@ -213,12 +207,6 @@ const App: React.FC = () => {
   );
 };
 
-type FixedStyletronProviderType = React.Provider<StandardEngine> & {
-  children: React.ReactNode;
-};
-
-const FixedStyletronProvider = StyletronProvider as FixedStyletronProviderType;
-
 export const renderPlayer = (selector = '#app', resourceServerPort = 9999) => {
   const app = document.querySelector(selector);
   if (!app) {
@@ -243,7 +231,7 @@ export const renderPlayer = (selector = '#app', resourceServerPort = 9999) => {
     })
     .finally(() => {
       root.render(
-      <FixedStyletronProvider value={engine}>
+      <StyletronProvider value={engine}>
         <BaseProvider theme={DarkTheme}>
           <PlayerSdkProvider
             pathPattern={temporaryPath ?? `${pathBase}/$fileName`}
@@ -254,7 +242,7 @@ export const renderPlayer = (selector = '#app', resourceServerPort = 9999) => {
             </HashRouter>
           </PlayerSdkProvider>
         </BaseProvider>
-      </FixedStyletronProvider>,
+      </StyletronProvider>,
       );
     });
 };
