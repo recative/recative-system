@@ -146,9 +146,12 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
       defaultSubtitleLanguage: metadata.defaultSubtitleLanguage,
       episodeId,
     });
-    this.updateEnvVariable(this.envVariable.get());
-    this.updateUserData(this.userData.get());
-    this.updateUserImplementedFunction(this.userImplementedFunction.get());
+    newEpisodeCore.additionalEnvVariable.set(this.envVariable.get());
+    const userData = this.userData.get();
+    if (userData !== undefined) {
+      newEpisodeCore.envVariableManager.userRelatedEnvVariableAtom.set(userData);
+    }
+    newEpisodeCore.setUserImplementedFunctions(this.userImplementedFunction.get());
     this.internalCurrentEpisodeCore.set(newEpisodeCore);
     newEpisodeCore.eventTarget.addEventListener('segmentStart', (event) => {
       this.eventTarget.dispatchEvent(new CustomEvent('segmentStart', {
