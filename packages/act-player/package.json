@@ -40,8 +40,8 @@
     "https-browserify": "^1.0.0",
     "process": "^0.11.10",
     "querystring-es3": "^0.2.1",
-    "react": "18.1.0",
-    "react-dom": "18.1.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
     "react-router-dom": "6.3.0",
     "rimraf": "^3.0.2",
     "rollup": "^2.72.1",
@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@nanostores/react": "0.2.0",
-    "@react-hookz/web": "^12.3.0",
+    "@react-hookz/web": "^15.1.0",
     "@recative/act-protocol": "^0.2.7",
     "@recative/core-manager": "^0.5.0",
     "@recative/definitions": "^0.4.2",
@@ -77,8 +77,8 @@
   },
   "peerDependencies": {
     "baseui": "^10.6.0",
-    "react": "^18.1.0",
-    "react-dom": "^18.1.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "externals": {
     "react": true,
