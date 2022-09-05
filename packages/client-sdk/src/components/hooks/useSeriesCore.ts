@@ -122,31 +122,31 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
     return nextSeriesCore;
   });
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (episodeId && episodeId !== seriesCore.currentEpisodeCore.get()?.episodeId) {
       seriesCore.setEpisode(episodeId, false);
     }
   }, [episodeId, seriesCore]);
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     seriesCore.config.getEpisodeMetadata = getEpisodeMetadata;
   }, [getEpisodeMetadata, seriesCore.config]);
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     seriesCore.config.navigate = navigate;
   }, [navigate, seriesCore.config]);
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     seriesCore.userImplementedFunction.set(internalUserImplementedFunctions);
   }, [internalUserImplementedFunctions, seriesCore.userImplementedFunction]);
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (envVariable) {
       seriesCore.envVariable.set(envVariable);
     }
   }, [envVariable, seriesCore.envVariable]);
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (userData) {
       seriesCore.userData.set(userData);
     }
@@ -154,7 +154,7 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
 
   const episodeCore = useStore(seriesCore.currentEpisodeCore);
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     const episodeData = episodeCore?.getEpisodeData();
 
     if (episodeDetail?.assets && episodeDetail?.resources && episodeId) {
@@ -195,7 +195,7 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
   useEpisodeDetailReloadDiagnosisTool('trustedUploaders', trustedUploaders, episodeCore);
   useEpisodeDetailReloadDiagnosisTool('preferredUploaders', preferredUploaders, episodeCore);
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     seriesCore.updateConfig({
       navigate,
       getEpisodeMetadata,
