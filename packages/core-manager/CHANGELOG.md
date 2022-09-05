@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.2
+
+### Patch Changes
+
+- 3199138: fix: Init EpisodeCore fields before set as current
+
 ## 0.5.1
 
 ### Patch Changes

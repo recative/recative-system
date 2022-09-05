@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.0.3
+
+### Patch Changes
+
+- Updated dependencies [3199138]
+  - @recative/core-manager@0.5.2
+
 ## 5.0.2
 
 ### Patch Changes
