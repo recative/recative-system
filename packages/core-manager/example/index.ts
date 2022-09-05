@@ -1,6 +1,6 @@
-import { ComponentFunctions, Core, CoreFunctions } from '../src';
+import { ComponentFunctions, EpisodeCore, CoreFunctions } from '../src';
 
-const core = new Core({ initialEnvVariable: {} });
+const core = new EpisodeCore({ episodeId: '', initialEnvVariable: {} });
 
 const contents = new Map<string, CoreFunctions>();
 const progressElement = document.getElementById('progress')!;

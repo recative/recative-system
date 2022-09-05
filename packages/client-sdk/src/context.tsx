@@ -73,7 +73,7 @@ export const PlayerSdkProvider: React.FC<IPlayerSdkProviderProps> = ({
     if (episodes.result) {
       const result = new Map();
 
-      episodes.result.forEach(({ episode }) => {
+      (episodes.result as IEpisodeAbstraction[]).forEach(({ episode }) => {
         result.set(episode.id, episode);
       });
 

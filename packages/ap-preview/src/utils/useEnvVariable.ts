@@ -40,5 +40,5 @@ export const useEnvVariable = (): Record<string, unknown> => {
     envVariableActions.execute();
   }, [envVariableActions, episodeId]);
 
-  return envVariable.result || DEFAULT_ENV_VARIABLE;
+  return (envVariable.result as Record<string, unknown>) || DEFAULT_ENV_VARIABLE;
 };

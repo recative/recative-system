@@ -188,6 +188,7 @@ const App: React.FC = () => {
           </Button>
         )}
       </Block>
+      {/** @ts-ignore */}
       <Drawer
         isOpen={drawerOpen}
         size={DRAWER_SIZE.auto}
