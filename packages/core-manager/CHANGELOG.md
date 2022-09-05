@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1
+
+### Patch Changes
+
+- 60e8678: fix: Incorrect initialize order
+
 ## 0.5.0
 
 ### Minor Changes
