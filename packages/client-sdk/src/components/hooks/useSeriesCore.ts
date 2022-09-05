@@ -56,6 +56,12 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
   const sdkConfig = useSdkConfig();
   const fetchData = useDataFetcher();
 
+  const internalUserImplementedFunctions = React.useMemo(() => ({
+    navigate,
+    fetchData,
+    ...userImplementedFunctions,
+  }), [fetchData, navigate, userImplementedFunctions]);
+
   const normalizeEpisodeId = useEpisodeIdNormalizer();
 
   const getEpisodeMetadata = React.useCallback(
@@ -111,9 +117,7 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
       getEpisodeMetadata,
     });
 
-    if (userImplementedFunctions) {
-      nextSeriesCore.userImplementedFunction.set(userImplementedFunctions);
-    }
+    nextSeriesCore.userImplementedFunction.set(internalUserImplementedFunctions);
 
     return nextSeriesCore;
   });
@@ -133,10 +137,8 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
   }, [navigate, seriesCore.config]);
 
   React.useEffect(() => {
-    if (userImplementedFunctions) {
-      seriesCore.userImplementedFunction.set(userImplementedFunctions);
-    }
-  }, [seriesCore.userImplementedFunction, userImplementedFunctions]);
+    seriesCore.userImplementedFunction.set(internalUserImplementedFunctions);
+  }, [internalUserImplementedFunctions, seriesCore.userImplementedFunction]);
 
   React.useEffect(() => {
     if (envVariable) {
@@ -173,7 +175,9 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
       } else {
         logWarn(
           'Suppressed initialize',
-          episodeData, '->',
+          episodeData,
+
+          '->',
           nextEpisodeData,
         );
       }
