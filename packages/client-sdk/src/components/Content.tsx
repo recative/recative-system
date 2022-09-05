@@ -191,6 +191,8 @@ EnvVariable extends Record<string, unknown>,
         getEpisodeMetadata: getInjectedEpisodeMetadata,
       } = useInjector<PlayerPropsInjectedDependencies, EnvVariable>(
         episodeId ?? null,
+        preferredUploaders,
+        trustedUploaders,
         envVariable,
         userData,
         internalUsePlayerPropsHook,

@@ -36,6 +36,8 @@ export interface InjectedProps<
   episodeId?: string;
   seriesCore: SeriesCore<EnvVariable> | null;
   episodeCore: EpisodeCore<EnvVariable> | null;
+  preferredUploaders: string[];
+  trustedUploaders: string[];
   envVariable: EnvVariable | undefined;
   userData: IUserRelatedEnvVariable | undefined;
   dependencies: PlayerPropsInjectedDependencies;
@@ -84,6 +86,8 @@ export const useInjector = <
     EnvVariable extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable,
   >(
     episodeId: string | null,
+    preferredUploaders: string[],
+    trustedUploaders: string[],
     envVariable: EnvVariable | undefined,
     userData: IUserRelatedEnvVariable | undefined,
     internalUsePlayerPropsHook:
@@ -115,6 +119,8 @@ export const useInjector = <
   const playerPropsHookProps = React.useMemo(
     () => ({
       episodeId: normalizeEpisodeId(episodeCore?.episodeId),
+      preferredUploaders,
+      trustedUploaders,
       envVariable,
       userData,
       seriesCore: seriesCore ?? null,
@@ -124,6 +130,8 @@ export const useInjector = <
     }),
     [
       episodeCore,
+      preferredUploaders,
+      trustedUploaders,
       envVariable,
       userData,
       seriesCore,
