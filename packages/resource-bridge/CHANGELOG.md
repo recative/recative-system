@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.4
+
+### Patch Changes
+
+- 50f35e5: chore: Migrate to rollup
+
 ## 0.2.3
 
 ### Patch Changes

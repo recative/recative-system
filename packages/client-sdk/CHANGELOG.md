@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.0.4
+
+### Patch Changes
+
+- feat: Export dataFetcher hook
+
 ## 5.0.3
 
 ### Patch Changes
