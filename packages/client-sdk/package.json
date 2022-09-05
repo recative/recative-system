@@ -10,8 +10,7 @@
     "prepack": "yarn clean && yarn build",
     "clean": "rimraf ./dist",
     "watch": "rollup -c -w",
-    "build": "rollup -c",
-    "dev": "parcel serve --no-hmr example/*.html"
+    "build": "rollup -c"
   },
   "devDependencies": {
     "@nanostores/react": "^0.1.5",
