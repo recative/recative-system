@@ -5597,15 +5597,12 @@ __metadata:
     "@types/debug": ^4.1.7
     "@types/fs-extra": ^9.0.13
     "@types/lodash": ^4.14.177
-    "@types/react": 18.0.9
-    "@types/react-dom": 18.0.5
     "@types/react-slider": ^1.3.1
-    "@types/styletron-engine-atomic": ^1.1.1
+    "@types/styletron-engine-monolithic": 0.0.0
     "@types/styletron-react": ^5.0.3
     "@types/styletron-standard": ^2.0.2
     "@typescript-eslint/eslint-plugin": ^5.3.0
     "@typescript-eslint/parser": ^5.3.0
-    baseui: ^11.0.3
     buffer: ^6.0.3
     classnames: ^2.3.1
     debug: ^4.3.4
@@ -5635,17 +5632,17 @@ __metadata:
     rollup-plugin-peer-deps-external: ^2.2.4
     rollup-plugin-typescript2: ^0.31.2
     stream-http: ^3.2.0
-    styletron-engine-atomic: ^1.4.8
-    styletron-react: ^6.0.2
     ts-node: ^10.4.0
     typescript: ">=3.0.0"
     unplugin-auto-import: ^0.11.1
     url: ^0.11.0
     use-constant: ^1.1.0
   peerDependencies:
-    baseui: ^10.6.0
+    baseui: ^12.1.0
     react: ^18.2.0
     react-dom: ^18.2.0
+    styletron-engine-monolithic: 1.0.0
+    styletron-react: 6.1.0
   languageName: unknown
   linkType: soft
 
@@ -5736,7 +5733,6 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^5.3.0
     "@typescript-eslint/parser": ^5.3.0
     babel-loader: 8.2.3
-    baseui: ^11.0.3
     clean-webpack-plugin: 4.0.0
     copy-webpack-plugin: 10.2.1
     css-loader: 6.5.1
@@ -5751,13 +5747,7 @@ __metadata:
     json-stream-stringify: ^2.0.4
     mkdirp: ^1.0.4
     node-polyfill-webpack-plugin: ^1.1.2
-    parcel: ^2.3.1
-    react: 18.2.0
-    react-dom: 18.2.0
-    react-router-dom: ^6.2.2
     style-loader: ^2.0.0
-    styletron-engine-atomic: ^1.4.8
-    styletron-react: ^6.0.2
     ts-loader: 9.2.6
     ts-node: ^10.4.0
     typescript: 4.4.4
@@ -5790,16 +5780,9 @@ __metadata:
     "@types/debug": ^4.1.7
     "@types/fs-extra": ^9.0.13
     "@types/lodash": ^4.14.177
-    "@types/react": ^18.0.17
-    "@types/react-dom": ^18.0.6
     "@types/react-slider": ^1.3.1
-    "@types/styletron-engine-atomic": ^1.1.1
-    "@types/styletron-engine-monolithic": ^0.0.0
-    "@types/styletron-react": ^5.0.3
-    "@types/styletron-standard": ^2.0.2
     "@typescript-eslint/eslint-plugin": ^5.3.0
     "@typescript-eslint/parser": ^5.3.0
-    baseui: ^11.0.3
     buffer: ^6.0.3
     classnames: ^2.3.1
     debug: ^4.3.4
@@ -5824,16 +5807,16 @@ __metadata:
     react-use: ^17.3.1
     rimraf: ^3.0.2
     stream-http: ^3.2.0
-    styletron-engine-monolithic: ^1.0.0
-    styletron-react: ^6.0.2
     ts-node: ^10.4.0
     typescript: ">=3.0.0"
     url: ^0.11.0
     use-constant: ^1.1.0
   peerDependencies:
-    baseui: ^10.6.0
+    baseui: ^12.1.0
     react: ^18.2.0
     react-dom: ^18.2.0
+    styletron-engine-monolithic: 1.0.0
+    styletron-react: 6.1.0
   languageName: unknown
   linkType: soft
 
@@ -5900,10 +5883,8 @@ __metadata:
     "@rollup/plugin-sucrase": ^4.0.3
     "@rollup/plugin-typescript": ^8.3.1
     "@types/debug": ^4.1.7
-    "@types/react": ^18.0.17
     "@typescript-eslint/eslint-plugin": ^5.3.0
     "@typescript-eslint/parser": ^5.3.0
-    baseui: ^10.10.0
     classnames: ^2.3.1
     debug: ^4.3.3
     eslint: ^8.2.0
@@ -5931,7 +5912,7 @@ __metadata:
     "@recative/act-protocol": "*"
     "@recative/core-manager": 0.5.2
     "@recative/smart-resource": "*"
-    baseui: "*"
+    baseui: ^12.1.0
     classnames: "*"
     lottie-react: "*"
     nanostores: ^0.5.10
@@ -6057,8 +6038,14 @@ __metadata:
     "@parcel/packager-ts": 2.6.2
     "@types/jest": ^28.1.8
     "@types/node": 16.11.7
+    "@types/react": ^18.0.18
+    "@types/react-dom": ^18.0.6
+    "@types/styletron-engine-monolithic": ^0.0.0
+    "@types/styletron-react": ^5.0.3
+    "@types/styletron-standard": ^2.0.2
     "@typescript-eslint/eslint-plugin": ^5.29.0
     "@typescript-eslint/parser": ^5.29.0
+    baseui: 12.1.2
     eslint: ~8.15.0
     eslint-config-airbnb-base: ^14.2.1
     eslint-config-airbnb-typescript: ^15.0.0
@@ -6071,6 +6058,8 @@ __metadata:
     jest: 27.5.1
     nx: 14.5.2
     prettier: ^2.7.1
+    styletron-engine-monolithic: 1.0.0
+    styletron-react: 6.1.0
     ts-jest: 27.1.4
     ts-node: ~10.8.0
     tslib: ^2.3.0
@@ -6199,14 +6188,20 @@ __metadata:
     "@react-hookz/web": ^15.1.0
     "@types/jest": ^27.0.1
     "@types/node": ^16.7.13
-    "@types/react": 18.0.0
-    "@types/react-dom": 18.0.0
     http: "npm:stream-http@^3.2.0"
     https: "npm:https-browserify@^1.0.0"
     react: 18.2.0
     react-dom: 18.2.0
+    react-router: ^6.3.0
+    react-router-dom: ^6.3.0
     react-scripts: 5.0.1
     typescript: ^4.4.2
+  peerDependencies:
+    baseui: ^12.1.0
+    react: ^18.2.0
+    react-dom: ^18.2.0
+    styletron-engine-monolithic: 1.0.0
+    styletron-react: 6.1.0
   languageName: unknown
   linkType: soft
 
@@ -7308,24 +7303,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:18.0.0":
-  version: 18.0.0
-  resolution: "@types/react-dom@npm:18.0.0"
-  dependencies:
-    "@types/react": "*"
-  checksum: 0d8c9cb3e72aefe0dd2b58a49845a200369f01ae92f3f11f642e04efc95dfd1c9380b6592d4273dd6113fb8707947d15b66d56c75c41f39f28bd897f0c08dfa9
-  languageName: node
-  linkType: hard
-
-"@types/react-dom@npm:18.0.5":
-  version: 18.0.5
-  resolution: "@types/react-dom@npm:18.0.5"
-  dependencies:
-    "@types/react": "*"
-  checksum: cd48b81950f499b52a3f0c08261f00046f9b7c96699fa249c9664e257e820daf6ecac815cd1028cebc9d105094adc39d047d1efd79214394b8b2d515574c0787
-  languageName: node
-  linkType: hard
-
 "@types/react-dom@npm:^18.0.6":
   version: 18.0.6
   resolution: "@types/react-dom@npm:18.0.6"
@@ -7376,7 +7353,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:^18.0.17":
+"@types/react-virtualized-auto-sizer@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "@types/react-virtualized-auto-sizer@npm:1.0.1"
+  dependencies:
+    "@types/react": "*"
+  checksum: 67eff0670a1991c2b16992274ada5f0b3f9d5c2d6209ef38e8f8ae2c0218211a3292882f5b7dd6f09519000dc20847629f049c9acc267e000626b7141e5927a6
+  languageName: node
+  linkType: hard
+
+"@types/react-window@npm:^1.8.1":
+  version: 1.8.5
+  resolution: "@types/react-window@npm:1.8.5"
+  dependencies:
+    "@types/react": "*"
+  checksum: 5f519e1402300d11b6e6595223feb6499f3227e38da166cbc565773cd7f71862abcf855b7835d391b5119fcfacdfba79d73a965b45f60a293fc1ff25986319ed
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:*":
   version: 18.0.17
   resolution: "@types/react@npm:18.0.17"
   dependencies:
@@ -7387,25 +7382,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:18.0.0":
-  version: 18.0.0
-  resolution: "@types/react@npm:18.0.0"
+"@types/react@npm:^18.0.18":
+  version: 18.0.18
+  resolution: "@types/react@npm:18.0.18"
   dependencies:
     "@types/prop-types": "*"
     "@types/scheduler": "*"
     csstype: ^3.0.2
-  checksum: 8a9769e2cabe335c86179881577e6ca32f3a6abdd5adbe2d498e48b78d532130da828a53ef25f21915179da454654b811292e0a8191c8a81af3bf4b05f5673bd
-  languageName: node
-  linkType: hard
-
-"@types/react@npm:18.0.9":
-  version: 18.0.9
-  resolution: "@types/react@npm:18.0.9"
-  dependencies:
-    "@types/prop-types": "*"
-    "@types/scheduler": "*"
-    csstype: ^3.0.2
-  checksum: 162364dad716d9017ee34aabf2ea37499709ebbdef70392ae1b39225985971e1a46f121efb9c5c7da92144ee1d96d4525df806a7c1c03a5db7fd31dd034ddc7a
+  checksum: 6d72d35ab3eecf382a5e0f225923f5a2c753045fce02e4e29713f36c99a24f0f770666a49dde96167f37c86271f93339d1b7e2b8969d011b137a9ebd24ee6806
   languageName: node
   linkType: hard
 
@@ -7492,18 +7476,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/styletron-engine-atomic@npm:^1.1.1":
-  version: 1.1.1
-  resolution: "@types/styletron-engine-atomic@npm:1.1.1"
-  dependencies:
-    "@types/styletron-standard": "*"
-  checksum: 1ab97af7ed95d247c5e14c07dd78b1ccfe816946758e846eedfd13a83df417c0549412ec62d77dd922ad46774e34529ea03574a9c79d799f8b4fbdb42b308f64
-  languageName: node
-  linkType: hard
-
-"@types/styletron-engine-monolithic@npm:^0.0.0":
+"@types/styletron-engine-monolithic@npm:0.0.0, @types/styletron-engine-monolithic@npm:^0.0.0":
   version: 0.0.0
-  resolution: "@types/styletron-engine-monolithic@npm:0.0.0::__archiveUrl=https%3A%2F%2Fregistry.npmmirror.com%2F%40types%2Fstyletron-engine-monolithic%2F-%2Fstyletron-engine-monolithic-0.0.0.tgz"
+  resolution: "@types/styletron-engine-monolithic@npm:0.0.0"
   dependencies:
     "@types/styletron-standard": "*"
   checksum: 7a677bd36563f403551fc17f36569c4dc2e0dccae0ba50727b2cd6badc24a3bc05525b246fa4daa1b29963a0594b7c927fffca1a9c459fd8af24f392babc7abb
@@ -8992,11 +8967,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"baseui@npm:^10.10.0":
-  version: 10.12.1
-  resolution: "baseui@npm:10.12.1"
+"baseui@npm:12.1.2":
+  version: 12.1.2
+  resolution: "baseui@npm:12.1.2"
   dependencies:
     "@date-io/date-fns": ^2.6.2
+    "@types/react-virtualized-auto-sizer": ^1.0.0
+    "@types/react-window": ^1.8.1
     card-validator: ^6.2.0
     d3: ^6.7.0
     date-fns: ^2.6.0
@@ -9007,7 +8984,7 @@ __metadata:
     mockdate: ^3.0.5
     polished: ^3.2.0
     popper.js: ^1.16.0
-    react-dropzone: ^9.0.0
+    react-dropzone: 9.0.0
     react-focus-lock: ^2.7.1
     react-input-mask: ^2.0.4
     react-is: ^16.8.6
@@ -9022,43 +8999,8 @@ __metadata:
   peerDependencies:
     react: ">= 16.8.0 < 19"
     react-dom: ">= 16.8.0 < 19"
-    styletron-react: ">=5.2.2 < 7"
-  checksum: 2f87901b9953d0e17cc2a18ca320db6909a29b33311171aec1bffd9357ab4038acf55a5377ef34cab0adafa1bf6a17b947d211162c848a715730f145cb7b024b
-  languageName: node
-  linkType: hard
-
-"baseui@npm:^11.0.3":
-  version: 11.2.1
-  resolution: "baseui@npm:11.2.1"
-  dependencies:
-    "@date-io/date-fns": ^2.6.2
-    card-validator: ^6.2.0
-    d3: ^6.7.0
-    date-fns: ^2.6.0
-    date-fns-tz: ^1.2.2
-    glob: ^7.1.6
-    just-extend: ^4.0.2
-    memoize-one: ^5.1.1
-    mockdate: ^3.0.5
-    polished: ^3.2.0
-    popper.js: ^1.16.0
-    react-dropzone: ^9.0.0
-    react-focus-lock: ^2.7.1
-    react-input-mask: ^2.0.4
-    react-is: ^16.8.6
-    react-movable: ^2.5.4
-    react-multi-ref: ^1.0.0
-    react-range: ^1.8.0
-    react-uid: ^2.3.0
-    react-virtualized: ^9.21.1
-    react-virtualized-auto-sizer: ^1.0.2
-    react-window: ^1.8.5
-    resize-observer-polyfill: ^1.5.1
-  peerDependencies:
-    react: ">= 16.8.0 < 19"
-    react-dom: ">= 16.8.0 < 19"
-    styletron-react: ">=5.2.2 < 7"
-  checksum: a63589e0f3a37390dee33c4c3bfef125c65ac4ad1fce821192b70f06840008b5e0ef0692ea84cecc70532c6d8d2cdf1a0150f85b9e2d8bc597a9bc4364ee20e2
+    styletron-react: ">=6.1.0 < 7"
+  checksum: 53805c146d4cd0e423762aacc1d16e7247ee4c6423d909944390fa0923bb08a77e5b26c4a27f5f76d0d492ce21fa32de1bd3a18ac5c48ae3e10eb418026da360
   languageName: node
   linkType: hard
 
@@ -18689,7 +18631,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"parcel@npm:^2.0.0, parcel@npm:^2.3.1":
+"parcel@npm:^2.0.0":
   version: 2.6.2
   resolution: "parcel@npm:2.6.2"
   dependencies:
@@ -20720,7 +20662,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dropzone@npm:^9.0.0":
+"react-dropzone@npm:9.0.0":
   version: 9.0.0
   resolution: "react-dropzone@npm:9.0.0"
   dependencies:
@@ -20932,7 +20874,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router-dom@npm:6.3.0, react-router-dom@npm:^6.2.2":
+"react-router-dom@npm:6.3.0, react-router-dom@npm:^6.3.0":
   version: 6.3.0
   resolution: "react-router-dom@npm:6.3.0"
   dependencies:
@@ -20982,7 +20924,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:6.3.0":
+"react-router@npm:6.3.0, react-router@npm:^6.3.0":
   version: 6.3.0
   resolution: "react-router@npm:6.3.0"
   dependencies:
@@ -23275,19 +23217,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"styletron-engine-atomic@npm:^1.4.8":
-  version: 1.5.0
-  resolution: "styletron-engine-atomic@npm:1.5.0"
-  dependencies:
-    inline-style-prefixer: ^5.1.0
-    styletron-standard: ^3.1.0
-  checksum: 12133ebf16645a8b5aed5dc16a263e05fa60e079ce780c959a636495b1e481dfdcec09469abd945c89d7d68afef7f32fcd58025c04bef6eb0a8f771d5c7be293
-  languageName: node
-  linkType: hard
-
-"styletron-engine-monolithic@npm:^1.0.0":
+"styletron-engine-monolithic@npm:1.0.0":
   version: 1.0.0
-  resolution: "styletron-engine-monolithic@npm:1.0.0::__archiveUrl=https%3A%2F%2Fregistry.npmmirror.com%2Fstyletron-engine-monolithic%2F-%2Fstyletron-engine-monolithic-1.0.0.tgz"
+  resolution: "styletron-engine-monolithic@npm:1.0.0"
   dependencies:
     inline-style-prefixer: ^5.1.0
     styletron-standard: ^3.1.0
@@ -23295,7 +23227,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"styletron-react@npm:^6.0.2":
+"styletron-react@npm:6.1.0":
   version: 6.1.0
   resolution: "styletron-react@npm:6.1.0"
   dependencies:

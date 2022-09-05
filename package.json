@@ -28,6 +28,11 @@
     "@parcel/packager-ts": "2.6.2",
     "@types/jest": "^28.1.8",
     "@types/node": "16.11.7",
+    "@types/react": "^18.0.18",
+    "@types/react-dom": "^18.0.6",
+    "@types/styletron-engine-monolithic": "^0.0.0",
+    "@types/styletron-react": "^5.0.3",
+    "@types/styletron-standard": "^2.0.2",
     "@typescript-eslint/eslint-plugin": "^5.29.0",
     "@typescript-eslint/parser": "^5.29.0",
     "eslint": "~8.15.0",
@@ -48,11 +53,17 @@
   },
   "packageManager": "yarn@3.2.3",
   "dependencies": {
+    "baseui": "12.1.2",
+    "styletron-engine-monolithic": "1.0.0",
+    "styletron-react": "6.1.0",
     "tslib": "^2.3.0"
   },
   "resolutions": {
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "baseui": "12.1.2",
+    "styletron-engine-monolithic": "1.0.0",
+    "styletron-react": "6.1.0",
     "lottie-web": "patch:lottie-web@npm:5.7.3#.yarn/patches/lottie-web-npm-5.7.3-6621bfff6b.patch"
   },
   "workspaces": [
