@@ -146,10 +146,10 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
       defaultSubtitleLanguage: metadata.defaultSubtitleLanguage,
       episodeId,
     });
-    this.internalCurrentEpisodeCore.set(newEpisodeCore);
     this.updateEnvVariable(this.envVariable.get());
     this.updateUserData(this.userData.get());
     this.updateUserImplementedFunction(this.userImplementedFunction.get());
+    this.internalCurrentEpisodeCore.set(newEpisodeCore);
     newEpisodeCore.eventTarget.addEventListener('segmentStart', (event) => {
       this.eventTarget.dispatchEvent(new CustomEvent('segmentStart', {
         detail: {
