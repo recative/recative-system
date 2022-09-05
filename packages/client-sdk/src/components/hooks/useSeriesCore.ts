@@ -105,10 +105,18 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
     ],
   );
 
-  const seriesCore = useConstant(() => new SeriesCore<EnvVariable>({
-    navigate,
-    getEpisodeMetadata,
-  }));
+  const seriesCore = useConstant(() => {
+    const nextSeriesCore = new SeriesCore<EnvVariable>({
+      navigate,
+      getEpisodeMetadata,
+    });
+
+    if (userImplementedFunctions) {
+      nextSeriesCore.userImplementedFunction.set(userImplementedFunctions);
+    }
+
+    return nextSeriesCore;
+  });
 
   React.useEffect(() => {
     if (episodeId && episodeId !== seriesCore.currentEpisodeCore.get()?.episodeId) {
