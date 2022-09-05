@@ -5,15 +5,13 @@
   "dependencies": {
     "@react-hookz/web": "^15.1.0",
     "@types/jest": "^27.0.1",
-    "@types/node": "^16.7.13",
     "http": "npm:stream-http@^3.2.0",
     "https": "npm:https-browserify@^1.0.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-router": "^6.3.0",
     "react-router-dom": "^6.3.0",
-    "react-scripts": "5.0.1",
-    "typescript": "^4.4.2"
+    "react-scripts": "5.0.1"
   },
   "peerDependencies": {
     "baseui": "^12.1.0",

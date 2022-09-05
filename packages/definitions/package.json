@@ -12,16 +12,7 @@
     "build": "yarn tsc --project ./commonjs.tsconfig.json && yarn tsc --project ./esmodule.tsconfig.json"
   },
   "devDependencies": {
-    "@types/node": "^17.0.0",
-    "@types/xxhashjs": "^0.2.2",
-    "@typescript-eslint/eslint-plugin": "^5.3.0",
-    "@typescript-eslint/parser": "^5.3.0",
-    "eslint": "^8.2.0",
-    "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-config-airbnb-typescript": "^15.0.0",
-    "eslint-plugin-import": "^2.25.2",
-    "rimraf": "^3.0.2",
-    "typescript": ">=3.0.0"
+    "@types/xxhashjs": "^0.2.2"
   },
   "files": [
     "dist/**/*"

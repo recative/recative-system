@@ -79,9 +79,7 @@ const Player: React.FC = () => {
   const navigate = useNavigate();
   const { episodeId } = useParams<{ episodeId: string }>();
 
-  const handleEpisodeIdUpdate = React.useCallback(async (
-    id: string, forceReload?: boolean,
-  ) => {
+  const handleEpisodeIdUpdate = React.useCallback(async (id: string, forceReload?: boolean) => {
     const url = `/episode/${id}`;
     if (forceReload) {
       window.location.href = url;

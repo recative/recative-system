@@ -34,17 +34,9 @@
     "@parcel/transformer-typescript-tsc": "2.2.1",
     "@parcel/transformer-typescript-types": "2.3.0",
     "@types/debug": "^4.1.7",
-    "@typescript-eslint/eslint-plugin": "^5.3.0",
-    "@typescript-eslint/parser": "^5.3.0",
     "buffer": "^6.0.3",
-    "eslint": "^8.2.0",
-    "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-config-airbnb-typescript": "^15.0.0",
-    "eslint-plugin-import": "^2.25.2",
     "parcel": "2.2.1",
-    "process": "^0.11.10",
-    "rimraf": "^3.0.2",
-    "typescript": "4.4.4"
+    "process": "^0.11.10"
   },
   "files": [
     "dist/**/*"
