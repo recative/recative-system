@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.0.5
+
+### Patch Changes
+
+- a5eab32: chore: Inject more functions into interfaceComponents
+- abc1022: fix: Uploader configuration not injected
+
 ## 5.0.4
 
 ### Patch Changes
