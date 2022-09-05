@@ -5,10 +5,10 @@
   "private": true,
   "scripts": {
     "build": "nx run-many --target=build",
-    "changelog": "yarn changeset",
-    "version": "yarn changeset version --tag",
-    "version:beta": "yarn changeset pre enter beta",
-    "version:prod": "yarn changeset pre exit",
+    "changelog": "changeset",
+    "version": "changeset version --tag",
+    "version:beta": "changeset pre enter beta",
+    "version:prod": "changeset pre exit",
     "publish": "nx run-many --target=publish",
     "prepare": "husky install"
   },
