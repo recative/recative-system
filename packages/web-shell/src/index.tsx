@@ -20,7 +20,7 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
 );
 
-fetch(`/bundle/data/constants.json`)
+fetch(`/bundle/constants.json`)
   .then((response) => response.json())
   .then((data) => {
     Reflect.set(window, 'constant', data);

@@ -3,7 +3,6 @@ import { debug } from 'debug';
 
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  useEpisodes,
   useSdkConfig,
   useEpisodeDetail,
   ContentModuleFactory,
@@ -29,7 +28,6 @@ const SECURE_STORE = new NaiveStore();
 const InternalPlayer: React.FC = () => {
   const navigate = useNavigate();
   const config = useSdkConfig();
-  const episodes = useEpisodes();
 
   const { episodeId } = useParams<{ episodeId: string }>();
   if (!episodeId) throw new Error('Episode ID not exists');
@@ -45,9 +43,6 @@ const InternalPlayer: React.FC = () => {
     }
   }, [navigate]);
 
-  const episode = episodes.get(episodeId);
-  if (!episode) throw new Error('Episode not exists');
-
   const episodeDetail = useEpisodeDetail(episodeId);
 
   const dependencies = React.useMemo(
@@ -58,7 +53,7 @@ const InternalPlayer: React.FC = () => {
     [navigate],
   );
 
-  const envVariable = useEnvVariable(episode, episodeDetail);
+  const envVariable = useEnvVariable(episodeDetail);
 
   const Content = React.useMemo(
     () => ContentModuleFactory(config.pathPattern, config.dataType),

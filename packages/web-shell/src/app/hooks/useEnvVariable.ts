@@ -1,12 +1,10 @@
 import * as React from 'react';
 
-import type { IEpisode } from '@recative/definitions';
 import { IEpisodeDetail, useEpisodes } from '@recative/client-sdk';
 
 import { getDiagnosisInformation } from '../utils/getDiagnosisInformation';
 
 export const useEnvVariable = (
-  episode: IEpisode | undefined,
   episodeDetail: IEpisodeDetail | null,
 ) => {
   const episodes = useEpisodes();
@@ -22,6 +20,8 @@ export const useEnvVariable = (
       assetStatus: [],
     }));
   }, [episodes]);
+
+  const episode = episodeDetail?.episode;
 
   const diagnosisInformation = getDiagnosisInformation();
 
