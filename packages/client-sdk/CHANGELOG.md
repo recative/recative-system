@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.0.1
+
+### Patch Changes
+
+- 338a3b9: fix: User Implemented Functions not available while initializing
+
 ## 5.0.0
 
 ### Minor Changes
