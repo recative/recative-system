@@ -201,7 +201,7 @@ EnvVariable extends Record<string, unknown>,
 
       const episodeDetail = useEpisodeDetail(episodeId ?? null);
 
-      const rawEpisodeMetadata = React.useMemo(() => ({
+      const injectedEpisodeMetadata = React.useMemo(() => ({
         attemptAutoplay: injectToSdk?.attemptAutoplay ?? attemptAutoplay,
         defaultContentLanguage: injectToSdk?.defaultContentLanguage ?? defaultContentLanguage,
         defaultSubtitleLanguage: injectToSdk?.defaultSubtitleLanguage ?? defaultSubtitleLanguage,
@@ -219,7 +219,7 @@ EnvVariable extends Record<string, unknown>,
         episodeDetail,
         injectToSdk?.preferredUploaders ?? preferredUploaders,
         injectToSdk?.trustedUploaders ?? trustedUploaders,
-        rawEpisodeMetadata,
+        injectedEpisodeMetadata,
         hookUserImplementedFunctions,
         hookEnvVariable ?? envVariable,
         hookUserData ?? userData,
