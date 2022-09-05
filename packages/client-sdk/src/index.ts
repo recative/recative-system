@@ -9,6 +9,7 @@ export type {
   PlayerPropsInjectorHook,
   InjectedProps,
 } from './components/hooks/useInjector';
+export * from './components/hooks/useDataFetcher';
 
 export * from './types/IEpisodeSave';
 export * from './types/IRpcFunction';
