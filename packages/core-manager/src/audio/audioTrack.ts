@@ -7,18 +7,15 @@ import {
 } from '@recative/audio-station';
 import { Track } from '@recative/time-schedule';
 
+import { Clip as PhonographClip } from '@recative/phonograph';
 import type { RawAudioClipResponse } from '../utils/selectUrlAudioTypePostProcess';
 
 import { WithLogger } from '../LogCollector';
 
 interface AudioElement {
-  suspend(): void;
-  resume(): void;
-  isSuspended(): boolean;
   play(): void;
   pause(): void;
   isPlaying(): boolean;
-  get loaded(): boolean;
   destroy(): void;
   get destroyed(): boolean;
   setVolume(volume: number): void;
@@ -63,10 +60,6 @@ class BasicAudioElement implements AudioElement {
     return this.source?.isPlaying() ?? false;
   }
 
-  get loaded() {
-    return this.source !== null;
-  }
-
   destroy() {
     this.source?.destroy();
     this.clip?.destroy();
@@ -77,7 +70,7 @@ class BasicAudioElement implements AudioElement {
   }
 
   get destroyed() {
-    return this.mixer == null;
+    return this.mixer === null;
   }
 
   setVolume(volume: number) {
@@ -93,6 +86,54 @@ class BasicAudioElement implements AudioElement {
   set time(value) {
     if (this.source !== null) {
       this.source.time = value;
+    }
+  }
+}
+
+class PhonographAudioElement implements AudioElement {
+  private clip: PhonographClip | null = null;
+
+  constructor(station: AudioStation, clip: PhonographClip) {
+    this.clip = clip;
+  }
+
+  play(): void {
+    this.clip?.play();
+  }
+
+  pause(): void {
+    this.clip?.pause();
+  }
+
+  isPlaying(): boolean {
+    return this.clip?.playing ?? false;
+  }
+
+  destroy(): void {
+    this.clip?.dispose();
+    this.clip = null;
+  }
+
+  get destroyed(): boolean {
+    return this.clip === null;
+  }
+
+  setVolume(volume: number): void {
+    if (this.clip !== null) {
+      this.clip.volume = volume;
+    }
+  }
+
+  get time(): number {
+    if (this.clip !== null) {
+      return this.clip.currentTime;
+    }
+    return 0;
+  }
+
+  set time(value: number) {
+    if (this.clip !== null) {
+      this.clip.currentTime = value;
     }
   }
 }
