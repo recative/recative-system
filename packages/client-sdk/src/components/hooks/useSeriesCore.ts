@@ -49,7 +49,12 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
   envVariable: EnvVariable | undefined,
   userData: IUserRelatedEnvVariable | undefined,
   getInjectedEpisodeMetadata:
-  | ((x: IEpisodeMetadata) => IEpisodeMetadata | Promise<IEpisodeMetadata>)
+  | ((episodeId: string, episodeMetadata: IEpisodeMetadata) => (
+    | IEpisodeMetadata
+    | Promise<IEpisodeMetadata>
+    | undefined
+    | Promise<undefined>
+  ))
   | undefined,
   navigate: ISeriesCoreConfig['navigate'],
 ) => {
@@ -97,7 +102,11 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
         },
       };
 
-      return getInjectedEpisodeMetadata?.(notInjectedEpisodeMetadata) ?? notInjectedEpisodeMetadata;
+      const injectedEpisodeMetadata = await getInjectedEpisodeMetadata?.(
+        nextEpisodeId,
+        notInjectedEpisodeMetadata,
+      );
+      return injectedEpisodeMetadata ?? notInjectedEpisodeMetadata;
     },
     [
       normalizeEpisodeId,

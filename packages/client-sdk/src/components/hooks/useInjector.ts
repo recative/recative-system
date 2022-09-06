@@ -7,11 +7,11 @@ import { useStore } from '@nanostores/react';
 import type {
   SeriesCore,
   EpisodeCore,
-  IEpisodeMetadata,
   IDefaultAdditionalEnvVariable,
   SegmentEndEventDetail,
   SegmentStartEventDetail,
   IUserRelatedEnvVariable,
+  IEpisodeMetadata,
 } from '@recative/core-manager';
 import type { IManagedActPointProps } from '@recative/act-player';
 import type { RawUserImplementedFunctions } from '@recative/definitions';
@@ -60,7 +60,14 @@ export type PlayerPropsInjectorHook<
   injectToPlayer?: Partial<IManagedActPointProps<EnvVariable>>;
   injectToSdk?: Partial<IContentProps<PlayerPropsInjectedDependencies, EnvVariable>>;
   injectToContainer?: Record<string, unknown>;
-  getEpisodeMetadata?: (x: IEpisodeMetadata) => IEpisodeMetadata | Promise<IEpisodeMetadata>;
+  getEpisodeMetadata?:
+  | ((episodeId: string, episodeMetadata: IEpisodeMetadata) => (
+    | IEpisodeMetadata
+    | Promise<IEpisodeMetadata>
+    | undefined
+    | Promise<undefined>
+  ))
+  | undefined;
 };
 
 // This could be any!
