@@ -90,6 +90,13 @@ nav.menu {
   text-decoration: underline;
 }
 
+.menu__link {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: block;
+}
+
 .menu__link:hover {
   background: none;
   text-decoration: underline;
@@ -169,8 +176,18 @@ ul.menu__list ul.menu__list a.menu__link--sublist::after,
   display: none;
 }
 
+aside.theme-doc-sidebar-container > div > nav.menu > ul.theme-doc-sidebar-menu > li > div.menu__list-item-collapsible > a[href^='#'] {
+  padding-left: 54px;
+}
+
+aside.theme-doc-sidebar-container > div > nav.menu > ul.theme-doc-sidebar-menu > li > div.menu__list-item-collapsible > a[href^='#']::after {
+  top: 8px;
+}
+
 aside.theme-doc-sidebar-container > div > nav.menu > ul.theme-doc-sidebar-menu > li > div.menu__list-item-collapsible > a[href^='#']::before {
   content: " ";
+  top: 8px;
+  left: 32px;
   width: 18px;
   height: 18px;
   margin-right: 6px;
@@ -178,6 +195,7 @@ aside.theme-doc-sidebar-container > div > nav.menu > ul.theme-doc-sidebar-menu >
   background-size: contain;
   opacity: 0.7;
   display: block;
+  position: absolute;
 }
 
 .tsd-kind-icon .codicon::before,
