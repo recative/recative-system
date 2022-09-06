@@ -1,6 +1,3 @@
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-constant-condition */
-
 import { NoMoreURLAvailableError } from './NoMoreURLAvailableError';
 
 /**
@@ -35,11 +32,14 @@ export function* selectUrl(
 
   let currentIndex = 0;
 
-  const url = new NoMoreURLAvailableError();
+  const errorCollector = new NoMoreURLAvailableError();
 
   while (true) {
     if (currentIndex >= urlSpecs.length) {
-      throw url;
+      const nextError = new NoMoreURLAvailableError();
+      nextError.triedUrls = errorCollector.triedUrls;
+
+      throw nextError;
     }
 
     let urls: { url: string; width: number; height: number }[] = [];
@@ -55,7 +55,7 @@ export function* selectUrl(
     if (parsedUrl.protocol === 'jb-multipart:') {
       urls = JSON.parse(atob(urlSpec.replace('jb-multipart://', '')));
     } else {
-      url.addUrl(urlSpec);
+      errorCollector.addUrl(urlSpec);
 
       if (logObject) {
         logObject[uploader] = `[Trying]\t${urlSpec}`;
@@ -67,7 +67,7 @@ export function* selectUrl(
     }
 
     if (!preferredResolution) {
-      url.addUrl(urlSpec);
+      errorCollector.addUrl(urlSpec);
 
       if (logObject) {
         logObject[uploader] = `[Trying]\t${urls[0].url}`;
@@ -96,7 +96,7 @@ export function* selectUrl(
         return Math.abs(a.score) - Math.abs(b.score);
       })[0].url;
 
-    url.addUrl(result);
+    errorCollector.addUrl(result);
 
     if (logObject) {
       logObject[uploader] = `[Trying]\t${result}`;

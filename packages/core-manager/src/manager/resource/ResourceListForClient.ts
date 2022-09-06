@@ -70,9 +70,7 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
       const nextId = urlMap[REDIRECT_URL_EXTENSION_ID]
         .replace('redirect://', '')
         .split('#')[0];
-      const nextResource = await this.getResourceById(
-        nextId, null, undefined, postProcess, 'file', useSlowQueue, taskId,
-      );
+      const nextResource = await this.getResourceById(nextId, null, undefined, postProcess, 'file', useSlowQueue, taskId);
 
       if (!nextResource) {
         throw new TypeError(`Resource ${nextId} not found.`);
@@ -207,7 +205,11 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
     );
 
     return this.getResourceByUrlMap(
-      finalResource.url, postProcess, taskId, shouldCacheToGlobal, useSlowQueue,
+      finalResource.url,
+      postProcess,
+      taskId,
+      shouldCacheToGlobal,
+      useSlowQueue,
     );
   };
 
@@ -242,7 +244,12 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
     if (!resource) return null;
 
     return this.getResourceByResourceDescription(
-      resource, envConfig, weights, postProcess, useSlowQueue, taskId,
+      resource,
+      envConfig,
+      weights,
+      postProcess,
+      useSlowQueue,
+      taskId,
     );
   };
 
@@ -322,7 +329,12 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
     if (!resource) return null;
 
     return this.getResourceByResourceDescription(
-      resource, envConfig, weights, postProcess, useSlowQueue, taskId,
+      resource,
+      envConfig,
+      weights,
+      postProcess,
+      useSlowQueue,
+      taskId,
     );
   };
 }

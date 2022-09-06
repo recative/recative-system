@@ -2,8 +2,13 @@
 /* eslint-disable no-constant-condition */
 // @ts-ignore
 import objectEntries from 'object.entries';
+import debug from 'debug';
 
 import { NoMoreURLAvailableError } from './NoMoreURLAvailableError';
+
+const logError = debug('core:try-url');
+// eslint-disable-next-line no-console
+logError.log = console.error.bind(console);
 
 const OK = { ok: true };
 
@@ -68,7 +73,7 @@ export const tryValidResourceUrl = async <
       }
 
       if (e instanceof NoMoreURLAvailableError) {
-        console.error('No more URL available!');
+        logError(e);
         return null;
       }
     }

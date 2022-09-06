@@ -109,7 +109,10 @@ export class SeriesCore<T extends IDefaultAdditionalEnvVariable = IDefaultAdditi
   }
 
   setEpisode = async (
-    episodeId: string, forceReload?: boolean, assetOrder?: number, assetTime?: number,
+    episodeId: string,
+    forceReload?: boolean,
+    assetOrder?: number,
+    assetTime?: number,
   ) => {
     this.ensureNotDestroying();
     if (this.switching) {
