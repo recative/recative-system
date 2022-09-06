@@ -1,6 +1,7 @@
 import debug from 'debug';
 
 import {
+  now,
   timeRemaining,
   initializeTimeRemaining,
 } from './timeRemaining';
@@ -10,10 +11,14 @@ import type { SequentialTask } from './SequentialQueue';
 
 const log = debug('promise:time-slice');
 
+const MAX_TASK_DELAY_TIME = 2000;
+
 export class TimeSlicingQueue extends SequentialQueue {
   running: boolean = false;
 
   private tickScheduled = false;
+
+  private lastSuccessfulTickTime = 0;
 
   constructor(
     readonly concurrency: number = 1,
@@ -71,9 +76,15 @@ export class TimeSlicingQueue extends SequentialQueue {
     }
 
     const deltaT = timeRemaining();
+    const currentTime = now();
 
-    if (deltaT > this.protectedTime) {
+    if (currentTime - this.lastSuccessfulTickTime > MAX_TASK_DELAY_TIME) {
+      log(`[${this.queueId}] [Force] Δt=${deltaT}, ${this.queue.length} in queue`);
+      this.lastSuccessfulTickTime = currentTime;
+      this.tick().then(this.scheduleTick);
+    } else if (deltaT > this.protectedTime) {
       log(`[${this.queueId}] Δt=${deltaT}, ${this.queue.length} in queue`);
+      this.lastSuccessfulTickTime = currentTime;
       this.tick().then(this.scheduleTick);
     } else if (this.queue.length > 0) {
       log(`[${this.queueId}] Δt=${deltaT}, protected time reached, scheduling next tick, ${this.queue.length} tasks delayed`);
