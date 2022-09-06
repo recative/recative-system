@@ -74,8 +74,7 @@
     "react-dom": "18.2.0",
     "baseui": "12.1.2",
     "styletron-engine-monolithic": "1.0.0",
-    "styletron-react": "6.1.0",
-    "lottie-web": "patch:lottie-web@npm:5.7.3#.yarn/patches/lottie-web-npm-5.7.3-6621bfff6b.patch"
+    "styletron-react": "6.1.0"
   },
   "workspaces": [
     "packages/*"

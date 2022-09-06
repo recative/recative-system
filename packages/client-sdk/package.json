@@ -21,7 +21,7 @@
     "@recative/smart-resource": "^0.2.0",
     "@types/debug": "^4.1.7",
     "classnames": "^2.3.1",
-    "lottie-react": "2.1.0",
+    "lottie-react": "^2.3.1",
     "nanostores": "^0.5.10",
     "react-slider": "2.0.1",
     "react-use": "^17.3.2",

@@ -5554,7 +5554,7 @@ __metadata:
     fs-extra: ^10.0.0
     https-browserify: ^1.0.0
     lodash: ^4.17.21
-    lottie-react: 2.1.0
+    lottie-react: ^2.3.1
     nanostores: ^0.5.12
     process: ^0.11.10
     querystring-es3: ^0.2.1
@@ -5687,7 +5687,7 @@ __metadata:
     events: ^3.3.0
     fs-extra: ^10.0.0
     lodash: ^4.17.21
-    lottie-react: 2.1.0
+    lottie-react: ^2.3.1
     nanostores: ^0.5.12
     parcel: ^2.7.0
     process: ^0.11.10
@@ -5746,7 +5746,7 @@ __metadata:
     "@types/debug": ^4.1.7
     classnames: ^2.3.1
     debug: ^4.3.3
-    lottie-react: 2.1.0
+    lottie-react: ^2.3.1
     nanoid: ^3.3.3
     nanostores: ^0.5.10
     react-slider: 2.0.1
@@ -5944,7 +5944,6 @@ __metadata:
   resolution: "@recative/web-shell@workspace:packages/web-shell"
   dependencies:
     "@react-hookz/web": ^15.1.0
-    "@types/jest": ^27.0.1
     http: "npm:stream-http@^3.2.0"
     https: "npm:https-browserify@^1.0.0"
     react: 18.2.0
@@ -6851,16 +6850,6 @@ __metadata:
   dependencies:
     "@types/istanbul-lib-report": "*"
   checksum: f1ad54bc68f37f60b30c7915886b92f86b847033e597f9b34f2415acdbe5ed742fa559a0a40050d74cdba3b6a63c342cac1f3a64dba5b68b66a6941f4abd7903
-  languageName: node
-  linkType: hard
-
-"@types/jest@npm:^27.0.1":
-  version: 27.5.2
-  resolution: "@types/jest@npm:27.5.2"
-  dependencies:
-    jest-matcher-utils: ^27.0.0
-    pretty-format: ^27.0.0
-  checksum: 7e11c6826aa429ad990dc262e4e4b54aa36573287fddf15773e4137f07d11d3105f0dd9f1baff73252160a057df23f5529bb83b1bf83cd3f45f9460a5ca5c22e
   languageName: node
   linkType: hard
 
@@ -15669,7 +15658,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-matcher-utils@npm:^27.0.0, jest-matcher-utils@npm:^27.5.1":
+"jest-matcher-utils@npm:^27.5.1":
   version: 27.5.1
   resolution: "jest-matcher-utils@npm:27.5.1"
   dependencies:
@@ -16666,30 +16655,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lottie-react@npm:2.1.0":
-  version: 2.1.0
-  resolution: "lottie-react@npm:2.1.0"
+"lottie-react@npm:^2.3.1":
+  version: 2.3.1
+  resolution: "lottie-react@npm:2.3.1"
   dependencies:
-    lottie-web: ^5.7.3
+    lottie-web: ^5.9.4
   peerDependencies:
-    prop-types: ^15.5.7
-    react: ^16.8.0
-    react-dom: ^16.8.0
-  checksum: 7cfd65bc96f0c68e87bb006ac73234f4afe0cfcd8a215cd5e4bb943356499a300d3ea517de1fb2cb5bd20ed5d5edd090787b13751433aa1f16a3da6e93a685ee
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: 3f83511eec9ef80c6500658fcb188f757c663c5de49de5cfd55d061d5de72b9242fd0a3b7ec7ce84bbad5acbcd7293468228a0f6cbe28e50e4c44e5b25df1c8d
   languageName: node
   linkType: hard
 
-"lottie-web@npm:5.7.3":
-  version: 5.7.3
-  resolution: "lottie-web@npm:5.7.3"
-  checksum: 450d3fbf90174b17088fd31b0444f41eae0890e1c223d34adba6823ef9c4716769cf24f0e674ed274731d7d774d2b4fb60d05ca6604c3176e131723aceedd71f
-  languageName: node
-  linkType: hard
-
-"lottie-web@patch:lottie-web@npm:5.7.3#.yarn/patches/lottie-web-npm-5.7.3-6621bfff6b.patch::locator=%40recative%2Frecative-system%40workspace%3A.":
-  version: 5.7.3
-  resolution: "lottie-web@patch:lottie-web@npm%3A5.7.3#.yarn/patches/lottie-web-npm-5.7.3-6621bfff6b.patch::version=5.7.3&hash=a7159c&locator=%40recative%2Frecative-system%40workspace%3A."
-  checksum: c496cec710e7ff83b2ec0f8974fa340c06b01fd90effa8f7dfbc09ee47c1212aa169e620e37017e10f22f96fb11c09486ff8df6d978f05114100aab5f620e501
+"lottie-web@npm:^5.9.4":
+  version: 5.9.6
+  resolution: "lottie-web@npm:5.9.6"
+  checksum: aed6a1d0c24eefb6c42a42aae18f29737746551cfdc86319f1b9675f5bc276ba26971e8d2b0e1498df880571fe4bfe2fc87885a1d4f8a318d5e4e5b939b7a474
   languageName: node
   linkType: hard
 
@@ -19882,7 +19863,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pretty-format@npm:^27.0.0, pretty-format@npm:^27.5.1":
+"pretty-format@npm:^27.5.1":
   version: 27.5.1
   resolution: "pretty-format@npm:27.5.1"
   dependencies:
