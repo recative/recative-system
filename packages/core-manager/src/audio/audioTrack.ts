@@ -28,24 +28,9 @@ class BasicAudioElement implements AudioElement {
 
   private source: AudioSource | null = null;
 
-  private mixer: AudioMixer | null = null;
-
-  constructor(station: AudioStation, audioClip: AudioClip) {
-    this.mixer = new AudioMixer(station);
+  constructor(private mixer: AudioMixer, audioClip: AudioClip) {
     this.clip = audioClip;
     this.source = new AudioSource(this.mixer!, this.clip);
-  }
-
-  suspend() {
-    this.mixer?.suspend();
-  }
-
-  resume() {
-    this.mixer?.resume();
-  }
-
-  isSuspended() {
-    return this.mixer?.isSuspended() ?? false;
   }
 
   play() {
@@ -63,10 +48,8 @@ class BasicAudioElement implements AudioElement {
   destroy() {
     this.source?.destroy();
     this.clip?.destroy();
-    this.mixer?.destroy();
     this.source = null;
     this.clip = null;
-    this.mixer = null;
   }
 
   get destroyed() {
@@ -93,8 +76,39 @@ class BasicAudioElement implements AudioElement {
 class PhonographAudioElement implements AudioElement {
   private clip: PhonographClip | null = null;
 
-  constructor(station: AudioStation, clip: PhonographClip) {
+  private suspended = false;
+
+  private playing = false;
+
+  private updateActualPlay = () => {
+    if (this.playing && !this.suspended) {
+      this.clip?.play();
+    } else {
+      this.clip?.pause();
+    }
+  };
+
+  private onMixerSuspend = () => {
+    this.suspended = true;
+    this.updateActualPlay();
+  };
+
+  private onMixerResume = () => {
+    this.suspended = false;
+    this.updateActualPlay();
+  };
+
+  private onMixerDestroy = () => {
+    this.destroy();
+  };
+
+  constructor(private mixer: AudioMixer, clip: PhonographClip) {
     this.clip = clip;
+    clip.connect(mixer.node!);
+    this.suspended = mixer.isSuspended();
+    mixer.eventTarget.addEventListener('suspend', this.onMixerSuspend);
+    mixer.eventTarget.addEventListener('resume', this.onMixerResume);
+    mixer.eventTarget.addEventListener('destroy', this.onMixerDestroy);
   }
 
   play(): void {
@@ -106,10 +120,14 @@ class PhonographAudioElement implements AudioElement {
   }
 
   isPlaying(): boolean {
-    return this.clip?.playing ?? false;
+    return this.playing;
   }
 
   destroy(): void {
+    this.clip?.disconnect(this.mixer.node!);
+    this.mixer.eventTarget.removeEventListener('suspend', this.onMixerSuspend);
+    this.mixer.eventTarget.removeEventListener('resume', this.onMixerResume);
+    this.mixer.eventTarget.removeEventListener('destroy', this.onMixerDestroy);
     this.clip?.dispose();
     this.clip = null;
   }
@@ -158,18 +176,21 @@ export class AudioTrack extends WithLogger implements Track {
 
   private lastStuck = false;
 
+  private mixer: AudioMixer | null = null;
+
   constructor(private station: AudioStation, private id: string) {
     super();
+    this.mixer = new AudioMixer(station);
   }
 
   suspend() {
     this.updateTime();
-    this.audioElement?.suspend();
+    this.mixer?.suspend();
   }
 
   resume() {
     this.updateTime();
-    this.audioElement?.resume();
+    this.mixer?.resume();
   }
 
   seek(time: number, progress: number) {
@@ -193,7 +214,7 @@ export class AudioTrack extends WithLogger implements Track {
       return;
     }
     const time = performance.now();
-    if (this.audioElement.isPlaying() && !this.audioElement.isSuspended()) {
+    if (this.audioElement.isPlaying() && !this.mixer?.isSuspended()) {
       if (
         force
         || this.audioElement.time * 1000 - this.lastProgress > (time - this.lastUpdateTime) * 0.01
@@ -298,12 +319,12 @@ export class AudioTrack extends WithLogger implements Track {
     }
     this.audioElement?.destroy();
     this.audioElement = new BasicAudioElement(
-      this.station, audioClipResponse.audioClip,
+      this.mixer!, audioClipResponse.audioClip,
     );
     this.audioElement.setVolume(this.volume);
     this.log(`Audio track for ${this.id} loaded`);
     let targetTime = (this.cachedProgress) / 1000;
-    if (this.playing && !this.audioElement?.isSuspended()) {
+    if (this.playing && !this.mixer?.isSuspended()) {
       this.audioElement.play();
       const now = performance.now();
       targetTime = (this.cachedProgress + now - this.cachedUpdateTime) / 1000;
@@ -318,6 +339,8 @@ export class AudioTrack extends WithLogger implements Track {
 
   destroy() {
     this.audioElement?.destroy();
+    this.mixer?.destroy();
+    this.mixer = null;
     this.pendingBuffer = null;
     this.working = false;
   }

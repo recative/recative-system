@@ -6107,6 +6107,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@recative/audio-station@workspace:packages/audio-station"
   dependencies:
+    "@ungap/event-target": ^0.2.3
     standardized-audio-context: ^25.3.28
   languageName: unknown
   linkType: soft
@@ -6121,9 +6122,9 @@ __metadata:
     "@react-hookz/web": ^15.1.0
     "@recative/act-player": ^0.3.2
     "@recative/act-protocol": ^0.2.7
-    "@recative/core-manager": ^0.5.6
+    "@recative/core-manager": ^0.5.7
     "@recative/definitions": ^0.4.3
-    "@recative/open-promise": ^0.2.1
+    "@recative/open-promise": ^0.2.2
     "@recative/smart-resource": ^0.2.0
     "@recative/ugly-json": "workspace:^"
     "@types/debug": ^4.1.7
@@ -6140,7 +6141,7 @@ __metadata:
     "@paciolan/remote-module-loader": "*"
     "@recative/act-player": 0.3.2
     "@recative/act-protocol": "*"
-    "@recative/core-manager": 0.5.6
+    "@recative/core-manager": 0.5.7
     "@recative/smart-resource": "*"
     baseui: ^12.1.0
     classnames: "*"
@@ -6154,7 +6155,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/core-manager@^0.5.0, @recative/core-manager@^0.5.6, @recative/core-manager@workspace:packages/core-manager":
+"@recative/core-manager@^0.5.0, @recative/core-manager@^0.5.7, @recative/core-manager@workspace:packages/core-manager":
   version: 0.0.0-use.local
   resolution: "@recative/core-manager@workspace:packages/core-manager"
   dependencies:
@@ -6163,6 +6164,7 @@ __metadata:
     "@recative/audio-station": ^0.2.0
     "@recative/definitions": ^0.4.2
     "@recative/open-promise": ^0.2.1
+    "@recative/phonograph": "file:../../../phonograph"
     "@recative/resource-loader": ^0.2.2
     "@recative/smart-resource": ^0.2.0
     "@recative/time-schedule": ^0.2.0
@@ -6264,7 +6266,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/open-promise@^0.2.0, @recative/open-promise@^0.2.1, @recative/open-promise@workspace:packages/open-promise":
+"@recative/open-promise@^0.2.0, @recative/open-promise@^0.2.1, @recative/open-promise@^0.2.2, @recative/open-promise@workspace:packages/open-promise":
   version: 0.0.0-use.local
   resolution: "@recative/open-promise@workspace:packages/open-promise"
   dependencies:
@@ -6273,6 +6275,16 @@ __metadata:
     debug: ^4.3.4
   languageName: unknown
   linkType: soft
+
+"@recative/phonograph@file:../../../phonograph::locator=%40recative%2Fcore-manager%40workspace%3Apackages%2Fcore-manager":
+  version: 1.6.0
+  resolution: "@recative/phonograph@file:../../../phonograph#../../../phonograph::hash=bed79c&locator=%40recative%2Fcore-manager%40workspace%3Apackages%2Fcore-manager"
+  dependencies:
+    "@rollup/plugin-commonjs": ^22.0.2
+    standardized-audio-context: ^25.3.29
+  checksum: d5a6d6ce7f290e8d07033edc68726a99debda1062f75358f87c8668bd7edcdbc32b83bd09baafcc395bb480d9ba2e31962dea8cbc6dad5645514d0628dba91e7
+  languageName: node
+  linkType: hard
 
 "@recative/recative-system@workspace:.":
   version: 0.0.0-use.local
@@ -25109,6 +25121,17 @@ __metadata:
 "standardized-audio-context@npm:^25.3.28":
   version: 25.3.29
   resolution: "standardized-audio-context@npm:25.3.29"
+  dependencies:
+    "@babel/runtime": ^7.18.9
+    automation-events: ^4.0.20
+    tslib: ^2.4.0
+  checksum: 28c0159b7502d5a163a082a85973a1b9028ced1f8c4f0cc777c094c79878e3babfe5e33ed8278ca1ab948b32f5f3132ead8406de1395fab04b5cb83d375477ed
+  languageName: node
+  linkType: hard
+
+"standardized-audio-context@npm:^25.3.29":
+  version: 25.3.29
+  resolution: "standardized-audio-context@npm:25.3.29::__archiveUrl=https%3A%2F%2Fregistry.npmmirror.com%2Fstandardized-audio-context%2F-%2Fstandardized-audio-context-25.3.29.tgz"
   dependencies:
     "@babel/runtime": ^7.18.9
     automation-events: ^4.0.20

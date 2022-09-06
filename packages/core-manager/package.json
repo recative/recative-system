@@ -21,6 +21,7 @@
     "@recative/audio-station": "^0.2.0",
     "@recative/definitions": "^0.4.2",
     "@recative/open-promise": "^0.2.1",
+    "@recative/phonograph": "file:../../../phonograph",
     "@recative/resource-loader": "^0.2.2",
     "@recative/smart-resource": "^0.2.0",
     "@recative/time-schedule": "^0.2.0",
