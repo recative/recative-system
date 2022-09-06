@@ -286,9 +286,14 @@ export class EpisodeCore<
   }
 
   getUserImplementedFunctions():Partial<UserImplementedFunctions> {
-    if (!this.userImplementedFunctions) {
-      throw new Error('User implemented functions not set');
+    if (this.destroyed) {
+      return {};
     }
+
+    if (!this.userImplementedFunctions) {
+      throw new TypeError('User implemented functions not set');
+    }
+
     return this.userImplementedFunctions;
   }
 
