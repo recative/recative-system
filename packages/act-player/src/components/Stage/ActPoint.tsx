@@ -2,6 +2,7 @@
 /* eslint-disable no-constant-condition */
 import * as React from 'react';
 import cn from 'classnames';
+import debug from 'debug';
 
 import useConstant from 'use-constant';
 import { useStore } from '@nanostores/react';
@@ -17,6 +18,11 @@ import { ModuleContainer } from '../Layout/ModuleContainer';
 import type { AssetExtensionComponent } from '../../types/ExtensionCore';
 
 import { getController } from './actPointControllers';
+import { Error } from '../Panic/Error';
+
+const logError = debug('player:ap-component');
+// eslint-disable-next-line no-console
+logError.log = console.error.bind(console);
 
 const FULL_SIZE_STYLES = {
   width: '100%',
@@ -53,7 +59,10 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
     return episodeData.resources.getResourceByUrlMap(entryPoints);
   }, [props.core, props.spec.entryPoints]);
 
-  const [{ result: entryPoint }, entryPointAction] = useAsync(getEntryPointUrl);
+  const [{
+    result: entryPoint,
+    error,
+  }, entryPointAction] = useAsync(getEntryPointUrl);
 
   const injectedEntryPoint = React.useMemo(() => {
     if (!entryPoint) return null;
@@ -230,6 +239,28 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
   const blockStyle = props.show
     ? cn(fullSizeStyles, resetPositionStyles, visibleStyles)
     : cn(fullSizeStyles, resetPositionStyles);
+
+  if (error) {
+    logError(
+      '\r\nUnable to render this asset',
+      '\r\n============================',
+      '\r\nUnable to get the entry point',
+
+      { error },
+      '\r\nSpec of this asset is',
+
+      props.spec,
+
+      '\r\nPreferred Uploaders are',
+      core.coreFunctions.core.getEpisodeData()?.preferredUploaders,
+    );
+
+    return (
+      <ModuleContainer>
+        <Error>{error.message}</Error>
+      </ModuleContainer>
+    );
+  }
 
   return (
     <ModuleContainer>

@@ -9,6 +9,10 @@ import type { ComponentFunctions, CoreFunctions } from '@recative/core-manager';
 
 const log = debug('player:ap-control');
 
+const logWarn = debug('player:ap-control');
+// eslint-disable-next-line no-console
+logWarn.log = console.warn.bind(console);
+
 export const getController = (id: string) => {
   let $actPoint: HTMLIFrameElement | null = null;
   let connector: ReturnType<typeof createHostConnector> | null = null;
@@ -37,7 +41,7 @@ export const getController = (id: string) => {
         throw new Error('Core functions not set');
       }
 
-      return (coreFunctions[key] as any)?.(...args);
+      return (coreFunctions[key] as Function)?.(...args);
     };
 
   const forwardToUserImplementedFunctions = <
@@ -54,7 +58,7 @@ export const getController = (id: string) => {
         throw new Error('Core functions not set');
       }
 
-      return (coreFunctions.core.getUserImplementedFunctions()[key] as any)?.(
+      return (coreFunctions.core.getUserImplementedFunctions()[key] as Function)?.(
         ...args,
       );
     };
@@ -137,11 +141,19 @@ export const getController = (id: string) => {
 
             if (searchBy === 'label') {
               return resourceList.getResourceByLabel(
-                resourceId, envConfig, undefined, undefined, resourceType,
+                resourceId,
+                envConfig,
+                undefined,
+                undefined,
+                resourceType,
               );
             }
             return resourceList.getResourceById(
-              resourceId, envConfig, undefined, undefined, resourceType,
+              resourceId,
+              envConfig,
+              undefined,
+              undefined,
+              resourceType,
             );
           },
           fetchResource: async (
@@ -216,7 +228,7 @@ export const getController = (id: string) => {
               .gotoEpisode;
 
             if (!externalGotoEpisode) {
-              console.warn('gotoEpisode not implemented');
+              logWarn('gotoEpisode not implemented');
               return;
             }
 
