@@ -17,7 +17,7 @@ export const useResetAssetStatusCallback = () => {
   const config = useSdkConfig();
   return React.useCallback(() => {
     config.setClientSdkConfig({ ...config, initialAssetStatus: undefined });
-  }, []);
+  }, [config]);
 };
 
 export interface InjectedFunctions {
@@ -58,7 +58,7 @@ export const useUserImplementedFunctions = (
         log('Unable to mark asset as finished');
       }
     }
-  }, [episodeId]);
+  }, [assets, server]);
 
   const unlockEpisode: UserImplementedFunctions['unlockEpisode'] = React.useCallback(
     async (unlockEpisodeId?: string) => {
@@ -84,7 +84,7 @@ export const useUserImplementedFunctions = (
         log(e);
       }
     },
-    [episodeMap],
+    [episodeMap, server],
   );
 
   const unlockAsset: UserImplementedFunctions['unlockAsset'] = React.useCallback(
@@ -103,7 +103,7 @@ export const useUserImplementedFunctions = (
         log('ERROR:', e);
       }
     },
-    [assets, episodeId],
+    [assets, server],
   );
 
   const requestPayment: UserImplementedFunctions['requestPayment'] = React.useCallback((request) => {
@@ -127,18 +127,18 @@ export const useUserImplementedFunctions = (
       const nextUrl = injectedFunctions.constructEpisodeUrl(seriesId);
       return injectedFunctions.navigate(nextUrl);
     },
-    [],
+    [injectedFunctions],
   );
 
   const enableAppFullScreenMode: UserImplementedFunctions['enableAppFullScreenMode'] = React.useCallback(() => {
     server.enableFullScreen?.();
     window.postMessage({ type: 'app:enableAppFullScreenMode' }, '*');
-  }, []);
+  }, [server]);
 
   const disableAppFullScreenMode: UserImplementedFunctions['disableAppFullScreenMode'] = React.useCallback(() => {
     server.disableFullScreen?.();
     window.postMessage({ type: 'app:disableAppFullScreenMode' }, '*');
-  }, []);
+  }, [server]);
 
   const getSavedData: UserImplementedFunctions['getSavedData'] = React.useCallback(async (slot) => {
     log('Will read saved data:', slot);
@@ -155,7 +155,7 @@ export const useUserImplementedFunctions = (
       log(`😭 Read act save failed, slot: ${slot}, error: ${e}`);
       throw e;
     }
-  }, []);
+  }, [server]);
 
   const setSavedData: UserImplementedFunctions['setSavedData'] = React.useCallback(async (slot, data) => {
     log(`Will write saved data: ${slot}`);
@@ -173,7 +173,7 @@ export const useUserImplementedFunctions = (
       log(`😭 Write act save failed, slot: ${slot}`);
       throw e;
     }
-  }, []);
+  }, [server]);
 
   const goHome = React.useCallback(() => {
     if (!injectedFunctions.constructHomeUrl) {
@@ -182,11 +182,11 @@ export const useUserImplementedFunctions = (
 
     const nextUrl = injectedFunctions.constructHomeUrl();
     return injectedFunctions.navigate(nextUrl);
-  }, [injectedFunctions.navigate]);
+  }, [injectedFunctions]);
 
   const exit = React.useCallback(() => {
     window.close();
-  }, [injectedFunctions.navigate]);
+  }, []);
 
   const memorizedFunctions = React.useMemo(
     () => ({
