@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.3
+
+### Patch Changes
+
+- f44fa99: fix: Query `userImplementedFunctions` after core destroyed will trigger an error
+- Updated dependencies [f1e3e64]
+  - @recative/open-promise@0.2.1
+
 ## 0.5.2
 
 ### Patch Changes

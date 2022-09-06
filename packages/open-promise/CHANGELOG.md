@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1
+
+### Patch Changes
+
+- f1e3e64: feat: Add force execute time limit to `TimeSlicingQueue`
+
 ## 0.2.0
 
 ### Minor Changes

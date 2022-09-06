@@ -1,5 +1,19 @@
 # Changelog
 
+## 5.1.0
+
+### Minor Changes
+
+- 0fd36c8: BREAKING: Episide ID will be injected to interfaceComponents now
+
+### Patch Changes
+
+- cf335a6: fix: Default user implemented functions not injected
+- Updated dependencies [f44fa99]
+- Updated dependencies [f1e3e64]
+  - @recative/core-manager@0.5.3
+  - @recative/open-promise@0.2.1
+
 ## 5.0.6
 
 ### Patch Changes
