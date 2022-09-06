@@ -5,29 +5,62 @@ sidebar_position: 2
 
 import SequenceStructure from './images/sequence-structure.svg';
 
-# Content Scheduling
+# TN9002: Episode Level Content Management: Act Player and Episode Core
 
-The `Core` is a monolith that manages states and resources throughout the whole player.
+## Abstract
 
-## `Core` and Components
+**Act Player** and **Episode Core** are the core component to manage multiple
+contents that creator made. In this article, we'll introduce the anatomy of
+these parts and give a brief guide about how customizing your player for both
+visual experience and functions which can fit your very own requirement.
+
+## Basic functions
+
+Act Player and Episode Core will handle multiple task related to your creation,
+like:
+
+* **Lifecycle Management:** To ensure contents loads smoothly and does not crash
+due to memory spikes, we need a well-established lifecycle mechanism to schedule
+the preloading, loading and destroy task of each part of your content, we will
+how lifecycle works later.
+
+* **Time synchronize and schedule:** Synchronizing multiple media source like
+video channel and audio channel; triggering events for various purpose like
+displaying subtitles, showing additional tips at specific time point of the
+video, switching BGM at different time, etc.
+
+ContentInstance holds some resources to be used by the Content. This includes:
+- The `Timeline`, which coordinates the time of different tracks, like the RemoteTrack that represents the time of the user interface counterpart, and the AudioTrack below.
+- The `AudioTrack`, which plays the audio track of a video. The `Timeline` will synchronize the time of the user interface counterpart (like the video element) to the `AudioTrack` if it has audio to play.
+- The `AudioHost`, which plays sound effects for the interactive program.
+- The `SubsequenceManager`, which allows the interactive program to create and control subsequences. For more information, see the Subsequence section below.
+- The `managedCoreStateList`, which manages subtitles and other states in the content.
+
+The `ContentInstance` also keeps references to some global resources, like the `TaskQueue`, which schedules async tasks around the Core.
+
+## Essential parts of a player
 
 Since the core does not directly manage the user interface of the player, all the user interface elements should be registered as a component of the core.
 
 To register a component, pass a name and an object that implements some functions on the ComponentFunctions interface to the registerComponent method. After that, you will get a CoreFunctions object as a handle to call functions on core from your component.
 
-### Stage
-
-The stage is a critical component that creates and manages all the content instances on the user interface side. Since the player won't work without the stage, the core will wait for the registration of the stage before starting working.
-
+* **Stage:** The stage is a critical component that creates and manages all the content instances on the user interface side. Since the player won't work without the stage, the core will wait for the registration of the stage before starting working.
 The stage should implement methods that create/destroy/show/hide content in its ComponentFunctions.
 
-### Instance components
-
+* **Instance components:**
 The user interface side of every ContentInstance is also a component. For more information, see "Content and ContentInstance" section below.
 
-### Other components
-
+* **Other components:**
 There can be other kinds of components. The most notable kind is the transition animation components that can temporarily block the content switching process. See "Switching between contents" section below.
+
+## Audio Management
+
+To make sure autoplay related functions can work correctly, we have to split
+the video into two seperate files: video file and audio file. And the audio 
+files are handled by the
+[Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API).
+This can help us play any audio files after user finished their first
+interaction with the web page on any browser. 
 
 ## `Content` and `ContentInstance`
 
@@ -45,17 +78,6 @@ The `ContentInstance` has 5 different states:
 - destroyed, which means the `ContentInstance` is completely destroyed, all the resources it used are released.
 
 `ContentInstance` also can be shown or hidden, which is independent of the states above. However, in practice, the `ContentInstance` should not be shown to the user when its state is not ready.
-
-### Resources
-
-ContentInstance holds some resources to be used by the Content. This includes:
-- The `Timeline`, which coordinates the time of different tracks, like the RemoteTrack that represents the time of the user interface counterpart, and the AudioTrack below.
-- The `AudioTrack`, which plays the audio track of a video. The `Timeline` will synchronize the time of the user interface counterpart (like the video element) to the `AudioTrack` if it has audio to play.
-- The `AudioHost`, which plays sound effects for the interactive program.
-- The `SubsequenceManager`, which allows the interactive program to create and control subsequences. For more information, see the Subsequence section below.
-- The `managedCoreStateList`, which manages subtitles and other states in the content.
-
-The `ContentInstance` also keeps references to some global resources, like the `TaskQueue`, which schedules async tasks around the Core.
 
 ## `Sequence` and Subsequence
 

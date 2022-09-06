@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 849 843" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-miterlimit:8;">
+    <g transform="matrix(1,0,0,1,-77.169,-75.5023)">
+        <g transform="matrix(1,0,0,1,40.4496,40.8565)">
+            <rect x="40.719" y="38.646" width="605.627" height="605.627" style="fill:white;fill-opacity:0.7;stroke:rgb(61,75,95);stroke-width:6.21px;"/>
+        </g>
+        <g id="primary" transform="matrix(3.15066,0,0,2.8126,308.367,314.814)">
+            <path d="M28,36L8,36C6.903,36 6,35.097 6,34L6,14C6,12.903 6.903,12 8,12L28,12C29.097,12 30,12.903 30,14L30,34C30,35.097 29.097,36 28,36ZM30,30L39.24,33.84C39.481,33.939 39.739,33.99 40,33.99C41.093,33.99 41.995,33.093 42,32L42,16C41.995,14.907 41.093,14.01 40,14.01C39.739,14.01 39.481,14.061 39.24,14.16L30,18L30,30Z" style="fill:none;fill-rule:nonzero;stroke:rgb(61,75,95);stroke-width:3.57px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,144.296,-475.076)">
+            <text x="325.645px" y="629.44px" style="font-family:'Raleway-SemiBold', 'Raleway';font-weight:600;font-size:64px;fill:rgb(61,75,95);">S<tspan x="364.045px " y="629.44px ">t</tspan>age</text>
+        </g>
+    </g>
+    <g transform="matrix(1,0,0,1,-38.5845,-37.7512)">
+        <g transform="matrix(1,0,0,1,117.619,116.359)">
+            <rect x="40.719" y="38.646" width="605.627" height="605.627" style="fill:white;fill-opacity:0.7;stroke:rgb(61,75,95);stroke-width:6.21px;"/>
+        </g>
+        <g transform="matrix(0.749084,0,0,2e-06,249.403,693.399)">
+            <rect x="40.719" y="38.646" width="605.627" height="605.627" style="fill:white;fill-opacity:0.51;stroke:rgb(61,75,95);stroke-width:11.73px;"/>
+        </g>
+        <g transform="matrix(0.0132094,0,0,0.0330236,293.94,682.123)">
+            <rect x="40.719" y="38.646" width="605.627" height="605.627" style="fill:white;stroke:rgb(61,75,95);stroke-width:306.43px;"/>
+        </g>
+        <g id="primary1" serif:id="primary" transform="matrix(1.30839,0,0,1.30839,194.903,661.997)">
+            <path d="M32,24L20,32L20,16L32,24ZM24,6C14.125,6 6,14.125 6,24C6,33.875 14.125,42 24,42C33.875,42 42,33.875 42,24C42,14.125 33.875,6 24,6Z" style="fill:none;fill-rule:nonzero;stroke:rgb(61,75,95);stroke-width:5.1px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,96.4383,-399.573)">
+            <text x="325.645px" y="629.44px" style="font-family:'Raleway-Bold', 'Raleway';font-weight:700;font-size:64px;fill:rgb(61,75,95);">C<tspan x="369.421px 408.205px 446.669px 471.245px 495.565px " y="629.44px 629.44px 629.44px 629.44px 629.44px ">ontro</tspan>ller</text>
+        </g>
+    </g>
+    <g>
+        <g transform="matrix(1,0,0,1,194.788,191.861)">
+            <rect x="40.719" y="38.646" width="605.627" height="605.627" style="fill:white;fill-opacity:0.7;stroke:rgb(61,75,95);stroke-width:6.21px;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,237.926,-323.267)">
+            <text x="325.645px" y="629.44px" style="font-family:'Raleway-ExtraBold', 'Raleway';font-weight:800;font-size:64px;fill:rgb(61,75,95);">L<tspan x="362.957px " y="629.44px ">o</tspan>ading</text>
+        </g>
+        <g id="primary2" serif:id="primary" transform="matrix(3.28669,0,0,3.28669,459.44,454.44)">
+            <path d="M24,6L24,12M11.28,11.28L15.52,15.52M6,24L12,24M11.28,36.72L15.52,32.48M24,36L24,42M36.72,36.72L32.48,32.48M42,24L36,24M36.72,11.28L32.48,15.52" style="fill:none;fill-rule:nonzero;stroke:rgb(61,75,95);stroke-width:3.25px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;"/>
+        </g>
+    </g>
+</svg>
