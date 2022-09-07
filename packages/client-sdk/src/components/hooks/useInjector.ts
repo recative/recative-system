@@ -12,6 +12,7 @@ import type {
   SegmentStartEventDetail,
   IUserRelatedEnvVariable,
   IEpisodeMetadata,
+  ISeriesCoreConfig,
 } from '@recative/core-manager';
 import type { IManagedActPointProps } from '@recative/act-player';
 import type { RawUserImplementedFunctions } from '@recative/definitions';
@@ -20,6 +21,7 @@ import type { IContentProps } from '../Content';
 
 import { useEpisodeDetail } from '../../external';
 import { useEpisodeIdNormalizer } from './useEpisodeIdNormalizer';
+import { useDataFetcher } from './useDataFetcher';
 
 const log = debug('client:injector');
 
@@ -101,10 +103,13 @@ export const useInjector = <
     PlayerPropsInjectorHook<PlayerPropsInjectedDependencies, EnvVariable> | undefined,
     playerPropsHookDependencies: PlayerPropsInjectedDependencies,
     userImplementedFunctions: Partial<RawUserImplementedFunctions> | undefined,
+    navigate: ISeriesCoreConfig['navigate'],
     seriesCoreRef: React.MutableRefObject<SeriesCore<EnvVariable> | undefined>,
   ) => {
   const seriesCore = seriesCoreRef.current;
   const episodeCore = useStore(seriesCore?.currentEpisodeCore ?? NULL_ATOM);
+
+  const fetchData = useDataFetcher();
 
   if (
     playerPropsHookDependencies
@@ -123,6 +128,12 @@ export const useInjector = <
   const episodeDetail = useEpisodeDetail(episodeId);
   const normalizeEpisodeId = useEpisodeIdNormalizer();
 
+  const internalDependencies = React.useMemo(() => ({
+    navigate,
+    fetchData,
+    ...playerPropsHookDependencies,
+  }), [fetchData, navigate, playerPropsHookDependencies]);
+
   const playerPropsHookProps = React.useMemo(
     () => ({
       episodeId: normalizeEpisodeId(episodeCore?.episodeId),
@@ -132,19 +143,19 @@ export const useInjector = <
       userData,
       seriesCore: seriesCore ?? null,
       episodeCore: episodeCore ?? null,
-      dependencies: playerPropsHookDependencies,
+      dependencies: internalDependencies,
       userImplementedFunctions,
     }),
     [
+      normalizeEpisodeId,
       episodeCore,
       preferredUploaders,
       trustedUploaders,
       envVariable,
       userData,
       seriesCore,
-      playerPropsHookDependencies,
+      internalDependencies,
       userImplementedFunctions,
-      normalizeEpisodeId,
     ],
   );
 
