@@ -132,9 +132,7 @@ export class ContentInstance extends WithLogger {
     this.remote = remote;
     // Since the RemoteTrack initialization requires the component,
     // we delay addition of remote track at component preload
-    this.timeline.addTrack(
-      new MonitorTrack(option.onUpdate, option.onStuckChange), -Infinity,
-    );
+    this.timeline.addTrack(new MonitorTrack(option.onUpdate, option.onStuckChange), -Infinity);
     this.audioTrack = new AudioTrack(option.audioStation, id);
     this.audioTrack.logger = this.logger?.extend(`audioTrack(${id})`) || null;
     this.audioTrack.setVolume(option.volume);

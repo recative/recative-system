@@ -79,8 +79,10 @@ export class PhonographAudioElement implements AudioElement {
 
   private updateActualPlay = () => {
     if (this.playing && !this.suspended) {
-      this.clip?.play();
-    } else {
+      if (!this.clip?.playing) {
+        this.clip?.play();
+      }
+    } else if (this.clip?.playing) {
       this.clip?.pause();
     }
   };
@@ -109,11 +111,13 @@ export class PhonographAudioElement implements AudioElement {
   }
 
   play(): void {
-    this.clip?.play();
+    this.playing = true;
+    this.updateActualPlay();
   }
 
   pause(): void {
-    this.clip?.pause();
+    this.playing = false;
+    this.updateActualPlay();
   }
 
   isPlaying(): boolean {
@@ -194,6 +198,26 @@ export const selectUrlBasicAudioElementInitPostProcess = async (
     const audioClip = await audioStation.loadFromBuffer(arrayBuffer);
 
     return { url, clip: audioClip, backend: 'basic' };
+  } catch (e) {
+    return null;
+  }
+};
+
+export const selectUrlPhonographAudioElementInitPostProcess = async (
+  url: string,
+): Promise<AudioElementInit | null> => {
+  try {
+    const audioStation = getGlobalAudioStation();
+
+    const phonographClip = new PhonographClip({
+      context: audioStation.audioContext!,
+      url,
+    });
+
+    // wait for canplaythrough
+    await phonographClip.buffer(true);
+
+    return { clip: phonographClip, backend: 'phonograph' };
   } catch (e) {
     return null;
   }
