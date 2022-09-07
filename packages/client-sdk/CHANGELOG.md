@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.2.0
+
+### Minor Changes
+
+- feat: Throw an error if data not loaded
+
 ## 5.1.0
 
 ### Minor Changes
