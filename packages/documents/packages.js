@@ -4,6 +4,7 @@ const config = (id, label) => ({
 
 module.exports = [
   config('core-manager', 'Core Manager'),
+  config('act-player', 'Act Player'),
   config('audio-station', 'Audio Station'),
   config('act-protocol', 'Act Protocol'),
   config('client-sdk', 'Client SDK'),

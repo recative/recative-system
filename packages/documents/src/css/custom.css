@@ -244,9 +244,17 @@ aside.theme-doc-sidebar-container > div > nav.menu > ul.theme-doc-sidebar-menu >
   border: 1.5px solid var(--ifm-color-primary-darkest);
 }
 
+.codicon-symbol-event::before {
+  content: "E" !important;
+}
+
 .codicon-symbol-property::before,
 .codicon-symbol-parameter::before {
   content: "P" !important;
+}
+
+.codicon-symbol-parameter::before {
+  font-style: italic;
 }
 
 .codicon-symbol-variable::before {

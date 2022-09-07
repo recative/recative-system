@@ -14,59 +14,151 @@ contents that creator made. In this article, we'll introduce the anatomy of
 these parts and give a brief guide about how customizing your player for both
 visual experience and functions which can fit your very own requirement.
 
-## Basic functions
+## Introduction
 
-Act Player and Episode Core will handle multiple task related to your creation,
-like:
+Each episode is constructed with several *assets* (or *contents*, *segments*, 
+they are the same concept but we use different word under different context),
+asset could be a video or a small interactive program (Act Point), these assets
+are arranged into a *sequence*, *Act Player* and *Core Manager* will play these
+*assets* one by one.
+
+### Episode Core
+
+Episode Core is the fundenmental part which can manage all content segments
+provided by creators, it will handle the following tasks:
 
 * **Lifecycle Management:** To ensure contents loads smoothly and does not crash
 due to memory spikes, we need a well-established lifecycle mechanism to schedule
 the preloading, loading and destroy task of each part of your content, we will
 how lifecycle works later.
 
-* **Time synchronize and schedule:** Synchronizing multiple media source like
-video channel and audio channel; triggering events for various purpose like
-displaying subtitles, showing additional tips at specific time point of the
-video, switching BGM at different time, etc.
+* **Time synchronize and schedule:**
+[Synchronizing multiple media source](https://github.com/recative/recative-system/blob/05a199e188eecf9b10cbb0225a478463d0a878d7/packages/time-schedule/src/timeline.ts) like
+video channel and audio channel;
+[triggering events](https://github.com/recative/recative-system/blob/05a199e188eecf9b10cbb0225a478463d0a878d7/packages/definitions/src/utils/managedCoreState.ts#L183)
+for various purpose like displaying subtitles, showing additional tips at
+specific time point of the video, switching BGM at different time, etc.
+
+* **Audio playback management:** To make sure autoplay related functions can
+work correctly, we built a time system which can handle all tasks related to
+audio playback with the
+[Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API).
+This can help us play any audio files after users triggered their first
+interaction with the page on any browser.
+
+:::info
+For video files, we split the file into two different parts: a video file and 
+an audio file. There's an extension can handle this task in *Recative Studio*,
+after the file is imported, channel splitting, compatibility fixing and many
+other tasks can be finished automatically.
+:::
+
+* **Resource management:** Core Manager will manage all files imported to 
+*Recative Studio* (like audio, video, subtitle files or texture files). It will
+preload necessary resources, automatically select different resource for
+different language and platform, select resource from multiple CDN and storage
+source (which make offline storage possible).
+
+* **Task queue:** Since JavaScript is a single-threaded language, we must design
+a scheduling mechanism to ensure that a large number of background tasks will 
+not affect the rendering performance. *Core Manager* provides priority queues:
+the fast queue and the slow queue. You can arrange tasks into different queues
+according to the priority of the tasks. *Core Manager* will arrange the tasks
+without affecting rendering performance.
+
+### Act Player
+
+Act player implemented a React binding of Episode Core, it implemented all user
+interfaces of the player, and built a bridge from your asset to the episode
+core.
+
+Act player provided a build-in interface implementation, which provides:
+
+* **Loading Indicator:** This component will be shown if the metadata or content
+is not loaded, or the buffer of the video have drained.
+
+* **Subtitle:** This will show subtitle of your video content or audio clip
+inside the act point program.
+
+* **Dialog Component:** That show additional information on the right side of
+your content, it looks like the information card of YouTube, but can display
+more type of information, like texture, and audio.
+
+ * **Controller:** Pause and play, setting content language, volume, navigating
+to different assets and time, and more fundenmental elements for a player.
+
+* **Stage:** All assets are placed inside the stage, it will create and destory
+React Elements for different contents, and connect these contents with
+*Core Manager*.
+
+## Essential parts of a player
+
+The interface components implemented above are default official implementation
+of the player, actually developers can pass their own 
+[interface component implementation](/api/act-player/interface/IUnmanagedActPointProps#interfaceComponents)
+into the player and customize the visual experience and functionality of the
+player.
+
+### Building a interface component
+
+We have to make the component met specific
+[typing signiture](/api/act-player#InterfaceExtensionComponent) to make sure
+*Core Manager* and *Act Player* can communicate with the component
+implementation, basically, we will pass two parameters: 
+
+* **`core`:** A instance of the *Episode Core*, we can use this parameter to
+control most behavior of the player.
+
+* **`loadingComponent`:** A component that indicate something is still loading,
+you can show this component if something is stilling being cooked.
+
+After the component is created, we can start to interact with the *Episode Core*.
+
+### Different type of interface components
+
+There're different type of interface components, you can choose one based on
+your technical requirement.
+
+* **Naïve components:** If there's no need to let **Episode Core** controlling
+the lifecycle of the component, this component is a naïve component, we don't
+need to do anything special, it will works fine.
+
+* **Managed components:** There can be other kinds of components. The most notable
+kind is the transition animation components that can temporarily block the
+content switching process. See "Switching between contents" section below.
+
+* **Stage:** The stage is a critical component that creates and manages all the content instances on the user interface side. Since the player won't work without the stage, the core will wait for the registration of the stage before starting working.
+The stage should implement methods that create/destroy/show/hide content in its ComponentFunctions.
+
+* **Asset Instance Component:** The user interface side of every ContentInstance
+is also a component. For more information, see "Content and ContentInstance"
+section below.
+
+To register a component, pass a name and an object that implements some functions on the ComponentFunctions interface to the registerComponent method. After that, you will get a CoreFunctions object as a handle to call functions on core from your component.
+
+### Subscribing Data from Episode Core
+
+NanoStore
+
+## Anatomy of Episode Core
+
+
+
+### `Content` and `ContentInstance`
+
+Content is the internal type used to describe the specification of content, which means a video, an interactive program or something else. When the Core needs to play content, it creates a `ContentInstance` from the Content, and asks the stage component to create the user interface side of it.
+
+The ContentInstance contains all the resources it needs to play the content, and manages the lifecycle of the playback progress of the content.
 
 ContentInstance holds some resources to be used by the Content. This includes:
 - The `Timeline`, which coordinates the time of different tracks, like the RemoteTrack that represents the time of the user interface counterpart, and the AudioTrack below.
 - The `AudioTrack`, which plays the audio track of a video. The `Timeline` will synchronize the time of the user interface counterpart (like the video element) to the `AudioTrack` if it has audio to play.
+  - Backend: `@recative/audio-station`, `@recative/phonograph`. 
 - The `AudioHost`, which plays sound effects for the interactive program.
 - The `SubsequenceManager`, which allows the interactive program to create and control subsequences. For more information, see the Subsequence section below.
 - The `managedCoreStateList`, which manages subtitles and other states in the content.
 
 The `ContentInstance` also keeps references to some global resources, like the `TaskQueue`, which schedules async tasks around the Core.
-
-## Essential parts of a player
-
-Since the core does not directly manage the user interface of the player, all the user interface elements should be registered as a component of the core.
-
-To register a component, pass a name and an object that implements some functions on the ComponentFunctions interface to the registerComponent method. After that, you will get a CoreFunctions object as a handle to call functions on core from your component.
-
-* **Stage:** The stage is a critical component that creates and manages all the content instances on the user interface side. Since the player won't work without the stage, the core will wait for the registration of the stage before starting working.
-The stage should implement methods that create/destroy/show/hide content in its ComponentFunctions.
-
-* **Instance components:**
-The user interface side of every ContentInstance is also a component. For more information, see "Content and ContentInstance" section below.
-
-* **Other components:**
-There can be other kinds of components. The most notable kind is the transition animation components that can temporarily block the content switching process. See "Switching between contents" section below.
-
-## Audio Management
-
-To make sure autoplay related functions can work correctly, we have to split
-the video into two seperate files: video file and audio file. And the audio 
-files are handled by the
-[Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API).
-This can help us play any audio files after user finished their first
-interaction with the web page on any browser. 
-
-## `Content` and `ContentInstance`
-
-Content is the internal type used to describe the specification of content, which means a video, an interactive program or something else. When the Core needs to play content, it creates a `ContentInstance` from the Content, and asks the stage component to create the user interface side of it.
-
-The ContentInstance contains all the resources it needs to play the content, and manages the lifecycle of the playback progress of the content.
 
 ### Lifecycle
 
@@ -79,7 +171,7 @@ The `ContentInstance` has 5 different states:
 
 `ContentInstance` also can be shown or hidden, which is independent of the states above. However, in practice, the `ContentInstance` should not be shown to the user when its state is not ready.
 
-## `Sequence` and Subsequence
+### `Sequence` and Subsequence
 
 The Sequence is a sequence of Content. Contents in Sequence are also called segments, since they are parts of the sequence. It controls creation, destruction, showing and hiding of ContentInstance, switching process between the contents, calculation of time and process.
 
@@ -89,7 +181,7 @@ Every segment in the Sequence has a duration. Some segments do not have a meanin
 
 The Sequence does not keep track of time itself. It only manages which segment is playing. To know the time of the sequence, we just add up all the finite duration of played segments, and then add the time from the Timeline of the current segment if its duration is finite. To seek a specific time in the sequence, we find the segment that the time falls in, and calculate the time in that segment.
 
-### Switching between contents
+#### Switching between contents
 
 Content switching is the most complicated part in Sequence. It manages seeking, transition between Contents in normal playback and starting of the first Content.
 
