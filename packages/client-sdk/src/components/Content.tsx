@@ -198,6 +198,7 @@ EnvVariable extends Record<string, unknown>,
         internalUsePlayerPropsHook,
         playerPropsHookDependencies,
         injectedUserImplementedFunctions,
+        onEpisodeIdUpdate,
         seriesCoreRef,
       );
 
