@@ -52,7 +52,7 @@ import { EnvVariableManager, DEFAULT_LANGUAGE } from './manager/envVariable/EnvV
 import { ContentSequence, IInitialAssetStatus } from './sequence';
 
 import type { IDefaultAdditionalEnvVariable } from './manager/envVariable/EnvVariableManager';
-import { PostProcessCallback } from './utils/tryValidResourceUrl';
+import { selectUrlBasicAudioElementInitPostProcess } from './audio/audioElement';
 
 export interface EpisodeCoreConfig<T> {
   initialEnvVariable: T;
@@ -538,7 +538,7 @@ export class EpisodeCore<
         const instance = getInstanceFromComponentName();
         this.logAudio(`Instance ${instance.id} \`setAudioTrack\``);
         if (url !== null) {
-          instance.audioTrack.setAudio(selectUrlAudioTypePostProcess(url));
+          instance.audioTrack.setAudio(selectUrlBasicAudioElementInitPostProcess(url));
         } else {
           instance.audioTrack.setAudio(null);
         }

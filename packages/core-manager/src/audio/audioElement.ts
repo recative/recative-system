@@ -2,6 +2,7 @@ import {
   AudioClip,
   AudioMixer,
   AudioSource,
+  getGlobalAudioStation,
 } from '@recative/audio-station';
 import { Clip as PhonographClip } from '@recative/phonograph';
 
@@ -151,3 +152,49 @@ export class PhonographAudioElement implements AudioElement {
     }
   }
 }
+
+export type AudioElementInit = {
+  backend?: 'basic',
+  clip: AudioClip,
+  url: string,
+} | {
+  backend: 'phonograph',
+  clip: PhonographClip,
+};
+
+export const createAudioElement = (mixer: AudioMixer, init:AudioElementInit):AudioElement => {
+  if (init.backend === 'phonograph') {
+    return new PhonographAudioElement(mixer, init.clip);
+  }
+  return new BasicAudioElement(mixer, init.clip);
+};
+
+export const destroyAudioElementInit = (init:AudioElementInit) => {
+  if (init.backend === 'phonograph') {
+    return init.clip.dispose();
+  }
+  return init.clip.destroy();
+};
+
+export const getAudioElementInitUrl = (init:AudioElementInit) => {
+  if (init.backend === 'phonograph') {
+    return init.clip.url;
+  }
+  return init.url;
+};
+
+export const selectUrlBasicAudioElementInitPostProcess = async (
+  url: string,
+): Promise<AudioElementInit | null> => {
+  try {
+    const audioStation = getGlobalAudioStation();
+
+    const arrayBuffer = await (await fetch(url)).arrayBuffer();
+
+    const audioClip = await audioStation.loadFromBuffer(arrayBuffer);
+
+    return { url, clip: audioClip, backend: 'basic' };
+  } catch (e) {
+    return null;
+  }
+};

@@ -1896,6 +1896,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.19.0":
+  version: 7.19.0
+  resolution: "@babel/runtime@npm:7.19.0::__archiveUrl=https%3A%2F%2Fregistry.npmmirror.com%2F%40babel%2Fruntime%2F-%2Fruntime-7.19.0.tgz"
+  dependencies:
+    regenerator-runtime: ^0.13.4
+  checksum: fa69c351bb05e1db3ceb9a02fdcf620c234180af68cdda02152d3561015f6d55277265d3109815992f96d910f3db709458cae4f8df1c3def66f32e0867d82294
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.12.7, @babel/template@npm:^7.16.7, @babel/template@npm:^7.18.10, @babel/template@npm:^7.18.6, @babel/template@npm:^7.3.3":
   version: 7.18.10
   resolution: "@babel/template@npm:7.18.10"
@@ -9104,6 +9113,16 @@ __metadata:
     "@babel/runtime": ^7.18.9
     tslib: ^2.4.0
   checksum: 3edf2ebbf9d5283ccbae526be5f6a9918b9404be289d7de175aa1e89c59ccb00bf37ceab690a3b84e0cec204122c516354dacc9f3492fb2a0f391947d83e5c59
+  languageName: node
+  linkType: hard
+
+"automation-events@npm:^4.0.21":
+  version: 4.0.21
+  resolution: "automation-events@npm:4.0.21::__archiveUrl=https%3A%2F%2Fregistry.npmmirror.com%2Fautomation-events%2F-%2Fautomation-events-4.0.21.tgz"
+  dependencies:
+    "@babel/runtime": ^7.19.0
+    tslib: ^2.4.0
+  checksum: 836d2ae97a38e45c16fd908054bc5c3d6de5e294e75f0b7ab580137ac5c891cec7648461e220bbbb59daa6bb6e527f59a357280b716ca9db7a15abb4e864502d
   languageName: node
   linkType: hard
 
@@ -25130,13 +25149,13 @@ __metadata:
   linkType: hard
 
 "standardized-audio-context@npm:^25.3.29":
-  version: 25.3.29
-  resolution: "standardized-audio-context@npm:25.3.29::__archiveUrl=https%3A%2F%2Fregistry.npmmirror.com%2Fstandardized-audio-context%2F-%2Fstandardized-audio-context-25.3.29.tgz"
+  version: 25.3.30
+  resolution: "standardized-audio-context@npm:25.3.30::__archiveUrl=https%3A%2F%2Fregistry.npmmirror.com%2Fstandardized-audio-context%2F-%2Fstandardized-audio-context-25.3.30.tgz"
   dependencies:
-    "@babel/runtime": ^7.18.9
-    automation-events: ^4.0.20
+    "@babel/runtime": ^7.19.0
+    automation-events: ^4.0.21
     tslib: ^2.4.0
-  checksum: 28c0159b7502d5a163a082a85973a1b9028ced1f8c4f0cc777c094c79878e3babfe5e33ed8278ca1ab948b32f5f3132ead8406de1395fab04b5cb83d375477ed
+  checksum: e5895fdb2e12c96d7995d7b57f16dd68fc74bd1714e7e345281dfbaea703721bccb56c063f2f0500706c5402edf679ab6fc8121745e0bd7e783eada54e691f8e
   languageName: node
   linkType: hard
 

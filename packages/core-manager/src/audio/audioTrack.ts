@@ -5,18 +5,18 @@ import {
 } from '@recative/audio-station';
 import { Track } from '@recative/time-schedule';
 
-import type { RawAudioClipResponse } from '../utils/selectUrlAudioTypePostProcess';
-
 import { WithLogger } from '../LogCollector';
-import { BasicAudioElement } from './audioElement';
+import {
+  AudioElement, AudioElementInit, createAudioElement, destroyAudioElementInit,
+} from './audioElement';
 
 /**
  * Audio track for video component
  */
 export class AudioTrack extends WithLogger implements Track {
-  private audioElement: BasicAudioElement | null = null;
+  private audioElement: AudioElement | null = null;
 
-  private pendingBuffer: Promise<RawAudioClipResponse | null> | null = null;
+  private pendingBuffer: Promise<AudioElementInit | null> | null = null;
 
   private playing = false;
 
@@ -149,7 +149,7 @@ export class AudioTrack extends WithLogger implements Track {
     this.audioElement?.pause();
   }
 
-  setAudio(audioClipResponsePromise: Promise<RawAudioClipResponse | null> | null) {
+  setAudio(audioClipResponsePromise: Promise<AudioElementInit | null> | null) {
     this.audioElement?.destroy();
     this.audioElement = null;
     this.pendingBuffer = audioClipResponsePromise;
@@ -159,22 +159,21 @@ export class AudioTrack extends WithLogger implements Track {
   }
 
   private async loadAudio(
-    audioClipResponsePromise: RawAudioClipResponse | Promise<RawAudioClipResponse | null>,
+    audioClipResponsePromise: Promise<AudioElementInit | null>,
   ) {
     if (this.destroyed) {
       return;
     }
-    const audioClipResponse = await audioClipResponsePromise;
+    const audioElementInit = await audioClipResponsePromise;
 
-    if (!audioClipResponse) return;
+    if (!audioElementInit) return;
     if (this.pendingBuffer !== audioClipResponsePromise) {
+      destroyAudioElementInit(audioElementInit);
       // setAudio when audio is loading or destroyed
       return;
     }
     this.audioElement?.destroy();
-    this.audioElement = new BasicAudioElement(
-      this.mixer!, audioClipResponse.audioClip,
-    );
+    this.audioElement = createAudioElement(this.mixer!, audioElementInit);
     this.audioElement.setVolume(this.volume);
     this.log(`Audio track for ${this.id} loaded`);
     let targetTime = (this.cachedProgress) / 1000;
