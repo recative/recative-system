@@ -5,6 +5,10 @@ import { WithLogger } from '../../LogCollector';
 // eslint-disable-next-line import/no-cycle
 import { ContentSequence } from '../../sequence';
 
+/**
+ * Collection of Sequences that that can be directly controlled from component
+ * TODO: Add more methods to control Subsequence (when we need)
+ */
 export class SubsequenceManager extends WithLogger {
   subsequences = new Map<string, ContentSequence>();
 
@@ -56,6 +60,9 @@ export class SubsequenceManager extends WithLogger {
     return this.destroyPromise;
   }
 
+  /**
+   * Create a subsequence from list of assets
+   */
   async createSequence(id: string, assets: IAssetForClient[]) {
     if (this.destroyed) {
       return;
@@ -94,6 +101,9 @@ export class SubsequenceManager extends WithLogger {
     await subsequence.firstAssetInstanceReady;
   }
 
+  /**
+   * Start playing a subsequence
+   */
   startSequence(id: string) {
     const subsequence = this.subsequences.get(id);
     if (subsequence === undefined) {
