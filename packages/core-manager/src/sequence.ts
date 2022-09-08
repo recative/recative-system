@@ -54,6 +54,7 @@ export type ContentSequenceEventTarget = EventTarget & {
 };
 
 /**
+ * A Sequence of Contents, manages lifecycle of content's in it.
  * This should only be used in this package
  */
 export class ContentSequence {
@@ -76,65 +77,138 @@ export class ContentSequence {
    */
   contentList: ContentInfo[] = [];
 
+  /**
+   * ContentInstance managed by the ContentSequence
+   */
   managedContentInstance = new Set<ContentInstance>();
 
   /**
-   * If the first asset instance ready.
+   * If the first asset instance ready
    */
   firstAssetInstanceReady = new OpenPromise<void>();
 
+  /**
+   * If the external dependency ready
+   */
   dependencyReady = new OpenPromise<void>();
 
-  lastSegment = -2;
-
-  currentSegment = -1;
-
-  nextSegment = 0;
-
-  nextSegmentStartTime = 0;
-
+  /**
+   * If the ContentSequence is switching between Content
+   */
   switching = false;
 
-  nextContentSetup = false;
+  /**
+   * The segment before the Content Switching
+   */
+  lastSegment = -2;
 
-  switchingBlocker = new Set<string>();
+  /**
+   * The segment after the Content Switching
+   */
+  currentSegment = -1;
 
-  switchingUnblocked :OpenPromise<void> | null = null;
+  /**
+   * The segment that should be switched to on next Content Switching
+   */
+  nextSegment = 0;
 
+  /**
+   * The start time of the segment that should be switched to on next Content Switching
+   */
+  nextSegmentStartTime = 0;
+
+  /**
+   * The set of components that is blocking the setup of next content
+   */
   nextContentSetupBlocker = new Set<string>();
 
-  nextContentSetupUnblocked :OpenPromise<void> | null = null;
+  /**
+   * If setup of next content fully unblocked
+   */
+  nextContentSetupUnblocked: OpenPromise<void> | null = null;
 
-  currentContentReady :OpenPromise<void> | null = null;
+  /**
+   * The set of components that is blocking the switching of the content
+   */
+  switchingBlocker = new Set<string>();
 
+  /**
+   * If switching of the content fully unblocked
+   */
+  switchingUnblocked: OpenPromise<void> | null = null;
+
+  /**
+   * If the current content is ready
+   */
+  currentContentReady: OpenPromise<void> | null = null;
+
+  /**
+   * Is the sequence itself playing
+   */
   selfPlaying = atom(false);
 
+  /**
+   * Is the parent of the sequence playing
+   */
   parentPlaying = atom(true);
 
+  /**
+   * Is the sequence actual playing, when it is playing itself and parent is also playing
+   */
   playing = computed([this.selfPlaying, this.parentPlaying], (self, parent) => self && parent);
 
+  /**
+   * Is the sequence stuck
+   */
   stuck = atom(true);
 
+  /**
+   * Cache of the episode volume
+   */
   volume = 1;
 
+  /**
+   * Duration of Contents
+   */
   segmentsDuration: number[];
 
+  /**
+   * Current playback progress
+   */
   progress = atom<Progress>({ segment: 0, progress: 0 });
 
+  /**
+   * Duration of the sequence
+   */
   duration: number;
 
+  /**
+   * Current time of the sequence
+   */
   preciseTime: ReadableAtom<number>;
 
+  /**
+   * Current time of the sequence, throttled that only update at 5fps when playing
+   */
   time: ThrottledAtomReturnType<number>;
 
+  /**
+   * Is the sequence started by switch to first Content.
+   */
   firstContentSwitched = false;
 
   managedCoreStateDirty = true;
 
   managedStateEnabled = false;
 
+  /**
+   * Is the sequence started by switch to first Content.
+   */
   showing = true;
 
+  /**
+   * Is the sequence finally destroyed.
+   */
   private destroyPromise: Promise<void> | null = null;
 
   constructor(private option: SequenceOption) {
@@ -230,6 +304,11 @@ export class ContentSequence {
     return this.contentList[this.currentSegment]?.instance ?? null;
   }
 
+  /**
+   * Update the stuck state
+   * The Sequence is stuck when the current showing Content is stuck
+   * or there is not such a Content
+   */
   private updateStuck() {
     let stuck = this.stuck.get();
     let instance = this.getCurrentInstance();
@@ -248,6 +327,10 @@ export class ContentSequence {
     this.stuck.set(stuck);
   }
 
+  /**
+   * Get progress of Current Content
+   * If the Current Content is not ready when switching, use nextSegmentStartTime
+   */
   private getCurrentContentProgress() {
     const instance = this.getCurrentInstance();
     if (instance !== undefined && instance !== null) {
@@ -258,6 +341,9 @@ export class ContentSequence {
     return this.nextSegmentStartTime;
   }
 
+  /**
+   * Update progress
+   */
   private updateProgress() {
     const progress = {
       segment: this.currentSegment,
@@ -266,6 +352,9 @@ export class ContentSequence {
     this.progress.set(progress);
   }
 
+  /**
+   * Create ContentInstance from Content
+   */
   private createContent(content: ContentInfo) {
     const instanceId = `${this.option.id}|content-${content.id}|${nanoid()}`;
     const instance = new ContentInstance(instanceId, {
@@ -307,6 +396,11 @@ export class ContentSequence {
     return content.instance;
   }
 
+  /**
+   * Destroy ContentInstance from Content
+   * Note that ContentInstance is detached from its Content when it start to destroy
+   * This allows creation of new ContentInstance when the old ContentInstance is destroying
+   */
   private async destroyContent(content: ContentInfo) {
     const instance = content.instance!;
     if (instance === null) {
@@ -317,6 +411,10 @@ export class ContentSequence {
     await instance.destroy();
   }
 
+  /**
+   * Show ContentInstance from Content
+   * TODO: move logic to ContentInstance
+   */
   private showContent(content: ContentInfo) {
     const { instance } = content;
     if (instance === null) {
@@ -342,6 +440,10 @@ export class ContentSequence {
     }
   }
 
+  /**
+   * Hide ContentInstance from Content
+   * TODO: move logic to ContentInstance
+   */
   private hideContent(content: ContentInfo) {
     const instance = content.instance!;
     if (instance === null) {
@@ -397,6 +499,9 @@ export class ContentSequence {
     this.managedContentInstance.delete(instance);
   }
 
+  /**
+   * Find all Content switching blocker and setup the unblock OpenPromise
+   */
   private setupContentSwitchBlocker() {
     this.nextContentSetupUnblocked = new OpenPromise();
     this.switchingUnblocked = new OpenPromise();
@@ -414,6 +519,9 @@ export class ContentSequence {
     }
   }
 
+  /**
+   * Find all Content switching blocker and setup the unblock OpenPromise
+   */
   private setupCurrentContentReady() {
     this.currentContentReady = new OpenPromise();
     const content = this.contentList[this.currentSegment];
@@ -422,11 +530,15 @@ export class ContentSequence {
     }
   }
 
+  /**
+   * Switching Between Content
+   */
   private async contentSwitching() {
     this.ensureNotDestroyed();
+
+    // setup
     this.pauseCurrentContent();
     this.switching = true;
-    this.nextContentSetup = false;
     this.lastSegment = this.currentSegment;
     this.currentSegment = this.nextSegment;
     this.nextSegment = this.currentSegment + 1;
@@ -442,7 +554,7 @@ export class ContentSequence {
     this.nextContentSetupUnblocked = null;
     this.ensureNotDestroyed();
 
-    this.nextContentSetup = true;
+    // finish old content, setup new content
     if (this.contentList.length <= this.currentSegment) {
       this.logContent('No more content to play');
       this.eventTarget.dispatchEvent(new CustomEvent('end'));
@@ -471,6 +583,7 @@ export class ContentSequence {
     this.currentContentReady = null;
     this.ensureNotDestroyed();
 
+    // start and play the new content
     this.showContent(content);
     this.eventTarget.dispatchEvent(
       new CustomEvent('segmentStart', { detail: this.currentSegment }),
@@ -541,6 +654,10 @@ export class ContentSequence {
     }
   }
 
+  /**
+   * Preload new ContentInstance
+   * TODO: also destroy unused preloaded ContentInstance here
+   */
   private prepareNextContent() {
     if (this.currentSegment + 1 < this.contentList.length) {
       const content = this.contentList[this.currentSegment + 1];
@@ -553,6 +670,11 @@ export class ContentSequence {
     }
   }
 
+  /**
+   * Start the sequence by switch to first Content
+   * This allow some extra works to be done after construct of first content
+   * and before starting of the sequence
+   */
   switchToFirstContent() {
     if (this.firstContentSwitched) {
       this.updateStuck();

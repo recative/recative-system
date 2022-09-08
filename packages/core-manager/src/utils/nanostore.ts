@@ -16,7 +16,7 @@ export const distinctAtom = <T>(input: ReadableAtom<T>) => {
   return readonlyAtom(output);
 };
 
-export interface ThrottledAtomReturnType<T>{
+export interface ThrottledAtomReturnType<T> {
   atom: ReadableAtom<T>;
   forceUpdate: () => void;
 }
