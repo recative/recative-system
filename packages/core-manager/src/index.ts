@@ -18,10 +18,9 @@ export * from './utils/tryValidResourceUrl';
 export * from './utils/NoMoreURLAvailableError';
 export * from './utils/selectUrlAudioTypePostProcess';
 
+export * from './manager/preload/PreloadManager';
+export * from './manager/taskQueue/TaskQueueManager';
 export * from './manager/resource/ResourceListForClient';
-export type {
-  IEnvVariable,
-  IUserRelatedEnvVariable,
-  IDefaultAdditionalEnvVariable,
-} from './manager/envVariable/EnvVariableManager';
+export * from './manager/envVariable/EnvVariableManager';
+
 export type { IInitialAssetStatus } from './sequence';

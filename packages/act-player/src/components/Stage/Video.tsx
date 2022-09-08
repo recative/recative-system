@@ -187,10 +187,6 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
 
   const queryMethod = 'resourceLabel' in props.spec ? 'label' : 'id';
 
-  const queryUrlFn = 'resourceLabel' in props.spec
-    ? episodeData.resources.getResourceByLabel
-    : episodeData.resources.getResourceById;
-
   const resourceMap = 'resourceLabel' in props.spec
     ? episodeData.resources.itemsByLabel
     : episodeData.resources.itemsById;
@@ -208,8 +204,9 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
       throw new TypeError(`Resource with ${queryMethod} query "${query}" was not found`);
     }
 
-    const matchedResourceUrl = queryUrlFn(
+    const matchedResourceUrl = episodeData.resources.getResourceByQuery(
       query,
+      queryMethod,
       VIDEO_QUERY_CONFIG,
       RESOURCE_QUERY_WEIGHTS,
     );
@@ -250,17 +247,18 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
       });
   }, [
     query,
-    queryUrlFn,
     resourceMap,
     resolution,
     contentLanguage,
     queryMethod,
     clearUnstuckCheckInterval,
+    episodeData.resources,
   ]);
 
   React.useLayoutEffect(() => {
-    const matchedResource = queryUrlFn(
+    const matchedResource = episodeData.resources.getResourceByQuery(
       query,
+      queryMethod,
       {
         category: 'audio',
       },
@@ -281,15 +279,17 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
   }, [
     props.spec,
     contentLanguage,
-    queryUrlFn,
     query,
     core.coreFunctions,
+    episodeData.resources,
+    queryMethod,
   ]);
 
   React.useLayoutEffect(() => {
     if (subtitleLanguage !== 'null') {
-      const matchedResource = queryUrlFn(
+      const matchedResource = episodeData.resources.getResourceByQuery(
         query,
+        queryMethod,
         {
           category: 'subtitle',
           lang: subtitleLanguage,
@@ -327,10 +327,11 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
     props.spec,
     props.core,
     subtitleLanguage,
-    queryUrlFn,
     query,
     core.coreFunctions,
     props.id,
+    episodeData.resources,
+    queryMethod,
   ]);
 
   React.useEffect(() => {

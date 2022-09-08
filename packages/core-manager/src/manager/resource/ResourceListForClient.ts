@@ -24,6 +24,11 @@ const log = debug('core:resource-list');
 
 const GLOBAL_CACHE = new Map<string, string | OpenPromise<string>>();
 
+export enum PostProcessMagicWords {
+  Metadata = 'Metadata',
+  Url = 'Url',
+}
+
 export class ResourceListForClient extends ResourceList<IDetailedResourceItemForClient> {
   private cachedUrlMap: Map<string, string | OpenPromise<string>> = new Map();
 
@@ -59,24 +64,41 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
    * @returns A promise that resolves to the resource URL or post processed
    *          resource.
    */
-  getResourceByUrlMap = async <Result = string>(
+  getResourceByUrlMap = async <
+    Result = string,
+    PostProcess extends
+    | PostProcessCallback<Result>
+    | PostProcessMagicWords = PostProcessMagicWords.Url,
+  >(
     urlMap: Record<string, string>,
-    postProcess?: PostProcessCallback<Result>,
+    postProcess?: PostProcess,
     taskId = 'client-side-selector-url-map',
     addToGlobalCache = false,
     useSlowQueue = false,
   ): Promise<Result | null> => {
+    if (postProcess === PostProcessMagicWords.Metadata) {
+      throw new TypeError('getResourceByUrlMap can not return a resource metadata');
+    }
+
     if (REDIRECT_URL_EXTENSION_ID in urlMap) {
       const nextId = urlMap[REDIRECT_URL_EXTENSION_ID]
         .replace('redirect://', '')
         .split('#')[0];
-      const nextResource = await this.getResourceById(nextId, null, undefined, postProcess, 'file', useSlowQueue, taskId);
+      const nextResource = await this.getResourceById<Result, PostProcess>(
+        nextId,
+        null,
+        undefined,
+        postProcess,
+        'file',
+        useSlowQueue,
+        taskId,
+      );
 
       if (!nextResource) {
         throw new TypeError(`Resource ${nextId} not found.`);
       }
 
-      return nextResource;
+      return nextResource as Result;
     }
 
     const encodedUrlMap = JSON.stringify(urlMap);
@@ -88,7 +110,7 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
       cachedMap.set(encodedUrlMap, url);
       cachedPromise.resolve(url);
 
-      if (postProcess) {
+      if (postProcess && postProcess !== PostProcessMagicWords.Url) {
         return postProcess(url);
       }
 
@@ -164,14 +186,26 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
    * @returns A promise that resolves to the resource URL or post processed
    *          resource.
    */
-  getResourceByResourceDescription = <Result = string>(
+  getResourceByResourceDescription = <
+    Result = string,
+    PostProcess extends
+    | PostProcessCallback<Result>
+    | PostProcessMagicWords = PostProcessMagicWords.Url,
+  >(
     resource: IDetailedResourceItemForClient,
     envConfig: Record<string, string> | null = null,
     weights?: Record<string, number>,
-    postProcess?: PostProcessCallback<Result>,
+    postProcess?: PostProcess,
     useSlowQueue = false,
     taskId = 'client-query',
-  ) => {
+  ):Promise<
+  | null
+  | (
+    PostProcess extends PostProcessMagicWords.Metadata
+      ? IDetailedResourceItemForClient
+      : Result
+  )
+  > => {
     let finalResource: IDetailedResourceItemForClient | undefined;
 
     if (resource.type === 'group') {
@@ -199,18 +233,26 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
       return Promise.resolve(null);
     }
 
+    if (postProcess === PostProcessMagicWords.Metadata) {
+      // type `PostProcess` is PostProcessMagicWords.Metadata now
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return Promise.resolve(finalResource ?? null) as any;
+    }
+
     const shouldCacheToGlobal = this.enableGlobalCache && (
       !finalResource.episodeIds.length
       || finalResource.cacheToHardDisk
     );
 
-    return this.getResourceByUrlMap(
+    // type `PostProcess` is not PostProcessMagicWords.Metadata now
+    return this.getResourceByUrlMap<Result, PostProcess>(
       finalResource.url,
       postProcess,
       taskId,
       shouldCacheToGlobal,
       useSlowQueue,
-    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ) as any;
   };
 
   /**
@@ -230,11 +272,16 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
    * @returns A promise that resolves to the resource URL or post processed
    *          resource.
    */
-  getResourceById = <Result = string>(
+  getResourceById = <
+    Result = string,
+    PostProcess extends
+    | PostProcessCallback<Result>
+    | PostProcessMagicWords = PostProcessMagicWords.Url,
+  >(
     id: string,
     envConfig: Record<string, string> | null = null,
     weights?: Record<string, number>,
-    postProcess?: PostProcessCallback<Result>,
+    postProcess?: PostProcess,
     resourceType?: 'group' | 'file',
     useSlowQueue = false,
     taskId = `client-${id}`,
@@ -243,7 +290,7 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
 
     if (!resource) return null;
 
-    return this.getResourceByResourceDescription(
+    return this.getResourceByResourceDescription<Result, PostProcess>(
       resource,
       envConfig,
       weights,
@@ -315,11 +362,16 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
    * @returns A promise that resolves to the resource URL or post processed
    *          resource.
    */
-  getResourceByLabel = <Result = string>(
+  getResourceByLabel = <
+    Result = string,
+    PostProcess extends
+    | PostProcessCallback<Result>
+    | PostProcessMagicWords = PostProcessMagicWords.Url,
+  >(
     label: string,
     envConfig: Record<string, string> | null = null,
     weights?: Record<string, number>,
-    postProcess?: PostProcessCallback<Result>,
+    postProcess?: PostProcess,
     resourceType?: 'group' | 'file',
     useSlowQueue = false,
     taskId = `client-${label}`,
@@ -328,11 +380,65 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
 
     if (!resource) return null;
 
-    return this.getResourceByResourceDescription(
+    return this.getResourceByResourceDescription<Result, PostProcess>(
       resource,
       envConfig,
       weights,
       postProcess,
+      useSlowQueue,
+      taskId,
+    );
+  };
+
+  /**
+   * Get resource by resource query.
+   * @param label The object that indicate the query method.
+   * @param envConfig Environment variable, this value will be used if the
+   *                  resource is a group, `smart-resource` will pick one file
+   *                  from the group by the configuration.
+   * @param weights Weight of each configuration.
+   * @param postProcess Post process function, will convert the resource URL to
+   *                    whatever you want. If the callback is not provided, this
+   *                    method will return a URL, otherwise it will return the
+   *                    result of the callback.
+   * @param resourceType The resource is a group or file, if not provided, a
+   *                     guessing strategy will be used.
+   * @param taskId Task ID for debug purpose, will only be shown in the debug log.
+   * @returns A promise that resolves to the resource URL or post processed
+   *          resource.
+   */
+  getResourceByQuery = <
+    Result = string,
+    PostProcess extends
+    | PostProcessCallback<Result>
+    | PostProcessMagicWords = PostProcessMagicWords.Url,
+  >(
+    query: string,
+    queryType: 'label' | 'id',
+    envConfig: Record<string, string> | null = null,
+    weights?: Record<string, number>,
+    postProcess?: PostProcess,
+    resourceType?: 'group' | 'file',
+    useSlowQueue = false,
+    taskId = `client-${query}`,
+  ) => {
+    if (queryType === 'label') {
+      return this.getResourceByLabel<Result, PostProcess>(
+        query,
+        envConfig,
+        weights,
+        postProcess,
+        resourceType,
+        useSlowQueue,
+        taskId,
+      );
+    }
+    return this.getResourceById<Result, PostProcess>(
+      query,
+      envConfig,
+      weights,
+      postProcess,
+      resourceType,
       useSlowQueue,
       taskId,
     );
