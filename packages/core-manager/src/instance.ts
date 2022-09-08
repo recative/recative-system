@@ -45,34 +45,55 @@ export interface InstanceOption {
 }
 
 /**
+ * An Instance of the Content
  * This should only be used in this package
  */
 export class ContentInstance extends WithLogger {
-  // states
+  /**
+   * Lifecycle state of ContentInstance
+   */
   state: ContentState = 'idle';
 
+  /**
+   * Is the ContentInstance showing
+   */
   showing: boolean = false;
 
-  // timeline & video related
+  /**
+   * Timeline, for scheduling and synchronization
+   */
   timeline: Timeline;
 
+  /**
+   * A handle of the timeline related function of component
+   */
   remote: Remote;
 
+  /**
+   * A channel for the component to report progress
+   */
   progressReporter: ProgressReporter;
 
-  // state on the main timeline
-  managedCoreStateList = new ManagedCoreStateList();
-
+  /**
+   * The Audio track that synchronized with the timeline
+   */
   audioTrack: AudioTrack;
 
-  // interaction related
-  audioHost: AudioHost;
-
-  taskQueueManager: TaskQueueManager;
+  managedCoreStateList = new ManagedCoreStateList();
 
   managedStateEnabled = false;
 
+  /**
+   * Collection of audio sources that can be directly controlled from component
+   */
+  audioHost: AudioHost;
+
+  /**
+   * Collection of Sequences that that can be directly controlled from component
+   */
   subsequenceManager: SubsequenceManager;
+
+  taskQueueManager: TaskQueueManager;
 
   private destroyPromise: Promise<void> | null = null;
 
@@ -113,9 +134,7 @@ export class ContentInstance extends WithLogger {
     this.remote = remote;
     // Since the RemoteTrack initialization requires the component,
     // we delay addition of remote track at component preload
-    this.timeline.addTrack(
-      new MonitorTrack(option.onUpdate, option.onStuckChange), -Infinity,
-    );
+    this.timeline.addTrack(new MonitorTrack(option.onUpdate, option.onStuckChange), -Infinity);
     this.audioTrack = new AudioTrack(option.audioStation, id);
     this.audioTrack.logger = this.logger?.extend(`audioTrack(${id})`) || null;
     this.audioTrack.setVolume(option.volume);
@@ -156,6 +175,13 @@ export class ContentInstance extends WithLogger {
     });
   }
 
+  /**
+   * Check state transition
+   * Validate state changes are:
+   * - idle -> preloading -> ready
+   * - any state above to destroying
+   * - any state above to destroyed
+   */
   private static validateContentStateChange(
     oldState: ContentState,
     newState: ContentState,
@@ -187,6 +213,10 @@ export class ContentInstance extends WithLogger {
     return true;
   }
 
+  /**
+   * Update State
+   * TODO: cleanup state transition method
+   */
   updateState(state: ContentState) {
     if (this.state === state) {
       return;
@@ -212,6 +242,9 @@ export class ContentInstance extends WithLogger {
     this.option.handleStateChange(state);
   }
 
+  /**
+   * Finish the ContentInstance
+   */
   finishItself() {
     this.option.handleFinish();
   }
