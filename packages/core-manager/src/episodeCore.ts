@@ -30,7 +30,7 @@ import { jsonAtom } from './utils/jsonAtom';
 import { isNotNullable } from './utils/isNullable';
 import { filterBGMState } from './utils/managedCoreState';
 import { connect, readonlyAtom } from './utils/nanostore';
-import { selectUrlAudioTypePostProcess } from './utils/selectUrlAudioTypePostProcess';
+import { RawAudioClipResponse, selectUrlAudioTypePostProcess } from './utils/selectUrlAudioTypePostProcess';
 import type {
   CoreState,
   EpisodeData,
@@ -52,6 +52,7 @@ import { EnvVariableManager, DEFAULT_LANGUAGE } from './manager/envVariable/EnvV
 import { ContentSequence, IInitialAssetStatus } from './sequence';
 
 import type { IDefaultAdditionalEnvVariable } from './manager/envVariable/EnvVariableManager';
+import { PostProcessCallback } from './utils/tryValidResourceUrl';
 
 export interface EpisodeCoreConfig<T> {
   initialEnvVariable: T;
@@ -563,13 +564,19 @@ export class EpisodeCore<
           id: x.requestId,
           audioClip:
             'resourceLabel' in x
-              ? this.getEpisodeData()!.resources.getResourceByLabel(
+              ? this.getEpisodeData()!.resources.getResourceByLabel<
+              RawAudioClipResponse,
+              PostProcessCallback<RawAudioClipResponse, unknown>
+              >(
                 x.resourceLabel,
                 addAudioEnv,
                 addAudioWeight,
                 selectUrlAudioTypePostProcess,
               )
-              : this.getEpisodeData()!.resources.getResourceById(
+              : this.getEpisodeData()!.resources.getResourceById<
+              RawAudioClipResponse,
+              PostProcessCallback<RawAudioClipResponse, unknown>
+              >(
                 x.resourceId,
                 addAudioEnv,
                 addAudioWeight,

@@ -9,7 +9,8 @@ import {
 import { BGMSpec } from '../audio/bgmManager';
 import type { BGMStateSpec, InternalEpisodeData } from '../types';
 
-import { selectUrlAudioTypePostProcess } from './selectUrlAudioTypePostProcess';
+import { RawAudioClipResponse, selectUrlAudioTypePostProcess } from './selectUrlAudioTypePostProcess';
+import { PostProcessCallback } from './tryValidResourceUrl';
 
 export const filterBGMState = (
   states: Set<ManagedCoreState<unknown>>,
@@ -34,7 +35,10 @@ export const filterBGMState = (
 
   const spec: BGMSpec[] = [];
   bgmStates.forEach((state, id) => {
-    const audioClipPromise = episodeData.resources.getResourceById(
+    const audioClipPromise = episodeData.resources.getResourceById<
+    RawAudioClipResponse,
+    PostProcessCallback<RawAudioClipResponse, unknown>
+    >(
       state.resourceId,
       null,
       undefined,

@@ -11,6 +11,7 @@ import {
 import { isNotNullable } from '../../utils/isNullable';
 
 import type { EpisodeCore } from '../../episodeCore';
+import { PostProcessCallback } from '../../utils/tryValidResourceUrl';
 
 const log = debug('core:preload');
 
@@ -69,7 +70,10 @@ export class PreloadManager {
     reason = 'unknown',
   ) => {
     const episodeData = this.ensureEpisodeData();
-    return episodeData.resources.getResourceById(
+    return episodeData.resources.getResourceById<
+    string,
+    PostProcessCallback<string, unknown>
+    >(
       resource.id,
       null,
       undefined,
