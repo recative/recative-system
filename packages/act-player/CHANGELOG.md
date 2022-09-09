@@ -1,5 +1,11 @@
 # @recative/act-player
 
+## 0.3.2
+
+### Patch Changes
+
+- feat: Postprocess function will also return resource metadata now
+
 ## 0.3.1
 
 ### Patch Changes
