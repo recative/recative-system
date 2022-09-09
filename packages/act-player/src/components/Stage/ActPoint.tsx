@@ -70,8 +70,8 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
     const formattedEntryPoint = new URL(entryPoint, window.location.href);
     const currentPage = new URL(window.location.href);
 
-    formattedEntryPoint.searchParams.forEach((value, key) => {
-      return currentPage.searchParams.set(key, value);
+    currentPage.searchParams.forEach((value, key) => {
+      return formattedEntryPoint.searchParams.set(key, value);
     });
 
     return formattedEntryPoint.toString();
