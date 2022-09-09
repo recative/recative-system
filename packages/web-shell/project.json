@@ -3,10 +3,10 @@
   "sourceRoot": "packages/web-shell/src",
   "projectType": "application",
   "targets": {
-    "build": {
+    "bundle": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
-        "command": "yarn build",
+        "command": "yarn bundle",
         "cwd": "packages/web-shell"
       }
     },
