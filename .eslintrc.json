@@ -107,6 +107,7 @@
         "react/forbid-dom-props": [2, { "forbid": ["style"] }],
         "jsx-a11y/iframe-has-title": "warn",
         "jsx-a11y/media-has-caption": "warn",
+        "function-paren-newline": "off",
         "jsx-a11y/alt-text": "warn"
       }
     },
