@@ -15,7 +15,6 @@
  *   loaded modules.
  */
 export * from './hooks/useRemoteData';
-export * from './hooks/useEnvVariable';
 export * from './hooks/useEpisodeDetail';
 export * from './hooks/useUserImplementedFunctions';
 export { useSdkConfig, useEpisodes } from './hooks/useSdkConfig';
