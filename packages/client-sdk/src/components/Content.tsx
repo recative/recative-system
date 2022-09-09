@@ -157,7 +157,21 @@ EnvVariable extends Record<string, unknown>,
         [normalizeEpisodeId, rawEpisodeId],
       );
 
+      const episodeDetail = useEpisodeDetail(episodeId ?? null);
+
       const dataFetcher = useDataFetcher();
+
+      const injectedEnvVariable = React.useMemo(() => ({
+        episodeId,
+        assets: envVariable?.assets,
+        episode: envVariable?.episode,
+        ...episodeDetail,
+      } as unknown as EnvVariable), [
+        envVariable?.assets,
+        envVariable?.episode,
+        episodeDetail,
+        episodeId,
+      ]);
 
       const injectedUserImplementedFunctions = React.useMemo<
       Partial<RawUserImplementedFunctions>
@@ -193,16 +207,15 @@ EnvVariable extends Record<string, unknown>,
         episodeId ?? null,
         preferredUploaders,
         trustedUploaders,
-        envVariable,
+        injectedEnvVariable,
         userData,
+        episodeDetail,
         internalUsePlayerPropsHook,
         playerPropsHookDependencies,
         injectedUserImplementedFunctions,
         onEpisodeIdUpdate,
         seriesCoreRef,
       );
-
-      const episodeDetail = useEpisodeDetail(episodeId ?? null);
 
       const injectedEpisodeMetadata = React.useMemo(() => ({
         attemptAutoplay: injectToSdk?.attemptAutoplay ?? attemptAutoplay,
@@ -224,7 +237,7 @@ EnvVariable extends Record<string, unknown>,
         injectToSdk?.trustedUploaders ?? trustedUploaders,
         injectedEpisodeMetadata,
         hookUserImplementedFunctions ?? injectedUserImplementedFunctions,
-        hookEnvVariable ?? envVariable,
+        hookEnvVariable ?? injectedEnvVariable,
         hookUserData ?? userData,
         getInjectedEpisodeMetadata,
         onEpisodeIdUpdate,

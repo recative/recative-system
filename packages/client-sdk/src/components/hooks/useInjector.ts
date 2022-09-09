@@ -17,9 +17,9 @@ import type {
 import type { IManagedActPointProps } from '@recative/act-player';
 import type { RawUserImplementedFunctions } from '@recative/definitions';
 
+import type { IEpisodeDetail } from '../../external';
 import type { IContentProps } from '../Content';
 
-import { useEpisodeDetail } from '../../external';
 import { useEpisodeIdNormalizer } from './useEpisodeIdNormalizer';
 import { useDataFetcher } from './useDataFetcher';
 
@@ -99,6 +99,7 @@ export const useInjector = <
     trustedUploaders: string[],
     envVariable: EnvVariable | undefined,
     userData: IUserRelatedEnvVariable | undefined,
+    episodeDetail: IEpisodeDetail | null,
     internalUsePlayerPropsHook:
     PlayerPropsInjectorHook<PlayerPropsInjectedDependencies, EnvVariable> | undefined,
     playerPropsHookDependencies: PlayerPropsInjectedDependencies,
@@ -125,7 +126,6 @@ export const useInjector = <
   PlayerPropsInjectedDependencies, EnvVariable
   > = internalUsePlayerPropsHook ?? usePlayerPropsDefaultHook;
 
-  const episodeDetail = useEpisodeDetail(episodeId);
   const normalizeEpisodeId = useEpisodeIdNormalizer();
 
   const internalDependencies = React.useMemo(() => ({
