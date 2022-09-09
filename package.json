@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "build": "nx run-many --target=build",
+    "bundle": "nx run-many --target=bundle",
     "changelog": "changeset",
     "version": "changeset version --tag",
     "version:beta": "changeset pre enter beta",
