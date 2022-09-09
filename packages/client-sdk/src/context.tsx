@@ -29,6 +29,7 @@ export const PlayerSdkProvider: React.FC<IPlayerSdkProviderProps> = ({
   const [clientSdkConfig, setClientSdkConfig] = React.useState<IClientSdkConfig>({
     pathPattern,
     episodesMap: new Map(),
+    episodeOrderToEpisodeIdMap: new Map(),
     initialAssetStatus: undefined,
     videoModalUrls: [],
     dataType,
@@ -71,15 +72,20 @@ export const PlayerSdkProvider: React.FC<IPlayerSdkProviderProps> = ({
     log('Episode list updated: ', episodes.result);
 
     if (episodes.result) {
-      const result = new Map();
+      const episodesMap = new Map();
 
       (episodes.result as IEpisodeAbstraction[]).forEach(({ episode }) => {
-        result.set(episode.id, episode);
+        episodesMap.set(episode.id, episode);
       });
+
+      const episodeOrderToEpisodeIdMap = new Map<number, string>();
+
+      episodesMap.forEach((episode) => episodeOrderToEpisodeIdMap.set(episode.order, episode.id));
 
       setClientSdkConfig((previousClientSdkConfig) => ({
         ...previousClientSdkConfig,
-        episodesMap: result,
+        episodesMap,
+        episodeOrderToEpisodeIdMap,
       }));
     }
   }, [episodes.result]);
