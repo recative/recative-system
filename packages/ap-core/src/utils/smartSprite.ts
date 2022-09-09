@@ -171,7 +171,10 @@ export class SmartSprite extends PIXI.Sprite {
 
     return new PIXI.Texture(
       baseTexture,
-      smartTextureInfo.frame, smartTextureInfo.orig, smartTextureInfo.trim, smartTextureInfo.rotate,
+      smartTextureInfo.frame,
+      smartTextureInfo.orig,
+      smartTextureInfo.trim,
+      smartTextureInfo.rotate,
     );
   }
 
