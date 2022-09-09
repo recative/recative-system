@@ -163,15 +163,10 @@ EnvVariable extends Record<string, unknown>,
 
       const injectedEnvVariable = React.useMemo(() => ({
         episodeId,
-        assets: envVariable?.assets,
-        episode: envVariable?.episode,
-        ...episodeDetail,
-      } as unknown as EnvVariable), [
-        envVariable?.assets,
-        envVariable?.episode,
-        episodeDetail,
-        episodeId,
-      ]);
+        assets: episodeDetail?.assets,
+        episode: episodeDetail?.episode,
+        ...envVariable,
+      } as unknown as EnvVariable), [episodeDetail, episodeId, envVariable]);
 
       const injectedUserImplementedFunctions = React.useMemo<
       Partial<RawUserImplementedFunctions>
