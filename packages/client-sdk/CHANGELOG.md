@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.2.4
+
+### Patch Changes
+
+- 830326e: feat: Add normalize function to `useEpisodeDetail` hook
+
 ## 5.2.3
 
 ### Patch Changes
