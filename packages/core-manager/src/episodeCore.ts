@@ -516,6 +516,7 @@ export class EpisodeCore<
       ) => (...args: Parameters<F>) => {
         this.ensureNotDestroyed();
         const instance = getInstanceFromComponentName();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return (instance[feature][key] as any)?.call(
           instance[feature],
           ...args,
