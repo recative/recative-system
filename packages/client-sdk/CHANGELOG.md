@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.2.3
+
+### Patch Changes
+
+- fix: Incorrectly injected envVariable
+
 ## 5.2.2
 
 ### Patch Changes

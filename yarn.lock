@@ -5532,7 +5532,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@recative/act-player@^0.3.0, @recative/act-player@^0.3.1, @recative/act-player@workspace:packages/act-player":
+"@recative/act-player@^0.3.0, @recative/act-player@^0.3.2, @recative/act-player@workspace:packages/act-player":
   version: 0.0.0-use.local
   resolution: "@recative/act-player@workspace:packages/act-player"
   dependencies:
@@ -5736,7 +5736,7 @@ __metadata:
     "@nanostores/react": ^0.1.5
     "@paciolan/remote-module-loader": ^3.0.2
     "@react-hookz/web": ^15.1.0
-    "@recative/act-player": ^0.3.1
+    "@recative/act-player": ^0.3.2
     "@recative/act-protocol": ^0.2.7
     "@recative/core-manager": ^0.5.3
     "@recative/definitions": ^0.4.2
@@ -5755,7 +5755,7 @@ __metadata:
   peerDependencies:
     "@nanostores/react": ^0.1.5
     "@paciolan/remote-module-loader": "*"
-    "@recative/act-player": 0.3.1
+    "@recative/act-player": 0.3.2
     "@recative/act-protocol": "*"
     "@recative/core-manager": 0.5.3
     "@recative/smart-resource": "*"
