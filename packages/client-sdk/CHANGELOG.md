@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.2.1
+
+### Patch Changes
+
+- 772ae46: chore: Inject more episode related details into envVariable
+- Updated dependencies [bd1c6f8]
+  - @recative/act-player@0.3.1
+
 ## 5.2.0
 
 ### Minor Changes

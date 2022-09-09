@@ -1,5 +1,11 @@
 # @recative/act-player
 
+## 0.3.1
+
+### Patch Changes
+
+- bd1c6f8: fix: Query parameter not passed into act point correctly
+
 ## 0.3.0
 
 ### Minor Changes
