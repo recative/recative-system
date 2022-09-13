@@ -22,3 +22,9 @@ export const useEnvVariableUpdateCallback = (
     subscriber(data);
   }
 };
+
+export const useEnvVariableGetter = () => {
+  const [getEnvVariable] = useStore(ENV_VARIABLE_STORE);
+
+  return getEnvVariable;
+};
