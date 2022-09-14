@@ -73,7 +73,7 @@ const DefaultContainerComponent: React.FC<React.PropsWithChildren<{}>> = ({ chil
 const hostSearchParameters: Record<string, string> = {};
 
 if (typeof window !== 'undefined') {
-  new URLSearchParams(window.location.search).forEach(([value, key]) => {
+  new URLSearchParams(window.location.search).forEach((value, key) => {
     hostSearchParameters[key] = value;
   });
 }
