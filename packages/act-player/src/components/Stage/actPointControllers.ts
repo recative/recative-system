@@ -132,24 +132,16 @@ export const getController = (id: string) => {
             return resource;
           },
           getResourceUrl: async (
-            resourceId: string,
+            resourceQuery: string,
             searchBy: 'label' | 'id',
             resourceType?: 'group' | 'file',
             envConfig: Record<string, string> | null = null,
           ) => {
             const resourceList = coreFunctions!.core.getEpisodeData()!.resources;
 
-            if (searchBy === 'label') {
-              return resourceList.getResourceByLabel(
-                resourceId,
-                envConfig,
-                undefined,
-                undefined,
-                resourceType,
-              );
-            }
-            return resourceList.getResourceById(
-              resourceId,
+            return resourceList.getResourceByQuery(
+              resourceQuery,
+              searchBy,
               envConfig,
               undefined,
               undefined,
