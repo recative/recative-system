@@ -1,6 +1,6 @@
 {
   "name": "@recative/ap-preview",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "source": "src/index.html",
   "repository": "https://github.com/recative/recative-system",
   "scripts": {
