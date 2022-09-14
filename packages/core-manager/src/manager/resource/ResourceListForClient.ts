@@ -155,7 +155,7 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
       AdditionalData
       >(
         selectUrl(
-          urlMap,
+          finalUrlMap,
           this.core.getEpisodeData()!.preferredUploaders,
           this.core.resolution.get(),
           logObject,
