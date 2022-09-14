@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.6
+
+### Patch Changes
+
+- f90f645: fix: Resource redirection not working correctly
+
 ## 0.5.3
 
 ### Patch Changes
