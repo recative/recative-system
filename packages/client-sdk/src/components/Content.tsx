@@ -70,6 +70,14 @@ const DefaultContainerComponent: React.FC<React.PropsWithChildren<{}>> = ({ chil
   </div>
 );
 
+const hostSearchParameters: Record<string, string> = {};
+
+if (typeof window !== 'undefined') {
+  new URLSearchParams(window.location.search).forEach((value, key) => {
+    hostSearchParameters[key] = value;
+  });
+}
+
 const DefaultContainerModule = {
   Container: DefaultContainerComponent,
 };
@@ -165,6 +173,7 @@ EnvVariable extends Record<string, unknown>,
         episodeId,
         assets: episodeDetail?.assets,
         episode: episodeDetail?.episode,
+        hostSearchParameters,
         ...envVariable,
       } as unknown as EnvVariable), [episodeDetail, episodeId, envVariable]);
 

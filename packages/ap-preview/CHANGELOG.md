@@ -1,5 +1,11 @@
 # @recative/ap-preview
 
+## 0.4.1
+
+### Patch Changes
+
+- 2c792e0: fix: Remove episodeId overwritter
+
 ## 0.4.0
 
 ### Minor Changes

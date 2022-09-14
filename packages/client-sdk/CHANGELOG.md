@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.3.0
+
+### Minor Changes
+
+- 601b807: feat: Pass search parameter of host page into envVariable
+
 ## 5.2.5
 
 ### Patch Changes
