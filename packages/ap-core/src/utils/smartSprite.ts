@@ -100,7 +100,7 @@ const useSmartTextureInfo = (
       if (!textureInfoResponse?.success) {
         console.warn(
           'Failed to generate SmartTextureInfo:',
-          (textureInfoResponse as IFailedResponse).error
+          (textureInfoResponse as IFailedResponse).error,
         );
         return {};
       }

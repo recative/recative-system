@@ -50,7 +50,7 @@ const useSmartTextureInfoSequence = (
       if (metadataResponse && !metadataResponse.success) {
         console.warn(
           'Failed to get metadata:',
-          (metadataResponse as IFailedResponse).error
+          (metadataResponse as IFailedResponse).error,
         );
         return null;
       }
