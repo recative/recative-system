@@ -25,7 +25,6 @@ export const useEnvVariable = (): Record<string, unknown> => {
       const envVariable = await response2.json();
 
       return {
-        episodeId,
         ...envVariable,
       };
     } catch (e) {
