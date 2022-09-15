@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.3.2
+
+### Patch Changes
+
+- c98d4cb: chore: Better episodeID detection method
+
 ## 5.3.1
 
 ### Patch Changes

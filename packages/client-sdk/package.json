@@ -1,6 +1,6 @@
 {
   "name": "@recative/client-sdk",
-  "version": "5.3.1",
+  "version": "5.3.2",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
