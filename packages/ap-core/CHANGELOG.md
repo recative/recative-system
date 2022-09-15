@@ -1,5 +1,11 @@
 # @recative/ap-core
 
+## 0.4.1
+
+### Patch Changes
+
+- 7554f7f: fix: Recover old context after context.wrap
+
 ## 0.4.0
 
 ### Minor Changes
