@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.3.1
+
+### Patch Changes
+
+- c08112a: fix: Episode id normalizer not working correctly
+- Updated dependencies [c1cadd8]
+  - @recative/definitions@0.4.3
+
 ## 5.3.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.3
+
+### Patch Changes
+
+- c1cadd8: fix: Update baseUI color definition
+
 ## 0.4.2
 
 ### Patch Changes
