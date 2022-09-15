@@ -2,6 +2,10 @@ import * as React from 'react';
 
 import { useSdkConfig } from '../../hooks/useSdkConfig';
 
+const isNumeric = (value: string) => {
+  return /^-?\d+$/.test(value);
+};
+
 export const useEpisodeIdNormalizer = () => {
   const config = useSdkConfig();
 
@@ -9,7 +13,7 @@ export const useEpisodeIdNormalizer = () => {
     if (!episodeId) return episodeId;
 
     const nEpisodeId = Number.parseInt(episodeId, 10);
-    const parsedEpisodeId = Number.isNaN(nEpisodeId)
+    const parsedEpisodeId = isNumeric(episodeId) && Number.isNaN(nEpisodeId)
       ? episodeId
       : config.episodeOrderToEpisodeIdMap.get(nEpisodeId);
 
