@@ -6224,7 +6224,6 @@ __metadata:
     "@paciolan/remote-module-loader": ^3.0.2
     "@recative/act-player": ^0.3.2
     "@recative/client-sdk": ^5.3.2
-    "@recative/open-promise": ^0.2.1
     "@types/craco__craco": ^6.4.0
     "@types/fs-extra": ^9.0.13
     "@types/path-browserify": ^1.0.0
