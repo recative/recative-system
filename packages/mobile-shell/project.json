@@ -1,0 +1,43 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/mobile-shell/src",
+  "projectType": "application",
+  "targets": {
+    "bundle": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "command": "yarn bundle",
+        "cwd": "packages/mobile-shell"
+      }
+    },
+    "start": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "command": "yarn start",
+        "cwd": "packages/mobile-shell"
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "command": "yarn lint",
+        "cwd": "packages/mobile-shell"
+      }
+    },
+    "test": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "command": "yarn test",
+        "cwd": "packages/mobile-shell"
+      }
+    },
+    "sync": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "command": "yarn ionic cap sync",
+        "cwd": "packages/mobile-shell"
+      }
+    }
+  },
+  "tags": []
+}

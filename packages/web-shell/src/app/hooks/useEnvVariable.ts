@@ -1,8 +1,7 @@
 import * as React from 'react';
 
-import { IEpisodeDetail, useEpisodes } from '@recative/client-sdk';
-
-import { getDiagnosisInformation } from '../utils/getDiagnosisInformation';
+import { useEpisodes, getDiagnosisInformation } from '@recative/client-sdk';
+import type { IEpisodeDetail } from '@recative/client-sdk';
 
 export const useEnvVariable = (
   episodeDetail: IEpisodeDetail | null,

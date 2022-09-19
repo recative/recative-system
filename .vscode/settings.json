@@ -3,6 +3,7 @@
         "Azeret",
         "baseui",
         "bson",
+        "cacheable",
         "clabel",
         "clsx",
         "codicon",
@@ -12,10 +13,12 @@
         "nanostore",
         "nanostores",
         "nrwl",
+        "overriden",
         "paciolan",
         "PIXI",
         "playsinline",
         "polyv",
+        "precaching",
         "recative",
         "sublist",
         "textureupdate",
@@ -23,7 +26,10 @@
         "ungap",
         "unplugin",
         "UPLOADERS",
-        "Uson"
+        "Uson",
+        "vconsole",
+        "wdyr",
+        "welldone"
     ],
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "[typescriptreact]": {

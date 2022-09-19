@@ -1,0 +1,15 @@
+:root {
+    --safe-area-top: env(safe-area-inset-top);
+    --safe-area-right: env(safe-area-inset-right);
+    --safe-area-bottom: env(safe-area-inset-bottom);
+    --safe-area-left: env(safe-area-inset-left);
+}
+
+html,
+#root,
+ion-app {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
