@@ -272,7 +272,11 @@ EnvVariable extends Record<string, unknown>,
           episodeDetailRequestStatus={
             episodeId && config.requestStatus[episodeId]
           }
-          episodeId={episodeDetail?.episode.id || ''}
+          // We must use episode id from episodeCore but not from the router or
+          // the episodeDetail, this is a problem of lifecycle, only id in
+          // episode id changed means the episode core ready, and we can
+          // initialize the episode safely.
+          episodeId={episodeCore?.episodeId || ''}
           episodes={config.episodesMap}
           {...props}
           {...injectToContainer}
