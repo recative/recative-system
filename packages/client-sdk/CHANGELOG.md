@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.3.3
+
+### Patch Changes
+
+- 013f7f0: fix: Episode id not resolve correctly
+
 ## 5.3.2
 
 ### Patch Changes

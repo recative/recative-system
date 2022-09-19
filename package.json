@@ -8,10 +8,12 @@
     "run:in": "nx run",
     "bundle": "nx run-many --target=bundle",
     "changelog": "changeset",
-    "version": "changeset version --tag",
+    "version": "changeset version",
     "version:beta": "changeset pre enter beta",
     "version:prod": "changeset pre exit",
-    "publish": "nx run-many --target=publish",
+    "publish:npm": "nx run-many --target=publish && changeset tag",
+    "publish:tag": "changeset tag",
+    "publish": "run-s -s publish:npm publish:tag",
     "prepare": "husky install"
   },
   "devDependencies": {
@@ -65,6 +67,7 @@
   "dependencies": {
     "@rollup/plugin-commonjs": "^22.0.2",
     "baseui": "12.1.2",
+    "npm-run-all": "^4.1.5",
     "rollup-plugin-polyfill-node": "^0.10.2",
     "styletron-engine-monolithic": "1.0.0",
     "styletron-react": "6.1.0",

@@ -1,5 +1,11 @@
 # @recative/ap-preview
 
+## 0.4.2
+
+### Patch Changes
+
+- 2d4f614: chore: Make `act-player` as dependency of `ap-preview`
+
 ## 0.4.1
 
 ### Patch Changes
