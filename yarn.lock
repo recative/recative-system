@@ -6269,6 +6269,7 @@ __metadata:
   resolution: "@recative/open-promise@workspace:packages/open-promise"
   dependencies:
     "@types/debug": ^4.1.7
+    "@ungap/event-target": ^0.2.3
     debug: ^4.3.4
   languageName: unknown
   linkType: soft
