@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.3.4
+
+### Patch Changes
+
+- Updated dependencies [3ea3282]
+  - @recative/ugly-json@0.0.1
+
 ## 5.3.3
 
 ### Patch Changes
