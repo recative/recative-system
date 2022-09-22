@@ -22,14 +22,13 @@ import type { IContentProps } from '../Content';
 
 import { useEpisodeIdNormalizer } from './useEpisodeIdNormalizer';
 import { useDataFetcher } from './useDataFetcher';
+import { useInjectedParameterDiagnosisTool } from './useInjectedParameterDiagnosisTool';
 
 const log = debug('client:injector');
 
 const logGroup = debug('client:injector');
 // eslint-disable-next-line no-console
 logGroup.log = console.groupCollapsed.bind(console);
-// eslint-disable-next-line no-console
-const endLogGroup = console.groupEnd;
 
 export interface InjectedProps<
   PlayerPropsInjectedDependencies,
@@ -196,29 +195,14 @@ export const useInjector = <
     };
   }, [injectToSdk]);
 
-  React.useEffect(() => {
-    logGroup('Injected parameters changed');
-    logGroup('Episode:');
-    log('#:', episodeId);
-    log('Detail', episodeDetail);
-    endLogGroup();
-    logGroup('Injection:');
-    log('In:', playerPropsHookProps);
-    logGroup('Out:');
-    log('-> SDK:', injectToSdk);
-    log('-> Player:', injectToPlayer);
-    log('-> Container:', injectToContainer);
-    endLogGroup();
-    endLogGroup();
-    endLogGroup();
-  }, [
+  useInjectedParameterDiagnosisTool(
     episodeId,
     episodeDetail,
     injectToSdk,
     injectToPlayer,
     injectToContainer,
     playerPropsHookProps,
-  ]);
+  );
 
   return {
     hookOnEnd,
