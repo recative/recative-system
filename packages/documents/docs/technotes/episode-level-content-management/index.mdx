@@ -94,10 +94,11 @@ React Elements for different contents, and connect these contents with
 ## Essential parts of a player
 
 The interface components implemented above are default official implementation
-of the player, actually developers can pass their own 
+of the player, developers can pass their own 
 [interface component implementation](/api/act-player/interface/IUnmanagedActPointProps#interfaceComponents)
 into the player and customize the visual experience and functionality of the
-player.
+player. All interface components are React components, they are stored in an
+array, they will be rendered in the player container.
 
 ### Building a interface component
 
@@ -119,22 +120,42 @@ After the component is created, we can start to interact with the *Episode Core*
 There're different type of interface components, you can choose one based on
 your technical requirement.
 
-* **Naïve components:** If there's no need to let **Episode Core** controlling
+* **Naïve components:** If we don't need let the *Episode Core* to control
 the lifecycle of the component, this component is a naïve component, we don't
-need to do anything special, it will works fine.
+need to do anything special.
 
-* **Managed components:** There can be other kinds of components. The most notable
-kind is the transition animation components that can temporarily block the
-content switching process. See "Switching between contents" section below.
+* **Managed components:** Managed components hooked up with the life cycle
+management process of the *Episode Core*,
+[component functions](/api/core-manager/interface/ComponentFunctions). Here are
+some use cases:
+  * **A play button layer:** if the media playback was paused, ask core
+    call the `pause` function we provided via `componentFunctions`. When the
+    function was called, we show the large "play" button.
+  * **A transition animation layer:** show an animation while switching between
+    assets above the player, which can hide the underlying resource loading
+    process. we use `shouldBlockContentSwitch` life cycle to notify the
+    *Episode Core* that all lifecycles should be processed manually, then we
+    call `unblockAssetSetup` while the "ease-in" animation was played, then call
+    `unblockAssetPlay` when the "ease-out" animation was played. For more
+    details, see "Switching between contents" section below.
 
-* **Stage:** The stage is a critical component that creates and manages all the content instances on the user interface side. Since the player won't work without the stage, the core will wait for the registration of the stage before starting working.
-The stage should implement methods that create/destroy/show/hide content in its ComponentFunctions.
+* **Critical components:** Critical components must be registered before or the
+  player won't process any incoming requests. There is currently only one
+  critical component called `stage`. Critical component could be naïve or
+  managed.
 
-* **Asset Instance Component:** The user interface side of every ContentInstance
-is also a component. For more information, see "Content and ContentInstance"
-section below.
+:::info
+Stage will show all assets available in an episode. The stage component should
+implement methods that create, destroy, show, hide content in its 
+`ComponentFunctions`, for more detail, checkout the
+[source code](https://github.com/recative/recative-system/blob/master/packages/act-player/src/components/Stage/Stage.tsx).
 
-To register a component, pass a name and an object that implements some functions on the ComponentFunctions interface to the registerComponent method. After that, you will get a CoreFunctions object as a handle to call functions on core from your component.
+Assets inside the stage components are implemented by *asset instance components*
+like [videos](https://github.com/recative/recative-system/blob/master/packages/act-player/src/components/Stage/ActPoint.tsx)
+and [act points](https://github.com/recative/recative-system/blob/master/packages/act-player/src/components/Stage/ActPoint.tsx).
+The API for both of them is quite similar to that of *interface components*, but
+we do not support third-party interface components implementations.
+:::
 
 ### Subscribing Data from Episode Core
 
