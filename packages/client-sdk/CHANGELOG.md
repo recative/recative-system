@@ -1,5 +1,14 @@
 # Changelog
 
+## 5.3.5
+
+### Patch Changes
+
+- 8a7895e: chore: Normalize episode id while executing the `gotoEpisode` function
+- 8a7895e: feat: Better debugging experience
+- Updated dependencies [f920c38]
+  - @recative/open-promise@0.2.2
+
 ## 5.3.4
 
 ### Patch Changes

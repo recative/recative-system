@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2
+
+### Patch Changes
+
+- f920c38: feat: Send a event when queue was updated
+
 ## 0.2.1
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@recative/client-sdk",
-  "version": "5.3.4",
+  "version": "5.3.5",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
@@ -54,7 +54,7 @@
     "@msgpack/msgpack": "^2.7.2",
     "@react-hookz/web": "^15.1.0",
     "@recative/definitions": "^0.4.3",
-    "@recative/open-promise": "^0.2.1",
+    "@recative/open-promise": "^0.2.2",
     "@recative/ugly-json": "workspace:^",
     "debug": "^4.3.3",
     "nanoid": "^3.3.3"
