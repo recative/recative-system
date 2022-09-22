@@ -282,14 +282,15 @@ EnvVariable extends Record<string, unknown>,
           {...injectToContainer}
         >
           {
-            playerReady ? (
-              <ActPlayer<true, EnvVariable>
-                core={episodeCore}
-                interfaceComponents={interfaceComponents}
-                loadingComponent={LoadingComponent}
-                {...injectToPlayer}
-              />
-            )
+            playerReady 
+              ? (
+                <ActPlayer<true, EnvVariable>
+                  core={episodeCore}
+                  interfaceComponents={interfaceComponents}
+                  loadingComponent={LoadingComponent}
+                  {...injectToPlayer}
+                />
+              )
               : loadingElement
           }
         </ContainerComponent>
