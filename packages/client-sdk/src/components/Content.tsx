@@ -187,14 +187,20 @@ EnvVariable extends Record<string, unknown>,
             throw new TypeError('Series core is not initialized, this is not allowed');
           }
 
+          const normalizedEpisodeId = normalizeEpisodeId(nextEpisodeId);
+
+          if (normalizeEpisodeId === undefined) {
+            throw new TypeError(`Unable to normalize the episode id ${nextEpisodeId}`);
+          }
+
           seriesCoreRef.current.setEpisode(
-            nextEpisodeId,
+            normalizedEpisodeId || '',
             forceReload,
             assetOrder,
             assetTime,
           );
         },
-      }), [dataFetcher, userImplementedFunctions]);
+      }), [dataFetcher, normalizeEpisodeId, userImplementedFunctions]);
 
       const {
         hookOnEnd,
@@ -282,7 +288,7 @@ EnvVariable extends Record<string, unknown>,
           {...injectToContainer}
         >
           {
-            playerReady 
+            playerReady
               ? (
                 <ActPlayer<true, EnvVariable>
                   core={episodeCore}
