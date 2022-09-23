@@ -239,9 +239,9 @@ const AUDIO_BACKEND_EXTENSION_KEY = '@recative/extension-audio-backends/Phonogra
 
 export const selectUrlAudioElementInitPostProcess = async (
   url: string,
-  metadata: IResourceFileForClient,
+  metadata?: IResourceFileForClient,
 ): Promise<AudioElementInit | null> => {
-  if (metadata.extensionConfigurations?.[AUDIO_BACKEND_EXTENSION_KEY] === 'phonograph') {
+  if (metadata?.extensionConfigurations?.[AUDIO_BACKEND_EXTENSION_KEY] === 'phonograph') {
     return selectUrlPhonographAudioElementInitPostProcess(url);
   }
   return selectUrlBasicAudioElementInitPostProcess(url);
