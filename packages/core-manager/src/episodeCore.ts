@@ -15,6 +15,7 @@ import type {
   AdditionalSubtitleDefine,
 } from '@recative/act-protocol';
 import {
+  IResourceFileForClient,
   ManagedCoreState,
   ManagedCoreStateManager,
   RawUserImplementedFunctions,
@@ -52,7 +53,8 @@ import { EnvVariableManager, DEFAULT_LANGUAGE } from './manager/envVariable/EnvV
 import { ContentSequence, IInitialAssetStatus } from './sequence';
 
 import type { IDefaultAdditionalEnvVariable } from './manager/envVariable/EnvVariableManager';
-import { selectUrlBasicAudioElementInitPostProcess } from './audio/audioElement';
+import { AudioElementInit } from './audio/audioElement';
+import { PostProcessCallback } from './utils/tryValidResourceUrl';
 
 export interface EpisodeCoreConfig<T> {
   initialEnvVariable: T;
@@ -533,15 +535,11 @@ export class EpisodeCore<
         this.ensureNotDestroyed();
         this.mainSequence?.unblockSwitching(name);
       },
-      setAudioTrack: (url: string | null) => {
+      setAudioTrack: (init: Promise<AudioElementInit | null> | null) => {
         this.ensureNotDestroyed();
         const instance = getInstanceFromComponentName();
         this.logAudio(`Instance ${instance.id} \`setAudioTrack\``);
-        if (url !== null) {
-          instance.audioTrack.setAudio(selectUrlBasicAudioElementInitPostProcess(url));
-        } else {
-          instance.audioTrack.setAudio(null);
-        }
+        instance.audioTrack.setAudio(init);
       },
       addAudios: async (requests: AddAudioRequest[]) => {
         this.ensureNotDestroyed();
@@ -566,8 +564,9 @@ export class EpisodeCore<
           audioClip:
             'resourceLabel' in x
               ? this.getEpisodeData()!.resources.getResourceByLabel<
-              RawAudioClipResponse,
-              PostProcessCallback<RawAudioClipResponse, unknown>
+              RawAudioClipResponse, PostProcessCallback<
+              RawAudioClipResponse, IResourceFileForClient
+              >
               >(
                 x.resourceLabel,
                 addAudioEnv,
@@ -575,8 +574,9 @@ export class EpisodeCore<
                 selectUrlAudioTypePostProcess,
               )
               : this.getEpisodeData()!.resources.getResourceById<
-              RawAudioClipResponse,
-              PostProcessCallback<RawAudioClipResponse, unknown>
+              RawAudioClipResponse, PostProcessCallback<
+              RawAudioClipResponse, IResourceFileForClient
+              >
               >(
                 x.resourceId,
                 addAudioEnv,

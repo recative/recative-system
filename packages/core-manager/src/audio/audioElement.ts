@@ -4,7 +4,7 @@ import {
   AudioSource,
   getGlobalAudioStation,
 } from '@recative/audio-station';
-import { Clip as PhonographClip } from '@recative/phonograph';
+import { Clip as PhonographClip, mp3Adapter } from '@recative/phonograph';
 
 /**
  * Common interface for Audio Player on different backends
@@ -15,6 +15,7 @@ export interface AudioElement {
   isPlaying(): boolean;
   destroy(): void;
   get destroyed(): boolean;
+  get stuck(): boolean;
   setVolume(volume: number): void;
   get time(): number;
   set time(value: number);
@@ -53,6 +54,11 @@ export class BasicAudioElement implements AudioElement {
     return this.mixer === null;
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  get stuck() {
+    return false;
+  }
+
   setVolume(volume: number) {
     if (this.mixer !== null) {
       this.mixer.volume = volume;
@@ -71,7 +77,7 @@ export class BasicAudioElement implements AudioElement {
 }
 
 export class PhonographAudioElement implements AudioElement {
-  private clip: PhonographClip | null = null;
+  private clip: PhonographClip<any> | null = null;
 
   private suspended = false;
 
@@ -80,7 +86,7 @@ export class PhonographAudioElement implements AudioElement {
   private updateActualPlay = () => {
     if (this.playing && !this.suspended) {
       if (!this.clip?.playing) {
-        this.clip?.play();
+        this.clip?.play()?.catch(() => {});
       }
     } else if (this.clip?.playing) {
       this.clip?.pause();
@@ -101,7 +107,7 @@ export class PhonographAudioElement implements AudioElement {
     this.destroy();
   };
 
-  constructor(private mixer: AudioMixer, clip: PhonographClip) {
+  constructor(private mixer: AudioMixer, clip: PhonographClip<any>) {
     this.clip = clip;
     clip.connect(mixer.node!);
     this.suspended = mixer.isSuspended();
@@ -137,6 +143,10 @@ export class PhonographAudioElement implements AudioElement {
     return this.clip === null;
   }
 
+  get stuck() {
+    return this.clip?.stuck ?? false;
+  }
+
   setVolume(volume: number): void {
     if (this.clip !== null) {
       this.clip.volume = volume;
@@ -163,7 +173,7 @@ export type AudioElementInit = {
   url: string,
 } | {
   backend: 'phonograph',
-  clip: PhonographClip,
+  clip: PhonographClip<any>,
 };
 
 export const createAudioElement = (mixer: AudioMixer, init:AudioElementInit):AudioElement => {
@@ -212,6 +222,7 @@ export const selectUrlPhonographAudioElementInitPostProcess = async (
     const phonographClip = new PhonographClip({
       context: audioStation.audioContext!,
       url,
+      adapter: mp3Adapter,
     });
 
     // wait for canplaythrough
@@ -221,4 +232,11 @@ export const selectUrlPhonographAudioElementInitPostProcess = async (
   } catch (e) {
     return null;
   }
+};
+
+export const selectUrlAudioElementInitPostProcess = async (
+  url: string,
+): Promise<AudioElementInit | null> => {
+  // TODO: select backend here
+  return selectUrlPhonographAudioElementInitPostProcess(url);
 };

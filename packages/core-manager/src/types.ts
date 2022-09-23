@@ -14,6 +14,7 @@ import type {
   ManagerCoreStateTrigger,
 } from '@recative/definitions';
 import { ResourceEntry } from '@recative/smart-resource';
+import { AudioElementInit } from './audio/audioElement';
 
 import type { EpisodeCore } from './episodeCore';
 
@@ -69,7 +70,7 @@ export interface CoreFunctions {
    * aka the content switch or the showing */
   unblockContentSwitch(): void;
   // timeline audio
-  setAudioTrack(url: string | null): void;
+  setAudioTrack(init: Promise<AudioElementInit | null> | null): void;
   // interaction audio
   addAudios(specs: AddAudioRequest[]): Promise<void>;
   playAudio(id: string, resetProgress?: boolean): void;

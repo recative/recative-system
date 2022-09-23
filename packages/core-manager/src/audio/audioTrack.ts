@@ -130,6 +130,13 @@ export class AudioTrack extends WithLogger implements Track {
       this.lastStuck = true;
       return true;
     }
+    if (this.audioElement?.stuck ?? false) {
+      if (!this.lastStuck) {
+        this.log(`Audio track ${this.id} stuck, reason: audio element stuck`);
+      }
+      this.lastStuck = true;
+      return true;
+    }
     if (this.lastStuck) {
       this.log(`Audio track ${this.id} unstuck`);
     }
