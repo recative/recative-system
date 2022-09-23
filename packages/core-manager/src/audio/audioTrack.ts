@@ -116,7 +116,7 @@ export class AudioTrack extends WithLogger implements Track {
         this.updateTime(true);
       }
     }
-    if (this.pendingBuffer !== null && this.audioElement !== null) {
+    if (this.pendingBuffer !== null && this.audioElement === null) {
       if (!this.lastStuck) {
         this.log(`Audio track ${this.id} stuck, reason: not loaded`);
       }
