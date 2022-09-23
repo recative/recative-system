@@ -185,9 +185,9 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
     }, true);
 
     if (useSlowQueue) {
-      this.core.slowTaskQueue.add(task);
+      this.core.slowTaskQueue.add(task, `slow-resource:${taskId}`);
     } else {
-      this.core.fastTaskQueue.add(task);
+      this.core.fastTaskQueue.add(task, `fast-resource:${taskId}`);
     }
 
     return task.promise;
