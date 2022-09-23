@@ -27,6 +27,7 @@
       "@recative/definitions": ["packages/definitions/src/index.ts"],
       "@recative/documents": ["packages/documents/src/index.ts"],
       "@recative/open-promise": ["packages/open-promise/src/index.ts"],
+      "@recative/phonograph": ["packages/phonograph/src/index.ts"],
       "@recative/resource-bridge": ["packages/resource-bridge/src/index.ts"],
       "@recative/resource-loader": ["packages/resource-loader/src/index.ts"],
       "@recative/smart-resource": ["packages/smart-resource/src/index.ts"],

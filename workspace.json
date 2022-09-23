@@ -13,13 +13,14 @@
     "core-manager": "packages/core-manager",
     "definitions": "packages/definitions",
     "documents": "packages/documents",
+    "mobile-shell": "packages/mobile-shell",
     "open-promise": "packages/open-promise",
+    "phonograph": "packages/phonograph",
     "resource-bridge": "packages/resource-bridge",
     "resource-loader": "packages/resource-loader",
     "smart-resource": "packages/smart-resource",
     "time-schedule": "packages/time-schedule",
     "ugly-json": "packages/ugly-json",
-    "web-shell": "packages/web-shell",
-    "mobile-shell": "packages/mobile-shell"
+    "web-shell": "packages/web-shell"
   }
 }

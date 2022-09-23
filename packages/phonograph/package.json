@@ -1,0 +1,52 @@
+{
+  "name": "@recative/phonograph",
+  "description": "Play audio files without the dreaded 'DOMException: play() can only be initiated by a user gesture' error.",
+  "version": "1.6.0",
+  "main": "dist/main.js",
+  "module": "dist/module.js",
+  "browser": "dist/browser.js",
+  "types": "dist/types.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/Rich-Harris/phonograph.git"
+  },
+  "keywords": [
+    "audio",
+    "web",
+    "audio",
+    "mp3",
+    "wav"
+  ],
+  "author": "Rich Harris",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://gitlab.com/Rich-Harris/phonograph/issues"
+  },
+  "homepage": "https://gitlab.com/Rich-Harris/phonograph#README",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-sucrase": "^4.0.3",
+    "eslint": "^5.10.0",
+    "rollup": "^2.72.1",
+    "rollup-plugin-dts": "^4.2.1",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "serve": "^10.1.1",
+    "typescript": "=4.4.4"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -cw",
+    "prepublish": "yarn build",
+    "test": "serve . & open http://localhost:5000/demo.html",
+    "pretest": "yarn build"
+  },
+  "dependencies": {
+    "@rollup/plugin-commonjs": "^22.0.2",
+    "standardized-audio-context": "^25.3.29"
+  }
+}

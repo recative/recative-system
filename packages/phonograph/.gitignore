@@ -1,0 +1,11 @@
+.DS_Store
+node_modules
+experiments
+dist
+*.js
+*.d.ts
+!rollup.config.js
+
+demo/main.js
+demo/main.js.map
+demo/test-audio
