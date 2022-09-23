@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.7
+
+### Patch Changes
+
+- 9ac9d7f: fix: Incorrect task queue dependency relationship
+
 ## 0.5.6
 
 ### Patch Changes
