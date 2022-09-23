@@ -9,9 +9,12 @@ import { useStyletron } from 'baseui';
 
 import { Block } from 'baseui/block';
 
-import { convertSRTToStates } from '@recative/core-manager';
+import {
+  AudioElementInit, convertSRTToStates, PostProcessCallback, selectUrlAudioElementInitPostProcess,
+} from '@recative/core-manager';
 import { getMatchedResource } from '@recative/smart-resource';
 
+import { IResourceFileForClient } from '@recative/definitions';
 import { isSafari } from '../../variables/safari';
 import { ModuleContainer } from '../Layout/ModuleContainer';
 
@@ -78,7 +81,6 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
   const [css] = useStyletron();
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const videoSourceRef = React.useRef<HTMLSourceElement>(null);
-  const audioRef = React.useRef<string>('');
   const subtitleRef = React.useRef<string | null>('');
   const containerRef = React.useRef<HTMLDivElement>(null);
   const unstuckCheckInterval = React.useRef<ReturnType<
@@ -256,26 +258,20 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
   ]);
 
   React.useLayoutEffect(() => {
-    const matchedResource = episodeData.resources.getResourceByQuery(
+    const matchedResource = episodeData.resources.getResourceByQuery<
+    AudioElementInit, PostProcessCallback<
+    AudioElementInit, IResourceFileForClient
+    >
+    >(
       query,
       queryMethod,
       {
         category: 'audio',
       },
       RESOURCE_QUERY_WEIGHTS,
+      selectUrlAudioElementInitPostProcess,
     );
-
-    Promise.resolve(matchedResource)
-      .then((selectedAudio) => {
-        if (!selectedAudio) {
-          throw new Error('Invalid audio URL');
-        }
-
-        if (selectedAudio !== audioRef.current) {
-          core.coreFunctions.setAudioTrack(selectedAudio);
-          audioRef.current = selectedAudio;
-        }
-      });
+    core.coreFunctions.setAudioTrack(matchedResource);
   }, [
     props.spec,
     contentLanguage,

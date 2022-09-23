@@ -74,12 +74,10 @@ export class ContentInstance extends WithLogger {
    */
   progressReporter: ProgressReporter;
 
-  /**
-   * The Audio track that synchronized with the timeline
-   */
-  audioTrack: AudioTrack;
-
+  // state on the main timeline
   managedCoreStateList = new ManagedCoreStateList();
+
+  audioTrack: AudioTrack;
 
   managedStateEnabled = false;
 

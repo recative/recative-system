@@ -15,6 +15,7 @@ import type {
   AdditionalSubtitleDefine,
 } from '@recative/act-protocol';
 import {
+  IResourceFileForClient,
   ManagedCoreState,
   ManagedCoreStateManager,
   RawUserImplementedFunctions,
@@ -52,6 +53,7 @@ import { EnvVariableManager, DEFAULT_LANGUAGE } from './manager/envVariable/EnvV
 import { ContentSequence, IInitialAssetStatus } from './sequence';
 
 import type { IDefaultAdditionalEnvVariable } from './manager/envVariable/EnvVariableManager';
+import { AudioElementInit } from './audio/audioElement';
 import { PostProcessCallback } from './utils/tryValidResourceUrl';
 
 export interface EpisodeCoreConfig<T> {
@@ -64,9 +66,9 @@ export interface EpisodeCoreConfig<T> {
 }
 
 export type EpisodeCoreEventTarget = EventTarget & {
-  addEventListener(type: 'segmentStart', callback:CustomEventHandler<number>):void,
-  addEventListener(type: 'segmentEnd', callback:CustomEventHandler<number>):void,
-  addEventListener(type: 'end', callback:CustomEventHandler<undefined>):void,
+  addEventListener(type: 'segmentStart', callback: CustomEventHandler<number>): void,
+  addEventListener(type: 'segmentEnd', callback: CustomEventHandler<number>): void,
+  addEventListener(type: 'end', callback: CustomEventHandler<undefined>): void,
 };
 
 export class EpisodeCore<
@@ -286,7 +288,7 @@ export class EpisodeCore<
     this.userImplementedFunctions = functions;
   }
 
-  getUserImplementedFunctions():Partial<UserImplementedFunctions> {
+  getUserImplementedFunctions(): Partial<UserImplementedFunctions> {
     if (this.destroyed) {
       return {};
     }
@@ -507,10 +509,10 @@ export class EpisodeCore<
     };
 
     const forwardToInstanceFunctions = <
-        N extends keyof ContentInstance,
-        K extends keyof ContentInstance[N],
-        F extends Extract<ContentInstance[N][K], (...args: never[]) => unknown>,
-      >(
+      N extends keyof ContentInstance,
+      K extends keyof ContentInstance[N],
+      F extends Extract<ContentInstance[N][K], (...args: never[]) => unknown>,
+    >(
         feature: N,
         key: K,
       ) => (...args: Parameters<F>) => {
@@ -533,15 +535,11 @@ export class EpisodeCore<
         this.ensureNotDestroyed();
         this.mainSequence?.unblockSwitching(name);
       },
-      setAudioTrack: (url: string | null) => {
+      setAudioTrack: (init: Promise<AudioElementInit | null> | null) => {
         this.ensureNotDestroyed();
         const instance = getInstanceFromComponentName();
         this.logAudio(`Instance ${instance.id} \`setAudioTrack\``);
-        if (url !== null) {
-          instance.audioTrack.setAudio(selectUrlAudioTypePostProcess(url));
-        } else {
-          instance.audioTrack.setAudio(null);
-        }
+        instance.audioTrack.setAudio(init);
       },
       addAudios: async (requests: AddAudioRequest[]) => {
         this.ensureNotDestroyed();
@@ -566,8 +564,9 @@ export class EpisodeCore<
           audioClip:
             'resourceLabel' in x
               ? this.getEpisodeData()!.resources.getResourceByLabel<
-              RawAudioClipResponse,
-              PostProcessCallback<RawAudioClipResponse, unknown>
+              RawAudioClipResponse, PostProcessCallback<
+              RawAudioClipResponse, IResourceFileForClient
+              >
               >(
                 x.resourceLabel,
                 addAudioEnv,
@@ -575,8 +574,9 @@ export class EpisodeCore<
                 selectUrlAudioTypePostProcess,
               )
               : this.getEpisodeData()!.resources.getResourceById<
-              RawAudioClipResponse,
-              PostProcessCallback<RawAudioClipResponse, unknown>
+              RawAudioClipResponse, PostProcessCallback<
+              RawAudioClipResponse, IResourceFileForClient
+              >
               >(
                 x.resourceId,
                 addAudioEnv,
@@ -731,7 +731,7 @@ export class EpisodeCore<
     if (this.components.has(name)) {
       this.logComponent(
         `Another component with the name "${name}" have been registered,`
-          + ' it will be unregistered to allow the new component to be registered',
+        + ' it will be unregistered to allow the new component to be registered',
       );
       this.unregisterComponent(name);
     }

@@ -1,29 +1,24 @@
 /* eslint-disable no-await-in-loop */
 import {
-  AudioClip,
   AudioMixer,
-  AudioSource,
   AudioStation,
 } from '@recative/audio-station';
 import { Track } from '@recative/time-schedule';
 
-import type { RawAudioClipResponse } from '../utils/selectUrlAudioTypePostProcess';
-
 import { WithLogger } from '../LogCollector';
+import {
+  AudioElement, AudioElementInit, createAudioElement, destroyAudioElementInit,
+} from './audioElement';
 
 /**
  * Audio track for video component
  */
 export class AudioTrack extends WithLogger implements Track {
-  private clip: AudioClip | null = null;
+  private audioElement: AudioElement | null = null;
 
-  private pendingBuffer: Promise<RawAudioClipResponse | null> | null = null;
-
-  private source: AudioSource | null = null;
+  private pendingBuffer: Promise<AudioElementInit | null> | null = null;
 
   private playing = false;
-
-  private mixer: AudioMixer | null;
 
   private lastProgress = 0;
 
@@ -35,7 +30,9 @@ export class AudioTrack extends WithLogger implements Track {
 
   private lastStuck = false;
 
-  constructor(station: AudioStation, private id: string) {
+  private mixer: AudioMixer | null = null;
+
+  constructor(private station: AudioStation, private id: string) {
     super();
     this.mixer = new AudioMixer(station);
   }
@@ -58,36 +55,37 @@ export class AudioTrack extends WithLogger implements Track {
     this.cachedProgress = progress;
     const audioTime = performance.now();
     const target = progress + audioTime - time;
-    if (this.source !== null) {
-      this.source.time = target / 1000;
+    if (this.audioElement !== null) {
+      this.audioElement.time = target / 1000;
       this.updateTime(true);
     }
   }
 
   private updateTime(force: boolean = false) {
-    if (this.source === null || this.mixer === null) {
+    if (this.audioElement === null) {
       this.lastUpdateTime = this.cachedUpdateTime;
       this.lastProgress = this.cachedProgress;
       return;
     }
     const time = performance.now();
-    if (this.source.isPlaying() && !this.mixer.isSuspended()) {
+    if (this.audioElement.isPlaying() && !this.mixer?.isSuspended()) {
       if (
-        force || this.source.time * 1000 - this.lastProgress > (time - this.lastUpdateTime) * 0.01
+        force
+        || this.audioElement.time * 1000 - this.lastProgress > (time - this.lastUpdateTime) * 0.01
       ) {
-        this.lastProgress = this.source.time * 1000;
+        this.lastProgress = this.audioElement.time * 1000;
         this.lastUpdateTime = time;
       }
     } else {
-      if (force || this.source.time * 1000 - this.lastProgress > 0) {
-        this.lastProgress = this.source.time * 1000;
+      if (force || this.audioElement.time * 1000 - this.lastProgress > 0) {
+        this.lastProgress = this.audioElement.time * 1000;
       }
       this.lastUpdateTime = time;
     }
   }
 
   check() {
-    if (this.source !== null) {
+    if (this.audioElement !== null) {
       this.updateTime();
       return {
         time: this.lastUpdateTime, progress: this.lastProgress,
@@ -102,32 +100,39 @@ export class AudioTrack extends WithLogger implements Track {
     }
     // Note: some browser (like iOS safari) will suspend the audioContext without notify you.
     // This is used as a workaround
-    if (this.mixer?.station.audioContext?.state !== 'running') {
-      this.mixer?.station.audioContext?.resume();
+    if (this.station.audioContext?.state !== 'running') {
+      this.station.audioContext?.resume();
     }
     this.cachedUpdateTime = time;
     this.cachedProgress = progress;
-    if (this.source !== null && this.mixer !== null) {
+    if (this.audioElement !== null) {
       this.updateTime();
       const now = performance.now();
       const target = progress + now - time;
       const current = this.lastProgress + now - this.lastUpdateTime;
       if (Math.abs(target - current) > 33) {
         this.log(`Audio track ${this.id} resync from ${current} to ${target}`);
-        this.source.time = target / 1000;
+        this.audioElement.time = target / 1000;
         this.updateTime(true);
       }
     }
-    if (this.pendingBuffer !== null && this.source === null) {
+    if (this.pendingBuffer !== null && this.audioElement === null) {
       if (!this.lastStuck) {
         this.log(`Audio track ${this.id} stuck, reason: not loaded`);
       }
       this.lastStuck = true;
       return true;
     }
-    if (this.mixer?.station.audioContext?.state === 'suspended') {
+    if (this.station.audioContext?.state === 'suspended') {
       if (!this.lastStuck) {
         this.log(`Audio track ${this.id} stuck, reason: audio station suspended`);
+      }
+      this.lastStuck = true;
+      return true;
+    }
+    if (this.audioElement?.stuck ?? false) {
+      if (!this.lastStuck) {
+        this.log(`Audio track ${this.id} stuck, reason: audio element stuck`);
       }
       this.lastStuck = true;
       return true;
@@ -142,20 +147,18 @@ export class AudioTrack extends WithLogger implements Track {
   play(): void {
     this.updateTime();
     this.playing = true;
-    this.source?.play();
+    this.audioElement?.play();
   }
 
   pause(): void {
     this.updateTime();
     this.playing = false;
-    this.source?.pause();
+    this.audioElement?.pause();
   }
 
-  setAudio(audioClipResponsePromise: Promise<RawAudioClipResponse | null> | null) {
-    this.source?.destroy();
-    this.clip?.destroy();
-    this.source = null;
-    this.clip = null;
+  setAudio(audioClipResponsePromise: Promise<AudioElementInit | null> | null) {
+    this.audioElement?.destroy();
+    this.audioElement = null;
     this.pendingBuffer = audioClipResponsePromise;
     if (this.pendingBuffer !== null) {
       this.loadAudio(this.pendingBuffer);
@@ -163,54 +166,55 @@ export class AudioTrack extends WithLogger implements Track {
   }
 
   private async loadAudio(
-    audioClipResponsePromise:
-    | RawAudioClipResponse
-    | Promise<RawAudioClipResponse | null>,
+    audioClipResponsePromise: Promise<AudioElementInit | null>,
   ) {
     if (this.destroyed) {
       return;
     }
-    const audioClipResponse = await audioClipResponsePromise;
+    const audioElementInit = await audioClipResponsePromise;
 
-    if (!audioClipResponse) return;
+    if (!audioElementInit) return;
     if (this.pendingBuffer !== audioClipResponsePromise) {
+      destroyAudioElementInit(audioElementInit);
       // setAudio when audio is loading or destroyed
       return;
     }
-    this.clip = audioClipResponse.audioClip;
+    this.audioElement?.destroy();
+    this.audioElement = createAudioElement(this.mixer!, audioElementInit);
+    this.audioElement.setVolume(this.volume);
     this.log(`Audio track for ${this.id} loaded`);
-    this.source = new AudioSource(this.mixer!, this.clip);
+    let targetTime = (this.cachedProgress) / 1000;
     if (this.playing && !this.mixer?.isSuspended()) {
-      this.source.play();
+      this.audioElement.play();
       const now = performance.now();
-      this.source.time = (this.cachedProgress + now - this.cachedUpdateTime) / 1000;
-    } else {
-      this.source.time = (this.cachedProgress) / 1000;
+      targetTime = (this.cachedProgress + now - this.cachedUpdateTime) / 1000;
     }
     if (this.playing) {
-      this.source.play();
+      this.audioElement.play();
     }
+    this.audioElement.time = targetTime;
     this.updateTime();
     this.pendingBuffer = null;
   }
 
   destroy() {
-    this.source?.destroy();
-    this.clip?.destroy();
+    this.audioElement?.destroy();
     this.mixer?.destroy();
-    this.source = null;
-    this.clip = null;
     this.mixer = null;
     this.pendingBuffer = null;
+    this.working = false;
   }
+
+  private working = true;
 
   get destroyed() {
-    return this.mixer == null;
+    return !this.working;
   }
 
+  private volume = 1;
+
   setVolume(volume: number) {
-    if (this.mixer !== null) {
-      this.mixer.volume = volume;
-    }
+    this.audioElement?.setVolume(volume);
+    this.volume = volume;
   }
 }

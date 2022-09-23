@@ -11,6 +11,7 @@ export const Core = EpisodeCore;
 export * from './types';
 
 export * from './audio/audioHost';
+export * from './audio/audioElement';
 
 export * from './utils/resource';
 export * from './utils/managedCoreState';
