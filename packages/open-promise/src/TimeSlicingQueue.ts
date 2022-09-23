@@ -10,6 +10,9 @@ import { SequentialQueue } from './SequentialQueue';
 import type { SequentialTask } from './SequentialQueue';
 
 const log = debug('promise:time-slice');
+const logGroup = debug('promise:time-slices');
+
+logGroup.log = console.groupCollapsed.bind(console);
 
 const MAX_TASK_DELAY_TIME = 2000;
 
@@ -42,13 +45,22 @@ export class TimeSlicingQueue extends SequentialQueue {
     this.scheduleTick();
   };
 
-  add = (task: SequentialTask) => {
-    super.add(task);
+  add = (task: SequentialTask, taskId?: string) => {
+    super.add(task, taskId);
 
     if (this.running) {
       this.scheduleTick();
     }
   };
+
+  private logRemainedTask = (title = `Remained Tasks`) => {
+    logGroup(title);
+    log([
+      '',
+      ...[...this.taskMap.values()].map((x) => `* ${x}`)
+    ].join('\r\n'));
+    console.groupEnd();
+  }
 
   private scheduleTick = () => {
     if (this.tickScheduled) {
@@ -58,7 +70,7 @@ export class TimeSlicingQueue extends SequentialQueue {
     this.tickScheduled = true;
 
     globalThis.requestAnimationFrame(() => {
-      log(`[${this.queueId}] New frame running`);
+      // log(`[${this.queueId}] New frame running`);
       this.tickScheduled = false;
       this.tickOnce();
     });
@@ -79,15 +91,15 @@ export class TimeSlicingQueue extends SequentialQueue {
     const currentTime = now();
 
     if (currentTime - this.lastSuccessfulTickTime > MAX_TASK_DELAY_TIME) {
-      log(`[${this.queueId}] [Force] Δt=${deltaT}, ${this.queue.length} in queue`);
+      this.logRemainedTask(`[${this.queueId}] [Force] Δt=${deltaT}, ${this.queue.length} in queue`);
       this.lastSuccessfulTickTime = currentTime;
       this.tick().then(this.scheduleTick);
     } else if (deltaT > this.protectedTime) {
-      log(`[${this.queueId}] Δt=${deltaT}, ${this.queue.length} in queue`);
+      this.logRemainedTask(`[${this.queueId}] Δt=${deltaT}, ${this.queue.length} in queue`);
       this.lastSuccessfulTickTime = currentTime;
       this.tick().then(this.scheduleTick);
     } else if (this.queue.length > 0) {
-      log(`[${this.queueId}] Δt=${deltaT}, protected time reached, scheduling next tick, ${this.queue.length} tasks delayed`);
+      this.logRemainedTask(`[${this.queueId}] Δt=${deltaT}, protected time reached, scheduling next tick, ${this.queue.length} tasks delayed`);
       this.scheduleTick();
     }
   };

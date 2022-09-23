@@ -57,6 +57,8 @@ export class SequentialQueue extends EventTarget {
   protected queue: Array<SequentialTask> = [];
   protected internalClearedTasks: number = 0;
 
+  protected readonly taskMap = new Map<SequentialTask, string>();
+
   constructor(
     readonly concurrency: number = 1,
     readonly dependencyQueue?: SequentialQueue,
@@ -73,11 +75,15 @@ export class SequentialQueue extends EventTarget {
     return this.internalClearedTasks;
   }
 
-  add(task: SequentialTask) {
+  add(task: SequentialTask, taskId?: string) {
     this.dispatchEvent(
       new SequentialQueueUpdateEvent(this, SequentialQueueUpdateAction.Add)
     );
     this.queue.push(task);
+
+    if (taskId) {
+      this.taskMap.set(task, taskId);
+    }
   }
 
   remove(task: SequentialTask) {
@@ -86,16 +92,21 @@ export class SequentialQueue extends EventTarget {
       this.queue.splice(index, 1);
     }
 
+    if (this.taskMap.has(task)) {
+      this.taskMap.delete(task);
+    }
+    
     this.dispatchEvent(
       new SequentialQueueUpdateEvent(this, SequentialQueueUpdateAction.Remove)
-    );
-  }
-
-  tick() {
-    const openPromiseTasks: OpenPromise<any>[] = [];
-
-    if (this.dependencyQueue && this.dependencyQueue.remainTasks !== 0) {
-      return allSettled(openPromiseTasks);
+      );
+    }
+    
+    tick() {
+      const openPromiseTasks: OpenPromise<any>[] = [];
+      
+      if (this.dependencyQueue && this.dependencyQueue.remainTasks !== 0) {
+      log(`[${this.queueId}] Waiting for the dependency queue with ${this.dependencyQueue.remainTasks} tasks.`);
+      return Promise.resolve([]);
     }
 
     let taskCleared = 0;
@@ -103,8 +114,12 @@ export class SequentialQueue extends EventTarget {
     for (let i = 0; i < this.concurrency; i += 1) {
       taskCleared += 1;
       const task = this.queue.shift();
-
+      
       if (task) {
+        if (this.taskMap.has(task)) {
+          this.taskMap.delete(task);
+        }
+
         if ('execute' in task) {
           if (!task.lazy) {
             throw new NotLazyOpenPromiseError();
