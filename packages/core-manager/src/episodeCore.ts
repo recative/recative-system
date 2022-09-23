@@ -66,9 +66,9 @@ export interface EpisodeCoreConfig<T> {
 }
 
 export type EpisodeCoreEventTarget = EventTarget & {
-  addEventListener(type: 'segmentStart', callback:CustomEventHandler<number>):void,
-  addEventListener(type: 'segmentEnd', callback:CustomEventHandler<number>):void,
-  addEventListener(type: 'end', callback:CustomEventHandler<undefined>):void,
+  addEventListener(type: 'segmentStart', callback: CustomEventHandler<number>): void,
+  addEventListener(type: 'segmentEnd', callback: CustomEventHandler<number>): void,
+  addEventListener(type: 'end', callback: CustomEventHandler<undefined>): void,
 };
 
 export class EpisodeCore<
@@ -288,7 +288,7 @@ export class EpisodeCore<
     this.userImplementedFunctions = functions;
   }
 
-  getUserImplementedFunctions():Partial<UserImplementedFunctions> {
+  getUserImplementedFunctions(): Partial<UserImplementedFunctions> {
     if (this.destroyed) {
       return {};
     }
@@ -509,10 +509,10 @@ export class EpisodeCore<
     };
 
     const forwardToInstanceFunctions = <
-        N extends keyof ContentInstance,
-        K extends keyof ContentInstance[N],
-        F extends Extract<ContentInstance[N][K], (...args: never[]) => unknown>,
-      >(
+      N extends keyof ContentInstance,
+      K extends keyof ContentInstance[N],
+      F extends Extract<ContentInstance[N][K], (...args: never[]) => unknown>,
+    >(
         feature: N,
         key: K,
       ) => (...args: Parameters<F>) => {
@@ -731,7 +731,7 @@ export class EpisodeCore<
     if (this.components.has(name)) {
       this.logComponent(
         `Another component with the name "${name}" have been registered,`
-          + ' it will be unregistered to allow the new component to be registered',
+        + ' it will be unregistered to allow the new component to be registered',
       );
       this.unregisterComponent(name);
     }

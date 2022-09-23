@@ -4,6 +4,7 @@ import {
   AudioSource,
   getGlobalAudioStation,
 } from '@recative/audio-station';
+import { IResourceFileForClient } from '@recative/definitions';
 import { Clip as PhonographClip, mp3Adapter } from '@recative/phonograph';
 
 /**
@@ -234,9 +235,14 @@ export const selectUrlPhonographAudioElementInitPostProcess = async (
   }
 };
 
+const AUDIO_BACKEND_EXTENSION_KEY = '@recative/extension-audio-backends/PhonographAudioBackend~~backend';
+
 export const selectUrlAudioElementInitPostProcess = async (
   url: string,
+  metadata: IResourceFileForClient,
 ): Promise<AudioElementInit | null> => {
-  // TODO: select backend here
-  return selectUrlPhonographAudioElementInitPostProcess(url);
+  if (metadata.extensionConfigurations?.[AUDIO_BACKEND_EXTENSION_KEY] === 'phonograph') {
+    return selectUrlPhonographAudioElementInitPostProcess(url);
+  }
+  return selectUrlBasicAudioElementInitPostProcess(url);
 };
