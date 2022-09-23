@@ -95,7 +95,7 @@ export class PreloadManager {
             });
         }, true);
 
-        taskQueue.add(task);
+        taskQueue.add(task, `fetch-resource:${reason}:${resource.label}`);
 
         return task.promise;
       },
