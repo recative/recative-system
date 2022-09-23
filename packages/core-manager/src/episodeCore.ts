@@ -86,9 +86,9 @@ export class EpisodeCore<
 
   readonly audioStation = getGlobalAudioStation();
 
-  readonly fastTaskQueue = new TimeSlicingQueue(8, 4);
+  readonly fastTaskQueue = new TimeSlicingQueue(8, 4, undefined, 'fast');
 
-  readonly slowTaskQueue = new TimeSlicingQueue(5, 8);
+  readonly slowTaskQueue = new TimeSlicingQueue(5, 8, this.fastTaskQueue, 'slow');
 
   private components = new Map<string, Partial<ComponentFunctions>>();
 
