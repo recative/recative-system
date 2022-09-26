@@ -79,7 +79,7 @@ export default class Clip<Metadata> {
   private _contextTimeAtStart: number = 0;
   private _pendingSourceStart: number = 0;
   private _connected: boolean = false;
-  private _volume: number;
+  private fadeTarget: number;
   private _gain: GainNode<AudioContext>;
   private _loadStarted: boolean = false;
   private _actualPlaying = false;
@@ -112,9 +112,9 @@ export default class Clip<Metadata> {
 
     this.loader = new ((window as any).fetch ? FetchLoader : XhrLoader)(url);
 
-    this._volume = volume || 1;
+    this.fadeTarget = volume || 1;
     this._gain = this.context.createGain();
-    this._gain.gain.value = this._volume;
+    this._gain.gain.value = this.fadeTarget;
 
     this._gain.connect(this.context.destination);
 
@@ -405,6 +405,7 @@ export default class Clip<Metadata> {
     }
 
     this.resetAudioNodes();
+    this.stopFade();
     this.playing = false;
     this._actualPlaying = false;
     this._fire('pause');
@@ -451,11 +452,30 @@ export default class Clip<Metadata> {
   }
 
   get volume() {
-    return this._volume;
+    return this._gain.gain.value;
   }
 
   set volume(volume) {
-    this._gain.gain.value = this._volume = volume;
+    this.stopFade();
+    this._gain.gain.value = this.fadeTarget = volume;
+  }
+
+  fade(startVolume: number, endVolume: number, duration: number) {
+    this.stopFade();
+    if (!this.playing) {
+      this.volume = endVolume;
+      return;
+    }
+    const now = this.context.currentTime;
+    this._gain.gain.value = startVolume;
+    this._gain.gain.linearRampToValueAtTime(endVolume, now + duration);
+    this.fadeTarget = endVolume;
+  }
+
+  private stopFade() {
+    const now = this.context.currentTime;
+    this._gain!.gain.cancelScheduledValues(now);
+    this._gain!.gain.value = this.fadeTarget;
   }
 
   private _fire(eventName: string, data?: any) {
@@ -480,6 +500,7 @@ export default class Clip<Metadata> {
       }
       const chunkEnd = time + chunk.duration;
       if (chunkEnd > this._currentTime) {
+        // TODO: reuse audio buffer in old cache
         this._audioBufferCache = {
           currentChunkStartTime: time,
           currentChunk: chunk,
@@ -599,8 +620,13 @@ export default class Clip<Metadata> {
       }
     } else {
       this.pause().currentTime = 0;
-      this.ended = true;
-      this._fire('ended');
+      // TODO: schedule playing of first chunk instead of do this
+      if (this.loop) {
+        this.play();
+      } else {
+        this.ended = true;
+        this._fire('ended');
+      }
     }
   }
 
@@ -635,8 +661,13 @@ export default class Clip<Metadata> {
     }
     if (currentChunk === null) {
       this.pause().currentTime = 0;
-      this.ended = true;
-      this._fire('ended');
+      // TODO: schedule playing of first chunk instead of do this
+      if (this.loop) {
+        this.play();
+      } else {
+        this.ended = true;
+        this._fire('ended');
+      }
     }
   }
 

@@ -205,20 +205,23 @@ export class PhonographAudioElement implements AudioElement {
     }
   }
 
-  // eslint-disable-next-line class-methods-use-this
   get loop() {
-    throw new Error('Not supported');
+    if (this.clip !== null) {
+      return this.clip.loop;
+    }
     return false;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   set loop(value) {
-    throw new Error('Not supported');
+    if (this.clip !== null) {
+      this.clip.loop = value;
+    }
   }
 
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars
   fade(startVolume: number, endVolume: number, duration: number) {
-    throw new Error('Not supported');
+    if (this.clip !== null) {
+      this.clip.fade(startVolume, endVolume, duration);
+    }
   }
 }
 
