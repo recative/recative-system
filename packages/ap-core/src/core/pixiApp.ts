@@ -55,7 +55,7 @@ export const createPixiApp = ({
   pixiOptions = {},
   resolutionMode = 'player',
 }: IPixiAppOptions) => {
-  const isSafari = navigator.vendor.indexOf('Apple') > -1;
+  // const isSafari = navigator.vendor.indexOf('Apple') > -1;
   const app = new PIXI.Application({
     // iOS 15.4 WebGL on Metal bug
     antialias: false,
@@ -71,26 +71,27 @@ export const createPixiApp = ({
       : {
         // iOS performance
         resolution:
-            Math.floor(
-              Math.min(
-                2,
-                window.devicePixelRatio,
-                isSafari
-                  ? 1080
-                      / Math.min(
-                        window.screen.availHeight,
-                        window.screen.availWidth,
-                      )
-                  : Infinity,
-                isSafari
-                  ? 1920
-                      / Math.max(
-                        window.screen.availHeight,
-                        window.screen.availWidth,
-                      )
-                  : Infinity,
-              ) * 2,
-            ) / 2,
+        window.devicePixelRatio,
+        // Math.floor(
+        //       Math.min(
+        //         2,
+        //         window.devicePixelRatio,
+        //         isSafari
+        //           ? 1080
+        //               / Math.min(
+        //                 window.screen.availHeight,
+        //                 window.screen.availWidth,
+        //               )
+        //           : Infinity,
+        //         isSafari
+        //           ? 1920
+        //               / Math.max(
+        //                 window.screen.availHeight,
+        //                 window.screen.availWidth,
+        //               )
+        //           : Infinity,
+        //       ) * 2,
+        //     ) / 2,
         width: window.innerWidth,
         height: window.innerHeight,
         autoDensity: true,
