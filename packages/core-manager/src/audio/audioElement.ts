@@ -13,13 +13,18 @@ import { Clip as PhonographClip, mp3Adapter } from '@recative/phonograph';
 export interface AudioElement {
   play(): void;
   pause(): void;
+  stop(): void;
   isPlaying(): boolean;
   destroy(): void;
   get destroyed(): boolean;
   get stuck(): boolean;
-  setVolume(volume: number): void;
+  get volume(): number;
+  set volume(value: number);
   get time(): number;
   set time(value: number);
+  get loop(): boolean;
+  set loop(value: boolean);
+  fade(startVolume: number, endVolume: number, duration: number): void;
 }
 
 export class BasicAudioElement implements AudioElement {
@@ -40,6 +45,10 @@ export class BasicAudioElement implements AudioElement {
     this.source?.pause();
   }
 
+  stop() {
+    this.source?.stop();
+  }
+
   isPlaying() {
     return this.source?.isPlaying() ?? false;
   }
@@ -52,7 +61,7 @@ export class BasicAudioElement implements AudioElement {
   }
 
   get destroyed() {
-    return this.mixer === null;
+    return this.source === null;
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -60,9 +69,13 @@ export class BasicAudioElement implements AudioElement {
     return false;
   }
 
-  setVolume(volume: number) {
-    if (this.mixer !== null) {
-      this.mixer.volume = volume;
+  get volume() {
+    return this.source?.volume ?? 0;
+  }
+
+  set volume(volume: number) {
+    if (this.source !== null) {
+      this.source.volume = volume;
     }
   }
 
@@ -74,6 +87,20 @@ export class BasicAudioElement implements AudioElement {
     if (this.source !== null) {
       this.source.time = value;
     }
+  }
+
+  get loop() {
+    return this.source?.loop ?? false;
+  }
+
+  set loop(value) {
+    if (this.source !== null) {
+      this.source.loop = value;
+    }
+  }
+
+  fade(startVolume: number, endVolume: number, duration: number) {
+    this.source?.fade(startVolume, endVolume, duration);
   }
 }
 
@@ -127,6 +154,13 @@ export class PhonographAudioElement implements AudioElement {
     this.updateActualPlay();
   }
 
+  stop() {
+    this.clip?.pause();
+    if (this.clip !== null) {
+      this.clip.currentTime = 0;
+    }
+  }
+
   isPlaying(): boolean {
     return this.playing;
   }
@@ -148,7 +182,11 @@ export class PhonographAudioElement implements AudioElement {
     return this.clip?.stuck ?? false;
   }
 
-  setVolume(volume: number): void {
+  get volume() {
+    return this.clip?.volume ?? 0;
+  }
+
+  set volume(volume: number) {
     if (this.clip !== null) {
       this.clip.volume = volume;
     }
@@ -166,32 +204,53 @@ export class PhonographAudioElement implements AudioElement {
       this.clip.currentTime = value;
     }
   }
+
+  // eslint-disable-next-line class-methods-use-this
+  get loop() {
+    throw new Error('Not supported');
+    return false;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  set loop(value) {
+    throw new Error('Not supported');
+  }
+
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars
+  fade(startVolume: number, endVolume: number, duration: number) {
+    throw new Error('Not supported');
+  }
 }
 
-export type AudioElementInit = {
-  backend?: 'basic',
-  clip: AudioClip,
-  url: string,
-} | {
-  backend: 'phonograph',
-  clip: PhonographClip<any>,
-};
+export type AudioElementInit =
+  | {
+    backend?: 'basic';
+    clip: AudioClip;
+    url: string;
+  }
+  | {
+    backend: 'phonograph';
+    clip: PhonographClip<any>;
+  };
 
-export const createAudioElement = (mixer: AudioMixer, init:AudioElementInit):AudioElement => {
+export const createAudioElement = (
+  mixer: AudioMixer,
+  init: AudioElementInit,
+): AudioElement => {
   if (init.backend === 'phonograph') {
     return new PhonographAudioElement(mixer, init.clip);
   }
   return new BasicAudioElement(mixer, init.clip);
 };
 
-export const destroyAudioElementInit = (init:AudioElementInit) => {
+export const destroyAudioElementInit = (init: AudioElementInit) => {
   if (init.backend === 'phonograph') {
     return init.clip.dispose();
   }
   return init.clip.destroy();
 };
 
-export const getAudioElementInitUrl = (init:AudioElementInit) => {
+export const getAudioElementInitUrl = (init: AudioElementInit) => {
   if (init.backend === 'phonograph') {
     return init.clip.url;
   }
@@ -241,7 +300,10 @@ export const selectUrlAudioElementInitPostProcess = async (
   url: string,
   metadata?: IResourceFileForClient,
 ): Promise<AudioElementInit | null> => {
-  if (metadata?.extensionConfigurations?.[AUDIO_BACKEND_EXTENSION_KEY] === 'phonograph') {
+  if (
+    metadata?.extensionConfigurations?.[AUDIO_BACKEND_EXTENSION_KEY]
+    === 'phonograph'
+  ) {
     return selectUrlPhonographAudioElementInitPostProcess(url);
   }
   return selectUrlBasicAudioElementInitPostProcess(url);
