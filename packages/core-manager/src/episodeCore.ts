@@ -31,7 +31,6 @@ import { jsonAtom } from './utils/jsonAtom';
 import { isNotNullable } from './utils/isNullable';
 import { filterBGMState } from './utils/managedCoreState';
 import { connect, readonlyAtom } from './utils/nanostore';
-import { RawAudioClipResponse, selectUrlAudioTypePostProcess } from './utils/selectUrlAudioTypePostProcess';
 import type {
   CoreState,
   EpisodeData,
@@ -53,7 +52,7 @@ import { EnvVariableManager, DEFAULT_LANGUAGE } from './manager/envVariable/EnvV
 import { ContentSequence, IInitialAssetStatus } from './sequence';
 
 import type { IDefaultAdditionalEnvVariable } from './manager/envVariable/EnvVariableManager';
-import { AudioElementInit } from './audio/audioElement';
+import { AudioElementInit, selectUrlAudioElementInitPostProcess } from './audio/audioElement';
 import { PostProcessCallback } from './utils/tryValidResourceUrl';
 
 export interface EpisodeCoreConfig<T> {
@@ -564,24 +563,24 @@ export class EpisodeCore<
           audioClip:
             'resourceLabel' in x
               ? this.getEpisodeData()!.resources.getResourceByLabel<
-              RawAudioClipResponse, PostProcessCallback<
-              RawAudioClipResponse, IResourceFileForClient
+              AudioElementInit, PostProcessCallback<
+              AudioElementInit, IResourceFileForClient
               >
               >(
                 x.resourceLabel,
                 addAudioEnv,
                 addAudioWeight,
-                selectUrlAudioTypePostProcess,
+                selectUrlAudioElementInitPostProcess,
               )
               : this.getEpisodeData()!.resources.getResourceById<
-              RawAudioClipResponse, PostProcessCallback<
-              RawAudioClipResponse, IResourceFileForClient
+              AudioElementInit, PostProcessCallback<
+              AudioElementInit, IResourceFileForClient
               >
               >(
                 x.resourceId,
                 addAudioEnv,
                 addAudioWeight,
-                selectUrlAudioTypePostProcess,
+                selectUrlAudioElementInitPostProcess,
               ),
         }));
 

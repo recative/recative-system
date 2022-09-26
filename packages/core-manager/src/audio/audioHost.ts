@@ -1,9 +1,7 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable max-classes-per-file */
 import {
-  AudioClip,
   AudioMixer,
-  AudioSource,
   AudioStation,
   getGlobalAudioStation,
 } from '@recative/audio-station';
@@ -16,18 +14,18 @@ import { AdditionalSubtitleDefine } from '@recative/act-protocol';
 
 import { WithLogger } from '../LogCollector';
 import { convertSRTToStatesWithPrefix } from '../utils/managedCoreState';
-import type { RawAudioClipResponse } from '../utils/selectUrlAudioTypePostProcess';
+import {
+  AudioElement, AudioElementInit, createAudioElement, destroyAudioElementInit,
+} from './audioElement';
 
-class LoadableAudioSource extends WithLogger {
-  private clip: AudioClip | null = null;
+class LoadableAudioElement extends WithLogger {
+  private audioElement: AudioElement | null = null;
 
   private pendingBuffer:
-  | Promise<RawAudioClipResponse | null>
+  | Promise<AudioElementInit | null>
   | null = null;
 
   private pendingClipLoading: Promise<void> | null = null;
-
-  private source: AudioSource | null = null;
 
   // For attached subtitle
   states: ManagedCoreStateList = new ManagedCoreStateList();
@@ -36,7 +34,7 @@ class LoadableAudioSource extends WithLogger {
 
   constructor(
     private mixer: AudioMixer,
-    audioClipResponse: Promise<RawAudioClipResponse | null>,
+    audioClipResponse: Promise<AudioElementInit | null>,
   ) {
     super();
     if (mixer.destroyed) {
@@ -45,11 +43,9 @@ class LoadableAudioSource extends WithLogger {
     this.setAudio(audioClipResponse);
   }
 
-  setAudio(audioClipResponsePromise: Promise<RawAudioClipResponse | null>) {
-    this.source?.destroy();
-    this.clip?.destroy();
-    this.source = null;
-    this.clip = null;
+  setAudio(audioClipResponsePromise: Promise<AudioElementInit | null>) {
+    this.audioElement?.destroy();
+    this.audioElement = null;
     this.pendingBuffer = audioClipResponsePromise;
     if (this.pendingBuffer !== null) {
       this.pendingClipLoading = this.loadAudio(this.pendingBuffer);
@@ -63,31 +59,29 @@ class LoadableAudioSource extends WithLogger {
   }
 
   private async loadAudio(
-    audioClipResponsePromise: Promise<RawAudioClipResponse | null>,
+    audioClipResponsePromise: Promise<AudioElementInit | null>,
   ) {
     if (!this.working) {
       return;
     }
 
-    const audioClipResponse = await audioClipResponsePromise;
-    if (!audioClipResponse) {
+    const audioElementInit = await audioClipResponsePromise;
+    if (!audioElementInit) {
       return;
     }
     if (this.pendingBuffer !== audioClipResponsePromise) {
+      destroyAudioElementInit(audioElementInit);
       // setAudio when audio is loading or destroyed
       return;
     }
 
-    this.clip = audioClipResponse.audioClip;
-    this.source = new AudioSource(this.mixer!, this.clip);
+    this.audioElement = createAudioElement(this.mixer!, audioElementInit);
     this.pendingClipLoading = null;
   }
 
   destroy() {
-    this.source?.destroy();
-    this.clip?.destroy();
-    this.source = null;
-    this.clip = null;
+    this.audioElement?.destroy();
+    this.audioElement = null;
     this.working = false;
     this.pendingBuffer = null;
     this.pendingClipLoading = null;
@@ -97,56 +91,56 @@ class LoadableAudioSource extends WithLogger {
     if (resetProgress) {
       this.stop();
     }
-    this.source?.play();
+    this.audioElement?.play();
   }
 
   pause() {
-    this.source?.pause();
+    this.audioElement?.pause();
   }
 
   stop() {
-    this.source?.stop();
+    this.audioElement?.stop();
   }
 
   seek(time?: number) {
-    if (this.source === null) {
+    if (this.audioElement === null) {
       return 0;
     }
-    const result = this.source.time;
+    const result = this.audioElement.time;
     if (time) {
-      this.source.time = time;
+      this.audioElement.time = time;
     }
     return result;
   }
 
   fade(startVolume: number, endVolume: number, duration: number) {
-    this.source?.fade(startVolume, endVolume, duration);
+    this.audioElement?.fade(startVolume, endVolume, duration);
   }
 
   updateVolume(volume?: number) {
-    if (this.source === null) {
+    if (this.audioElement === null) {
       return 0;
     }
-    const result = this.source.volume;
+    const result = this.audioElement.volume;
     if (volume) {
-      this.source.volume = volume;
+      this.audioElement.volume = volume;
     }
     return result;
   }
 
   updateLoop(loop?: boolean) {
-    if (this.source === null) {
+    if (this.audioElement === null) {
       return false;
     }
-    const result = this.source.loop;
+    const result = this.audioElement.loop;
     if (loop) {
-      this.source.loop = loop;
+      this.audioElement.loop = loop;
     }
     return result;
   }
 
   isPlaying() {
-    return this.source?.isPlaying() ?? false;
+    return this.audioElement?.isPlaying() ?? false;
   }
 }
 
@@ -156,7 +150,7 @@ class LoadableAudioSource extends WithLogger {
 export class AudioHost extends WithLogger {
   private mixer: AudioMixer | null;
 
-  private sources = new Map<string, LoadableAudioSource>();
+  private sources = new Map<string, LoadableAudioElement>();
 
   private managedStateEnabled = false;
 
@@ -181,13 +175,13 @@ export class AudioHost extends WithLogger {
 
   addAudio(
     id: string,
-    audioClipResponsePromise: Promise<RawAudioClipResponse | null>,
+    audioClipResponsePromise: Promise<AudioElementInit | null>,
   ): Promise<void> {
     if (this.destroyed) {
       return Promise.reject(new Error('The `AudioHost` is already destroyed'));
     }
     if (!this.sources.has(id)) {
-      this.sources.set(id, new LoadableAudioSource(this.mixer!, audioClipResponsePromise));
+      this.sources.set(id, new LoadableAudioElement(this.mixer!, audioClipResponsePromise));
       this.sources.get(id)!.logger = this.logger.extend(id);
     } else {
       this.sources.get(id)!.setAudio(audioClipResponsePromise);

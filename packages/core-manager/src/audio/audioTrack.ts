@@ -181,7 +181,7 @@ export class AudioTrack extends WithLogger implements Track {
     }
     this.audioElement?.destroy();
     this.audioElement = createAudioElement(this.mixer!, audioElementInit);
-    this.audioElement.setVolume(this.volume);
+    this.audioElement.volume = this.volume;
     this.log(`Audio track for ${this.id} loaded`);
     let targetTime = (this.cachedProgress) / 1000;
     if (this.playing && !this.mixer?.isSuspended()) {
@@ -214,7 +214,9 @@ export class AudioTrack extends WithLogger implements Track {
   private volume = 1;
 
   setVolume(volume: number) {
-    this.audioElement?.setVolume(volume);
+    if (this.audioElement !== null) {
+      this.audioElement.volume = volume;
+    }
     this.volume = volume;
   }
 }
