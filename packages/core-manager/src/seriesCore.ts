@@ -59,11 +59,11 @@ export interface ISeriesCoreConfig {
     episodeId: string,
     initialAssetStatus?: IInitialAssetStatus
   ) => IEpisodeMetadata | Promise<IEpisodeMetadata>;
-  shouldBlockEpisodeDestroy: (
+  shouldBlockEpisodeDestroy?: (
     oldEpisodeId: string,
     newEpisodeId: string
   ) => boolean;
-  shouldBlockEpisodePlay: (
+  shouldBlockEpisodePlay?: (
     oldEpisodeId: string,
     newEpisodeId: string
   ) => boolean;
@@ -167,7 +167,7 @@ export class SeriesCore<
         this.switching = false;
         return oldEpisodeCore;
       }
-      if (this.config.shouldBlockEpisodeDestroy(olaEpisodeId, episodeId)) {
+      if (this.config.shouldBlockEpisodeDestroy?.(olaEpisodeId, episodeId) ?? false) {
         this.episodeDestroyUnblocked = new OpenPromise<void>();
         await this.episodeDestroyUnblocked;
       }
@@ -237,7 +237,7 @@ export class SeriesCore<
       new CustomEvent('initialized', { detail: { episodeId } }),
     );
 
-    if (this.config.shouldBlockEpisodePlay(olaEpisodeId, episodeId)) {
+    if (this.config.shouldBlockEpisodePlay?.(olaEpisodeId, episodeId) ?? false) {
       this.episodePlayUnblocked = externalDependency;
     } else {
       externalDependency.resolve();

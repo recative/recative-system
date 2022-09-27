@@ -4,19 +4,17 @@
   "projectType": "library",
   "targets": {
     "build": {
-      "executor": "@nrwl/js:tsc",
-      "outputs": ["{options.outputPath}"],
+      "executor": "@nrwl/workspace:run-commands",
       "options": {
-        "outputPath": "dist/packages/phonograph",
-        "main": "packages/phonograph/src/index.ts",
-        "tsConfig": "packages/phonograph/tsconfig.lib.json",
-        "assets": ["packages/phonograph/*.md"]
+        "command": "yarn build",
+        "cwd": "packages/phonograph"
       }
     },
     "publish": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
-        "command": "node tools/scripts/publish.mjs phonograph {args.ver} {args.tag}"
+        "command": "yarn npm publish --tolerate-republish",
+        "cwd": "packages/phonograph"
       },
       "dependsOn": [
         {
