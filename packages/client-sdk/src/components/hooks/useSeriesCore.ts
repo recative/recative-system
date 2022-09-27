@@ -103,7 +103,7 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
       };
 
       const injectedEpisodeMetadata = await getInjectedEpisodeMetadata?.(
-        nextEpisodeId,
+        normalizedEpisodeId,
         notInjectedEpisodeMetadata,
       );
       return injectedEpisodeMetadata ?? notInjectedEpisodeMetadata;

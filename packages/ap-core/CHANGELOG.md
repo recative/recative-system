@@ -1,5 +1,13 @@
 # @recative/ap-core
 
+## 0.4.2
+
+### Patch Changes
+
+- 297df61: fix: Emit textureupdate only when the texture is actual ready
+- Updated dependencies [9ced044]
+  - @recative/open-promise@0.2.3
+
 ## 0.4.1
 
 ### Patch Changes

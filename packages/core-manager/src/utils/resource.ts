@@ -30,6 +30,10 @@ export function* selectUrl(
         url !== undefined,
     );
 
+  if (!urlSpecs.length) {
+    throw new NoMoreURLAvailableError();
+  }
+
   let currentIndex = 0;
 
   const errorCollector = new NoMoreURLAvailableError();
