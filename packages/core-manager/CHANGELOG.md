@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.6.0
+
+### Minor Changes
+
+- 2439a78: feat: Allow AudioHost to use phonograph audio backend
+- 15109d5: feat: Add optional phonograph audio backend for audio track of video
+
+### Patch Changes
+
+- c1bca16: fix: generator hangs when no resource available
+- 33d4903: feat: Provide more detailed information to task queue
+- 2a2aa9c: fix: Incorrect task queue dependency configuration
+- Updated dependencies [15109d5]
+- Updated dependencies [acbb9bf]
+- Updated dependencies [15109d5]
+- Updated dependencies [9ced044]
+  - @recative/phonograph@2.0.0
+  - @recative/audio-station@0.3.0
+  - @recative/open-promise@0.2.3
+
 ## 0.5.7
 
 ### Patch Changes

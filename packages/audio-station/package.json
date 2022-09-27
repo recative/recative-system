@@ -1,6 +1,6 @@
 {
   "name": "@recative/audio-station",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",

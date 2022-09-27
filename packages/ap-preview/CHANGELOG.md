@@ -1,5 +1,17 @@
 # @recative/ap-preview
 
+## 0.4.3
+
+### Patch Changes
+
+- Updated dependencies [c1bca16]
+- Updated dependencies [2439a78]
+- Updated dependencies [33d4903]
+- Updated dependencies [2a2aa9c]
+- Updated dependencies [15109d5]
+  - @recative/core-manager@0.6.0
+  - @recative/act-player@0.4.0
+
 ## 0.4.2
 
 ### Patch Changes

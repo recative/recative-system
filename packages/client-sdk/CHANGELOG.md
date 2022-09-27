@@ -1,5 +1,20 @@
 # Changelog
 
+## 6.0.0
+
+### Patch Changes
+
+- 24bc81c: chore: Format episode id while calling getEpisodeMetadata
+- Updated dependencies [c1bca16]
+- Updated dependencies [2439a78]
+- Updated dependencies [33d4903]
+- Updated dependencies [2a2aa9c]
+- Updated dependencies [15109d5]
+- Updated dependencies [9ced044]
+  - @recative/core-manager@0.6.0
+  - @recative/act-player@0.4.0
+  - @recative/open-promise@0.2.3
+
 ## 5.3.6
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.3
+
+### Patch Changes
+
+- 9ced044: feat: Implemented a detailed task list log
+
 ## 0.2.2
 
 ### Patch Changes
