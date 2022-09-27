@@ -155,7 +155,7 @@ export class SeriesCore<
       time: assetTime,
     });
     const oldEpisodeCore = this.currentEpisodeCore.get();
-    const olaEpisodeId = oldEpisodeCore?.episodeId ?? '';
+    const oldEpisodeId = oldEpisodeCore?.episodeId ?? '';
 
     if (oldEpisodeCore !== null) {
       if (oldEpisodeCore.episodeId === episodeId) {
@@ -167,7 +167,7 @@ export class SeriesCore<
         this.switching = false;
         return oldEpisodeCore;
       }
-      if (this.config.shouldBlockEpisodeDestroy?.(olaEpisodeId, episodeId) ?? false) {
+      if (this.config.shouldBlockEpisodeDestroy?.(oldEpisodeId, episodeId) ?? false) {
         this.episodeDestroyUnblocked = new OpenPromise<void>();
         await this.episodeDestroyUnblocked;
       }
@@ -237,7 +237,7 @@ export class SeriesCore<
       new CustomEvent('initialized', { detail: { episodeId } }),
     );
 
-    if (this.config.shouldBlockEpisodePlay?.(olaEpisodeId, episodeId) ?? false) {
+    if (this.config.shouldBlockEpisodePlay?.(oldEpisodeId, episodeId) ?? false) {
       this.episodePlayUnblocked = externalDependency;
     } else {
       externalDependency.resolve();
