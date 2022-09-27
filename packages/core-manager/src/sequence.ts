@@ -1,17 +1,28 @@
-import { IAssetForClient, ContentSpec, ManagedCoreStateManager } from '@recative/definitions';
+import {
+  IAssetForClient,
+  ContentSpec,
+  ManagedCoreStateManager,
+} from '@recative/definitions';
 import {
   atom, computed, ReadableAtom, WritableAtom,
 } from 'nanostores';
 import { nanoid } from 'nanoid';
 import {
-  allSettled, OpenPromise, OpenPromiseState, TimeSlicingQueue,
+  allSettled,
+  OpenPromise,
+  OpenPromiseState,
+  TimeSlicingQueue,
 } from '@recative/open-promise';
 import { AudioStation } from '@recative/audio-station';
 import EventTarget from '@ungap/event-target';
 import type { ComponentFunctions, CustomEventHandler, Progress } from './types';
 // eslint-disable-next-line import/no-cycle
 import { ContentInstance } from './instance';
-import { distinctAtom, throttledAtom, ThrottledAtomReturnType } from './utils/nanostore';
+import {
+  distinctAtom,
+  throttledAtom,
+  ThrottledAtomReturnType,
+} from './utils/nanostore';
 import { Logger } from './LogCollector';
 
 export interface ContentInfo {
@@ -42,15 +53,26 @@ export interface SequenceOption {
   initialAssetStatus?: IInitialAssetStatus;
   contentInstances: Map<string, ContentInstance>;
   showingContentCount: WritableAtom<number>;
-  forEachComponent: (func: (component: Partial<ComponentFunctions>, name: string) => void) => void;
-  getComponent: (name: string) => Partial<ComponentFunctions> | undefined
-  getContentSwitchBlocker: (lastSegment: number, currentSegment: number) => Set<string>
+  forEachComponent: (
+    func: (component: Partial<ComponentFunctions>, name: string) => void
+  ) => void;
+  getComponent: (name: string) => Partial<ComponentFunctions> | undefined;
+  getContentSwitchBlocker: (
+    lastSegment: number,
+    currentSegment: number
+  ) => Set<string>;
 }
 
 export type ContentSequenceEventTarget = EventTarget & {
-  addEventListener(type: 'segmentStart', callback:CustomEventHandler<number>):void,
-  addEventListener(type: 'segmentEnd', callback:CustomEventHandler<number>):void,
-  addEventListener(type: 'end', callback:CustomEventHandler<undefined>):void,
+  addEventListener(
+    type: 'segmentStart',
+    callback: CustomEventHandler<number>
+  ): void;
+  addEventListener(
+    type: 'segmentEnd',
+    callback: CustomEventHandler<number>
+  ): void;
+  addEventListener(type: 'end', callback: CustomEventHandler<undefined>): void;
 };
 
 /**
@@ -155,7 +177,10 @@ export class ContentSequence {
   /**
    * Is the sequence actual playing, when it is playing itself and parent is also playing
    */
-  playing = computed([this.selfPlaying, this.parentPlaying], (self, parent) => self && parent);
+  playing = computed(
+    [this.selfPlaying, this.parentPlaying],
+    (self, parent) => self && parent,
+  );
 
   /**
    * Is the sequence stuck
@@ -237,7 +262,8 @@ export class ContentSequence {
     this.segmentsDuration = this.contentList.map((info) => info.duration);
     this.duration = this.segmentsDuration
       .filter((duration) => Number.isFinite(duration))
-      .reduce((a, b) => a + b, 0); this.preciseTime = distinctAtom(
+      .reduce((a, b) => a + b, 0);
+    this.preciseTime = distinctAtom(
       computed(
         this.progress,
         (progress) => this.segmentsDuration
@@ -245,7 +271,9 @@ export class ContentSequence {
             (duration, i) => Number.isFinite(duration) && i < progress.segment,
           )
           .reduce((a, b) => a + b, 0)
-            + (Number.isFinite(this.segmentsDuration[progress.segment]) ? progress.progress : 0),
+          + (Number.isFinite(this.segmentsDuration[progress.segment])
+            ? progress.progress
+            : 0),
       ),
     );
     this.time = throttledAtom(this.preciseTime);
@@ -269,13 +297,11 @@ export class ContentSequence {
     try {
       this.dependencyReady.resolve();
       // eslint-disable-next-line no-empty
-    } catch { }
+    } catch {}
   };
 
   private async internalDestroy() {
-    this.logProgress(
-      'Sequence start to destroy',
-    );
+    this.logProgress('Sequence start to destroy');
     this.switching = false;
     this.nextContentSetupBlocker.clear();
     this.setDependencyReady();
@@ -285,12 +311,13 @@ export class ContentSequence {
         this.hideContent(content);
       }
     });
-    await allSettled(Array.from(this.managedContentInstance).map((instance) => instance.destroy()));
+    await allSettled(
+      Array.from(this.managedContentInstance).map((instance) => instance.destroy(),
+      ),
+    );
     this.contents.clear();
     this.contentList = [];
-    this.logProgress(
-      'Sequence fully destroyed',
-    );
+    this.logProgress('Sequence fully destroyed');
   }
 
   destroy() {
@@ -434,8 +461,12 @@ export class ContentSequence {
     if (!instance.showing) {
       instance.showing = true;
       if (this.showing) {
-        this.option.showingContentCount.set(this.option.showingContentCount.get() + 1);
-        this.logContent(`showing count ${this.option.showingContentCount.get()}`);
+        this.option.showingContentCount.set(
+          this.option.showingContentCount.get() + 1,
+        );
+        this.logContent(
+          `showing count ${this.option.showingContentCount.get()}`,
+        );
       }
     }
   }
@@ -463,8 +494,12 @@ export class ContentSequence {
     if (instance.showing) {
       instance.showing = false;
       if (this.showing) {
-        this.option.showingContentCount.set(this.option.showingContentCount.get() - 1);
-        this.logContent(`showing count ${this.option.showingContentCount.get()}`);
+        this.option.showingContentCount.set(
+          this.option.showingContentCount.get() - 1,
+        );
+        this.logContent(
+          `showing count ${this.option.showingContentCount.get()}`,
+        );
       }
     }
   }
@@ -475,7 +510,7 @@ export class ContentSequence {
     }
 
     const currentContent = this.contentList[this.currentSegment];
-    // Since we have a preload machinist, if the asset instance is already shown
+    // Since we have a preload mechanism, if the asset instance is already shown
     // on the stage, we can try to start this instance immediately, or this
     // ready signal only means the preload process is finished.
     if (currentContent.instance === instance) {
@@ -505,7 +540,10 @@ export class ContentSequence {
   private setupContentSwitchBlocker() {
     this.nextContentSetupUnblocked = new OpenPromise();
     this.switchingUnblocked = new OpenPromise();
-    const blocker = this.option.getContentSwitchBlocker(this.lastSegment, this.currentSegment);
+    const blocker = this.option.getContentSwitchBlocker(
+      this.lastSegment,
+      this.currentSegment,
+    );
     blocker.forEach((name) => {
       this.nextContentSetupBlocker.add(name);
       this.switchingBlocker.add(name);
@@ -741,8 +779,12 @@ export class ContentSequence {
           this.option.forEachComponent((component) => {
             component.showContent?.(instance.id);
           });
-          this.option.showingContentCount.set(this.option.showingContentCount.get() + 1);
-          this.logContent(`showing count ${this.option.showingContentCount.get()}`);
+          this.option.showingContentCount.set(
+            this.option.showingContentCount.get() + 1,
+          );
+          this.logContent(
+            `showing count ${this.option.showingContentCount.get()}`,
+          );
         }
       }
     });
@@ -762,8 +804,12 @@ export class ContentSequence {
           this.option.forEachComponent((component) => {
             component.hideContent?.(instance.id);
           });
-          this.option.showingContentCount.set(this.option.showingContentCount.get() - 1);
-          this.logContent(`showing count ${this.option.showingContentCount.get()}`);
+          this.option.showingContentCount.set(
+            this.option.showingContentCount.get() - 1,
+          );
+          this.logContent(
+            `showing count ${this.option.showingContentCount.get()}`,
+          );
         }
       }
     });
