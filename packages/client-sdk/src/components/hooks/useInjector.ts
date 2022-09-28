@@ -130,8 +130,9 @@ export const useInjector = <
   const internalDependencies = React.useMemo(() => ({
     navigate,
     fetchData,
+    normalizeEpisodeId,
     ...playerPropsHookDependencies,
-  }), [fetchData, navigate, playerPropsHookDependencies]);
+  }), [fetchData, navigate, playerPropsHookDependencies, normalizeEpisodeId]);
 
   const playerPropsHookProps = React.useMemo(
     () => ({

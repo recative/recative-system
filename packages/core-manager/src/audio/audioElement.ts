@@ -305,7 +305,7 @@ export const selectUrlAudioElementInitPostProcess = async (
 ): Promise<AudioElementInit | null> => {
   if (
     metadata?.extensionConfigurations?.[AUDIO_BACKEND_EXTENSION_KEY]
-    === 'phonograph'
+    === 'yes'
   ) {
     return selectUrlPhonographAudioElementInitPostProcess(url);
   }
