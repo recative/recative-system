@@ -95,14 +95,6 @@ export class DestroyedError extends Error {
   }
 }
 
-const raf = (cb: FrameRequestCallback) => {
-  if ('requestAnimationFrame' in globalThis) {
-    return globalThis.requestAnimationFrame(cb);
-  } else {
-    return globalThis.setTimeout(cb, 0);
-  }
-}
-
 export class MessagePortChannel implements EventBasedChannel {
   listeners: Set<Listener> = new Set();
 
@@ -141,27 +133,25 @@ export class MessagePortChannel implements EventBasedChannel {
 export class BatchedMessagePortChannel extends MessagePortChannel {
   private messageBuffer: unknown[] = [];
 
-  constructor(port: MessagePort) {
-    super(port);
-  }
-
   timeout: number = -1;
 
   forceSendTask = () => {
     if (this.destroyed) return;
-    
+
     this.port.postMessage(this.messageBuffer, extractTransferables(this.messageBuffer));
     this.messageBuffer = [];
     globalThis.clearTimeout(this.timeout);
-  }
+    this.timeout = -1;
+  };
 
   scheduleSendTask = () => {
-    globalThis.clearTimeout(this.timeout);
-
-    this.timeout = window.setTimeout(() => {
-      this.forceSendTask();
-    }, 1000 / 60);
-  }
+    // If there is already a setTimeout, there is no need to do another setTimeout
+    if (this.timeout < 0) {
+      this.timeout = window.setTimeout(() => {
+        this.forceSendTask();
+      }, 1000 / 60);
+    }
+  };
 
   on = (listener: Listener): void | (() => void) => {
     if (this.destroyed) throw new DestroyedError();
@@ -178,7 +168,7 @@ export class BatchedMessagePortChannel extends MessagePortChannel {
       }
     });
     this.port.start();
-  }
+  };
 
   send = (data: unknown): void => {
     if (this.destroyed) throw new DestroyedError();
@@ -189,7 +179,7 @@ export class BatchedMessagePortChannel extends MessagePortChannel {
     } else {
       this.scheduleSendTask();
     }
-  }
+  };
 }
 
 export class LazyMessagePortChannel implements EventBasedChannel {
