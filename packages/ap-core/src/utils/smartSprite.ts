@@ -141,6 +141,8 @@ export class SmartSprite extends PIXI.Sprite {
 
   private eventTarget: ReturnType<typeof useEventTarget>;
 
+  private pendingTexture: PIXI.Texture | null = null;
+
   constructor(option: SmartSpriteOption) {
     super(PIXI.Texture.EMPTY);
     this.autoReleaseTexture = option.autoReleaseTexture ?? false;
@@ -178,28 +180,44 @@ export class SmartSprite extends PIXI.Sprite {
     );
   }
 
-  private onTextureUpdate = () => {
-    this.emit('textureupdate', {});
-  };
-
   private updateTexture = (smartTextureInfo: SmartTextureInfo | null) => {
     if (smartTextureInfo === null) {
       return;
     }
-    const oldTexture = super.texture;
-    const oldUrl = oldTexture.baseTexture.cacheId;
+    if (this.pendingTexture !== null) {
+      const oldTexture = this.pendingTexture;
+      const oldUrl = oldTexture.baseTexture.cacheId;
+      oldTexture.destroy();
+      this.smartTextureRc.release(oldUrl);
+    }
     const texture = this.createTextureFromSmartTextureInfo(smartTextureInfo);
-    super.texture = texture;
-    oldTexture.destroy();
-    this.smartTextureRc.release(oldUrl);
+    this.pendingTexture = texture;
 
     // wait for the texture to load
     if (texture.baseTexture.valid) {
-      this.onTextureUpdate();
+      this.applyPendingTexture();
     } else {
-      texture.once('update', this.onTextureUpdate, this);
+      texture.once('update', () => {
+        if (texture === this.pendingTexture) {
+          this.applyPendingTexture();
+        }
+      }, this);
     }
   };
+
+  private applyPendingTexture() {
+    if (this.pendingTexture !== null) {
+      const oldTexture = super.texture;
+      const oldUrl = oldTexture.baseTexture?.cacheId;
+      super.texture = this.pendingTexture;
+      this.pendingTexture = null;
+      if (oldTexture !== null) {
+        oldTexture.destroy();
+        this.smartTextureRc.release(oldUrl);
+      }
+      this.emit('textureupdate', {});
+    }
+  }
 
   private checkTextureRelease = () => {
     this.textureReleasedDataSource.data = !this.worldVisible;
