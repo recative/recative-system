@@ -43,7 +43,7 @@ export interface PaymentRequest {
   type: string;
 }
 
-export interface RawUserImplementedFunctions{
+export interface RawUserImplementedFunctions {
   /**
    * Finish the current episode
    */
