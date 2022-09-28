@@ -48,11 +48,17 @@ import { ContentInstance } from './instance';
 import { DialogManager } from './manager/dialog/DialogManager';
 import { PreloadManager } from './manager/preload/PreloadManager';
 import { ResourceListForClient } from './manager/resource/ResourceListForClient';
-import { EnvVariableManager, DEFAULT_LANGUAGE } from './manager/envVariable/EnvVariableManager';
+import {
+  EnvVariableManager,
+  DEFAULT_LANGUAGE,
+} from './manager/envVariable/EnvVariableManager';
 import { ContentSequence, IInitialAssetStatus } from './sequence';
 
 import type { IDefaultAdditionalEnvVariable } from './manager/envVariable/EnvVariableManager';
-import { AudioElementInit, selectUrlAudioElementInitPostProcess } from './audio/audioElement';
+import {
+  AudioElementInit,
+  selectUrlAudioElementInitPostProcess,
+} from './audio/audioElement';
 import { PostProcessCallback } from './utils/tryValidResourceUrl';
 
 export interface EpisodeCoreConfig<T> {
@@ -62,12 +68,19 @@ export interface EpisodeCoreConfig<T> {
   defaultContentLanguage?: string;
   defaultSubtitleLanguage?: string;
   episodeId: string;
+  externalDependency?: Promise<void>;
 }
 
 export type EpisodeCoreEventTarget = EventTarget & {
-  addEventListener(type: 'segmentStart', callback: CustomEventHandler<number>): void,
-  addEventListener(type: 'segmentEnd', callback: CustomEventHandler<number>): void,
-  addEventListener(type: 'end', callback: CustomEventHandler<undefined>): void,
+  addEventListener(
+    type: 'segmentStart',
+    callback: CustomEventHandler<number>
+  ): void;
+  addEventListener(
+    type: 'segmentEnd',
+    callback: CustomEventHandler<number>
+  ): void;
+  addEventListener(type: 'end', callback: CustomEventHandler<undefined>): void;
 };
 
 export class EpisodeCore<
@@ -89,7 +102,12 @@ export class EpisodeCore<
 
   readonly fastTaskQueue = new TimeSlicingQueue(10, 4, undefined, 'fast');
 
-  readonly slowTaskQueue = new TimeSlicingQueue(6, 8, this.fastTaskQueue, 'slow');
+  readonly slowTaskQueue = new TimeSlicingQueue(
+    6,
+    8,
+    this.fastTaskQueue,
+    'slow',
+  );
 
   private components = new Map<string, Partial<ComponentFunctions>>();
 
@@ -318,7 +336,10 @@ export class EpisodeCore<
     this.mainSequence = new ContentSequence({
       id: 'main',
       logger: this.logCollector.Logger('mainSequence'),
-      dependencyLoadedPromise: preload,
+      dependencyLoadedPromise: allSettled([
+        preload,
+        Promise.resolve(config.externalDependency),
+      ]).then(() => {}),
       audioStation: this.audioStation,
       managedCoreStateManager: this.managedCoreStateManager,
       volume: this.volume.get(),
@@ -337,10 +358,7 @@ export class EpisodeCore<
         const blocker = new Set<string>();
         this.components.forEach((component, name) => {
           if (
-            component.shouldBlockContentSwitch?.(
-              lastSegment,
-              currentSegment,
-            )
+            component.shouldBlockContentSwitch?.(lastSegment, currentSegment)
             ?? false
           ) {
             blocker.add(name);
@@ -350,8 +368,14 @@ export class EpisodeCore<
       },
     });
     this.ready = true;
-    this.mainSequence.eventTarget.addEventListener('segmentStart', this.forwardEvent);
-    this.mainSequence.eventTarget.addEventListener('segmentEnd', this.forwardEvent);
+    this.mainSequence.eventTarget.addEventListener(
+      'segmentStart',
+      this.forwardEvent,
+    );
+    this.mainSequence.eventTarget.addEventListener(
+      'segmentEnd',
+      this.forwardEvent,
+    );
     this.mainSequence.eventTarget.addEventListener('end', this.forwardEvent);
     this.mainSequence.firstAssetInstanceReady.then(() => {
       if (this.firstAssetInstanceReady.state === OpenPromiseState.Idle) {
@@ -382,9 +406,7 @@ export class EpisodeCore<
   };
 
   private async internalDestroy() {
-    this.logMain(
-      'Core start to destroy',
-    );
+    this.logMain('Core start to destroy');
     this.updateState();
     if (
       this.episodeData.state === OpenPromiseState.Idle
@@ -392,11 +414,7 @@ export class EpisodeCore<
     ) {
       this.episodeData.resolve({
         assets: [],
-        resources: new ResourceListForClient(
-          [],
-          [],
-          this,
-        ),
+        resources: new ResourceListForClient([], [], this),
         preferredUploaders: [],
         preloader: new PreloadManager(this),
       });
@@ -412,17 +430,17 @@ export class EpisodeCore<
     });
     this.contentInstances.clear();
     this.userImplementedFunctions = null;
-    if (this.criticalComponentReady.state === OpenPromiseState.Idle
-      || this.criticalComponentReady.state === OpenPromiseState.Pending) {
+    if (
+      this.criticalComponentReady.state === OpenPromiseState.Idle
+      || this.criticalComponentReady.state === OpenPromiseState.Pending
+    ) {
       this.criticalComponentReady.resolve();
     }
 
     this.envVariableManager.destroy();
     this.destroyed = true;
     this.updateState();
-    this.logMain(
-      'Core fully destroyed',
-    );
+    this.logMain('Core fully destroyed');
   }
 
   destroy() {
@@ -447,7 +465,9 @@ export class EpisodeCore<
       state = 'destroying';
     } else if (this.ready) {
       state = 'working';
-    } else if (this.criticalComponentReady.state !== OpenPromiseState.Fulfilled) {
+    } else if (
+      this.criticalComponentReady.state !== OpenPromiseState.Fulfilled
+    ) {
       state = 'waitingForCriticalComponent';
     } else if (this.episodeData.state === OpenPromiseState.Rejected) {
       state = 'panic';
@@ -460,7 +480,10 @@ export class EpisodeCore<
   }
 
   private updateManagedCoreState() {
-    if (this.mainSequence?.updateManagedCoreState() || this.managedCoreStateDirty) {
+    if (
+      this.mainSequence?.updateManagedCoreState()
+      || this.managedCoreStateDirty
+    ) {
       const { state } = this.managedCoreStateManager;
       this.internalManagedCoreState.set(state);
     }
@@ -508,10 +531,10 @@ export class EpisodeCore<
     };
 
     const forwardToInstanceFunctions = <
-      N extends keyof ContentInstance,
-      K extends keyof ContentInstance[N],
-      F extends Extract<ContentInstance[N][K], (...args: never[]) => unknown>,
-    >(
+        N extends keyof ContentInstance,
+        K extends keyof ContentInstance[N],
+        F extends Extract<ContentInstance[N][K], (...args: never[]) => unknown>,
+      >(
         feature: N,
         key: K,
       ) => (...args: Parameters<F>) => {
@@ -563,9 +586,8 @@ export class EpisodeCore<
           audioClip:
             'resourceLabel' in x
               ? this.getEpisodeData()!.resources.getResourceByLabel<
-              AudioElementInit, PostProcessCallback<
-              AudioElementInit, IResourceFileForClient
-              >
+              AudioElementInit,
+              PostProcessCallback<AudioElementInit, IResourceFileForClient>
               >(
                 x.resourceLabel,
                 addAudioEnv,
@@ -573,9 +595,8 @@ export class EpisodeCore<
                 selectUrlAudioElementInitPostProcess,
               )
               : this.getEpisodeData()!.resources.getResourceById<
-              AudioElementInit, PostProcessCallback<
-              AudioElementInit, IResourceFileForClient
-              >
+              AudioElementInit,
+              PostProcessCallback<AudioElementInit, IResourceFileForClient>
               >(
                 x.resourceId,
                 addAudioEnv,
@@ -730,15 +751,17 @@ export class EpisodeCore<
     if (this.components.has(name)) {
       this.logComponent(
         `Another component with the name "${name}" have been registered,`
-        + ' it will be unregistered to allow the new component to be registered',
+          + ' it will be unregistered to allow the new component to be registered',
       );
       this.unregisterComponent(name);
     }
     this.components.set(name, component);
     this.logComponent(`Component ${name} registered`);
 
-    if (this.criticalComponentReady.state === OpenPromiseState.Idle
-      || this.criticalComponentReady.state === OpenPromiseState.Pending) {
+    if (
+      this.criticalComponentReady.state === OpenPromiseState.Idle
+      || this.criticalComponentReady.state === OpenPromiseState.Pending
+    ) {
       // TODO: more
       if (this.components.has('stage')) {
         this.logMain('Critical component ready');

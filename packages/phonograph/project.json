@@ -15,7 +15,13 @@
       "options": {
         "command": "yarn npm publish --tolerate-republish",
         "cwd": "packages/phonograph"
-      }
+      },
+      "dependsOn": [
+        {
+          "projects": "self",
+          "target": "build"
+        }
+      ]
     },
     "lint": {
       "executor": "@nrwl/linter:eslint",
