@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.0
+
+### Minor Changes
+
+- 25eecc8: feat: SeriesCore Lifecycle override and control
+
 ## 0.6.0
 
 ### Minor Changes

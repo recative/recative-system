@@ -1,5 +1,12 @@
 # @recative/act-player
 
+## 0.4.1
+
+### Patch Changes
+
+- Updated dependencies [25eecc8]
+  - @recative/core-manager@0.7.0
+
 ## 0.4.0
 
 ### Minor Changes

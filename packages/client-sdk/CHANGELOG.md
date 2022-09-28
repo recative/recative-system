@@ -1,5 +1,14 @@
 # Changelog
 
+## 7.0.0
+
+### Patch Changes
+
+- 2e6adbd: feat: Add `normalizeEpisodeId` to injected functions
+- Updated dependencies [25eecc8]
+  - @recative/core-manager@0.7.0
+  - @recative/act-player@0.4.1
+
 ## 6.0.0
 
 ### Patch Changes
