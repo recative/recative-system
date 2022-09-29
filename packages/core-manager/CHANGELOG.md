@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.8.0
+
+### Minor Changes
+
+- 7b07837: BREAKING: The way to specify audio backend was changed
+
+### Patch Changes
+
+- Updated dependencies [148013b]
+  - @recative/act-protocol@0.2.8
+
 ## 0.7.0
 
 ### Minor Changes

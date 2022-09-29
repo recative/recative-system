@@ -1,5 +1,16 @@
 # @recative/ap-core
 
+## 0.5.0
+
+### Minor Changes
+
+- dd76191: feat: SmartSprite won't update texture until texture is ready
+
+### Patch Changes
+
+- Updated dependencies [148013b]
+  - @recative/act-protocol@0.2.8
+
 ## 0.4.2
 
 ### Patch Changes

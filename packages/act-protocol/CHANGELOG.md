@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.8
+
+### Patch Changes
+
+- 148013b: fix: Reduce delay in BatchedMessagePortChannel
+
 ## 0.2.7
 
 ### Patch Changes

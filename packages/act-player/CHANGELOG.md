@@ -1,5 +1,14 @@
 # @recative/act-player
 
+## 0.4.2
+
+### Patch Changes
+
+- Updated dependencies [148013b]
+- Updated dependencies [7b07837]
+  - @recative/act-protocol@0.2.8
+  - @recative/core-manager@0.8.0
+
 ## 0.4.1
 
 ### Patch Changes

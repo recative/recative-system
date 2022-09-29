@@ -1,5 +1,13 @@
 # @recative/mobile-shell
 
+## 0.1.3
+
+### Patch Changes
+
+- Updated dependencies [db4ecee]
+  - @recative/client-sdk@8.0.0
+  - @recative/act-player@0.4.2
+
 ## 0.1.2
 
 ### Patch Changes
