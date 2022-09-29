@@ -9,6 +9,7 @@ export type {
   InjectedProps,
 } from './components/hooks/useInjector';
 export * from './components/hooks/useDataFetcher';
+export * from './components/hooks/useEpisodeIdNormalizer';
 
 export * from './types/IEpisodeSave';
 export * from './types/IRpcFunction';
