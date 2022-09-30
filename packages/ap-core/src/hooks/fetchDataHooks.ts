@@ -55,7 +55,7 @@ export const useQuery = <Key, Value>(
   subscribeQueryKey: Subscribable<Key>,
   queryFn: (key: Key | null) => Promise<Value> = defaultQueryFn,
 ) => {
-  const keyDataSource = useDataSource<Key | null>(null);
+  const keyDataSource = useDataSource<Key | null>(null, false);
   const queryKeyController = subscribeQueryKey((key) => {
     keyDataSource.data = key;
   });

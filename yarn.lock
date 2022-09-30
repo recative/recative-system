@@ -5923,15 +5923,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@recative/act-player@^0.4.0, @recative/act-player@workspace:packages/act-player":
+"@recative/act-player@^0.4.0, @recative/act-player@^0.4.2, @recative/act-player@workspace:packages/act-player":
   version: 0.0.0-use.local
   resolution: "@recative/act-player@workspace:packages/act-player"
   dependencies:
     "@nanostores/react": 0.2.0
     "@paciolan/remote-module-loader": ^3.0.2
     "@react-hookz/web": ^15.1.0
-    "@recative/act-protocol": ^0.2.7
-    "@recative/core-manager": ^0.6.0
+    "@recative/act-protocol": ^0.2.8
+    "@recative/core-manager": ^0.8.0
     "@recative/definitions": ^0.4.2
     "@recative/smart-resource": "workspace:^"
     "@types/debug": ^4.1.7
@@ -5969,7 +5969,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/act-protocol@^0.2.7, @recative/act-protocol@workspace:packages/act-protocol":
+"@recative/act-protocol@^0.2.7, @recative/act-protocol@^0.2.8, @recative/act-protocol@workspace:packages/act-protocol":
   version: 0.0.0-use.local
   resolution: "@recative/act-protocol@workspace:packages/act-protocol"
   dependencies:
@@ -5985,7 +5985,7 @@ __metadata:
   resolution: "@recative/ap-core@workspace:packages/ap-core"
   dependencies:
     "@nanostores/persistent": ^0.5.1
-    "@recative/act-protocol": ^0.2.7
+    "@recative/act-protocol": ^0.2.8
     "@recative/definitions": ^0.4.2
     "@recative/open-promise": ^0.2.3
     "@recative/resource-bridge": ^0.2.3
@@ -6064,9 +6064,9 @@ __metadata:
     "@parcel/transformer-react-refresh-wrap": ^2.7.0
     "@parcel/transformer-typescript-types": ^2.7.0
     "@react-hookz/web": ^15.1.0
-    "@recative/act-player": ^0.4.0
-    "@recative/act-protocol": ^0.2.7
-    "@recative/core-manager": ^0.6.0
+    "@recative/act-player": ^0.4.2
+    "@recative/act-protocol": ^0.2.8
+    "@recative/core-manager": ^0.8.0
     "@recative/definitions": ^0.4.2
     "@recative/smart-resource": ^0.2.0
     "@types/debug": ^4.1.7
@@ -6121,7 +6121,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/client-sdk@^6.0.0, @recative/client-sdk@workspace:packages/client-sdk":
+"@recative/client-sdk@^8.0.0, @recative/client-sdk@workspace:packages/client-sdk":
   version: 0.0.0-use.local
   resolution: "@recative/client-sdk@workspace:packages/client-sdk"
   dependencies:
@@ -6129,9 +6129,9 @@ __metadata:
     "@nanostores/react": ^0.1.5
     "@paciolan/remote-module-loader": ^3.0.2
     "@react-hookz/web": ^15.1.0
-    "@recative/act-player": ^0.4.0
-    "@recative/act-protocol": ^0.2.7
-    "@recative/core-manager": ^0.6.0
+    "@recative/act-player": ^0.4.2
+    "@recative/act-protocol": ^0.2.8
+    "@recative/core-manager": ^0.8.0
     "@recative/definitions": ^0.4.3
     "@recative/open-promise": ^0.2.3
     "@recative/smart-resource": ^0.2.0
@@ -6148,9 +6148,9 @@ __metadata:
   peerDependencies:
     "@nanostores/react": ^0.1.5
     "@paciolan/remote-module-loader": "*"
-    "@recative/act-player": 0.4.0
+    "@recative/act-player": 0.4.2
     "@recative/act-protocol": "*"
-    "@recative/core-manager": 0.6.0
+    "@recative/core-manager": 0.8.0
     "@recative/smart-resource": "*"
     baseui: ^12.1.0
     classnames: "*"
@@ -6164,12 +6164,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/core-manager@^0.6.0, @recative/core-manager@workspace:packages/core-manager":
+"@recative/core-manager@^0.8.0, @recative/core-manager@workspace:packages/core-manager":
   version: 0.0.0-use.local
   resolution: "@recative/core-manager@workspace:packages/core-manager"
   dependencies:
     "@nanostores/persistent": ^0.5.2
-    "@recative/act-protocol": ^0.2.7
+    "@recative/act-protocol": ^0.2.8
     "@recative/audio-station": ^0.3.0
     "@recative/definitions": ^0.4.2
     "@recative/open-promise": ^0.2.3
@@ -6233,8 +6233,8 @@ __metadata:
     "@ionic/react": ^6.0.0
     "@ionic/react-router": ^6.0.0
     "@paciolan/remote-module-loader": ^3.0.2
-    "@recative/act-player": ^0.4.0
-    "@recative/client-sdk": ^6.0.0
+    "@recative/act-player": ^0.4.2
+    "@recative/client-sdk": ^8.0.0
     "@types/craco__craco": ^6.4.0
     "@types/fs-extra": ^9.0.13
     "@types/path-browserify": ^1.0.0
