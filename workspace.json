@@ -20,6 +20,7 @@
     "resource-loader": "packages/resource-loader",
     "smart-resource": "packages/smart-resource",
     "time-schedule": "packages/time-schedule",
+    "tsdb": "packages/tsdb",
     "ugly-json": "packages/ugly-json",
     "web-shell": "packages/web-shell"
   }

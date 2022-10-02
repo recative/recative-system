@@ -1,0 +1,10 @@
+{
+  "name": "@recative/tsdb",
+  "version": "0.0.1",
+  "type": "commonjs",
+  "dependencies": {
+    "@recative/open-promise": "workspace:^",
+    "@types/lokijs": "^1.5.7",
+    "@ungap/event-target": "^0.2.3"
+  }
+}

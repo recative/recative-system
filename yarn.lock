@@ -6275,7 +6275,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/open-promise@^0.2.0, @recative/open-promise@^0.2.3, @recative/open-promise@workspace:packages/open-promise":
+"@recative/open-promise@^0.2.0, @recative/open-promise@^0.2.3, @recative/open-promise@workspace:^, @recative/open-promise@workspace:packages/open-promise":
   version: 0.0.0-use.local
   resolution: "@recative/open-promise@workspace:packages/open-promise"
   dependencies:
@@ -6403,6 +6403,16 @@ __metadata:
   resolution: "@recative/time-schedule@workspace:packages/time-schedule"
   dependencies:
     "@recative/audio-station": ^0.3.0
+  languageName: unknown
+  linkType: soft
+
+"@recative/tsdb@workspace:packages/tsdb":
+  version: 0.0.0-use.local
+  resolution: "@recative/tsdb@workspace:packages/tsdb"
+  dependencies:
+    "@recative/open-promise": "workspace:^"
+    "@types/lokijs": ^1.5.7
+    "@ungap/event-target": ^0.2.3
   languageName: unknown
   linkType: soft
 
@@ -7497,6 +7507,13 @@ __metadata:
   version: 4.14.182
   resolution: "@types/lodash@npm:4.14.182"
   checksum: 7dd137aa9dbabd632408bd37009d984655164fa1ecc3f2b6eb94afe35bf0a5852cbab6183148d883e9c73a958b7fec9a9bcf7c8e45d41195add6a18c34958209
+  languageName: node
+  linkType: hard
+
+"@types/lokijs@npm:^1.5.7":
+  version: 1.5.7
+  resolution: "@types/lokijs@npm:1.5.7"
+  checksum: 6f96f139d12364583909b72526e98cc0b7af45d1001d54c25d3453858e165ffc81bbbee3dd008bd540f0f3ebfc39fbc8894e3c46d490de444d500667ddb608c9
   languageName: node
   linkType: hard
 

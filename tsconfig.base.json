@@ -32,6 +32,7 @@
       "@recative/resource-loader": ["packages/resource-loader/src/index.ts"],
       "@recative/smart-resource": ["packages/smart-resource/src/index.ts"],
       "@recative/time-schedule": ["packages/time-schedule/src/index.ts"],
+      "@recative/tsdb": ["packages/tsdb/src/index.ts"],
       "@recative/ugly-json": ["packages/ugly-json/src/index.ts"]
     }
   },
