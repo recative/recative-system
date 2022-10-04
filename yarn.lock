@@ -6187,6 +6187,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@recative/database@workspace:packages/database":
+  version: 0.0.0-use.local
+  resolution: "@recative/database@workspace:packages/database"
+  dependencies:
+    "@recative/open-promise": "workspace:^"
+    "@types/lokijs": ^1.5.7
+    "@ungap/event-target": ^0.2.3
+  languageName: unknown
+  linkType: soft
+
 "@recative/definitions@^0.4.0, @recative/definitions@^0.4.2, @recative/definitions@^0.4.3, @recative/definitions@workspace:packages/definitions":
   version: 0.0.0-use.local
   resolution: "@recative/definitions@workspace:packages/definitions"
@@ -6403,16 +6413,6 @@ __metadata:
   resolution: "@recative/time-schedule@workspace:packages/time-schedule"
   dependencies:
     "@recative/audio-station": ^0.3.0
-  languageName: unknown
-  linkType: soft
-
-"@recative/tsdb@workspace:packages/tsdb":
-  version: 0.0.0-use.local
-  resolution: "@recative/tsdb@workspace:packages/tsdb"
-  dependencies:
-    "@recative/open-promise": "workspace:^"
-    "@types/lokijs": ^1.5.7
-    "@ungap/event-target": ^0.2.3
   languageName: unknown
   linkType: soft
 

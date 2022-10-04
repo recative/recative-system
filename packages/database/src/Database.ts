@@ -1,13 +1,17 @@
-import { Collection } from 'lokijs';
-
 import EventTarget from '@ungap/event-target';
 import { OpenPromise } from '@recative/open-promise';
 
-import { deepFreeze } from './utils/deepFreeze';
+import { Collection } from './Collection';
+import { deepFreeze } from './utils/freeze';
 import { copyProperties } from './utils/copyProperties';
 import { serializeReplacer } from './utils/serializeReplacer';
 import { Environment, getEnv } from './utils/getEnv';
-import { ICollectionOptions, ICollectionSummary } from './Collection';
+import type {
+  ICollectionOptions,
+  ICollectionSummary,
+  ICollectionChange,
+} from './Collection';
+import { delay } from './utils/delay';
 
 export enum SerializationMethod {
   Normal = 'normal',
@@ -47,11 +51,11 @@ export class PersistenceAdapter {
   };
 }
 
-class LokiFsAdapter extends PersistenceAdapter {}
+class LokiFsAdapter extends PersistenceAdapter { }
 
-class LokiLocalStorageAdapter extends PersistenceAdapter {}
+class LokiLocalStorageAdapter extends PersistenceAdapter { }
 
-class LokiMemoryAdapter extends PersistenceAdapter {}
+class LokiMemoryAdapter extends PersistenceAdapter { }
 
 class LokiNeverAdapter extends PersistenceAdapter {
   constructor() {
@@ -194,7 +198,7 @@ export interface IDeserializeCollectionOptions {
   delimiter: string;
 }
 
-class CollectionProto {}
+class CollectionProto { }
 
 export interface ILoadJSONCollectionConfiguration {
   inflate: (source: object, destination?: object) => void;
@@ -239,7 +243,9 @@ export interface IThrottledSaveDrainOptions {
 export class Database extends EventTarget {
   options: IDatabaseOptions;
 
-  readonly collections: Collection[] = [];
+  // We have to use any here since we really don't know anything about the data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly collections: Collection<any>[] = [];
 
   // persist version of code which created the database to the database.
   // could use for upgrade scenarios.
@@ -284,7 +290,7 @@ export class Database extends EventTarget {
   isIncremental = false;
 
   constructor(
-    readonly fileName: string = 'tsdb.db',
+    readonly fileName: string = 'database.db',
     options: Partial<IDatabaseOptions> = {},
   ) {
     super();
@@ -353,9 +359,9 @@ export class Database extends EventTarget {
     if (options.autoload && initialConfig) {
       // for autoload, let the constructor complete before firing callback
 
-      setTimeout(() => {
+      delay(() => {
         this.loadDatabase(options).then(options.autoloadCallback);
-      }, 1);
+      });
     }
 
     if (
@@ -434,7 +440,10 @@ export class Database extends EventTarget {
    * @param name - name of collection to add
    * @param options - options to configure collection with.
    */
-  addCollection = (name: string, options: Partial<ICollectionOptions>) => {
+  addCollection = <T extends object>(
+    name: string,
+    options: Partial<ICollectionOptions<T>>,
+  ) => {
     let i;
     const len = this.collections.length;
 
@@ -456,7 +465,7 @@ export class Database extends EventTarget {
       }
     }
 
-    const collection = new Collection(name, options);
+    const collection = new Collection<T>(name, options);
     // @ts-ignore: TODO: refactor this later
     collection.isIncremental = this.isIncremental;
     this.collections.push(collection);
@@ -469,7 +478,7 @@ export class Database extends EventTarget {
     return collection;
   };
 
-  loadCollection = (collection: Collection) => {
+  loadCollection = <T extends object>(collection: Collection<T>) => {
     if (!collection.name) {
       throw new Error('Collection must have a name property to be loaded');
     }
@@ -566,14 +575,15 @@ export class Database extends EventTarget {
     // We are not using switch here for better debugging experience while
     // someone think some code went wrong here.
     if (serializeMethod === SerializationMethod.Normal) {
-      const result = JSON.stringify(this, serializeReplacer);
-      return result;
-    } if (serializeMethod === SerializationMethod.Pretty) {
-      const result = JSON.stringify(this, serializeReplacer, 2);
-      return result;
-    } if (serializeMethod === SerializationMethod.Destructured) {
-      const result = this.serializeDestructured();
-      return result;
+      return JSON.stringify(this, serializeReplacer);
+    }
+
+    if (serializeMethod === SerializationMethod.Pretty) {
+      return JSON.stringify(this, serializeReplacer, 2);
+    }
+
+    if (serializeMethod === SerializationMethod.Destructured) {
+      return this.serializeDestructured();
     }
 
     const result = JSON.stringify(this, serializeReplacer);
@@ -971,7 +981,7 @@ export class Database extends EventTarget {
 
     let i = 0;
     let loader;
-    let collObj;
+    let newCollection;
 
     // restore save throttled boolean only if not defined in options
     if (internalOptions && !internalOptions.throttledSaves !== undefined) {
@@ -980,7 +990,7 @@ export class Database extends EventTarget {
 
     this.collections.splice(0, this.collections.length);
 
-    const makeLoader = (collection: Collection) => {
+    const makeLoader = <T extends object>(collection: Collection<T>) => {
       const collectionOptions = internalOptions[collection.name];
 
       if (!collectionOptions) {
@@ -994,7 +1004,7 @@ export class Database extends EventTarget {
       if (collectionOptions && collectionOptions.proto) {
         const inflater = collectionOptions.inflate || copyProperties;
 
-        return (data: Collection) => {
+        return (data: Collection<T>) => {
           // eslint-disable-next-line new-cap
           const collectionInstance = new (collectionOptions.proto)();
           inflater(data, collectionInstance);
@@ -1010,7 +1020,9 @@ export class Database extends EventTarget {
       : 0;
 
     for (i; i < collectionCount; i += 1) {
-      const collection: Collection | undefined = databaseObject.collections[i];
+      // The type of this collection could be any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const collection: Collection<any> | undefined = databaseObject.collections[i];
 
       const copiedCollection = this.addCollection(collection.name, {
         disableChangesApi: collection.disableChangesApi,
@@ -1043,9 +1055,9 @@ export class Database extends EventTarget {
         loader = makeLoader(collection);
 
         for (let j = 0; j < collection.data.length; j += 1) {
-          collObj = loader(collection.data[j]);
-          copiedCollection.data[j] = collObj;
-          copiedCollection.addAutoUpdateObserver(collObj);
+          newCollection = loader(collection.data[j]);
+          copiedCollection.data[j] = newCollection;
+          copiedCollection.addAutoUpdateObserver(newCollection);
           if (!copiedCollection.disableFreeze) {
             deepFreeze(copiedCollection.data[j]);
           }
@@ -1060,7 +1072,9 @@ export class Database extends EventTarget {
         }
       }
 
-      copiedCollection.maxId = (typeof collection.maxId === 'undefined') ? 0 : collection.maxId;
+      copiedCollection.maxId = typeof collection.maxId === 'undefined'
+        ? 0
+        : collection.maxId;
       if (typeof (collection.binaryIndices) !== 'undefined') {
         copiedCollection.binaryIndices = collection.binaryIndices;
       }
@@ -1075,11 +1089,11 @@ export class Database extends EventTarget {
       }
 
       // in case they are loading a database created before we added dynamic views, handle undefined
-      if (typeof (collection.DynamicViews) === 'undefined') continue;
+      if (typeof (collection.dynamicViews) === 'undefined') continue;
 
       // reinflate DynamicViews and attached Result-sets
-      for (let j = 0; j < collection.DynamicViews.length; j += 1) {
-        const collectionDynamicView = collection.DynamicViews[j];
+      for (let j = 0; j < collection.dynamicViews.length; j += 1) {
+        const collectionDynamicView = collection.dynamicViews[j];
 
         const dynamicView = copiedCollection.addDynamicView(
           collectionDynamicView.name, collectionDynamicView.options,
@@ -1092,7 +1106,6 @@ export class Database extends EventTarget {
         dynamicView.sortCriteria = collectionDynamicView.sortCriteria;
         dynamicView.sortFunction = null;
         dynamicView.sortDirty = collectionDynamicView.sortDirty;
-        // @ts-ignore: Let's refactor this later
         if (!copiedCollection.disableFreeze) {
           deepFreeze(dynamicView.filterPipeline);
           // @ts-ignore: Let's refactor this later
@@ -1164,20 +1177,26 @@ export class Database extends EventTarget {
    * @see private method createChange() in Collection
    */
   generateChangesNotification = (collectionNamesArray: string[]) => {
-    const getCollName = (collection: Collection) => {
+    // This could be any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const getCollName = (collection: Collection<any>) => {
       return collection.name;
     };
 
     const selectedCollections = collectionNamesArray
-    || this.collections.map(getCollName);
+      || this.collections.map(getCollName);
 
-    let changes: CollectionChange[] = [];
+    // This could be any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let changes: ICollectionChange<any>[] = [];
 
-    this.collections.forEach((coll) => {
-      if (selectedCollections.indexOf(getCollName(coll)) !== -1) {
-        changes = changes.concat(coll.getChanges());
+    for (let i = 0; i < this.collections.length; i += 1) {
+      const collection = this.collections[i];
+
+      if (selectedCollections.includes(getCollName(collection))) {
+        changes = changes.concat(collection.getChanges());
       }
-    });
+    }
 
     return changes;
   };
@@ -1237,10 +1256,10 @@ export class Database extends EventTarget {
       // queue the following meta callback for when it completes
       const recursiveTask: OpenPromise<boolean> = new OpenPromise<boolean>(
         (resolve) => {
-        // if there is now another save pending...
+          // if there is now another save pending...
           if (this.throttledSavePending) {
-          // if we wish to wait only so long and we have exceeded limit of our
-          // waiting, callback with false success value
+            // if we wish to wait only so long and we have exceeded limit of our
+            // waiting, callback with false success value
             const deltaT = now - internalOptions.started;
             const exceedTimeLimit = deltaT > internalOptions.recursiveWaitLimitDuration;
             if (
@@ -1478,7 +1497,7 @@ export class Database extends EventTarget {
    * });
    */
   saveDatabase = async () => {
-    const cleanup = () => {
+    const cleanup = async () => {
       this.throttledSavePending = !!this.throttledCallbacks.length;
 
       if (!this.throttledCallbacks.length) return;
@@ -1486,7 +1505,7 @@ export class Database extends EventTarget {
       const localPromises = this.throttledCallbacks;
       this.throttledCallbacks.splice(0, this.throttledCallbacks.length);
 
-      setTimeout(async () => {
+      await delay(async () => {
         try {
           await this.saveDatabaseInternal();
 
@@ -1506,7 +1525,7 @@ export class Database extends EventTarget {
             this.saveDatabase();
           }
         }
-      }, 1);
+      });
     };
 
     if (!this.throttledSaves) {
@@ -1581,13 +1600,13 @@ export class Database extends EventTarget {
   autosaveEnable = async () => {
     this.autosave = true;
 
-    let delay = 5000;
+    let autoSaveDelay = 5000;
 
     if (
       typeof this.autosaveInterval !== 'undefined'
       && this.autosaveInterval !== null
     ) {
-      delay = this.autosaveInterval;
+      autoSaveDelay = this.autosaveInterval;
     }
 
     this.autosaveHandle = globalThis.setInterval(() => {
@@ -1600,7 +1619,7 @@ export class Database extends EventTarget {
       if (this.autosaveDirty() && !this.ignoreAutosave) {
         return this.saveDatabase();
       }
-    }, delay);
+    }, autoSaveDelay);
   };
 
   /**

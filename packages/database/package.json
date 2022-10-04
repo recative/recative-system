@@ -1,5 +1,5 @@
 {
-  "name": "@recative/tsdb",
+  "name": "@recative/database",
   "version": "0.0.1",
   "type": "commonjs",
   "dependencies": {

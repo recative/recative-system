@@ -11,6 +11,7 @@ export const serializeReplacer = (key: string, value: unknown) => {
       return null;
     case 'throttledSavePending':
     case 'throttledCallbacks':
+    case '$unobserved':
       return undefined;
     case 'lokiConsoleWrapper':
       return null;
