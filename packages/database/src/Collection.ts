@@ -10,7 +10,13 @@ import { clone, CloneMethod } from './utils/clone';
 import { freeze, deepFreeze, unFreeze } from './utils/freeze';
 import { ensureMetadata, IDocumentMetadata } from './utils/ensureMetadata';
 import { isObservable, observe, suspenseObserve } from './utils/observe';
-import { isDotNotation, lens, LensResult, ValidLensField } from './utils/lens';
+import {
+  lens,
+  LensResult,
+  isDotNotation,
+  ValidLensField,
+  ValidDotNotation
+} from './utils/lens';
 
 import type { IDynamicViewOptions, ITransform } from './DynamicView';
 // eslint-disable-next-line import/no-cycle
@@ -2968,8 +2974,12 @@ export class Collection<T extends object> extends EventTarget {
    +-----------------*/
   extract = <K extends ValidLensField>(
     field: K
-  ): LensResult<T & ICollectionDocument, K>[] => {
-    const result: LensResult<T & ICollectionDocument, K>[] = [];
+  ): LensResult<T & ICollectionDocument, K, ValidDotNotation<K>>[] => {
+    const result: LensResult<
+      T & ICollectionDocument,
+      K,
+      ValidDotNotation<K>
+    >[] = [];
     for (let i = 0; i < this.data.length; i += 1) {
       const query = lens(this.data[i], field, isDotNotation(field));
       if (query) result.push(query);

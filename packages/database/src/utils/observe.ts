@@ -22,10 +22,10 @@ export const suspenseObserve = <T extends object>(x: T): T => {
 
 export const observe = <T extends object>(
   data: T,
-  listener: ObserveHandler<T>,
+  listener: ObserveHandler<T>
 ): T => {
   if (Reflect.get(data, IS_PROXIED)) {
-    return observe(Reflect.get(data, ORIGINAL), listener) as T;
+    return observe(Reflect.get(data, ORIGINAL) as T, listener);
   }
 
   let observed = true;
@@ -64,7 +64,7 @@ export const observe = <T extends object>(
       }
 
       return Reflect.set(target, key, value);
-    },
+    }
   };
 
   return new Proxy(data, handler) as T;
