@@ -9,20 +9,20 @@ import { Environment, getEnv } from './utils/getEnv';
 import type {
   ICollectionOptions,
   ICollectionSummary,
-  ICollectionChange,
+  ICollectionChange
 } from './Collection';
 import { delay } from './utils/delay';
 
 export enum SerializationMethod {
   Normal = 'normal',
   Pretty = 'pretty',
-  Destructured = 'destructured',
+  Destructured = 'destructured'
 }
 
 export enum PersistenceAdapterMode {
   Reference = 'reference',
   Incremental = 'incremental',
-  Default = 'default',
+  Default = 'default'
 }
 
 export class PersistenceAdapter {
@@ -33,7 +33,10 @@ export class PersistenceAdapter {
     return Promise.resolve(fileName);
   };
 
-  saveDatabase(fileName: string, getDatabaseCopy: () => Database): Promise<string>;
+  saveDatabase(
+    fileName: string,
+    getDatabaseCopy: () => Database
+  ): Promise<string>;
   saveDatabase(fileName: string, serializedDatabase: string): Promise<string>;
   saveDatabase(fileName: string): Promise<string> {
     console.log(this.mode);
@@ -51,11 +54,11 @@ export class PersistenceAdapter {
   };
 }
 
-class LokiFsAdapter extends PersistenceAdapter { }
+class LokiFsAdapter extends PersistenceAdapter {}
 
-class LokiLocalStorageAdapter extends PersistenceAdapter { }
+class LokiLocalStorageAdapter extends PersistenceAdapter {}
 
-class LokiMemoryAdapter extends PersistenceAdapter { }
+class LokiMemoryAdapter extends PersistenceAdapter {}
 
 class LokiNeverAdapter extends PersistenceAdapter {
   constructor() {
@@ -69,7 +72,7 @@ export enum PersistenceMethod {
   LocalStorage = 'localStorage',
   Memory = 'memory',
   Adapter = 'adapter',
-  Never = 'never',
+  Never = 'never'
 }
 
 const DEFAULT_PERSISTENCE: Record<Environment, PersistenceMethod> = {
@@ -78,14 +81,14 @@ const DEFAULT_PERSISTENCE: Record<Environment, PersistenceMethod> = {
   [Environment.Cordova]: PersistenceMethod.LocalStorage,
   [Environment.Memory]: PersistenceMethod.Memory,
   [Environment.NativeScript]: PersistenceMethod.Memory,
-  [Environment.Na]: PersistenceMethod.Never,
+  [Environment.Na]: PersistenceMethod.Never
 };
 
 const PERSISTENCE_METHODS = {
   [PersistenceMethod.Fs]: LokiFsAdapter,
   [PersistenceMethod.LocalStorage]: LokiLocalStorageAdapter,
   [PersistenceMethod.Memory]: LokiMemoryAdapter,
-  [PersistenceMethod.Never]: LokiNeverAdapter,
+  [PersistenceMethod.Never]: LokiNeverAdapter
 };
 
 /**
@@ -129,7 +132,7 @@ const DEFAULT_OPTION = {
   adapter: null,
   serializationMethod: SerializationMethod.Normal,
   destructureDelimiter: '$<\n',
-  throttledSaves: true,
+  throttledSaves: true
 };
 
 /**
@@ -198,7 +201,7 @@ export interface IDeserializeCollectionOptions {
   delimiter: string;
 }
 
-class CollectionProto { }
+class CollectionProto {}
 
 export interface ILoadJSONCollectionConfiguration {
   inflate: (source: object, destination?: object) => void;
@@ -213,13 +216,13 @@ export interface ILoadJSONOptions {
   throttledSaves: boolean;
   retainDirtyFlags: boolean;
   [collectionName: string]:
-  | ILoadJSONCollectionConfiguration
-  | boolean
-  | string
-  | number
-  | null
-  | Function
-  | PersistenceAdapter;
+    | ILoadJSONCollectionConfiguration
+    | boolean
+    | string
+    | number
+    | null
+    | Function
+    | PersistenceAdapter;
 }
 
 /**
@@ -291,14 +294,14 @@ export class Database extends EventTarget {
 
   constructor(
     readonly fileName: string = 'database.db',
-    options: Partial<IDatabaseOptions> = {},
+    options: Partial<IDatabaseOptions> = {}
   ) {
     super();
 
     this.options = Object.freeze({
       ...DEFAULT_OPTION,
       env: getEnv(),
-      ...options,
+      ...options
     });
 
     this.addEventListener('init', this.clearChanges);
@@ -316,7 +319,7 @@ export class Database extends EventTarget {
    */
   configureOptions = (
     options: Partial<IDatabaseOptions>,
-    initialConfig: boolean = false,
+    initialConfig: boolean = false
   ) => {
     this.persistenceMethod = null;
     // retain reference to optional persistence adapter 'instance'
@@ -327,7 +330,7 @@ export class Database extends EventTarget {
     this.options = Object.freeze({
       ...DEFAULT_OPTION,
       env: getEnv(),
-      ...options,
+      ...options
     });
 
     const persistenceMethod = options?.persistenceMethod;
@@ -365,8 +368,8 @@ export class Database extends EventTarget {
     }
 
     if (
-      this.options.autosaveInterval
-      && this.options.autosaveInterval !== null
+      this.options.autosaveInterval &&
+      this.options.autosaveInterval !== null
     ) {
       this.autosaveDisable();
       this.autosaveInterval = this.options.autosaveInterval;
@@ -393,11 +396,15 @@ export class Database extends EventTarget {
       this.persistenceMethod = DEFAULT_PERSISTENCE[this.options.env];
       if (this.persistenceMethod) {
         if (this.persistenceMethod !== PersistenceMethod.Adapter) {
-          this.persistenceAdapter = new PERSISTENCE_METHODS[this.persistenceMethod]();
+          this.persistenceAdapter = new PERSISTENCE_METHODS[
+            this.persistenceMethod
+          ]();
         } else if (this.options.adapter !== null) {
           this.persistenceAdapter = this.options.adapter;
         } else {
-          throw new TypeError('Unable to find a adapter for the initialization configuration');
+          throw new TypeError(
+            'Unable to find a adapter for the initialization configuration'
+          );
         }
       }
     }
@@ -442,20 +449,26 @@ export class Database extends EventTarget {
    */
   addCollection = <T extends object>(
     name: string,
-    options: Partial<ICollectionOptions<T>>,
+    options: Partial<ICollectionOptions<T>>
   ) => {
     let i;
     const len = this.collections.length;
 
     if (options && options.disableMeta === true) {
       if (options.disableChangesApi === false) {
-        throw new TypeError('disableMeta option cannot be passed as true when disableChangesApi is passed as false');
+        throw new TypeError(
+          'disableMeta option cannot be passed as true when disableChangesApi is passed as false'
+        );
       }
       if (options.disableDeltaChangesApi === false) {
-        throw new TypeError('disableMeta option cannot be passed as true when disableDeltaChangesApi is passed as false');
+        throw new TypeError(
+          'disableMeta option cannot be passed as true when disableDeltaChangesApi is passed as false'
+        );
       }
       if (typeof options.ttl === 'number' && options.ttl > 0) {
-        throw new TypeError('disableMeta option cannot be passed as true when ttl is enabled');
+        throw new TypeError(
+          'disableMeta option cannot be passed as true when ttl is enabled'
+        );
       }
     }
 
@@ -501,10 +514,9 @@ export class Database extends EventTarget {
 
     // no such collection
     this.dispatchEvent(
-      new CustomEvent(
-        'warning',
-        { detail: new TypeError(`collection ${collectionName} not found`) },
-      ),
+      new CustomEvent('warning', {
+        detail: new TypeError(`collection ${collectionName} not found`)
+      })
     );
 
     return null;
@@ -536,7 +548,7 @@ export class Database extends EventTarget {
       collections[i] = {
         name: this.collections[i].name,
         type: this.collections[i].objType,
-        count: this.collections[i].data.length,
+        count: this.collections[i].data.length
       };
     }
 
@@ -564,13 +576,19 @@ export class Database extends EventTarget {
    *
    * @returns Stringified representation of the database database.
    */
-  serialize(options?: { serializationMethod: SerializationMethod.Normal }): string;
-  serialize(options?: { serializationMethod: SerializationMethod.Pretty }): string;
-  serialize(options?: { serializationMethod: SerializationMethod.Destructured }): string[];
+  serialize(options?: {
+    serializationMethod: SerializationMethod.Normal;
+  }): string;
+  serialize(options?: {
+    serializationMethod: SerializationMethod.Pretty;
+  }): string;
+  serialize(options?: {
+    serializationMethod: SerializationMethod.Destructured;
+  }): string[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   serialize(options?: ISerializeDatabaseOptions) {
-    const serializeMethod = options?.serializationMethod
-      ?? this.options.serializationMethod;
+    const serializeMethod =
+      options?.serializationMethod ?? this.options.serializationMethod;
 
     // We are not using switch here for better debugging experience while
     // someone think some code went wrong here.
@@ -600,7 +618,7 @@ export class Database extends EventTarget {
    * persistence or data exchange.
    */
   serializeDestructured = (
-    options?: Partial<ISerializeDestructedOptions>,
+    options?: Partial<ISerializeDestructedOptions>
   ): string | string[] => {
     let result: string | string[];
     const reConstructed: string[] = [];
@@ -609,18 +627,19 @@ export class Database extends EventTarget {
       partitioned: false,
       partition: -1,
       delimiter: this.options.destructureDelimiter,
-      ...options,
+      ...options
     };
 
     // 'partitioned' along with 'partition' of 0 or greater is a request for
     // single collection serialization
     if (
-      internalOptions.partitioned === true
-      && internalOptions.partition >= 0) {
+      internalOptions.partitioned === true &&
+      internalOptions.partition >= 0
+    ) {
       return this.serializeCollection({
         delimited: internalOptions.delimited,
         delimiter: internalOptions.delimiter,
-        collectionIndex: internalOptions.partition,
+        collectionIndex: internalOptions.partition
       });
     }
 
@@ -635,13 +654,13 @@ export class Database extends EventTarget {
 
     // if we -only- wanted the db container portion, return it now
     if (
-      internalOptions.partitioned === true
-      && internalOptions.partition === -1
+      internalOptions.partitioned === true &&
+      internalOptions.partition === -1
     ) {
       // since we are deconstructing, override serializationMethod to normal for
       // here
       return databaseCopy.serialize({
-        serializationMethod: SerializationMethod.Normal,
+        serializationMethod: SerializationMethod.Normal
       });
     }
 
@@ -649,8 +668,8 @@ export class Database extends EventTarget {
     // start by pushing db serialization into first array element
     reConstructed.push(
       databaseCopy.serialize({
-        serializationMethod: SerializationMethod.Normal,
-      }),
+        serializationMethod: SerializationMethod.Normal
+      })
     );
 
     databaseCopy = null;
@@ -660,17 +679,19 @@ export class Database extends EventTarget {
       result = this.serializeCollection({
         delimited: internalOptions.delimited,
         delimiter: internalOptions.delimiter,
-        collectionIndex: i,
+        collectionIndex: i
       });
 
       // NDA : Non-Delimited Array : one iterable concatenated array with empty
       // string collection partitions
       if (
-        internalOptions.partitioned === false
-        && internalOptions.delimited === false
+        internalOptions.partitioned === false &&
+        internalOptions.delimited === false
       ) {
         if (!Array.isArray(result)) {
-          throw new TypeError('A non-delimited, non partitioned collection serialization did not return an expected array');
+          throw new TypeError(
+            'A non-delimited, non partitioned collection serialization did not return an expected array'
+          );
         }
 
         // Array.concat would probably duplicate memory overhead for copying strings.
@@ -684,7 +705,9 @@ export class Database extends EventTarget {
         reConstructed.push('');
       } else {
         if (Array.isArray(result)) {
-          throw new TypeError('Delimited serialize result should never be an array');
+          throw new TypeError(
+            'Delimited serialize result should never be an array'
+          );
         }
         reConstructed.push(result);
       }
@@ -740,20 +763,23 @@ export class Database extends EventTarget {
   serializeCollection = (options?: Partial<ISerializeCollectionOptions>) => {
     const internalOptions = {
       delimited: true,
-      ...options,
+      ...options
     };
 
     if (!internalOptions.collectionIndex) {
-      throw new TypeError('serializeCollection called without \'collectionIndex\' option');
+      throw new TypeError(
+        "serializeCollection called without 'collectionIndex' option"
+      );
     }
 
-    const documentsCount = this.collections[internalOptions.collectionIndex].data.length;
+    const documentsCount =
+      this.collections[internalOptions.collectionIndex].data.length;
 
     const resultLines: string[] = new Array(documentsCount);
 
     for (let i = 0; i < documentsCount; i += 1) {
       resultLines[i] = JSON.stringify(
-        this.collections[internalOptions.collectionIndex].data[i],
+        this.collections[internalOptions.collectionIndex].data[i]
       );
     }
 
@@ -784,20 +810,19 @@ export class Database extends EventTarget {
    */
   deserializeDestructured = (
     destructuredSource: string | string[],
-    options?: IDeserializeDestructuredOptions,
+    options?: IDeserializeDestructuredOptions
   ) => {
     const internalOptions = {
       partitioned: false,
       delimited: true,
       delimiter: this.options.destructureDelimiter,
-      ...options,
+      ...options
     };
 
     let workingArray: string[] = [];
-    let lineIndex = 1; let
-      done = false;
-    let
-      currObject;
+    let lineIndex = 1;
+    let done = false;
+    let currObject;
 
     // Partitioned
     // DA: Delimited Array of strings [0] db [1] collection [n] collection
@@ -816,7 +841,7 @@ export class Database extends EventTarget {
         // single collection, return doc array
         return this.deserializeCollection(
           destructuredSource[internalOptions.partition + 1],
-          internalOptions,
+          internalOptions
         );
       }
 
@@ -827,7 +852,8 @@ export class Database extends EventTarget {
         // attach each collection doc-array to container collection data, add 1
         // to collection array index since db is at 0
         currentDatabase.collections[i].data = this.deserializeCollection(
-          destructuredSource[i + 1], internalOptions,
+          destructuredSource[i + 1],
+          internalOptions
         );
       }
 
@@ -842,7 +868,9 @@ export class Database extends EventTarget {
     // D
     if (internalOptions.delimited) {
       if (Array.isArray(destructuredSource)) {
-        throw new TypeError('Delimited source can not be an array, this is a bug');
+        throw new TypeError(
+          'Delimited source can not be an array, this is a bug'
+        );
       }
 
       workingArray = destructuredSource.split(internalOptions.delimiter);
@@ -853,7 +881,9 @@ export class Database extends EventTarget {
     } else {
       // NDA
       if (!Array.isArray(destructuredSource)) {
-        throw new TypeError('Non-delimited source can not be a string, this is a bug');
+        throw new TypeError(
+          'Non-delimited source can not be a string, this is a bug'
+        );
       }
       workingArray = destructuredSource;
     }
@@ -896,26 +926,30 @@ export class Database extends EventTarget {
    */
   deserializeCollection = (
     destructuredSource: string | string[],
-    options?: IDeserializeCollectionOptions,
+    options?: IDeserializeCollectionOptions
   ) => {
     const internalOptions = {
       delimited: true,
       partitioned: false,
       delimiter: this.options.destructureDelimiter,
-      ...options,
+      ...options
     };
 
     let workingArray = [];
 
     if (internalOptions.delimited) {
       if (typeof destructuredSource !== 'string') {
-        throw new TypeError('Delimited destructured source can not be an array');
+        throw new TypeError(
+          'Delimited destructured source can not be an array'
+        );
       }
       workingArray = destructuredSource.split(internalOptions.delimiter);
       workingArray.pop();
     } else {
       if (!Array.isArray(destructuredSource)) {
-        throw new TypeError('Non-delimited destructured source can not be a string');
+        throw new TypeError(
+          'Non-delimited destructured source can not be a string'
+        );
       }
       workingArray = destructuredSource;
     }
@@ -941,9 +975,15 @@ export class Database extends EventTarget {
       // using option defined in instantiated db not what was in serialized db
       switch (this.options.serializationMethod) {
         case 'normal':
-        case 'pretty': dbObject = JSON.parse(serializedDb); break;
-        case 'destructured': dbObject = this.deserializeDestructured(serializedDb); break;
-        default: dbObject = JSON.parse(serializedDb); break;
+        case 'pretty':
+          dbObject = JSON.parse(serializedDb);
+          break;
+        case 'destructured':
+          dbObject = this.deserializeDestructured(serializedDb);
+          break;
+        default:
+          dbObject = JSON.parse(serializedDb);
+          break;
       }
     }
 
@@ -970,13 +1010,16 @@ export class Database extends EventTarget {
    * @param databaseObject - a serialized database database string
    * @param options - apply or override collection level settings
    */
-  loadJSONObject = (databaseObject: unknown, options?: Partial<ILoadJSONOptions>) => {
+  loadJSONObject = (
+    databaseObject: unknown,
+    options?: Partial<ILoadJSONOptions>
+  ) => {
     if (!Database.isDatabaseObject(databaseObject)) {
       throw new TypeError('Invalid database object');
     }
 
     const internalOptions = {
-      ...options,
+      ...options
     };
 
     let i = 0;
@@ -994,11 +1037,18 @@ export class Database extends EventTarget {
       const collectionOptions = internalOptions[collection.name];
 
       if (!collectionOptions) {
-        throw new TypeError(`Unable to make loader for ${collection.name}, since it is not available in the options`);
+        throw new TypeError(
+          `Unable to make loader for ${collection.name}, since it is not available in the options`
+        );
       }
 
-      if (typeof collectionOptions !== 'object' || 'mode' in collectionOptions) {
-        throw new TypeError(`Collection configuration of ${collection.name} is not valid`);
+      if (
+        typeof collectionOptions !== 'object' ||
+        'mode' in collectionOptions
+      ) {
+        throw new TypeError(
+          `Collection configuration of ${collection.name} is not valid`
+        );
       }
 
       if (collectionOptions && collectionOptions.proto) {
@@ -1006,7 +1056,7 @@ export class Database extends EventTarget {
 
         return (data: Collection<T>) => {
           // eslint-disable-next-line new-cap
-          const collectionInstance = new (collectionOptions.proto)();
+          const collectionInstance = new collectionOptions.proto();
           inflater(data, collectionInstance);
           return collectionInstance;
         };
@@ -1022,23 +1072,27 @@ export class Database extends EventTarget {
     for (i; i < collectionCount; i += 1) {
       // The type of this collection could be any
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const collection: Collection<any> | undefined = databaseObject.collections[i];
+      const collection: Collection<any> | undefined =
+        databaseObject.collections[i];
 
       const copiedCollection = this.addCollection(collection.name, {
         disableChangesApi: collection.disableChangesApi,
         disableDeltaChangesApi: collection.disableDeltaChangesApi,
         // @ts-ignore Let refactor this later
         disableMeta: collection.disableMeta,
-        disableFreeze: 'disableFreeze' in collection ? collection.disableFreeze : true,
+        disableFreeze:
+          'disableFreeze' in collection ? collection.disableFreeze : true
       });
 
-      copiedCollection.adaptiveBinaryIndices = 'adaptiveBinaryIndices' in collection
-        ? (collection.adaptiveBinaryIndices === true)
-        : false;
+      copiedCollection.adaptiveBinaryIndices =
+        'adaptiveBinaryIndices' in collection
+          ? collection.adaptiveBinaryIndices === true
+          : false;
       copiedCollection.transactional = collection.transactional;
       copiedCollection.asyncListeners = collection.asyncListeners;
       copiedCollection.cloneObjects = collection.cloneObjects;
-      copiedCollection.cloneMethod = collection.cloneMethod || 'parse-stringify';
+      copiedCollection.cloneMethod =
+        collection.cloneMethod || 'parse-stringify';
       copiedCollection.autoupdate = collection.autoupdate;
       copiedCollection.changes = collection.changes;
       // @ts-ignore Let refactor this later
@@ -1072,10 +1126,9 @@ export class Database extends EventTarget {
         }
       }
 
-      copiedCollection.maxId = typeof collection.maxId === 'undefined'
-        ? 0
-        : collection.maxId;
-      if (typeof (collection.binaryIndices) !== 'undefined') {
+      copiedCollection.maxId =
+        typeof collection.maxId === 'undefined' ? 0 : collection.maxId;
+      if (typeof collection.binaryIndices !== 'undefined') {
         copiedCollection.binaryIndices = collection.binaryIndices;
       }
       if (typeof collection.transforms !== 'undefined') {
@@ -1089,20 +1142,22 @@ export class Database extends EventTarget {
       }
 
       // in case they are loading a database created before we added dynamic views, handle undefined
-      if (typeof (collection.dynamicViews) === 'undefined') continue;
+      if (typeof collection.dynamicViews === 'undefined') continue;
 
       // reinflate DynamicViews and attached Result-sets
       for (let j = 0; j < collection.dynamicViews.length; j += 1) {
         const collectionDynamicView = collection.dynamicViews[j];
 
         const dynamicView = copiedCollection.addDynamicView(
-          collectionDynamicView.name, collectionDynamicView.options,
+          collectionDynamicView.name,
+          collectionDynamicView.options
         );
         dynamicView.resultdata = collectionDynamicView.resultdata;
         dynamicView.resultsdirty = collectionDynamicView.resultsdirty;
         dynamicView.filterPipeline = collectionDynamicView.filterPipeline;
         // @ts-ignore: Let's refactor this later
-        dynamicView.sortCriteriaSimple = collectionDynamicView.sortCriteriaSimple;
+        dynamicView.sortCriteriaSimple =
+          collectionDynamicView.sortCriteriaSimple;
         dynamicView.sortCriteria = collectionDynamicView.sortCriteria;
         dynamicView.sortFunction = null;
         dynamicView.sortDirty = collectionDynamicView.sortDirty;
@@ -1116,11 +1171,13 @@ export class Database extends EventTarget {
             deepFreeze(dynamicView.sortCriteria);
           }
         }
-        dynamicView.resultset.filteredrows = collectionDynamicView.resultset.filteredrows;
-        dynamicView.resultset.filterInitialized = collectionDynamicView.resultset.filterInitialized;
+        dynamicView.resultset.filteredrows =
+          collectionDynamicView.resultset.filteredrows;
+        dynamicView.resultset.filterInitialized =
+          collectionDynamicView.resultset.filterInitialized;
 
         dynamicView.rematerialize({
-          removeWhereFilters: true,
+          removeWhereFilters: true
         });
       }
 
@@ -1183,8 +1240,8 @@ export class Database extends EventTarget {
       return collection.name;
     };
 
-    const selectedCollections = collectionNamesArray
-      || this.collections.map(getCollName);
+    const selectedCollections =
+      collectionNamesArray || this.collections.map(getCollName);
 
     // This could be any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1209,7 +1266,7 @@ export class Database extends EventTarget {
    */
   serializeChanges = (collectionNamesArray: string[]) => {
     return JSON.stringify(
-      this.generateChangesNotification(collectionNamesArray),
+      this.generateChangesNotification(collectionNamesArray)
     );
   };
 
@@ -1231,7 +1288,7 @@ export class Database extends EventTarget {
    * @param options - configuration options
    */
   throttledSaveDrain = (options?: Partial<IThrottledSaveDrainOptions>) => {
-    const now = (new Date()).getTime();
+    const now = new Date().getTime();
 
     if (!this.throttledSaves) {
       return Promise.resolve(true);
@@ -1242,7 +1299,7 @@ export class Database extends EventTarget {
       recursiveWaitLimit: false,
       recursiveWaitLimitDuration: 2000,
       started: Date.now(),
-      ...options,
+      ...options
     };
 
     // if save is not pending
@@ -1261,11 +1318,9 @@ export class Database extends EventTarget {
             // if we wish to wait only so long and we have exceeded limit of our
             // waiting, callback with false success value
             const deltaT = now - internalOptions.started;
-            const exceedTimeLimit = deltaT > internalOptions.recursiveWaitLimitDuration;
-            if (
-              internalOptions.recursiveWaitLimit
-              && exceedTimeLimit
-            ) {
+            const exceedTimeLimit =
+              deltaT > internalOptions.recursiveWaitLimitDuration;
+            if (internalOptions.recursiveWaitLimit && exceedTimeLimit) {
               resolve(false);
               return;
             }
@@ -1274,7 +1329,9 @@ export class Database extends EventTarget {
           }
           // no pending saves so callback with true success
           return resolve(true);
-        }, true);
+        },
+        true
+      );
       this.throttledCallbacks.push(recursiveTask);
 
       return recursiveTask;
@@ -1297,22 +1354,26 @@ export class Database extends EventTarget {
     }
 
     const databaseString = await this.persistenceAdapter.loadDatabase(
-      this.fileName,
+      this.fileName
     );
 
-    if (typeof (databaseString) === 'string') {
+    if (typeof databaseString === 'string') {
       this.loadJSON(databaseString, options ?? {});
 
-      this.dispatchEvent(new CustomEvent(
-        'loaded', { detail: { fileName: this.fileName, isEmpty: false } },
-      ));
+      this.dispatchEvent(
+        new CustomEvent('loaded', {
+          detail: { fileName: this.fileName, isEmpty: false }
+        })
+      );
       return null;
     }
     // falsy result means new database
     if (!databaseString) {
-      this.dispatchEvent(new CustomEvent(
-        'loaded', { detail: { fileName: this.fileName, isEmpty: true } },
-      ));
+      this.dispatchEvent(
+        new CustomEvent('loaded', {
+          detail: { fileName: this.fileName, isEmpty: true }
+        })
+      );
       return null;
     }
 
@@ -1320,9 +1381,11 @@ export class Database extends EventTarget {
     // attempt to load from JSON object
     if (typeof databaseString === 'object') {
       this.loadJSONObject(databaseString, options || {});
-      this.dispatchEvent(new CustomEvent(
-        'loaded', { detail: { fileName: this.fileName, isEmpty: false } },
-      ));
+      this.dispatchEvent(
+        new CustomEvent('loaded', {
+          detail: { fileName: this.fileName, isEmpty: false }
+        })
+      );
       return null; // return null on success
     }
 
@@ -1354,7 +1417,9 @@ export class Database extends EventTarget {
    * });
    */
   loadDatabase = async (
-    options?: Partial<IDatabaseOptions & ILoadJSONOptions & IThrottledSaveDrainOptions>,
+    options?: Partial<
+      IDatabaseOptions & ILoadJSONOptions & IThrottledSaveDrainOptions
+    >
   ) => {
     // if throttling disabled, just call internal
     if (!this.throttledSaves) {
@@ -1365,7 +1430,9 @@ export class Database extends EventTarget {
     const success = await this.throttledSaveDrain(options);
 
     if (!success) {
-      throw new Error('Unable to pause save throttling long enough to read database');
+      throw new Error(
+        'Unable to pause save throttling long enough to read database'
+      );
     }
 
     // pause/throttle saving until loading is done
@@ -1405,37 +1472,34 @@ export class Database extends EventTarget {
       // unnecessarily)
       this.ignoreAutosave = true;
       try {
-        await this.persistenceAdapter.saveDatabase(
-          this.fileName,
-          () => {
-            this.ignoreAutosave = false;
-            if (cachedDirty) {
-              throw new Error('`getDatabaseCopy` called more than once');
+        await this.persistenceAdapter.saveDatabase(this.fileName, () => {
+          this.ignoreAutosave = false;
+          if (cachedDirty) {
+            throw new Error('`getDatabaseCopy` called more than once');
+          }
+
+          const databaseCopy = this.copy({ removeNonSerializable: true });
+
+          // remember and clear dirty ids -- we must do it before the save so
+          // that if and update occurs between here and callback, it will get
+          // saved later
+          cachedDirty = this.collections.map((collection) => {
+            return [
+              collection.dirty,
+              // @ts-ignore Let's fix this later
+              collection.dirtyIds
+            ];
+          });
+          this.collections.forEach((collection) => {
+            if (!this.throttledSavePending) {
+              collection.dirty = false;
+              // @ts-ignore Let's fix this later
+              collection.dirtyIds = [];
             }
+          });
 
-            const databaseCopy = this.copy({ removeNonSerializable: true });
-
-            // remember and clear dirty ids -- we must do it before the save so
-            // that if and update occurs between here and callback, it will get
-            // saved later
-            cachedDirty = this.collections.map((collection) => {
-              return [
-                collection.dirty,
-                // @ts-ignore Let's fix this later
-                collection.dirtyIds,
-              ];
-            });
-            this.collections.forEach((collection) => {
-              if (!this.throttledSavePending) {
-                collection.dirty = false;
-                // @ts-ignore Let's fix this later
-                collection.dirtyIds = [];
-              }
-            });
-
-            return databaseCopy;
-          },
-        );
+          return databaseCopy;
+        });
       } catch (error) {
         if (cachedDirty) {
           // roll back dirty IDs to be saved later
@@ -1452,15 +1516,16 @@ export class Database extends EventTarget {
         this.ignoreAutosave = false;
       }
     } else if (
-      this.persistenceAdapter.mode === 'reference'
-      && typeof this.persistenceAdapter.exportDatabase === 'function') {
+      this.persistenceAdapter.mode === 'reference' &&
+      typeof this.persistenceAdapter.exportDatabase === 'function'
+    ) {
       // TODO: dirty should be cleared here
       // filename may seem redundant but loadDatabase will need to expect this
       // same filename
       try {
         await this.persistenceAdapter.exportDatabase(
           this.fileName,
-          this.copy({ removeNonSerializable: true }),
+          this.copy({ removeNonSerializable: true })
         );
       } finally {
         this.autosaveClearFlags();
@@ -1472,7 +1537,10 @@ export class Database extends EventTarget {
       // the callback.
       // TODO: This should be stored and rolled back in case of DB save failure
       this.autosaveClearFlags();
-      await this.persistenceAdapter.saveDatabase(this.fileName, this.serialize());
+      await this.persistenceAdapter.saveDatabase(
+        this.fileName,
+        this.serialize()
+      );
     }
   };
 
@@ -1515,7 +1583,7 @@ export class Database extends EventTarget {
         } catch (error) {
           localPromises.forEach((localPromise) => {
             localPromise.reject(
-              error instanceof Error ? error : new Error(`${error}`),
+              error instanceof Error ? error : new Error(`${error}`)
             );
           });
 
@@ -1603,8 +1671,8 @@ export class Database extends EventTarget {
     let autoSaveDelay = 5000;
 
     if (
-      typeof this.autosaveInterval !== 'undefined'
-      && this.autosaveInterval !== null
+      typeof this.autosaveInterval !== 'undefined' &&
+      this.autosaveInterval !== null
     ) {
       autoSaveDelay = this.autosaveInterval;
     }
@@ -1642,8 +1710,8 @@ export class Database extends EventTarget {
    */
   autosaveDisable = () => {
     if (
-      typeof this.autosaveHandle !== 'undefined'
-      && this.autosaveHandle !== null
+      typeof this.autosaveHandle !== 'undefined' &&
+      this.autosaveHandle !== null
     ) {
       clearInterval(this.autosaveHandle);
       this.autosaveHandle = null;

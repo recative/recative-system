@@ -7,18 +7,15 @@ import * as Comparators from './Comparators';
 import { delay } from './utils/delay';
 import { hasOwn } from './utils/hasOwn';
 import { clone, CloneMethod } from './utils/clone';
-import {
-  isDotNotation, lens, LensResult, ValidLensField,
-} from './utils/lens';
 import { freeze, deepFreeze, unFreeze } from './utils/freeze';
 import { ensureMetadata, IDocumentMetadata } from './utils/ensureMetadata';
 import { isObservable, observe, suspenseObserve } from './utils/observe';
+import { isDotNotation, lens, LensResult, ValidLensField } from './utils/lens';
 
-import type { IDynamicViewOptions } from './DynamicView';
+import type { IDynamicViewOptions, ITransform } from './DynamicView';
+// eslint-disable-next-line import/no-cycle
 import { CollectionDocumentDeleteEvent, ErrorEvent } from './Events';
-import {
-  mean, parseBase10, standardDeviation, sub,
-} from './utils/math';
+import { sub, mean, parseBase10, standardDeviation } from './utils/math';
 
 export interface ICollectionChange<T extends object> {
   name: string;
@@ -43,10 +40,13 @@ const isObject = (x: unknown): x is Record<string, unknown> => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const NO_OP = (...x: unknown[]): unknown => { return 0; };
+const NO_OP = (...x: unknown[]): unknown => {
+  return 0;
+};
 
 /**
  * Options for initialize a collection.
+ *
  * @field unique - array of property names to define unique constraints for
  * @field exact - array of property names to define exact constraints for
  * @field indices - array property names to define binary indexes for
@@ -77,10 +77,10 @@ export interface ICollectionOptions<T> {
   autoupdate: boolean;
   clone: boolean;
   cloneMethod: CloneMethod;
-  serializableIndices: boolean,
+  serializableIndices: boolean;
   disableFreeze: boolean;
-  ttl?: number,
-  ttlInterval?: number,
+  ttl?: number;
+  ttlInterval?: number;
 }
 
 export const DEFAULT_COLLECTION_OPTIONS = {
@@ -97,7 +97,7 @@ export const DEFAULT_COLLECTION_OPTIONS = {
   clone: false,
   cloneMethod: CloneMethod.ParseStringify,
   serializableIndices: true,
-  disableFreeze: true,
+  disableFreeze: true
 };
 
 export interface ICollectionSummary {
@@ -121,7 +121,7 @@ export interface IConfigureCollectionOptions {
 export enum CollectionOperation {
   Update = 'U',
   Remove = 'R',
-  Insert = 'I',
+  Insert = 'I'
 }
 
 export interface ITtlStatus {
@@ -130,44 +130,13 @@ export interface ITtlStatus {
   daemon: NodeJS.Timer | number | null;
 }
 
-export enum TransformType {
-  Find = 'find',
-  Where = 'where',
-  SimpleSort = 'simplesort',
-  CompoundSort = 'compoundsort',
-  Sort = 'sort',
-  Limit = 'limit',
-  Offset = 'offset',
-  Map = 'map',
-  EqJoin = 'eqJoin',
-  MapReduce = 'mapReduce',
-  Update = 'update',
-  Remove = 'remove',
-}
-
-export interface ITransform {
-  type: TransformType;
-  value?: any;
-  property?: string | undefined;
-  desc?: boolean | undefined;
-  dataOptions?: any;
-  joinData?: any;
-  leftJoinKey?: any;
-  rightJoinKey?: any;
-  mapFun?: any;
-  mapFunction?: any;
-  reduceFunction?: any;
-}
-
 export interface IBinaryIndex<T, P> {
-  name: keyof T,
-  dirty: boolean,
-  values: P[],
+  name: keyof T;
+  dirty: boolean;
+  values: P[];
 }
 
-export interface ICollectionQuery {
-
-}
+export interface ICollectionQuery {}
 
 export interface ICollectionDocument {
   $loki: number;
@@ -176,6 +145,7 @@ export interface ICollectionDocument {
 
 /**
  * optional configuration object
+ *
  * @param randomSampling - whether (faster) random sampling should be used
  * @param randomSamplingFactor - percentage of total rows to randomly sample
  * @param repair - whether to fix problems if they are encountered
@@ -188,6 +158,7 @@ export interface ICheckCollectionIndexOptions {
 
 /**
  * configure clear behavior
+ *
  * @param removeIndices - whether to remove indices in addition to data
  */
 export interface IClearCollectionOptions {
@@ -200,15 +171,15 @@ export type Module<T> = {
   [key in keyof T as key extends 'then'
     ? never
     : T[key] extends Function
-      ? key
-      : never
-  ]: T[key]
+    ? key
+    : never]: T[key];
 };
 
 export type Operation = keyof Module<typeof Operations>;
 
 /**
  * options to data() before input to your map function
+ *
  * @param removeMeta - allows removing meta before calling mapFun
  * @param forceClones - forcing the return of cloned objects to your map object
  * @param forceCloneMethod - Allows overriding the default or collection
@@ -228,6 +199,7 @@ export interface ICollectionCommitLog<T> {
 
 /**
  * Collection class that handles documents of same type
+ *
  * @param name - collection name
  * @param options - (optional) array of property names to be indicted OR a
  *        configuration object
@@ -255,12 +227,12 @@ export class Collection<T extends object> extends EventTarget {
     // @ts-ignore: Let's fix this later
     unique: {} as Record<UniqueIndex<string>>,
     // @ts-ignore: Let's fix this later
-    exact: {} as Record<string, ExactIndex<string>>,
+    exact: {} as Record<string, ExactIndex<string>>
   };
 
   createTime = Date.now();
 
-  createStack = (new Error()).stack;
+  createStack = new Error().stack;
 
   /**
    * unique constraints contain duplicate object references, so they are not
@@ -296,7 +268,8 @@ export class Collection<T extends object> extends EventTarget {
    */
   private cachedIndex: number[] | null = null;
 
-  private cachedBinaryIndex: Record<keyof T, IBinaryIndex<T, number>> | null = null;
+  private cachedBinaryIndex: Record<keyof T, IBinaryIndex<T, number>> | null =
+    null;
 
   private cachedData: (T & ICollectionDocument)[] | null = null;
 
@@ -371,7 +344,7 @@ export class Collection<T extends object> extends EventTarget {
   readonly ttl: ITtlStatus = {
     age: null,
     ttlInterval: null,
-    daemon: null,
+    daemon: null
   };
 
   /**
@@ -394,20 +367,17 @@ export class Collection<T extends object> extends EventTarget {
   protected consoleWrapper = {
     log: NO_OP,
     warn: NO_OP,
-    error: NO_OP,
+    error: NO_OP
   };
 
   isIncremental = false;
 
-  constructor(
-    public name: string,
-    options?: Partial<ICollectionOptions<T>>,
-  ) {
+  constructor(public name: string, options?: Partial<ICollectionOptions<T>>) {
     super();
 
     this.options = {
       ...DEFAULT_COLLECTION_OPTIONS,
-      ...options,
+      ...options
     };
 
     this.objType = name;
@@ -461,7 +431,7 @@ export class Collection<T extends object> extends EventTarget {
         this.createChange(
           this.name,
           CollectionOperation.Remove,
-          event.detail.target,
+          event.detail.target
         );
       }
     }) as unknown as EventListener;
@@ -505,38 +475,38 @@ export class Collection<T extends object> extends EventTarget {
 
   getObjectDelta = <P extends object>(oldObject: P, newObject: P) => {
     const propertyNames = isObject(newObject)
-      ? Object.keys(newObject) as unknown as string[]
+      ? (Object.keys(newObject) as unknown as string[] as (keyof P)[])
       : null;
 
     if (
-      propertyNames
-      && propertyNames.length
-      && !isMeaningfulPrimitive(newObject)
-      && isObject(oldObject)
-      && isObject(newObject)
+      propertyNames &&
+      propertyNames.length &&
+      !isMeaningfulPrimitive(newObject) &&
+      isObject(oldObject) &&
+      isObject(newObject)
     ) {
       const delta: Partial<T> = {};
 
       for (let i = 0; i < propertyNames.length; i += 1) {
-        const propertyName: string = propertyNames[i];
+        const propertyName = propertyNames[i];
         if (hasOwn(newObject, propertyName)) {
           if (
-            !(hasOwn(oldObject, propertyName))
-            || this.uniqueNames.includes(propertyName as unknown as keyof T)
-            || propertyName === '$loki'
-            || propertyName === 'meta'
+            !hasOwn(oldObject, propertyName) ||
+            this.uniqueNames.includes(propertyName as unknown as keyof T) ||
+            propertyName === '$loki' ||
+            propertyName === 'meta'
           ) {
             Reflect.set(delta, propertyName, newObject[propertyName]);
           } else {
-            const propertyDelta = this.getObjectDelta(
-              Reflect.get(oldObject, propertyName),
-              Reflect.get(newObject, propertyName),
+            const propertyDelta = this.getObjectDelta<P>(
+              Reflect.get(oldObject, propertyName) as P,
+              Reflect.get(newObject, propertyName) as P
             );
 
             if (
-              typeof propertyDelta !== 'undefined'
-              && propertyDelta
-              && Object.keys(propertyDelta).length !== 0
+              typeof propertyDelta !== 'undefined' &&
+              propertyDelta &&
+              Object.keys(propertyDelta).length !== 0
             ) {
               Reflect.set(delta, propertyName, propertyDelta);
             }
@@ -560,7 +530,9 @@ export class Collection<T extends object> extends EventTarget {
 
   setChangesApi = (enabled: boolean) => {
     this.disableChangesApi = !enabled;
-    if (!enabled) { this.disableDeltaChangesApi = false; }
+    if (!enabled) {
+      this.disableDeltaChangesApi = false;
+    }
   };
 
   /*
@@ -571,14 +543,15 @@ export class Collection<T extends object> extends EventTarget {
     name: string,
     operation: CollectionOperation,
     newObject: T,
-    oldObject?: T,
+    oldObject?: T
   ) => {
     this.changes.push({
       name,
       operation,
-      object: operation === 'U' && !this.disableDeltaChangesApi
-        ? this.getChangeDelta(newObject, oldObject)
-        : JSON.parse(JSON.stringify(newObject)),
+      object:
+        operation === 'U' && !this.disableDeltaChangesApi
+          ? this.getChangeDelta(newObject, oldObject)
+          : JSON.parse(JSON.stringify(newObject))
     });
   };
 
@@ -594,7 +567,7 @@ export class Collection<T extends object> extends EventTarget {
           object[i].meta = {};
         }
 
-        object[i].meta.created = (new Date()).getTime();
+        object[i].meta.created = new Date().getTime();
         object[i].meta.revision = 0;
       }
 
@@ -655,6 +628,7 @@ export class Collection<T extends object> extends EventTarget {
 
   /**
    * Adds a named collection transform to the collection
+   *
    * @param name - name to associate with transform
    * @param transform - an array of transformation 'step' objects to save into
    *        the collection
@@ -688,6 +662,7 @@ export class Collection<T extends object> extends EventTarget {
 
   /**
    * Updates a named collection transform to the collection
+   *
    * @param name - name to associate with transform
    * @param transform - a transformation object to save into collection
    */
@@ -697,6 +672,7 @@ export class Collection<T extends object> extends EventTarget {
 
   /**
    * Removes a named collection transform from the collection
+   *
    * @param name - name of collection transform to remove
    */
   removeTransform = (name: string) => {
@@ -716,7 +692,7 @@ export class Collection<T extends object> extends EventTarget {
       query.push(object);
     }
     return {
-      $and: query,
+      $and: query
     };
   };
 
@@ -799,6 +775,7 @@ export class Collection<T extends object> extends EventTarget {
 
   /**
    * Ensure binary index on a certain field
+   *
    * @param property - name of property to create binary index on
    * @param force - (Optional) flag indicating whether to construct index
    *        immediately
@@ -815,9 +792,9 @@ export class Collection<T extends object> extends EventTarget {
     // if the index is already defined and we are using adaptiveBinaryIndices
     // and we are not forcing a rebuild, return.
     if (
-      this.adaptiveBinaryIndices === true
-      && hasOwn(this.binaryIndices, property)
-      && !force
+      this.adaptiveBinaryIndices === true &&
+      hasOwn(this.binaryIndices, property) &&
+      !force
     ) {
       return;
     }
@@ -825,28 +802,24 @@ export class Collection<T extends object> extends EventTarget {
     const index: IBinaryIndex<T, number> = {
       name: property,
       dirty: true,
-      values: this.prepareFullDocIndex(),
+      values: this.prepareFullDocIndex()
     };
     this.binaryIndices[property] = index;
 
-    const wrappedComparer = ((
-      key: keyof T,
-      data: T[],
-    ) => {
-      const propPath = typeof key === 'string' && isDotNotation(key)
-        ? key.split('.')
-        : false;
+    const wrappedComparer = ((key: keyof T, data: T[]) => {
+      const propPath =
+        typeof key === 'string' && isDotNotation(key) ? key.split('.') : false;
 
-      return ((a: number, b: number) => {
+      return (a: number, b: number) => {
         let val1: T | undefined;
         let val2: T | undefined;
 
         if (propPath) {
-          val1 = lens<T>(Reflect.get(data, a), propPath, true);
-          val2 = lens<T>(Reflect.get(data, b), propPath, true);
+          val1 = lens(Reflect.get(data, a), propPath, true);
+          val2 = lens(Reflect.get(data, b), propPath, true);
         } else {
-          val1 = Reflect.get(Reflect.get(data, a), key);
-          val2 = Reflect.get(Reflect.get(data, b), key);
+          val1 = Reflect.get(Reflect.get(data, a), key) as T | undefined;
+          val2 = Reflect.get(Reflect.get(data, b), key) as T | undefined;
         }
 
         if (val1 !== val2) {
@@ -854,7 +827,7 @@ export class Collection<T extends object> extends EventTarget {
           if (Comparators.gt(val1, val2, false)) return 1;
         }
         return 0;
-      });
+      };
     })(property, this.data);
 
     index.values.sort(wrappedComparer);
@@ -865,6 +838,7 @@ export class Collection<T extends object> extends EventTarget {
 
   /**
    * Perform checks to determine validity/consistency of all binary indices
+   *
    * @param options - optional configuration object
    * @returns array of index names where problems were found.
    * @example
@@ -885,7 +859,7 @@ export class Collection<T extends object> extends EventTarget {
       randomSampling: false,
       randomSamplingFactor: 0.1,
       repair: false,
-      ...options,
+      ...options
     };
 
     const results = [];
@@ -905,6 +879,7 @@ export class Collection<T extends object> extends EventTarget {
 
   /**
    * Perform checks to determine validity/consistency of a binary index
+   *
    * @param  property - name of the binary-indexed property to check
    * @param  options - optional configuration object
    * @returns  whether the index was found to be valid (before
@@ -931,24 +906,27 @@ export class Collection<T extends object> extends EventTarget {
     const internalOptions = { ...options };
     // if 'randomSamplingFactor' specified but not 'randomSampling', assume true
     if (
-      internalOptions.randomSamplingFactor
-      && internalOptions.randomSampling !== false
+      internalOptions.randomSamplingFactor &&
+      internalOptions.randomSampling !== false
     ) {
       internalOptions.randomSampling = true;
     }
 
-    internalOptions.randomSamplingFactor = internalOptions.randomSamplingFactor || 0.1;
+    internalOptions.randomSamplingFactor =
+      internalOptions.randomSamplingFactor || 0.1;
 
     if (
-      internalOptions.randomSamplingFactor < 0
-      || internalOptions.randomSamplingFactor > 1
+      internalOptions.randomSamplingFactor < 0 ||
+      internalOptions.randomSamplingFactor > 1
     ) {
       internalOptions.randomSamplingFactor = 0.1;
     }
 
     // make sure we are passed a valid binary index name
-    if (!(hasOwn(this.binaryIndices, property))) {
-      throw new TypeError(`called checkIndex on property without an index: ${String(property)}`);
+    if (!hasOwn(this.binaryIndices, property)) {
+      throw new TypeError(
+        `called checkIndex on property without an index: ${String(property)}`
+      );
     }
 
     // if lazy indexing, rebuild only if flagged as dirty
@@ -971,44 +949,38 @@ export class Collection<T extends object> extends EventTarget {
       return true;
     }
 
-    const usingDotNotation = typeof property === 'string'
-      && isDotNotation(property);
+    const usingDotNotation =
+      typeof property === 'string' && isDotNotation(property);
 
     let valid = true;
 
     if (binaryIndicesCount === 1) {
-      valid = (binaryIndicesValues[0] === 0);
+      valid = binaryIndicesValues[0] === 0;
     } else if (internalOptions.randomSampling) {
       // validate first and last
       if (
         !Operations.$lte(
-          lens(
-            this.data[binaryIndicesValues[0]],
-            property,
-            usingDotNotation,
-          ),
-          lens(
-            this.data[binaryIndicesValues[1]],
-            property,
-            usingDotNotation,
-          ),
+          lens(this.data[binaryIndicesValues[0]], property, usingDotNotation),
+          lens(this.data[binaryIndicesValues[1]], property, usingDotNotation)
         )
       ) {
         valid = false;
       }
 
-      if (!Operations.$lte(
-        lens(
-          this.data[binaryIndicesValues[binaryIndicesCount - 2]],
-          property as string,
-          usingDotNotation,
-        ),
-        lens(
-          this.data[binaryIndicesValues[binaryIndicesCount - 1]],
-          property as string,
-          usingDotNotation,
-        ),
-      )) {
+      if (
+        !Operations.$lte(
+          lens(
+            this.data[binaryIndicesValues[binaryIndicesCount - 2]],
+            property as string,
+            usingDotNotation
+          ),
+          lens(
+            this.data[binaryIndicesValues[binaryIndicesCount - 1]],
+            property as string,
+            usingDotNotation
+          )
+        )
+      ) {
         valid = false;
       }
 
@@ -1017,7 +989,7 @@ export class Collection<T extends object> extends EventTarget {
       if (valid) {
         // # random samplings = total count * sampling factor
         const iterations = Math.floor(
-          (binaryIndicesCount - 1) * internalOptions.randomSamplingFactor,
+          (binaryIndicesCount - 1) * internalOptions.randomSamplingFactor
         );
 
         // for each random sampling, validate that the binary index is sequenced
@@ -1025,18 +997,20 @@ export class Collection<T extends object> extends EventTarget {
         for (let i = 0; i < iterations - 1; i += 1) {
           // calculate random position
           const position = Math.floor(Math.random() * (binaryIndicesCount - 1));
-          if (!LokiOps.$lte(
-            lens(
-              this.data[binaryIndicesValues[position]],
-              property,
-              usingDotNotation,
-            ),
-            lens(
-              this.data[binaryIndicesValues[position + 1]],
-              property,
-              usingDotNotation,
-            ),
-          )) {
+          if (
+            !LokiOps.$lte(
+              lens(
+                this.data[binaryIndicesValues[position]],
+                property,
+                usingDotNotation
+              ),
+              lens(
+                this.data[binaryIndicesValues[position + 1]],
+                property,
+                usingDotNotation
+              )
+            )
+          ) {
             valid = false;
             break;
           }
@@ -1045,18 +1019,16 @@ export class Collection<T extends object> extends EventTarget {
     } else {
       // validate that the binary index is sequenced properly
       for (let i = 0; i < binaryIndicesCount - 1; i += 1) {
-        if (!LokiOps.$lte(
-          lens(
-            this.data[binaryIndicesValues[i]],
-            property,
-            usingDotNotation,
-          ),
-          lens(
-            this.data[binaryIndicesValues[i + 1]],
-            property,
-            usingDotNotation,
-          ),
-        )) {
+        if (
+          !LokiOps.$lte(
+            lens(this.data[binaryIndicesValues[i]], property, usingDotNotation),
+            lens(
+              this.data[binaryIndicesValues[i + 1]],
+              property,
+              usingDotNotation
+            )
+          )
+        ) {
           valid = false;
           break;
         }
@@ -1084,6 +1056,7 @@ export class Collection<T extends object> extends EventTarget {
 
   /**
    * Returns a named unique index
+   *
    * @param field - indexed field name
    * @param force - if `true`, will rebuild index; otherwise, function may
    *        return null
@@ -1151,7 +1124,7 @@ export class Collection<T extends object> extends EventTarget {
   };
 
   /**
-  * Quickly determine number of documents in collection (or query)
+   * Quickly determine number of documents in collection (or query)
    * @param query - (optional) query object to count results of
    * @returns number of documents in the collection
    */
@@ -1165,7 +1138,7 @@ export class Collection<T extends object> extends EventTarget {
 
   /**
    * Rebuild idIndex
-  */
+   */
   ensureId = () => {
     if (this.idIndex) {
       return;
@@ -1189,6 +1162,7 @@ export class Collection<T extends object> extends EventTarget {
 
   /**
    * Add a dynamic view to the collection
+   *
    * @param name - name of dynamic view to add
    * @param options - options to configure dynamic view with
    * @example
@@ -1212,12 +1186,13 @@ export class Collection<T extends object> extends EventTarget {
    */
   removeDynamicView = (name: string) => {
     this.dynamicViews = this.dynamicViews.filter(
-      (dynamicView) => dynamicView.name !== name,
+      (dynamicView) => dynamicView.name !== name
     );
   };
 
   /**
    * Look up dynamic view reference from within the collection
+   *
    * @param name - name of dynamic view to retrieve reference of
    * @returns A reference to the dynamic view with that name
    * */
@@ -1244,10 +1219,13 @@ export class Collection<T extends object> extends EventTarget {
    */
   findAndUpdate = (
     filterObject: ICollectionQuery | FilterFunction<T>,
-    updateFunction: <P extends T & ICollectionDocument>(x: P) => P,
+    updateFunction: <P extends T & ICollectionDocument>(x: P) => P
   ) => {
     if (typeof filterObject === 'function') {
-      return this.updateWhere(filterObject as FilterFunction<T>, updateFunction);
+      return this.updateWhere(
+        filterObject as FilterFunction<T>,
+        updateFunction
+      );
     }
 
     return this.chain().find(filterObject).update(updateFunction);
@@ -1266,6 +1244,7 @@ export class Collection<T extends object> extends EventTarget {
   /**
    * Adds object(s) to collection, ensure object(s) have meta properties, clone
    * it if necessary, etc.
+   *
    * @param documents - the document (or array of documents) to be inserted
    * @param overrideAdaptiveIndices - (optional) if `true`, adaptive indices
    *        will be temporarily disabled and then fully rebuilt after batch.
@@ -1295,10 +1274,11 @@ export class Collection<T extends object> extends EventTarget {
     // if not cloning, disable adaptive binary indices for the duration of the
     // batch insert, followed by lazy rebuild and re-enabling adaptive indices
     // after batch insert.
-    const adaptiveBatchOverride = overrideAdaptiveIndices
-      && !this.cloneObjects
-      && this.adaptiveBinaryIndices
-      && Object.keys(this.binaryIndices).length > 0;
+    const adaptiveBatchOverride =
+      overrideAdaptiveIndices &&
+      !this.cloneObjects &&
+      this.adaptiveBinaryIndices &&
+      Object.keys(this.binaryIndices).length > 0;
 
     if (adaptiveBatchOverride) {
       this.adaptiveBinaryIndices = false;
@@ -1306,9 +1286,8 @@ export class Collection<T extends object> extends EventTarget {
 
     let results: (T & ICollectionDocument)[] = [];
     try {
-      this.dispatchEvent(new CustomEvent(
-        'pre-insert',
-        { detail: { document: documents } }),
+      this.dispatchEvent(
+        new CustomEvent('pre-insert', { detail: { document: documents } })
       );
 
       for (let i = 0; i < documents.length; i += 1) {
@@ -1327,10 +1306,9 @@ export class Collection<T extends object> extends EventTarget {
 
     // at the 'batch' level, if clone option is true then emitted docs are
     // clones
-    this.dispatchEvent(new CustomEvent(
-      'insert',
-      { detail: { documents: results } },
-    ));
+    this.dispatchEvent(
+      new CustomEvent('insert', { detail: { documents: results } })
+    );
 
     // if clone option is set, clone return values
     results = this.cloneObjects ? clone(results, this.cloneMethod) : results;
@@ -1341,6 +1319,7 @@ export class Collection<T extends object> extends EventTarget {
   /**
    * Adds a single object, ensures it has meta properties, clone it if
    * necessary, etc.
+   *
    * @param document - the document to be inserted
    * @param bulkInsert - quiet pre-insert and insert event emits
    * @returns document or 'undefined' if there was a problem inserting it
@@ -1372,7 +1351,7 @@ export class Collection<T extends object> extends EventTarget {
       if (typeof clonedDocument.meta === 'undefined') {
         clonedDocument.meta = {
           revision: 0,
-          created: 0,
+          created: 0
         };
       } else if (!this.disableFreeze) {
         clonedDocument.meta = unFreeze(clonedDocument.meta);
@@ -1383,9 +1362,9 @@ export class Collection<T extends object> extends EventTarget {
     // even when cloning insert needs internal reference because that is where
     // database itself listens to add meta
     if (!bulkInsert) {
-      this.dispatchEvent(new CustomEvent(
-        'pre-insert', { detail: { document } },
-      ));
+      this.dispatchEvent(
+        new CustomEvent('pre-insert', { detail: { document } })
+      );
     }
 
     if (!this.add(clonedDocument)) {
@@ -1413,10 +1392,9 @@ export class Collection<T extends object> extends EventTarget {
     this.dirty = true; // for autosave scenarios
 
     if (!bulkInsert) {
-      this.dispatchEvent(new CustomEvent(
-        'insert',
-        { detail: { document: result } },
-      ));
+      this.dispatchEvent(
+        new CustomEvent('insert', { detail: { document: result } })
+      );
     }
 
     this.addAutoUpdateObserver(result);
@@ -1426,6 +1404,7 @@ export class Collection<T extends object> extends EventTarget {
 
   /**
    * Empties the collection.
+   *
    * @param options - configure clear behavior
    */
   clear = (options?: Partial<IClearCollectionOptions>) => {
@@ -1441,7 +1420,7 @@ export class Collection<T extends object> extends EventTarget {
     this.dirty = true;
     this.constraints = {
       unique: {},
-      exact: {},
+      exact: {}
     };
 
     // if removing indices entirely
@@ -1462,6 +1441,7 @@ export class Collection<T extends object> extends EventTarget {
 
   /**
    * Updates an object and notifies collection that the document has changed.
+   *
    * @param {object} document - document to update within the collection
    */
   update = (document: T & ICollectionDocument) => {
@@ -1469,9 +1449,10 @@ export class Collection<T extends object> extends EventTarget {
       // if not cloning, disable adaptive binary indices for the duration of the
       // batch update, followed by lazy rebuild and re-enabling adaptive indices
       // after batch update.
-      const adaptiveBatchOverride = !this.cloneObjects
-        && this.adaptiveBinaryIndices
-        && Object.keys(this.binaryIndices).length > 0;
+      const adaptiveBatchOverride =
+        !this.cloneObjects &&
+        this.adaptiveBinaryIndices &&
+        Object.keys(this.binaryIndices).length > 0;
 
       if (adaptiveBatchOverride) {
         this.adaptiveBinaryIndices = false;
@@ -1493,7 +1474,9 @@ export class Collection<T extends object> extends EventTarget {
 
     // verify object is a properly formed document
     if (!hasOwn(document, '$loki')) {
-      throw new TypeError('Trying to update un-synced document. Please save the document first by using insert() or addMany()');
+      throw new TypeError(
+        'Trying to update un-synced document. Please save the document first by using insert() or addMany()'
+      );
     }
 
     try {
@@ -1509,14 +1492,14 @@ export class Collection<T extends object> extends EventTarget {
 
       // if configured to clone, do so now... otherwise just use same obj
       // reference
-      let newInternal = this.cloneObjects
-        || (!this.disableDeltaChangesApi && this.disableFreeze)
-        ? clone(document, this.cloneMethod)
-        : document;
+      let newInternal =
+        this.cloneObjects ||
+        (!this.disableDeltaChangesApi && this.disableFreeze)
+          ? clone(document, this.cloneMethod)
+          : document;
 
-      this.dispatchEvent(new CustomEvent(
-        'pre-update',
-        { detail: { document } }),
+      this.dispatchEvent(
+        new CustomEvent('pre-update', { detail: { document } })
       );
 
       this.uniqueNames.forEach((key) => {
@@ -1585,14 +1568,14 @@ export class Collection<T extends object> extends EventTarget {
         newDocument = newInternal;
       }
 
-      this.dispatchEvent(new CustomEvent(
-        'update', {
+      this.dispatchEvent(
+        new CustomEvent('update', {
           detail: {
             newDocument,
-            oldDocument,
-          },
-        },
-      ));
+            oldDocument
+          }
+        })
+      );
       return newDocument;
     } catch (error) {
       this.rollback();
@@ -1615,7 +1598,9 @@ export class Collection<T extends object> extends EventTarget {
     // also has a meta property, then this is already in collection so throw
     // error, otherwise rename to originalId and continue adding.
     if (hasOwn(document, '$loki')) {
-      throw new TypeError('Document is already in collection, please use update()');
+      throw new TypeError(
+        'Document is already in collection, please use update()'
+      );
     }
 
     const newDocument = { ...document } as T & ICollectionDocument;
@@ -1625,8 +1610,9 @@ export class Collection<T extends object> extends EventTarget {
       this.startTransaction();
       this.maxId += 1;
 
-      if (Number.isNaN(this.maxId)) {
-        this.maxId = (this.data[this.data.length - 1].$loki + 1);
+      if (typeof this.maxId !== 'number' || Number.isNaN(this.maxId)) {
+        // THIS IS EXTREMELY DANGEROUS, FIX THIS!
+        this.maxId = this.data[this.data.length - 1].$loki + 1;
       }
 
       const newId = this.maxId;
@@ -1678,12 +1664,12 @@ export class Collection<T extends object> extends EventTarget {
       this.commit();
       this.dirty = true; // for autosave scenarios
 
-      return (this.cloneObjects) ? (clone(document, this.cloneMethod)) : (document);
+      return this.cloneObjects ? clone(document, this.cloneMethod) : document;
     } catch (error) {
       this.rollback();
       this.consoleWrapper.error(error);
       this.dispatchEvent(new ErrorEvent(error));
-      throw (error); // re-throw error so user does not think it succeeded
+      throw error; // re-throw error so user does not think it succeeded
     }
   };
 
@@ -1695,7 +1681,7 @@ export class Collection<T extends object> extends EventTarget {
    */
   updateWhere = (
     filterFunction: FilterFunction<T>,
-    updateFunction: (x: T & ICollectionDocument) => T & ICollectionDocument,
+    updateFunction: (x: T & ICollectionDocument) => T & ICollectionDocument
   ) => {
     const results = this.where(filterFunction);
 
@@ -1715,13 +1701,10 @@ export class Collection<T extends object> extends EventTarget {
    * Remove all documents matching supplied filter function.
    * For 'mongo-like' querying you should migrate to
    * [findAndRemove()]{@link Collection#findAndRemove}.
+   *
    * @param query - query object to filter on
    */
-  removeWhere = (
-    query:
-    | ICollectionQuery
-    | FilterFunction<T>,
-  ) => {
+  removeWhere = (query: ICollectionQuery | FilterFunction<T>) => {
     if (typeof query === 'function') {
       const filteredData = this.data.filter(query as FilterFunction<T>);
       this.remove(filteredData);
@@ -1740,13 +1723,15 @@ export class Collection<T extends object> extends EventTarget {
    */
   removeBatchByPositions = (positions: number[]) => {
     if (!this.idIndex) {
-      throw new TypeError('Collection is not ready since `idIndex` is not available now');
+      throw new TypeError(
+        'Collection is not ready since `idIndex` is not available now'
+      );
     }
     const documentIndices: Record<number, boolean> = {};
     const uniqueCount = Object.keys(this.constraints.unique).length;
     const binaryIndexCount = Object.keys(this.binaryIndices).length;
-    const adaptiveOverride = this.adaptiveBinaryIndices
-      && Object.keys(this.binaryIndices).length > 0;
+    const adaptiveOverride =
+      this.adaptiveBinaryIndices && Object.keys(this.binaryIndices).length > 0;
 
     try {
       this.startTransaction();
@@ -1762,7 +1747,7 @@ export class Collection<T extends object> extends EventTarget {
       // if we will need to notify dynamic views and/or binary indices to update
       // themselves...
       const dynamicViewCount = this.dynamicViews.length;
-      if ((dynamicViewCount > 0) || (binaryIndexCount > 0) || (uniqueCount > 0)) {
+      if (dynamicViewCount > 0 || binaryIndexCount > 0 || uniqueCount > 0) {
         if (dynamicViewCount > 0) {
           // notify dynamic views to remove relevant documents at data positions
           for (let j = 0; j < dynamicViewCount; j += 1) {
@@ -1776,7 +1761,9 @@ export class Collection<T extends object> extends EventTarget {
         if (this.adaptiveBinaryIndices && !adaptiveOverride) {
           // for each binary index defined in collection, immediately update
           // rather than flag for lazy rebuild
-          const binaryIndexKeys = Object.keys(this.binaryIndices) as (keyof T)[];
+          const binaryIndexKeys = Object.keys(
+            this.binaryIndices
+          ) as (keyof T)[];
           for (let j = 0; j < binaryIndexKeys.length; j += 1) {
             const key = binaryIndexKeys[j];
             this.adaptiveBinaryIndexRemove(positions, key);
@@ -1808,7 +1795,7 @@ export class Collection<T extends object> extends EventTarget {
       if (!this.disableChangesApi) {
         for (let i = 0; i < positions.length; i += 1) {
           this.dispatchEvent(
-            new CollectionDocumentDeleteEvent(this.data[positions[i]]),
+            new CollectionDocumentDeleteEvent(this.data[positions[i]])
           );
         }
       }
@@ -1853,9 +1840,10 @@ export class Collection<T extends object> extends EventTarget {
 
   /**
    *  Internal method called by remove()
+   *
    * @param batch - array of documents or $loki ids to remove
    */
-  removeBatch = (batch: ((T & ICollectionDocument) | number)[]) => {
+  private removeBatch = (batch: ((T & ICollectionDocument) | number)[]) => {
     const positionMap: Record<number, number> = {};
     const positionIndex: number[] = [];
 
@@ -1879,21 +1867,23 @@ export class Collection<T extends object> extends EventTarget {
 
   /**
    * Remove a document from the collection
+   *
    * @param {object} document - document to remove from collection
    */
   remove = (
     document:
-    | ((T & ICollectionDocument))
-    | number
-    | (((T & ICollectionDocument)) | number)[],
+      | (T & ICollectionDocument)
+      | number
+      | ((T & ICollectionDocument) | number)[]
   ) => {
     if (!this.idIndex) {
-      throw new TypeError('Collection is not ready since `idIndex` is not available now');
+      throw new TypeError(
+        'Collection is not ready since `idIndex` is not available now'
+      );
     }
 
-    let internalDocument = typeof document === 'number'
-      ? this.get(document)
-      : document;
+    let internalDocument =
+      typeof document === 'number' ? this.get(document) : document;
 
     if (typeof internalDocument !== 'object') {
       if (typeof document === 'number') {
@@ -1921,7 +1911,9 @@ export class Collection<T extends object> extends EventTarget {
       const documents = this.get(internalDocument.$loki, true);
 
       if (!documents) {
-        throw new TypeError('Document with given id is not found, this is a bug');
+        throw new TypeError(
+          'Document with given id is not found, this is a bug'
+        );
       }
       const position = documents[1];
 
@@ -1929,8 +1921,8 @@ export class Collection<T extends object> extends EventTarget {
         const key = this.uniqueNames[i];
 
         if (
-          internalDocument[key] !== null
-          && typeof internalDocument[key] !== 'undefined'
+          internalDocument[key] !== null &&
+          typeof internalDocument[key] !== 'undefined'
         ) {
           const index = this.getUniqueIndex(key);
           if (index) {
@@ -1970,9 +1962,7 @@ export class Collection<T extends object> extends EventTarget {
 
       this.commit();
       this.dirty = true; // for autosave scenarios
-      this.dispatchEvent(
-        new CollectionDocumentDeleteEvent(documents[0]),
-      );
+      this.dispatchEvent(new CollectionDocumentDeleteEvent(documents[0]));
 
       if (!this.disableFreeze) {
         internalDocument = unFreeze(internalDocument);
@@ -1998,12 +1988,16 @@ export class Collection<T extends object> extends EventTarget {
    +--------------------*/
   /**
    * Get by Id - faster than other methods because of the searching algorithm
+   *
    * @param id - $loki id of document you want to retrieve
    * @param returnPosition - if 'true' we will return [object, position]
    * @returns Object reference if document was found, null if not, or an array
    *          if 'returnPosition' was passed.
    */
-  get(id: number, returnPosition: true): [(T & ICollectionDocument), number] | null;
+  get(
+    id: number,
+    returnPosition: true
+  ): [T & ICollectionDocument, number] | null;
   get(id: number, returnPosition: false): (T & ICollectionDocument) | null;
   get(id: number): (T & ICollectionDocument) | null;
   get(id: number, returnPosition?: boolean) {
@@ -2012,7 +2006,9 @@ export class Collection<T extends object> extends EventTarget {
     }
 
     if (!this.idIndex) {
-      throw new TypeError('`idIndex` not exists, this is a bug, since it should be initialized by this.ensureId');
+      throw new TypeError(
+        '`idIndex` not exists, this is a bug, since it should be initialized by this.ensureId'
+      );
     }
 
     let max = this.idIndex.length - 1;
@@ -2034,10 +2030,7 @@ export class Collection<T extends object> extends EventTarget {
       }
     }
 
-    if (
-      min < this.idIndex.length
-      && this.idIndex[min] === internalId
-    ) {
+    if (min < this.idIndex.length && this.idIndex[min] === internalId) {
       if (returnPosition) {
         return [this.data[min], min];
       }
@@ -2053,12 +2046,13 @@ export class Collection<T extends object> extends EventTarget {
    * Since multiple documents may contain the same value (which the index is
    * sorted on), we hone in on range and then linear scan range to find exact
    * index array position.
+   *
    * @param dataPosition - coll.data array index/position
    * @param binaryIndexName - index to search for dataPosition in
    */
   getBinaryIndexPosition = <K extends keyof T>(
     dataPosition: number,
-    binaryIndexName: K,
+    binaryIndexName: K
   ) => {
     const value = lens(this.data[dataPosition], binaryIndexName, true);
     const index = this.binaryIndices[binaryIndexName].values;
@@ -2087,15 +2081,16 @@ export class Collection<T extends object> extends EventTarget {
 
   /**
    * Adaptively insert a selected item to the index.
+   *
    * @param dataPosition : coll.data array index/position
    * @param binaryIndexName : index to search for dataPosition in
    */
   adaptiveBinaryIndexInsert = <K extends keyof T>(
     dataPosition: number,
-    binaryIndexName: K,
+    binaryIndexName: K
   ) => {
-    const usingDotNotation = typeof binaryIndexName === 'string'
-      && isDotNotation(binaryIndexName);
+    const usingDotNotation =
+      typeof binaryIndexName === 'string' && isDotNotation(binaryIndexName);
 
     const internalBinaryIndexName = binaryIndexName;
 
@@ -2103,7 +2098,7 @@ export class Collection<T extends object> extends EventTarget {
     let value = lens(
       this.data[dataPosition],
       internalBinaryIndexName,
-      usingDotNotation,
+      usingDotNotation
     );
 
     // If you are inserting a javascript Date value into a binary index, convert
@@ -2115,14 +2110,15 @@ export class Collection<T extends object> extends EventTarget {
       value = lens(this.data[dataPosition], internalBinaryIndexName);
     }
 
-    const indexPosition = index.length === 0
-      ? 0
-      : this.calculateRangeStart(
-        binaryIndexName,
-        value as T[K],
-        true,
-        usingDotNotation,
-      );
+    const indexPosition =
+      index.length === 0
+        ? 0
+        : this.calculateRangeStart(
+            binaryIndexName,
+            value as T[K],
+            true,
+            usingDotNotation
+          );
 
     // insert new data index into our binary index at the proper sorted location
     // for relevant property calculated by `indexPosition`.
@@ -2131,18 +2127,19 @@ export class Collection<T extends object> extends EventTarget {
     this.binaryIndices[internalBinaryIndexName].values.splice(
       indexPosition,
       0,
-      dataPosition,
+      dataPosition
     );
   };
 
   /**
    * Adaptively update a selected item within an index.
+   *
    * @param dataPosition - coll.data array index/position
    * @param binaryIndexName - index to search for dataPosition in
    */
   adaptiveBinaryIndexUpdate = (
     dataPosition: number,
-    binaryIndexName: keyof T,
+    binaryIndexName: keyof T
   ) => {
     // linear scan needed to find old position within index unless we optimize
     // for clone scenarios later within (my) node 5.6.0, the following for()
@@ -2164,13 +2161,14 @@ export class Collection<T extends object> extends EventTarget {
 
   /**
    * Adaptively remove a selected item from the index.
+   *
    * @param dataPosition - coll.data array index/position
    * @param binaryIndexName - index to search for dataPosition in
    */
   adaptiveBinaryIndexRemove = (
     dataPosition: number | number[],
     binaryIndexName: keyof T,
-    removedFromIndexOnly?: boolean,
+    removedFromIndexOnly?: boolean
   ) => {
     const binaryIndex = this.binaryIndices[binaryIndexName];
     const removeIndexMap: Record<number, boolean> = {};
@@ -2194,7 +2192,7 @@ export class Collection<T extends object> extends EventTarget {
 
         // remove document from index (with filter function)
         binaryIndex.values = binaryIndex.values.filter(
-          (index) => !removeIndexMap[index],
+          (index) => !removeIndexMap[index]
         );
 
         // if we passed this optional flag parameter, we are calling from
@@ -2204,7 +2202,9 @@ export class Collection<T extends object> extends EventTarget {
         }
 
         const sortedPositions = dataPosition.slice();
-        sortedPositions.sort((a, b) => { return a - b; });
+        sortedPositions.sort((a, b) => {
+          return a - b;
+        });
 
         // to remove holes, we need to 'shift down' the index's data array
         // positions we need to adjust array positions -1 for each index data
@@ -2231,7 +2231,7 @@ export class Collection<T extends object> extends EventTarget {
 
     const indexPosition = this.getBinaryIndexPosition(
       internalDataPosition,
-      binaryIndexName,
+      binaryIndexName
     );
 
     if (indexPosition === null) {
@@ -2242,14 +2242,15 @@ export class Collection<T extends object> extends EventTarget {
     // remove document from index (with splice)
     binaryIndex.values.splice(indexPosition, 1);
 
-    // if we passed this optional flag parameter, we are calling from adaptiveBinaryIndexUpdate,
-    // in which case data positions stay the same.
+    // if we passed this optional flag parameter, we are calling from
+    // adaptiveBinaryIndexUpdate, in which case data positions stay the same.
     if (removedFromIndexOnly === true) {
       return;
     }
 
     // since index stores data array positions, if we remove a document
-    // we need to adjust array positions -1 for all document positions greater than removed position
+    // we need to adjust array positions -1 for all document positions greater
+    // than removed position
     for (let i = 0; i < binaryIndex.values.length; i += 1) {
       if (binaryIndex.values[i] > internalDataPosition) {
         binaryIndex.values[i] -= 1;
@@ -2276,7 +2277,7 @@ export class Collection<T extends object> extends EventTarget {
     property: K,
     value: T[K],
     adaptive?: boolean,
-    usingDotNotation?: boolean,
+    usingDotNotation?: boolean
   ) => {
     const { data } = this;
     const index = this.binaryIndices[property].values;
@@ -2292,11 +2293,13 @@ export class Collection<T extends object> extends EventTarget {
     while (min < max) {
       mid = (min + max) >> 1;
 
-      if (Comparators.lt(
-        lens(data[index[mid]], property, usingDotNotation),
-        value,
-        false,
-      )) {
+      if (
+        Comparators.lt(
+          lens(data[index[mid]], property, usingDotNotation),
+          value,
+          false
+        )
+      ) {
         min = mid + 1;
       } else {
         max = mid;
@@ -2309,18 +2312,20 @@ export class Collection<T extends object> extends EventTarget {
     if (
       Comparators.aeq(
         value,
-        lens(data[index[lbound]], property, usingDotNotation),
+        lens(data[index[lbound]], property, usingDotNotation)
       )
     ) {
       return lbound;
     }
 
     // if not in index and our value is less than the found one
-    if (Comparators.lt(
-      value,
-      lens(data[index[lbound]], property, usingDotNotation),
-      false,
-    )) {
+    if (
+      Comparators.lt(
+        value,
+        lens(data[index[lbound]], property, usingDotNotation),
+        false
+      )
+    ) {
       return adaptive ? lbound : lbound - 1;
     }
 
@@ -2336,7 +2341,7 @@ export class Collection<T extends object> extends EventTarget {
   private calculateRangeEnd = <K extends keyof T>(
     property: K,
     value: T[K],
-    usingDotNotation?: boolean,
+    usingDotNotation?: boolean
   ) => {
     const { data } = this;
     const index = this.binaryIndices[property].values;
@@ -2352,15 +2357,13 @@ export class Collection<T extends object> extends EventTarget {
     while (min < max) {
       mid = (min + max) >> 1;
 
-      if (Comparators.lt(
-        value,
-        lens(
-          data[index[mid]],
-          property,
-          usingDotNotation,
-        ),
-        false,
-      )) {
+      if (
+        Comparators.lt(
+          value,
+          lens(data[index[mid]], property, usingDotNotation),
+          false
+        )
+      ) {
         max = mid;
       } else {
         min = mid + 1;
@@ -2370,27 +2373,33 @@ export class Collection<T extends object> extends EventTarget {
     const ubound = max;
 
     // only eq if last element in array is our val
-    if (Comparators.aeq(
-      value,
-      lens(data[index[ubound]], property, usingDotNotation),
-    )) {
+    if (
+      Comparators.aeq(
+        value,
+        lens(data[index[ubound]], property, usingDotNotation)
+      )
+    ) {
       return ubound;
     }
 
     // if not in index and our value is less than the found one
-    if (Comparators.gt(
-      value,
-      lens(data[index[ubound]], property, usingDotNotation),
-      false,
-    )) {
+    if (
+      Comparators.gt(
+        value,
+        lens(data[index[ubound]], property, usingDotNotation),
+        false
+      )
+    ) {
       return ubound + 1;
     }
 
     // either hole or first non-match
-    if (Comparators.aeq(
-      value,
-      lens(data[index[ubound - 1]], property, usingDotNotation),
-    )) {
+    if (
+      Comparators.aeq(
+        value,
+        lens(data[index[ubound - 1]], property, usingDotNotation)
+      )
+    ) {
       return ubound - 1;
     }
 
@@ -2404,6 +2413,7 @@ export class Collection<T extends object> extends EventTarget {
    * this is used for collection.find() and first find filter of
    * resultSet/dynamicView slightly different than get() binary search in that
    * get() hones in on 1 value, but we have to hone in on many (range)
+   *
    * @param operation - operation, such as $eq
    * @param property - name of property to calculate range for
    * @param value - value to use for range calculation.
@@ -2412,7 +2422,7 @@ export class Collection<T extends object> extends EventTarget {
   calculateRange = <K extends keyof T>(
     operation: Operation,
     property: K,
-    value: T[K],
+    value: T[K]
   ): [number, number] => {
     const { data } = this;
     const index = this.binaryIndices[property].values;
@@ -2424,8 +2434,8 @@ export class Collection<T extends object> extends EventTarget {
       return [0, -1];
     }
 
-    const usingDotNotation = typeof property === 'string'
-      && isDotNotation(property);
+    const usingDotNotation =
+      typeof property === 'string' && isDotNotation(property);
 
     const minValue = lens(data[index[min]], property, usingDotNotation);
     const maxValue = lens(data[index[max]], property, usingDotNotation);
@@ -2442,16 +2452,16 @@ export class Collection<T extends object> extends EventTarget {
       case '$eq':
       case '$aeq':
         if (
-          Comparators.lt(value, minValue, false)
-          || Comparators.gt(value, maxValue, false)
+          Comparators.lt(value, minValue, false) ||
+          Comparators.gt(value, maxValue, false)
         ) {
           return [0, -1];
         }
         break;
       case '$dteq':
         if (
-          Comparators.lt(value, minValue, false)
-          || Comparators.gt(value, maxValue, false)
+          Comparators.lt(value, minValue, false) ||
+          Comparators.gt(value, maxValue, false)
         ) {
           return [0, -1];
         }
@@ -2498,7 +2508,9 @@ export class Collection<T extends object> extends EventTarget {
         break;
       case '$between':
         if (!Array.isArray(value)) {
-          throw new TypeError('The query condition of $between should be an array');
+          throw new TypeError(
+            'The query condition of $between should be an array'
+          );
         }
         // none are within range (low range is greater)
         if (Comparators.gt(value[0], maxValue, false)) {
@@ -2510,11 +2522,12 @@ export class Collection<T extends object> extends EventTarget {
         }
 
         lBound = this.calculateRangeStart(
-          property, value[0], false, usingDotNotation,
+          property,
+          value[0],
+          false,
+          usingDotNotation
         );
-        uBound = this.calculateRangeEnd(
-          property, value[1], usingDotNotation,
-        );
+        uBound = this.calculateRangeEnd(property, value[1], usingDotNotation);
 
         if (lBound < 0) {
           lBound += 1;
@@ -2523,24 +2536,28 @@ export class Collection<T extends object> extends EventTarget {
           uBound -= 1;
         }
 
-        if (!Comparators.gt(
-          lens(data[index[lBound]], property, usingDotNotation),
-          value[0],
-          true)
+        if (
+          !Comparators.gt(
+            lens(data[index[lBound]], property, usingDotNotation),
+            value[0],
+            true
+          )
         ) {
           lBound += 1;
         }
-        if (!Comparators.lt(
-          lens(data[index[uBound]], property, usingDotNotation),
-          value[1],
-          true)
+        if (
+          !Comparators.lt(
+            lens(data[index[uBound]], property, usingDotNotation),
+            value[1],
+            true
+          )
         ) {
           uBound -= 1;
         }
 
         if (uBound < lBound) return [0, -1];
 
-        return ([lBound, uBound]);
+        return [lBound, uBound];
       case '$in':
         if (!Array.isArray(value)) {
           throw new TypeError('The query condition of $in should be an array');
@@ -2574,11 +2591,12 @@ export class Collection<T extends object> extends EventTarget {
           property,
           value,
           false,
-          usingDotNotation,
+          usingDotNotation
         );
         lValue = lens(data[index[lBound]], property, usingDotNotation);
         break;
-      default: break;
+      default:
+        break;
     }
 
     // determine ubound where needed
@@ -2590,7 +2608,8 @@ export class Collection<T extends object> extends EventTarget {
       case '$gt':
         uBound = this.calculateRangeEnd(property, value, usingDotNotation);
         break;
-      default: break;
+      default:
+        break;
     }
 
     switch (operation) {
@@ -2612,10 +2631,12 @@ export class Collection<T extends object> extends EventTarget {
           throw new Error('Boundary variable not initialized, this is a bug');
         }
         // if hole (not found) ub position is already greater
-        if (!Comparators.aeq(
-          lens(data[index[uBound]], property, usingDotNotation),
-          value,
-        )) {
+        if (
+          !Comparators.aeq(
+            lens(data[index[uBound]], property, usingDotNotation),
+            value
+          )
+        ) {
           return [uBound, max];
         }
         // otherwise (found) so ubound is still equal, get next
@@ -2626,10 +2647,12 @@ export class Collection<T extends object> extends EventTarget {
           throw new Error('Boundary variable not initialized, this is a bug');
         }
         // if hole (not found) lb position marks left outside of range
-        if (!Comparators.aeq(
-          lens(data[index[lBound]], property, usingDotNotation),
-          value,
-        )) {
+        if (
+          !Comparators.aeq(
+            lens(data[index[lBound]], property, usingDotNotation),
+            value
+          )
+        ) {
           return [lBound + 1, max];
         }
         // otherwise (found) so lb is first position where its equal
@@ -2640,10 +2663,12 @@ export class Collection<T extends object> extends EventTarget {
           throw new Error('Boundary variable not initialized, this is a bug');
         }
         // if hole (not found) position already is less than
-        if (!Comparators.aeq(
-          lens(data[index[lBound]], property, usingDotNotation),
-          value,
-        )) {
+        if (
+          !Comparators.aeq(
+            lens(data[index[lBound]], property, usingDotNotation),
+            value
+          )
+        ) {
           return [min, lBound];
         }
         // otherwise (found) so lb marks left inside of eq range, get previous
@@ -2654,10 +2679,12 @@ export class Collection<T extends object> extends EventTarget {
           throw new Error('Boundary variable not initialized, this is a bug');
         }
         // if hole (not found) ub position marks right outside so get previous
-        if (!Comparators.aeq(
-          lens(data[index[uBound]], property, usingDotNotation),
-          value,
-        )) {
+        if (
+          !Comparators.aeq(
+            lens(data[index[uBound]], property, usingDotNotation),
+            value
+          )
+        ) {
           return [min, uBound - 1];
         }
         // otherwise (found) so ub is last position where its still equal
@@ -2670,6 +2697,7 @@ export class Collection<T extends object> extends EventTarget {
 
   /**
    * Retrieve doc by Unique index
+   *
    * @param field - name of uniquely indexed property to use when doing lookup
    * @param value - unique value to search for
    * @returns document matching the value passed
@@ -2690,6 +2718,7 @@ export class Collection<T extends object> extends EventTarget {
 
   /**
    * Find one object by index property, by property equal to value
+   *
    * @param query - query object used to perform search with
    * @returns First matching document, or null if none
    * @memberof Collection
@@ -2802,8 +2831,9 @@ export class Collection<T extends object> extends EventTarget {
       if (this.cachedData !== null && this.cachedIndex !== null) {
         this.data = this.cachedData;
         this.idIndex = this.cachedIndex;
-        this.binaryIndices = this.cachedBinaryIndex
-          ?? {} as Record<keyof T, IBinaryIndex<T, number>>;
+        this.binaryIndices =
+          this.cachedBinaryIndex ??
+          ({} as Record<keyof T, IBinaryIndex<T, number>>);
         this.dirtyIds = this.cachedDirtyIds ?? [];
       }
 
@@ -2816,6 +2846,7 @@ export class Collection<T extends object> extends EventTarget {
 
   /**
    * Query the collection by supplying a javascript filter function.
+   *
    * @param filter - filter function to run against all collection docs
    * @returns all documents which pass your filter function
    * @example
@@ -2836,13 +2867,14 @@ export class Collection<T extends object> extends EventTarget {
    */
   mapReduce = <P, U>(
     mapFunction: (x: T & ICollectionDocument) => P,
-    reduceFunction: (x: P[]) => U,
+    reduceFunction: (x: P[]) => U
   ): U => {
     return reduceFunction(this.data.map(mapFunction));
   };
 
   /**
    * Join two collections on specified properties
+   *
    * @param joinData - array of documents to 'join' to this collection
    * @param leftJoinProperty - property name in collection
    * @param rightJoinProperty - property name in joinData
@@ -2855,7 +2887,7 @@ export class Collection<T extends object> extends EventTarget {
     leftJoinProperty: keyof T,
     rightJoinProperty: keyof T,
     mapFunction: (left: T, right: T) => T,
-    dataOptions: ICollectionEqJoinDataOptions,
+    dataOptions: ICollectionEqJoinDataOptions
   ) => {
     // logic in Resultset class
     // @ts-ignore: Let's fix this later
@@ -2865,7 +2897,7 @@ export class Collection<T extends object> extends EventTarget {
       leftJoinProperty,
       rightJoinProperty,
       mapFunction,
-      dataOptions,
+      dataOptions
     );
   };
 
@@ -2908,6 +2940,7 @@ export class Collection<T extends object> extends EventTarget {
    * (Staging API) re-attach all objects to the original collection,
    * so indexes and views can be rebuilt, then create a message to be inserted
    * in the commit log
+   *
    * @param {string} stageName - name of stage
    * @param {string} message
    * @memberof Collection
@@ -2924,7 +2957,7 @@ export class Collection<T extends object> extends EventTarget {
       this.commitLog.push({
         timestamp,
         message,
-        data: JSON.parse(JSON.stringify(stage[key])),
+        data: JSON.parse(JSON.stringify(stage[key]))
       });
     }
     this.stages[stageName] = {};
@@ -2933,8 +2966,10 @@ export class Collection<T extends object> extends EventTarget {
   /* ----------------+
    | Other utils     |
    +-----------------*/
-  extract = <K extends ValidLensField>(field: K): LensResult<T, K>[] => {
-    const result: LensResult<T, K>[] = [];
+  extract = <K extends ValidLensField>(
+    field: K
+  ): LensResult<T & ICollectionDocument, K>[] => {
+    const result: LensResult<T & ICollectionDocument, K>[] = [];
     for (let i = 0; i < this.data.length; i += 1) {
       const query = lens(this.data[i], field, isDotNotation(field));
       if (query) result.push(query);
@@ -2943,11 +2978,11 @@ export class Collection<T extends object> extends EventTarget {
   };
 
   max = <K extends ValidLensField>(field: K) => {
-    return Math.max.apply(null, this.extract(field));
+    return Math.max.apply(null, this.extract(field) as unknown as number[]);
   };
 
   min = <K extends ValidLensField>(field: K) => {
-    return Math.min.apply(null, this.extract(field));
+    return Math.min.apply(null, this.extract(field) as unknown as number[]);
   };
 
   maxRecord = <K extends ValidLensField>(field: K) => {
@@ -2955,24 +2990,26 @@ export class Collection<T extends object> extends EventTarget {
 
     const result = {
       index: null as number | null,
-      value: undefined as number | undefined,
+      value: undefined as number | undefined
     };
 
     let max: number | undefined;
     for (let i = 0; i < this.data.length; i += 1) {
       if (max !== undefined) {
-        const queryResult = lens<number>(this.data[i], field, useDotNotation);
+        const queryResult = lens(this.data[i], field, useDotNotation);
 
         if (queryResult === undefined) {
-          this.consoleWrapper.warn(`Query result of data ${i} is undefined, treated 0`);
+          this.consoleWrapper.warn(
+            `Query result of data ${i} is undefined, treated 0`
+          );
         }
 
         if (max < (queryResult ?? 0)) {
-          max = lens(this.data[i], field, useDotNotation);
+          max = lens(this.data[i], field, useDotNotation) as unknown as number;
           result.index = this.data[i].$loki;
         }
       } else {
-        max = lens<number>(this.data[i], field, useDotNotation);
+        max = lens(this.data[i], field, useDotNotation) as unknown as number;
         result.index = this.data[i].$loki;
       }
     }
@@ -2985,24 +3022,26 @@ export class Collection<T extends object> extends EventTarget {
 
     const result = {
       index: null as number | null,
-      value: undefined as number | undefined,
+      value: undefined as number | undefined
     };
 
     let min: number | undefined;
     for (let i = 0; i < this.data.length; i += 1) {
       if (min !== undefined) {
-        const queryResult = lens<number>(this.data[i], field, useDotNotation);
+        const queryResult = lens(this.data[i], field, useDotNotation);
 
         if (queryResult === undefined) {
-          this.consoleWrapper.warn(`Query result of data ${i} is undefined, treated 0`);
+          this.consoleWrapper.warn(
+            `Query result of data ${i} is undefined, treated 0`
+          );
         }
 
         if (min > (queryResult ?? 0)) {
-          min = lens<number>(this.data[i], field, useDotNotation);
+          min = lens(this.data[i], field, useDotNotation) as unknown as number;
           result.index = this.data[i].$loki;
         }
       } else {
-        min = lens<number>(this.data[i], field, useDotNotation);
+        min = lens(this.data[i], field, useDotNotation) as unknown as number;
         result.index = this.data[i].$loki;
       }
     }
@@ -3011,15 +3050,14 @@ export class Collection<T extends object> extends EventTarget {
   };
 
   extractNumerical = <K extends ValidLensField>(field: K) => {
-    return this.extract<string, K>(field)
-      .map(parseBase10)
-      .filter((n) => {
-        return !(Number.isNaN(n));
-      });
+    return (this.extract(field) as string[]).map(parseBase10).filter((n) => {
+      return !Number.isNaN(n);
+    });
   };
 
   /**
    * Calculates the average numerical value of a property
+   *
    * @param field - name of property in docs to average
    * @returns average of property in all docs in the collection
    */
