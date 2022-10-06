@@ -1,8 +1,14 @@
 import EventTarget from '@ungap/event-target';
-import { DynamicView } from 'lokijs';
 
-import * as Operations from './Operations';
 import * as Comparators from './Comparators';
+
+// eslint-disable-next-line import/no-cycle
+import { ResultSet } from './ResultSet';
+import { Operators } from './Operations';
+import { DynamicView } from './DynamicView';
+
+import type { IQuery } from './typings';
+import type { Operator } from './Operations';
 
 import { delay } from './utils/delay';
 import { hasOwn } from './utils/hasOwn';
@@ -18,7 +24,8 @@ import {
   ValidDotNotation
 } from './utils/lens';
 
-import type { IDynamicViewOptions, ITransform } from './DynamicView';
+import type { ITransform } from './ResultSet';
+import type { IDynamicViewOptions } from './DynamicView';
 // eslint-disable-next-line import/no-cycle
 import { CollectionDocumentDeleteEvent, ErrorEvent } from './Events';
 import { sub, mean, parseBase10, standardDeviation } from './utils/math';
@@ -142,8 +149,6 @@ export interface IBinaryIndex<T, P> {
   values: P[];
 }
 
-export interface ICollectionQuery {}
-
 export interface ICollectionDocument {
   $loki: number;
   meta: IDocumentMetadata;
@@ -172,16 +177,6 @@ export interface IClearCollectionOptions {
 }
 
 export type FilterFunction<T> = (x: T & ICollectionDocument) => boolean;
-
-export type Module<T> = {
-  [key in keyof T as key extends 'then'
-    ? never
-    : T[key] extends Function
-    ? key
-    : never]: T[key];
-};
-
-export type Operation = keyof Module<typeof Operations>;
 
 /**
  * options to data() before input to your map function
@@ -252,7 +247,7 @@ export class Collection<T extends object> extends EventTarget {
    * transforms will be used to store frequently used query chains as a series
    * of steps which itself can be stored along with the database.
    */
-  transforms: Record<string, ITransform[]> = {};
+  transforms: Record<string, ITransform<T>[]> = {};
 
   /**
    * the object type of the collection
@@ -358,7 +353,7 @@ export class Collection<T extends object> extends EventTarget {
    */
   maxId = 0;
 
-  dynamicViews: DynamicView[] = [];
+  dynamicViews: DynamicView<T>[] = [];
 
   /**
    * changes are tracked by collection and aggregated by the db
@@ -650,7 +645,7 @@ export class Collection<T extends object> extends EventTarget {
    *
    * var results = users.chain('progeny').data();
    */
-  addTransform = (name: string, transform: ITransform[]) => {
+  addTransform = (name: string, transform: ITransform<T>[]) => {
     if (hasOwn(this.transforms, name)) {
       throw new TypeError('a transform by that name already exists');
     }
@@ -672,7 +667,7 @@ export class Collection<T extends object> extends EventTarget {
    * @param name - name to associate with transform
    * @param transform - a transformation object to save into collection
    */
-  setTransform = (name: string, transform: ITransform[]) => {
+  setTransform = (name: string, transform: ITransform<T>[]) => {
     this.transforms[name] = transform;
   };
 
@@ -685,29 +680,30 @@ export class Collection<T extends object> extends EventTarget {
     delete this.transforms[name];
   };
 
-  static byExample = <P extends object>(template: P) => {
+  // eslint-disable-next-line class-methods-use-this
+  byExample = (template: IQuery<T>): IQuery<T> => {
     const query = [];
 
-    const keys = Object.keys(template);
+    const keys = Object.keys(template) as (keyof IQuery<T>)[];
     for (let i = 0; i < keys.length; i += 1) {
-      const key = keys[i] as keyof P;
+      const key = keys[i];
 
-      const object = {} as Record<keyof P, unknown>;
+      const object = {} as IQuery<T>;
       object[key] = template[key];
 
       query.push(object);
     }
     return {
       $and: query
-    };
+    } as IQuery<T>;
   };
 
   findObject = <P extends object>(template: P) => {
-    return this.findOne(Collection.byExample<P>(template));
+    return this.findOne(this.byExample(template));
   };
 
   findObjects = <P extends object>(template: P) => {
-    return this.find(Collection.byExample(template));
+    return this.find(this.byExample(template));
   };
 
   /* ----------------------------+
@@ -965,26 +961,34 @@ export class Collection<T extends object> extends EventTarget {
     } else if (internalOptions.randomSampling) {
       // validate first and last
       if (
-        !Operations.$lte(
-          lens(this.data[binaryIndicesValues[0]], property, usingDotNotation),
-          lens(this.data[binaryIndicesValues[1]], property, usingDotNotation)
+        !Operators.$lte(
+          lens(
+            this.data[binaryIndicesValues[0]],
+            property,
+            usingDotNotation
+          ) as number,
+          lens(
+            this.data[binaryIndicesValues[1]],
+            property,
+            usingDotNotation
+          ) as number
         )
       ) {
         valid = false;
       }
 
       if (
-        !Operations.$lte(
+        !Operators.$lte(
           lens(
             this.data[binaryIndicesValues[binaryIndicesCount - 2]],
             property as string,
             usingDotNotation
-          ),
+          ) as number,
           lens(
             this.data[binaryIndicesValues[binaryIndicesCount - 1]],
             property as string,
             usingDotNotation
-          )
+          ) as number
         )
       ) {
         valid = false;
@@ -1134,7 +1138,7 @@ export class Collection<T extends object> extends EventTarget {
    * @param query - (optional) query object to count results of
    * @returns number of documents in the collection
    */
-  count = (query: ICollectionQuery) => {
+  count = (query?: IQuery<T>) => {
     if (!query) {
       return this.data.length;
     }
@@ -1224,7 +1228,7 @@ export class Collection<T extends object> extends EventTarget {
    * @memberof Collection
    */
   findAndUpdate = (
-    filterObject: ICollectionQuery | FilterFunction<T>,
+    filterObject: IQuery<T> | FilterFunction<T>,
     updateFunction: <P extends T & ICollectionDocument>(x: P) => P
   ) => {
     if (typeof filterObject === 'function') {
@@ -1243,7 +1247,7 @@ export class Collection<T extends object> extends EventTarget {
    *
    * @param filterObject - 'mongo-like' query object
    */
-  findAndRemove = (filterObject: ICollectionQuery) => {
+  findAndRemove = (filterObject: IQuery<T>) => {
     return this.chain().find(filterObject).remove();
   };
 
@@ -1710,7 +1714,7 @@ export class Collection<T extends object> extends EventTarget {
    *
    * @param query - query object to filter on
    */
-  removeWhere = (query: ICollectionQuery | FilterFunction<T>) => {
+  removeWhere = (query: IQuery<T> | FilterFunction<T>) => {
     if (typeof query === 'function') {
       const filteredData = this.data.filter(query as FilterFunction<T>);
       this.remove(filteredData);
@@ -2426,7 +2430,7 @@ export class Collection<T extends object> extends EventTarget {
    * @returns [start, end] index array positions
    */
   calculateRange = <K extends keyof T>(
-    operation: Operation,
+    operation: Operator,
     property: K,
     value: T[K]
   ): [number, number] => {
@@ -2729,8 +2733,8 @@ export class Collection<T extends object> extends EventTarget {
    * @returns First matching document, or null if none
    * @memberof Collection
    */
-  findOne = (query: Partial<ICollectionQuery> = {}) => {
-    // Instantiate Resultset and exec find op passing firstOnly = true param
+  findOne = (query: Partial<IQuery<T>> = {}) => {
+    // Instantiate ResultSet and exec find op passing firstOnly = true param
     const result = this.chain().find(query, true).data();
 
     if (Array.isArray(result) && result.length === 0) {
@@ -2752,10 +2756,12 @@ export class Collection<T extends object> extends EventTarget {
    * @returns (this) resultset, or data array if any map or join-functions where
    *          called
    * */
-  // @ts-ignore: This should be researched later
-  chain = (transform?: string | string[] | Transform[], parameters?: any) => {
+  chain = (
+    transform?: ITransform<T> | ITransform<T>[],
+    parameters?: Record<string, unknown>
+  ) => {
     // @ts-ignore: Let's refactor this later
-    const resultSet = new Resultset(this);
+    const resultSet = new ResultSet(this);
 
     if (typeof transform === 'undefined') {
       return resultSet;
@@ -2771,7 +2777,7 @@ export class Collection<T extends object> extends EventTarget {
    * @param query - 'mongo-like' query object
    * @returns Array of matching documents
    * */
-  find = (query: ICollectionQuery) => {
+  find = (query: IQuery<T>) => {
     return this.chain().find(query).data();
   };
 
@@ -2889,16 +2895,14 @@ export class Collection<T extends object> extends EventTarget {
    * @returns Result of the mapping operation
    */
   eqJoin = (
-    joinData: T[] | Resultset<T> | Collection<T>,
+    joinData: T[] | ResultSet<T> | Collection<T>,
     leftJoinProperty: keyof T,
     rightJoinProperty: keyof T,
     mapFunction: (left: T, right: T) => T,
     dataOptions: ICollectionEqJoinDataOptions
   ) => {
-    // logic in Resultset class
-    // @ts-ignore: Let's fix this later
-    return new Resultset(this).eqJoin(
-      // @ts-ignore: Let's fix this later
+    // logic in ResultSet class
+    return new ResultSet(this).eqJoin(
       joinData,
       leftJoinProperty,
       rightJoinProperty,

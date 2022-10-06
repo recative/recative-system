@@ -3,7 +3,6 @@ import EventTarget from '@ungap/event-target';
 import type {
   Collection,
   FilterFunction,
-  ICollectionQuery,
   ICollectionDocument
 } from './Collection';
 import {
@@ -14,13 +13,14 @@ import {
 import { delay } from './utils/delay';
 import { CloneMethod } from './utils/clone';
 import { deepFreeze, freeze } from './utils/freeze';
-import type { ITransformParameter } from './ResultSet';
+import type { IQuery } from './typings';
+import type { ITransform, ResultSet } from './ResultSet';
 
 export enum TransformType {
   Find = 'find',
   Where = 'where',
-  SimpleSort = 'simplesort',
-  CompoundSort = 'compoundsort',
+  SimpleSort = 'simpleSort',
+  CompoundSort = 'compoundSort',
   Sort = 'sort',
   Limit = 'limit',
   Offset = 'offset',
@@ -29,20 +29,6 @@ export enum TransformType {
   MapReduce = 'mapReduce',
   Update = 'update',
   Remove = 'remove'
-}
-
-export interface ITransform {
-  type: TransformType;
-  value?: any;
-  property?: string | undefined;
-  desc?: boolean | undefined;
-  dataOptions?: any;
-  joinData?: any;
-  leftJoinKey?: any;
-  rightJoinKey?: any;
-  mapFun?: any;
-  mapFunction?: any;
-  reduceFunction?: any;
 }
 
 /**
@@ -88,7 +74,7 @@ export enum FilterType {
 
 export interface IFilter<T> {
   type: FilterType;
-  val: ICollectionQuery;
+  val: IQuery<T>;
   uid?: string | number;
 }
 
@@ -188,13 +174,13 @@ export class DynamicView<T extends object> extends EventTarget {
 
   rebuildPending = false;
 
-  resultSet: Resultset<T> | null;
+  resultSet: ResultSet<T> | null;
 
   resultData: (T & ICollectionDocument)[] = [];
 
   resultsdirty = false;
 
-  cachedResultSet: Resultset<T> | null = null;
+  cachedResultSet: ResultSet<T> | null = null;
 
   // keep ordered filter pipeline
   filterPipeline: IFilter<unknown>[] = [];
@@ -340,8 +326,8 @@ export class DynamicView<T extends object> extends EventTarget {
    */
 
   branchResultset = (
-    transform: string | string[] | ITransform[],
-    parameters: ITransformParameter
+    transform: ITransform<T> | ITransform<T>[],
+    parameters: Record<string, unknown>
   ) => {
     if (!this.resultSet) {
       throw new ResultSetNotReadyError('branch the result set');
@@ -691,7 +677,7 @@ export class DynamicView<T extends object> extends EventTarget {
    *        future.
    * @returns this DynamicView object, for further chain ops.
    */
-  applyFind = (query: ICollectionQuery, uid?: string | number) => {
+  applyFind = (query: IQuery<T>, uid?: string | number) => {
     this.applyFilter({
       type: FilterType.Find,
       val: query,
@@ -858,11 +844,11 @@ export class DynamicView<T extends object> extends EventTarget {
         this.resultSet.sort(this.sortFunction);
       } else if (this.sortCriteria) {
         // @ts-ignore Let's refactor this later
-        this.resultSet.compoundsort(this.sortCriteria);
+        this.resultSet.compoundSort(this.sortCriteria);
       } else if (this.sortCriteriaSimple) {
-        this.resultSet.simplesort(
+        this.resultSet.simpleSort(
           // @ts-ignore Let's refactor this later
-          this.sortCriteriaSimple.propname,
+          this.sortCriteriaSimple.property,
           this.sortCriteriaSimple.options
         );
       }
@@ -911,7 +897,7 @@ export class DynamicView<T extends object> extends EventTarget {
       return;
     }
 
-    const filteredRows = this.resultSet.filteredrows;
+    const { filteredRows } = this.resultSet;
     const oldPosition = isNew ? -1 : filteredRows.indexOf(+index);
     const oldLength = filteredRows.length;
 
@@ -1038,8 +1024,8 @@ export class DynamicView<T extends object> extends EventTarget {
 
     // pivot remove data indices into remove filteredrows indices and dump in
     // hash-object
-    for (let i = 0; i < this.resultSet.filteredrows.length; i += 1) {
-      if (intersectionIndexMap.has(this.resultSet.filteredrows[i])) {
+    for (let i = 0; i < this.resultSet.filteredRows.length; i += 1) {
+      if (intersectionIndexMap.has(this.resultSet.filteredRows[i])) {
         filteredRowsIndexMap.add(i);
       }
     }
@@ -1047,7 +1033,7 @@ export class DynamicView<T extends object> extends EventTarget {
     // if any of the removed items were in our filteredrows...
     if (Object.keys(filteredRowsIndexMap).length > 0) {
       // remove them from filtered rows
-      this.resultSet.filteredrows = this.resultSet.filteredrows.filter(
+      this.resultSet.filteredRows = this.resultSet.filteredRows.filter(
         (_, idx) => {
           return !filteredRowsIndexMap.has(idx);
         }
@@ -1078,17 +1064,17 @@ export class DynamicView<T extends object> extends EventTarget {
           );
         }
 
-        return compareWith < this.resultSet.filteredrows[internalId];
+        return compareWith < this.resultSet.filteredRows[internalId];
       };
     };
 
-    for (let j = 0; j < this.resultSet.filteredrows.length; j += 1) {
+    for (let j = 0; j < this.resultSet.filteredRows.length; j += 1) {
       // grab subset of removed elements where data index is less than current
       // filtered row data index;
       // use this to determine how many positions iterated remaining data index
       // needs to be 'shifted down'
       const filteredData = internalIndex.filter(filter(j));
-      this.resultSet.filteredrows[j] -= filteredData.length;
+      this.resultSet.filteredRows[j] -= filteredData.length;
     }
   };
 
@@ -1104,7 +1090,5 @@ export class DynamicView<T extends object> extends EventTarget {
   mapReduce = <R0, R1>(
     mapFunction: (x: T) => R0,
     reduceFunction: (x: R0[]) => R1
-  ) => {
-    return reduceFunction(this.data().map(mapFunction));
-  };
+  ) => reduceFunction(this.data().map(mapFunction));
 }

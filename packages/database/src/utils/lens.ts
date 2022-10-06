@@ -2,6 +2,7 @@ export type ValidLensField =
   | string
   | number
   | symbol
+  | undefined
   | string[]
   | Readonly<string[]>;
 
