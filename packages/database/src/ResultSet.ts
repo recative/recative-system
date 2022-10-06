@@ -1,6 +1,7 @@
 import { Operators } from './Operations';
+// eslint-disable-next-line import/no-cycle
 import { Collection } from './Collection';
-import { CompareFunction, TransformType } from './DynamicView';
+import { CompareFunction } from './DynamicView';
 import { hasOwn, isKey } from './utils/hasOwn';
 import { compoundEval, sortHelper } from './utils/helpers';
 import { isDotNotation, lens } from './utils/lens';
@@ -12,19 +13,170 @@ import type { ICollectionDocument } from './Collection';
 import { dotSubScan } from './utils/doDotScan';
 import { clone, CloneMethod } from './utils/clone';
 
-export interface ITransform<T, R0 = unknown, R1 = unknown> {
-  type: TransformType;
-  value?: any;
-  property?: keyof T | undefined;
+export enum TransformType {
+  Find = 'find',
+  Where = 'where',
+  SimpleSort = 'simpleSort',
+  CompoundSort = 'compoundSort',
+  Sort = 'sort',
+  Limit = 'limit',
+  Offset = 'offset',
+  Map = 'map',
+  EqJoin = 'eqJoin',
+  MapReduce = 'mapReduce',
+  Update = 'update',
+  Remove = 'remove'
+}
+
+export interface IFindTransformRequest<T> {
+  type: TransformType.Find;
+  value: IQuery<T>;
+}
+
+export interface IWhereTransformRequest<T> {
+  type: TransformType.Where;
+  filter: (x: T & ICollectionDocument) => boolean;
+}
+
+export interface ISimpleSortTransformRequest<T> {
+  type: TransformType.SimpleSort;
+  property: keyof T;
   desc?: boolean | undefined;
-  dataOptions?: IResultSetDataOptions;
-  joinData?: T[];
-  leftJoinKey?: keyof T | JoinKeyFunction<T>;
-  rightJoinKey?: keyof T | JoinKeyFunction<T>;
-  mapFunction: (x: T) => R0;
-  reduceFunction: (x: R0[]) => R1;
   options?: Partial<ISimpleSortOptions> | boolean;
 }
+
+export interface ICompoundSortTransformRequest<T> {
+  type: TransformType.CompoundSort;
+  properties: (keyof T | [keyof T, boolean])[];
+}
+
+export interface ISortTransformRequest<T> {
+  type: TransformType.Sort;
+  compareFunction: CompareFunction<T & ICollectionDocument>;
+}
+
+export interface ILimitTransformRequest {
+  type: TransformType.Limit;
+  count: number;
+}
+
+export interface IOffsetTransformRequest {
+  type: TransformType.Offset;
+  position: number;
+}
+
+export interface IMapTransformRequest<T, R0> {
+  type: TransformType.Map;
+  mapFunction: (x: T) => R0;
+  dataOptions?: IResultSetDataOptions;
+}
+
+export interface IEqJoinTransformRequest<T, R0, R1> {
+  type: TransformType.EqJoin;
+  joinData: R0[];
+  leftJoinKey: keyof T | JoinKeyFunction<T>;
+  rightJoinKey: keyof R0 | JoinKeyFunction<R0>;
+  mapFunction: (left: T, right: R0) => R1;
+  dataOptions?: IResultSetDataOptions;
+}
+
+export interface IMapReduceTransformRequest<T, R0, R1> {
+  type: TransformType.MapReduce;
+  mapFunction: (x: T) => R0;
+  reduceFunction: (x: R0[]) => R1;
+}
+
+export interface IUpdateTransformRequest<T> {
+  type: TransformType.Update;
+  updateFunction: (x: T & ICollectionDocument) => T & ICollectionDocument;
+}
+
+export interface IRemoveTransformRequest {
+  type: TransformType.Remove;
+}
+
+export interface ITransformRequestMap<
+  T extends object,
+  R0 extends object = T,
+  R1 extends object = T
+> {
+  [TransformType.Find]: IFindTransformRequest<T>;
+  [TransformType.Where]: IWhereTransformRequest<T>;
+  [TransformType.SimpleSort]: ISimpleSortTransformRequest<T>;
+  [TransformType.CompoundSort]: ICompoundSortTransformRequest<T>;
+  [TransformType.Sort]: ISortTransformRequest<T>;
+  [TransformType.Limit]: ILimitTransformRequest;
+  [TransformType.Offset]: IOffsetTransformRequest;
+  [TransformType.Map]: IMapTransformRequest<T, R0>;
+  [TransformType.EqJoin]: IEqJoinTransformRequest<T, R0, R1>;
+  [TransformType.MapReduce]: IMapReduceTransformRequest<T, R0, R1>;
+  [TransformType.Update]: IUpdateTransformRequest<T>;
+  [TransformType.Remove]: IRemoveTransformRequest;
+}
+
+export type TransformRequest<
+  T extends object,
+  R0 extends object = T,
+  R1 extends object = T
+> =
+  | IFindTransformRequest<T>
+  | IWhereTransformRequest<T>
+  | ISimpleSortTransformRequest<T>
+  | ICompoundSortTransformRequest<T>
+  | ISortTransformRequest<T>
+  | ILimitTransformRequest
+  | IOffsetTransformRequest
+  | IMapTransformRequest<T, R0>
+  | IEqJoinTransformRequest<T, R0, R1>
+  | IMapReduceTransformRequest<T, R0, R1>
+  | IUpdateTransformRequest<T>
+  | IRemoveTransformRequest;
+
+type TransformResultImplementation<
+  T extends object,
+  Type extends TransformType,
+  R0 extends object = T,
+  R1 extends object = T
+> = Type extends TransformType.Map
+  ? R0
+  : Type extends TransformType.EqJoin
+  ? R1
+  : Type extends TransformType.MapReduce
+  ? R1
+  : T;
+
+export type ReadonlyOrNot<T> = Readonly<T> | T;
+
+export type TransformRequestChainResult<
+  T extends object,
+  Transforms
+> = Transforms extends ReadonlyOrNot<
+  [
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    infer U extends ReadonlyOrNot<TransformRequest<any, infer R0, infer R1>>,
+    ...infer Rest
+  ]
+>
+  ? Rest extends []
+    ? TransformResultImplementation<T, U['type'], R0, R1>
+    : TransformRequestChainResult<
+        TransformResultImplementation<T, U['type'], R0, R1>,
+        Rest
+      >
+  : never;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyTransformRequest = TransformRequest<any, any, any>;
+
+type TransformResult<T extends AnyTransformRequest | AnyTransformRequest[]> =
+  T extends ReadonlyOrNot<
+    infer U extends TransformRequest<infer D, infer R0, infer R1>
+  >
+    ? TransformResultImplementation<D, U['type'], R0, R1>
+    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    T extends [ReadonlyOrNot<TransformRequest<infer D, any, any>>, ...any[]]
+    ? TransformRequestChainResult<D, T>
+    : never;
 
 /**
  * if an op is registered in this object, our 'calculateRange' can use it with
@@ -227,10 +379,15 @@ export class ResultSet<T extends object> {
    *  .transform("CountryFilter", { Country: 'fr' })
    *  .data();
    */
-  transform = (
-    transform: ITransform<T> | ITransform<T>[],
+  transform = <
+    Transform extends  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      | TransformRequest<T, any, any>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      | TransformRequest<T, any, any>[]
+  >(
+    transform: Transform,
     parameters?: Record<string, unknown>
-  ) => {
+  ): ResultSet<TransformResult<Transform>> => {
     // if transform is name, then do lookup first
     let internalTransform = Array.isArray(transform) ? transform : [transform];
 
@@ -249,7 +406,7 @@ export class ResultSet<T extends object> {
           this.find(step.value);
           break;
         case TransformType.Where:
-          this.where(step.value);
+          this.where(step.filter);
           break;
         case TransformType.SimpleSort:
           if (!step.property) {
@@ -260,53 +417,40 @@ export class ResultSet<T extends object> {
           this.simpleSort(step.property, step.desc || step.options);
           break;
         case TransformType.CompoundSort:
-          this.compoundSort(step.value);
+          this.compoundSort(step.properties);
           break;
         case TransformType.Sort:
-          this.sort(step.value);
+          this.sort(step.compareFunction);
           break;
         case TransformType.Limit:
           // limit makes copy so update reference
-          return this.limit(step.value);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return this.limit(step.count) as any;
         case TransformType.Offset:
           // offset makes copy so update reference
-          return this.offset(step.value);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return this.offset(step.position) as any;
         case TransformType.Map:
-          return this.map(step.value, step.dataOptions);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return this.map(step.mapFunction, step.dataOptions) as any;
         case TransformType.EqJoin:
-          if (!step.leftJoinKey) {
-            throw new TypeError(
-              'leftJoinKey is not defined, unable to perform the transform'
-            );
-          }
-
-          if (!step.rightJoinKey) {
-            throw new TypeError(
-              'rightJoinKey is not defined, unable to perform the transform'
-            );
-          }
-
-          if (!step.joinData) {
-            throw new TypeError(
-              'rightJoinKey is not defined, unable to perform the transform'
-            );
-          }
-
           return this.eqJoin(
             step.joinData,
             step.leftJoinKey,
             step.rightJoinKey,
             step.mapFunction,
             step.dataOptions
-          );
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ) as any;
         // following cases break chain by returning array data so make any of
         // these last in transform steps
         case TransformType.MapReduce:
-          return this.mapReduce(step.mapFunction, step.reduceFunction);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return this.mapReduce(step.mapFunction, step.reduceFunction as any);
         // following cases update documents in current filtered resultset
         // (use carefully)
         case TransformType.Update:
-          this.update(step.value);
+          this.update(step.updateFunction);
           break;
         case TransformType.Remove:
           this.remove();
@@ -316,7 +460,8 @@ export class ResultSet<T extends object> {
       }
     }
 
-    return this;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this as any;
   };
 
   /**
@@ -1199,17 +1344,20 @@ export class ResultSet<T extends object> {
   ) => reduceFunction(this.data().map(mapFunction));
 
   /**
-   * eqJoin() - Left joining two sets of data. Join keys can be defined or calculated properties
-   * eqJoin expects the right join key values to be unique.  Otherwise left data will be joined on the last joinData object with that key
-   * @param {Array|Resultset|Collection} joinData - Data array to join to.
-   * @param {(string|function)} leftJoinKey - Property name in this result set to join on or a function to produce a value to join on
-   * @param {(string|function)} rightJoinKey - Property name in the joinData to join on or a function to produce a value to join on
-   * @param {function=} mapFunction - (Optional) A function that receives each matching pair and maps them into output objects - function(left,right){return joinedObject}
-   * @param {object=} dataOptions - options to data() before input to your map function
-   * @param {bool} dataOptions.removeMeta - allows removing meta before calling mapFun
-   * @param {boolean} dataOptions.forceClones - forcing the return of cloned objects to your map object
-   * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method.
-   * @returns {Resultset} A resultset with data in the format [{left: leftObj, right: rightObj}]
+   * Left joining two sets of data. Join keys can be defined or calculated
+   * properties eqJoin expects the right join key values to be unique.
+   * Otherwise left data will be joined on the last joinData object with
+   * that key
+   * @param joinData - Data array to join to.
+   * @param leftJoinKey - Property name in this result set to join on or a
+   *        function to produce a value to join on
+   * @param rightJoinKey - Property name in the joinData to join on or a
+   *        function to produce a value to join on
+   * @param mapFunction - (Optional) A function that receives each matching
+   *        pair and maps them into output objects
+   * @param dataOptions - options to data() before input to your map function
+   * @returns A resultset with data in the format
+   *          [{left: leftObj, right: rightObj}]
    * @example
    * const db = new Database('sandbox.db');
    *

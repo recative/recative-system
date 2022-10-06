@@ -24,7 +24,7 @@ import {
   ValidDotNotation
 } from './utils/lens';
 
-import type { ITransform } from './ResultSet';
+import type { TransformRequest } from './ResultSet';
 import type { IDynamicViewOptions } from './DynamicView';
 // eslint-disable-next-line import/no-cycle
 import { CollectionDocumentDeleteEvent, ErrorEvent } from './Events';
@@ -247,7 +247,7 @@ export class Collection<T extends object> extends EventTarget {
    * transforms will be used to store frequently used query chains as a series
    * of steps which itself can be stored along with the database.
    */
-  transforms: Record<string, ITransform<T>[]> = {};
+  transforms: Record<string, TransformRequest<T>[]> = {};
 
   /**
    * the object type of the collection
@@ -645,7 +645,7 @@ export class Collection<T extends object> extends EventTarget {
    *
    * var results = users.chain('progeny').data();
    */
-  addTransform = (name: string, transform: ITransform<T>[]) => {
+  addTransform = (name: string, transform: TransformRequest<T>[]) => {
     if (hasOwn(this.transforms, name)) {
       throw new TypeError('a transform by that name already exists');
     }
@@ -667,7 +667,7 @@ export class Collection<T extends object> extends EventTarget {
    * @param name - name to associate with transform
    * @param transform - a transformation object to save into collection
    */
-  setTransform = (name: string, transform: ITransform<T>[]) => {
+  setTransform = (name: string, transform: TransformRequest<T>[]) => {
     this.transforms[name] = transform;
   };
 
@@ -1143,7 +1143,7 @@ export class Collection<T extends object> extends EventTarget {
       return this.data.length;
     }
 
-    return this.chain().find(query).filteredrows.length;
+    return this.chain().find(query).filteredRows.length;
   };
 
   /**
@@ -1183,7 +1183,6 @@ export class Collection<T extends object> extends EventTarget {
    * const results = progenyView.data();
    */
   addDynamicView = (name: string, options?: Partial<IDynamicViewOptions>) => {
-    // @ts-ignore: let's fix this later;
     const dynamicView = new DynamicView(this, name, options);
     this.dynamicViews.push(dynamicView);
 
@@ -1229,7 +1228,7 @@ export class Collection<T extends object> extends EventTarget {
    */
   findAndUpdate = (
     filterObject: IQuery<T> | FilterFunction<T>,
-    updateFunction: <P extends T & ICollectionDocument>(x: P) => P
+    updateFunction: (x: T & ICollectionDocument) => T & ICollectionDocument
   ) => {
     if (typeof filterObject === 'function') {
       return this.updateWhere(
@@ -1238,7 +1237,14 @@ export class Collection<T extends object> extends EventTarget {
       );
     }
 
-    return this.chain().find(filterObject).update(updateFunction);
+    // This is because chain could return any types of data, but it's not the
+    // case here
+    return (
+      this.chain()
+        .find(filterObject)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .update(updateFunction as any)
+    );
   };
 
   /**
@@ -1994,8 +2000,8 @@ export class Collection<T extends object> extends EventTarget {
   };
 
   /* --------------------+
-   | Finding methods     |
-   +--------------------*/
+  | Finding methods     |
+  +--------------------*/
   /**
    * Get by Id - faster than other methods because of the searching algorithm
    *
@@ -2757,10 +2763,9 @@ export class Collection<T extends object> extends EventTarget {
    *          called
    * */
   chain = (
-    transform?: ITransform<T> | ITransform<T>[],
+    transform?: TransformRequest<T> | TransformRequest<T>[],
     parameters?: Record<string, unknown>
   ) => {
-    // @ts-ignore: Let's refactor this later
     const resultSet = new ResultSet(this);
 
     if (typeof transform === 'undefined') {
@@ -2798,8 +2803,8 @@ export class Collection<T extends object> extends EventTarget {
   };
 
   /* ------------------------+
-   | Transaction methods     |
-   +-------------------------*/
+  | Transaction methods     |
+  +-------------------------*/
 
   /**
    * start the transaction
@@ -2867,7 +2872,14 @@ export class Collection<T extends object> extends EventTarget {
    * });
    */
   where = (filter: FilterFunction<T>) => {
-    return this.chain().where(filter).data();
+    // This is because chain could return any types of data, but it's not the
+    // case here
+    return (
+      this.chain()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .where(filter as any)
+        .data()
+    );
   };
 
   /**
@@ -2912,8 +2924,8 @@ export class Collection<T extends object> extends EventTarget {
   };
 
   /* ------------------------+
-   | Transaction methods     |
-   +-------------------------*/
+  | Transaction methods     |
+  +-------------------------*/
 
   /**
    * stages: a map of uniquely identified 'stages', which hold copies of objects
@@ -2974,8 +2986,8 @@ export class Collection<T extends object> extends EventTarget {
   };
 
   /* ----------------+
-   | Other utils     |
-   +-----------------*/
+  | Other utils     |
+  +-----------------*/
   extract = <K extends ValidLensField>(
     field: K
   ): LensResult<T & ICollectionDocument, K, ValidDotNotation<K>>[] => {

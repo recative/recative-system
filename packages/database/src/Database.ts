@@ -201,11 +201,9 @@ export interface IDeserializeCollectionOptions {
   delimiter: string;
 }
 
-class CollectionProto {}
-
 export interface ILoadJSONCollectionConfiguration {
-  inflate: (source: object, destination?: object) => void;
-  proto: typeof CollectionProto;
+  inflate: <T>(source: T, destination?: T) => T;
+  Proto: typeof Collection;
 }
 
 /**
@@ -1010,7 +1008,7 @@ export class Database extends EventTarget {
    * @param databaseObject - a serialized database database string
    * @param options - apply or override collection level settings
    */
-  loadJSONObject = (
+  loadJSONObject = <T extends object>(
     databaseObject: unknown,
     options?: Partial<ILoadJSONOptions>
   ) => {
@@ -1022,10 +1020,6 @@ export class Database extends EventTarget {
       ...options
     };
 
-    let i = 0;
-    let loader;
-    let newCollection;
-
     // restore save throttled boolean only if not defined in options
     if (internalOptions && !internalOptions.throttledSaves !== undefined) {
       this.throttledSaves = databaseObject.throttledSaves;
@@ -1033,7 +1027,7 @@ export class Database extends EventTarget {
 
     this.collections.splice(0, this.collections.length);
 
-    const makeLoader = <T extends object>(collection: Collection<T>) => {
+    const makeLoader = (collection: Collection<T>): (<U>(x: U, y?: U) => U) => {
       const collectionOptions = internalOptions[collection.name];
 
       if (!collectionOptions) {
@@ -1051,28 +1045,39 @@ export class Database extends EventTarget {
         );
       }
 
-      if (collectionOptions && collectionOptions.proto) {
-        const inflater = collectionOptions.inflate || copyProperties;
+      const inflater = collectionOptions.inflate || copyProperties;
 
-        return (data: Collection<T>) => {
-          // eslint-disable-next-line new-cap
-          const collectionInstance = new collectionOptions.proto();
-          inflater(data, collectionInstance);
-          return collectionInstance;
+      if (collectionOptions.Proto) {
+        if (typeof inflater !== 'function') {
+          throw new TypeError('Inflater must be a function if proto provided');
+        }
+
+        return <P>(data: P): P => {
+          const collectionInstance = new collectionOptions.Proto(
+            collection.name
+          ) as Collection<T>;
+          inflater(data, collectionInstance as P);
+          return collectionInstance as P;
         };
       }
 
-      return collectionOptions?.inflate;
+      if (typeof inflater === 'function') {
+        throw new TypeError(
+          'Inflater must be a document if proto not provided'
+        );
+      }
+
+      return collectionOptions.inflate;
     };
 
     const collectionCount = databaseObject.collections
       ? databaseObject.collections.length
       : 0;
 
-    for (i; i < collectionCount; i += 1) {
+    for (let i = 0; i < collectionCount; i += 1) {
       // The type of this collection could be any
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const collection: Collection<any> | undefined =
+      const collection: Collection<T> | undefined =
         databaseObject.collections[i];
 
       const copiedCollection = this.addCollection(collection.name, {
@@ -1106,10 +1111,10 @@ export class Database extends EventTarget {
 
       // load each element individually
       if (internalOptions && collection.name in internalOptions) {
-        loader = makeLoader(collection);
+        const loader = makeLoader(collection);
 
         for (let j = 0; j < collection.data.length; j += 1) {
-          newCollection = loader(collection.data[j]);
+          const newCollection = loader(collection.data[j]);
           copiedCollection.data[j] = newCollection;
           copiedCollection.addAutoUpdateObserver(newCollection);
           if (!copiedCollection.disableFreeze) {
@@ -1152,10 +1157,9 @@ export class Database extends EventTarget {
           collectionDynamicView.name,
           collectionDynamicView.options
         );
-        dynamicView.resultdata = collectionDynamicView.resultdata;
+        dynamicView.resultData = collectionDynamicView.resultData;
         dynamicView.resultsdirty = collectionDynamicView.resultsdirty;
         dynamicView.filterPipeline = collectionDynamicView.filterPipeline;
-        // @ts-ignore: Let's refactor this later
         dynamicView.sortCriteriaSimple =
           collectionDynamicView.sortCriteriaSimple;
         dynamicView.sortCriteria = collectionDynamicView.sortCriteria;
@@ -1163,18 +1167,28 @@ export class Database extends EventTarget {
         dynamicView.sortDirty = collectionDynamicView.sortDirty;
         if (!copiedCollection.disableFreeze) {
           deepFreeze(dynamicView.filterPipeline);
-          // @ts-ignore: Let's refactor this later
           if (dynamicView.sortCriteriaSimple) {
-            // @ts-ignore: Let's refactor this later
             deepFreeze(dynamicView.sortCriteriaSimple);
           } else if (dynamicView.sortCriteria) {
             deepFreeze(dynamicView.sortCriteria);
           }
         }
-        dynamicView.resultset.filteredrows =
-          collectionDynamicView.resultset.filteredrows;
-        dynamicView.resultset.filterInitialized =
-          collectionDynamicView.resultset.filterInitialized;
+
+        if (!dynamicView.resultSet) {
+          throw new TypeError(
+            `Dynamic view don not have a result set, this is a bug.`
+          );
+        }
+
+        if (!collectionDynamicView.resultSet) {
+          throw new TypeError(
+            `Collection Dynamic view don not have a result set, this is a bug.`
+          );
+        }
+        dynamicView.resultSet.filteredRows =
+          collectionDynamicView.resultSet.filteredRows;
+        dynamicView.resultSet.filterInitialized =
+          collectionDynamicView.resultSet.filterInitialized;
 
         dynamicView.rematerialize({
           removeWhereFilters: true

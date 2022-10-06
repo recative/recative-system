@@ -14,22 +14,7 @@ import { delay } from './utils/delay';
 import { CloneMethod } from './utils/clone';
 import { deepFreeze, freeze } from './utils/freeze';
 import type { IQuery } from './typings';
-import type { ITransform, ResultSet } from './ResultSet';
-
-export enum TransformType {
-  Find = 'find',
-  Where = 'where',
-  SimpleSort = 'simpleSort',
-  CompoundSort = 'compoundSort',
-  Sort = 'sort',
-  Limit = 'limit',
-  Offset = 'offset',
-  Map = 'map',
-  EqJoin = 'eqJoin',
-  MapReduce = 'mapReduce',
-  Update = 'update',
-  Remove = 'remove'
-}
+import type { TransformRequest, ResultSet } from './ResultSet';
 
 /**
  * options to configure dynamic view with
@@ -199,7 +184,7 @@ export class DynamicView<T extends object> extends EventTarget {
   constructor(
     public collection: Collection<T> | null,
     public name: string,
-    options: Partial<IDynamicViewOptions>
+    options?: Partial<IDynamicViewOptions>
   ) {
     super();
 
@@ -326,7 +311,7 @@ export class DynamicView<T extends object> extends EventTarget {
    */
 
   branchResultset = (
-    transform: ITransform<T> | ITransform<T>[],
+    transform: TransformRequest<T> | TransformRequest<T>[],
     parameters: Record<string, unknown>
   ) => {
     if (!this.resultSet) {
