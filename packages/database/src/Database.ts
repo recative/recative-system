@@ -12,7 +12,7 @@ import type {
   ICollectionChange
 } from './Collection';
 import { delay } from './utils/delay';
-import { PersistenceAdapter } from './adapter/typings';
+import { PersistenceAdapter, PersistenceAdapterMode } from './adapter/typings';
 
 export enum SerializationMethod {
   Normal = 'normal',
@@ -38,7 +38,7 @@ export enum SerializationMethod {
  *        number of disk I/O operations and guaranteeing proper serialization of
  *        the calls.
  */
-export interface IDatabaseOptions {
+export interface IDatabaseOptions<T extends PersistenceAdapterMode> {
   env: Environment;
   verbose: boolean;
   autosave: boolean;
@@ -46,7 +46,7 @@ export interface IDatabaseOptions {
   autoLoad: boolean;
   autoLoadCallback?: () => void;
   autosaveCallback?: () => void;
-  adapter: PersistenceAdapter | null;
+  adapter: PersistenceAdapter<T> | null;
   serializationMethod: SerializationMethod;
   destructureDelimiter: string;
   throttledSaves: boolean;
@@ -149,7 +149,8 @@ export interface ILoadJSONOptions {
     | number
     | null
     | Function
-    | PersistenceAdapter;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    | PersistenceAdapter<any>;
 }
 
 /**
@@ -170,8 +171,8 @@ export interface IThrottledSaveDrainOptions {
 /**
  * The main database class.
  */
-export class Database extends EventTarget {
-  options: IDatabaseOptions;
+export class Database<T extends PersistenceAdapterMode> extends EventTarget {
+  options: IDatabaseOptions<T>;
 
   // We have to use any here since we really don't know anything about the data
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -201,7 +202,7 @@ export class Database extends EventTarget {
   // anyways.
 
   // retain reference to optional (non-serializable) persistenceAdapter instance
-  persistenceAdapter: PersistenceAdapter | null = null;
+  persistenceAdapter: PersistenceAdapter<T> | null = null;
 
   // flags used to throttle saves
   protected throttledSavePending = false;
@@ -215,7 +216,7 @@ export class Database extends EventTarget {
 
   constructor(
     readonly fileName: string = 'database.db',
-    options: Partial<IDatabaseOptions> = {}
+    options: Partial<IDatabaseOptions<T>> = {}
   ) {
     super();
 
@@ -239,7 +240,7 @@ export class Database extends EventTarget {
    * @param initialConfig (internal) true is passed when ctor is invoking
    */
   configureOptions = (
-    options: Partial<IDatabaseOptions>,
+    options: Partial<IDatabaseOptions<T>>,
     initialConfig: boolean = false
   ) => {
     // retain reference to optional persistence adapter 'instance'
@@ -260,7 +261,8 @@ export class Database extends EventTarget {
       this.options.adapter = null;
 
       // if true, will keep track of dirty ids
-      this.isIncremental = this.persistenceAdapter.mode === 'incremental';
+      this.isIncremental =
+        this.persistenceAdapter?.mode === PersistenceAdapterMode.Incremental;
     }
 
     // if they want to load database on instantiation, now is a good time to
@@ -340,9 +342,9 @@ export class Database extends EventTarget {
    * @param name - name of collection to add
    * @param options - options to configure collection with.
    */
-  addCollection = <T extends object>(
+  addCollection = <P extends object>(
     name: string,
-    options: Partial<ICollectionOptions<T>>
+    options: Partial<ICollectionOptions<P>>
   ) => {
     let i;
     const len = this.collections.length;
@@ -371,7 +373,7 @@ export class Database extends EventTarget {
       }
     }
 
-    const collection = new Collection<T>(name, options);
+    const collection = new Collection<P>(name, options);
     // @ts-ignore: TODO: refactor this later
     collection.isIncremental = this.isIncremental;
     this.collections.push(collection);
@@ -384,7 +386,7 @@ export class Database extends EventTarget {
     return collection;
   };
 
-  loadCollection = <T extends object>(collection: Collection<T>) => {
+  loadCollection = <P extends object>(collection: Collection<P>) => {
     if (!collection.name) {
       throw new Error('Collection must have a name property to be loaded');
     }
@@ -538,7 +540,7 @@ export class Database extends EventTarget {
 
     // not just an individual collection, so we will need to serialize db
     // container via shallow copy
-    let databaseCopy: Database | null = new Database(this.fileName);
+    let databaseCopy: Database<T> | null = new Database(this.fileName);
     databaseCopy.loadJSONObject(this);
 
     for (let i = 0; i < databaseCopy.collections.length; i += 1) {
@@ -818,7 +820,8 @@ export class Database extends EventTarget {
    * @returns an array of documents to attach to collection.data.
    */
   deserializeCollection = (
-    destructuredSource: string | string[],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    destructuredSource: string | string[] | Database<any>,
     options?: IDeserializeCollectionOptions
   ) => {
     const internalOptions = {
@@ -883,7 +886,8 @@ export class Database extends EventTarget {
     this.loadJSONObject(dbObject, options);
   };
 
-  static isDatabaseObject = (x: unknown): x is Database => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static isDatabaseObject = (x: unknown): x is Database<any> => {
     if (typeof x !== 'object') return false;
     if (!x) return false;
 
@@ -903,12 +907,14 @@ export class Database extends EventTarget {
    * @param databaseObject - a serialized database database string
    * @param options - apply or override collection level settings
    */
-  loadJSONObject = <T extends object>(
+  loadJSONObject = <P extends object>(
     databaseObject: unknown,
     options?: Partial<ILoadJSONOptions>
   ) => {
     if (!Database.isDatabaseObject(databaseObject)) {
-      throw new TypeError('Invalid database object');
+      throw new TypeError(
+        'Invalid database object, the adapter is not implemented correctly'
+      );
     }
 
     const internalOptions = {
@@ -922,7 +928,9 @@ export class Database extends EventTarget {
 
     this.collections.splice(0, this.collections.length);
 
-    const makeLoader = (collection: Collection<T>): (<U>(x: U, y?: U) => U) => {
+    const makeLoader = (
+      collection: Collection<P>
+    ): (<U extends object>(x: U, y?: U) => U) => {
       const collectionOptions = internalOptions[collection.name];
 
       if (!collectionOptions) {
@@ -947,12 +955,12 @@ export class Database extends EventTarget {
           throw new TypeError('Inflater must be a function if proto provided');
         }
 
-        return <P>(data: P): P => {
+        return <U extends object>(data: U): U => {
           const collectionInstance = new collectionOptions.Proto(
             collection.name
-          ) as Collection<T>;
-          inflater(data, collectionInstance as P);
-          return collectionInstance as P;
+          ) as unknown as Collection<U>;
+          inflater(data, collectionInstance as U);
+          return collectionInstance as U;
         };
       }
 
@@ -972,7 +980,7 @@ export class Database extends EventTarget {
     for (let i = 0; i < collectionCount; i += 1) {
       // The type of this collection could be any
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const collection: Collection<T> | undefined =
+      const collection: Collection<P> | undefined =
         databaseObject.collections[i];
 
       const copiedCollection = this.addCollection(collection.name, {
@@ -1327,7 +1335,7 @@ export class Database extends EventTarget {
    */
   loadDatabase = async (
     options?: Partial<
-      IDatabaseOptions & ILoadJSONOptions & IThrottledSaveDrainOptions
+      IDatabaseOptions<T> & ILoadJSONOptions & IThrottledSaveDrainOptions
     >
   ) => {
     // if throttling disabled, just call internal
@@ -1381,7 +1389,10 @@ export class Database extends EventTarget {
       // unnecessarily)
       this.ignoreAutosave = true;
       try {
-        await this.persistenceAdapter.saveDatabase(this.fileName, () => {
+        await (
+          this
+            .persistenceAdapter as PersistenceAdapter<PersistenceAdapterMode.Incremental>
+        ).saveDatabase(this.fileName, () => {
           this.ignoreAutosave = false;
           if (cachedDirty) {
             throw new Error('`getDatabaseCopy` called more than once');
@@ -1424,15 +1435,15 @@ export class Database extends EventTarget {
       } finally {
         this.ignoreAutosave = false;
       }
-    } else if (
-      this.persistenceAdapter.mode === 'reference' &&
-      typeof this.persistenceAdapter.exportDatabase === 'function'
-    ) {
+    } else if (this.persistenceAdapter.mode === 'reference') {
       // TODO: dirty should be cleared here
       // filename may seem redundant but loadDatabase will need to expect this
       // same filename
       try {
-        await this.persistenceAdapter.exportDatabase(
+        await (
+          this
+            .persistenceAdapter as PersistenceAdapter<PersistenceAdapterMode.Reference>
+        ).saveDatabase(
           this.fileName,
           this.copy({ removeNonSerializable: true })
         );
@@ -1446,10 +1457,10 @@ export class Database extends EventTarget {
       // the callback.
       // TODO: This should be stored and rolled back in case of DB save failure
       this.autosaveClearFlags();
-      await this.persistenceAdapter.saveDatabase(
-        this.fileName,
-        this.serialize()
-      );
+      await (
+        this
+          .persistenceAdapter as PersistenceAdapter<PersistenceAdapterMode.Default>
+      ).saveDatabase(this.fileName, this.serialize());
     }
   };
 
