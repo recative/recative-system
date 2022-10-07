@@ -12,84 +12,13 @@ import type {
   ICollectionChange
 } from './Collection';
 import { delay } from './utils/delay';
+import { PersistenceAdapter } from './adapter/typings';
 
 export enum SerializationMethod {
   Normal = 'normal',
   Pretty = 'pretty',
   Destructured = 'destructured'
 }
-
-export enum PersistenceAdapterMode {
-  Reference = 'reference',
-  Incremental = 'incremental',
-  Default = 'default'
-}
-
-export class PersistenceAdapter {
-  mode = PersistenceAdapterMode.Default;
-
-  loadDatabase = (fileName: string) => {
-    console.log(this.mode);
-    return Promise.resolve(fileName);
-  };
-
-  saveDatabase(
-    fileName: string,
-    getDatabaseCopy: () => Database
-  ): Promise<string>;
-  saveDatabase(fileName: string, serializedDatabase: string): Promise<string>;
-  saveDatabase(fileName: string): Promise<string> {
-    console.log(this.mode);
-    return Promise.resolve(fileName);
-  }
-
-  exportDatabase = (fileName: string, databaseCopy: Database) => {
-    console.log(this.mode, databaseCopy);
-    return Promise.resolve(fileName);
-  };
-
-  deleteDatabase = (fileName: string) => {
-    console.log(this.mode);
-    return Promise.resolve(fileName);
-  };
-}
-
-class LokiFsAdapter extends PersistenceAdapter {}
-
-class LokiLocalStorageAdapter extends PersistenceAdapter {}
-
-class LokiMemoryAdapter extends PersistenceAdapter {}
-
-class LokiNeverAdapter extends PersistenceAdapter {
-  constructor() {
-    super();
-    throw new Error('This adapter should never be initialized');
-  }
-}
-
-export enum PersistenceMethod {
-  Fs = 'fs',
-  LocalStorage = 'localStorage',
-  Memory = 'memory',
-  Adapter = 'adapter',
-  Never = 'never'
-}
-
-const DEFAULT_PERSISTENCE: Record<Environment, PersistenceMethod> = {
-  [Environment.NodeJs]: PersistenceMethod.Fs,
-  [Environment.Browser]: PersistenceMethod.LocalStorage,
-  [Environment.Cordova]: PersistenceMethod.LocalStorage,
-  [Environment.Memory]: PersistenceMethod.Memory,
-  [Environment.NativeScript]: PersistenceMethod.Memory,
-  [Environment.Na]: PersistenceMethod.Never
-};
-
-const PERSISTENCE_METHODS = {
-  [PersistenceMethod.Fs]: LokiFsAdapter,
-  [PersistenceMethod.LocalStorage]: LokiLocalStorageAdapter,
-  [PersistenceMethod.Memory]: LokiMemoryAdapter,
-  [PersistenceMethod.Never]: LokiNeverAdapter
-};
 
 /**
  * Configuration for the database.
@@ -121,7 +50,6 @@ export interface IDatabaseOptions {
   serializationMethod: SerializationMethod;
   destructureDelimiter: string;
   throttledSaves: boolean;
-  persistenceMethod?: keyof typeof PERSISTENCE_METHODS;
 }
 
 const DEFAULT_OPTION = {
@@ -199,6 +127,7 @@ export interface IDeserializeDestructuredOptions {
 export interface IDeserializeCollectionOptions {
   delimited: boolean;
   delimiter: string;
+  collectionIndex?: number;
 }
 
 export interface ILoadJSONCollectionConfiguration {
@@ -271,12 +200,6 @@ export class Database extends EventTarget {
   // object (or use default environment detection) in order to load the database
   // anyways.
 
-  // persistenceMethod could be 'fs', 'localStorage', or 'adapter'
-  // this is optional option param, otherwise environment detection will be used
-  // if user passes their own adapter we will force this method to 'adapter'
-  // later, so no need to pass method option.
-  persistenceMethod: PersistenceMethod | null = null;
-
   // retain reference to optional (non-serializable) persistenceAdapter instance
   persistenceAdapter: PersistenceAdapter | null = null;
 
@@ -319,7 +242,6 @@ export class Database extends EventTarget {
     options: Partial<IDatabaseOptions>,
     initialConfig: boolean = false
   ) => {
-    this.persistenceMethod = null;
     // retain reference to optional persistence adapter 'instance'
     // currently keeping outside options because it can't be serialized
     this.persistenceAdapter = null;
@@ -331,23 +253,9 @@ export class Database extends EventTarget {
       ...options
     });
 
-    const persistenceMethod = options?.persistenceMethod;
-    if (persistenceMethod) {
-      // check if the specified persistence method is known
-      const Adapter = PERSISTENCE_METHODS[persistenceMethod];
-      if (Adapter) {
-        this.persistenceMethod = options.persistenceMethod ?? null;
-        this.persistenceAdapter = new Adapter();
-      } else {
-        throw new TypeError('PersistenceMethod not available');
-      }
-      // should be throw an error here, or just fall back to defaults ??
-    }
-
     // if user passes adapter, set persistence mode to adapter and retain
     // persistence adapter instance
     if (options.adapter) {
-      this.persistenceMethod = PersistenceMethod.Adapter;
       this.persistenceAdapter = options.adapter;
       this.options.adapter = null;
 
@@ -391,20 +299,7 @@ export class Database extends EventTarget {
     // if by now there is no adapter specified by user nor derived from
     // `persistenceMethod`: use sensible defaults
     if (this.persistenceAdapter === null) {
-      this.persistenceMethod = DEFAULT_PERSISTENCE[this.options.env];
-      if (this.persistenceMethod) {
-        if (this.persistenceMethod !== PersistenceMethod.Adapter) {
-          this.persistenceAdapter = new PERSISTENCE_METHODS[
-            this.persistenceMethod
-          ]();
-        } else if (this.options.adapter !== null) {
-          this.persistenceAdapter = this.options.adapter;
-        } else {
-          throw new TypeError(
-            'Unable to find a adapter for the initialization configuration'
-          );
-        }
-      }
+      throw new TypeError('Please specify a persistence adapter');
     }
   };
 
