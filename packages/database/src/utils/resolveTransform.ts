@@ -1,4 +1,4 @@
-import { ITransform } from '../DynamicView';
+import type { TransformRequest } from '../ResultSet';
 
 import { clone, CloneMethod } from './clone';
 import { hasOwn } from './hasOwn';
@@ -39,12 +39,16 @@ export const resolveTransformObject = <T extends object>(
 
 // top level utility to resolve an entire (single) transform (array of steps)
 // for parameter substitution
-export const resolveTransformParameters = (
-  transform: ITransform[],
+export const resolveTransformParameters = <
+  T extends object,
+  R0 extends object = T,
+  R1 extends object = T
+>(
+  transform: TransformRequest<T, R0, R1>[],
   parameters: Record<string, unknown>
 ) => {
   let clonedStep;
-  const resolvedTransform: ITransform[] = [];
+  const resolvedTransform: TransformRequest<T, R0, R1>[] = [];
 
   if (typeof parameters === 'undefined') return transform;
 

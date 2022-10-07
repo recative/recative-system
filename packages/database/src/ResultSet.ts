@@ -380,22 +380,26 @@ export class ResultSet<T extends object> {
    *  .data();
    */
   transform = <
-    Transform extends  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      | TransformRequest<T, any, any>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    TransformInstance extends TransformRequest<T, any, any>,
+    Transform extends
+      | TransformInstance
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      | TransformRequest<T, any, any>[]
+      | TransformInstance[]
   >(
     transform: Transform,
     parameters?: Record<string, unknown>
   ): ResultSet<TransformResult<Transform>> => {
     // if transform is name, then do lookup first
-    let internalTransform = Array.isArray(transform) ? transform : [transform];
+    let internalTransform: TransformInstance[] = Array.isArray(transform)
+      ? transform
+      : ([transform] as TransformInstance[]);
 
     if (parameters) {
-      internalTransform = resolveTransformParameters(
+      internalTransform = resolveTransformParameters<T, any, any>(
         internalTransform,
         parameters
-      );
+      ) as TransformInstance[];
     }
 
     for (let i = 0; i < internalTransform.length; i += 1) {
@@ -1437,29 +1441,29 @@ export class ResultSet<T extends object> {
    *  .eqJoin(products, "prodId", "productId", mapFn)
    *  .data();
    */
-  eqJoin(
+  eqJoin<R = T>(
     joinData: T[] | Collection<T> | ResultSet<T>,
     leftJoinKey: keyof T | JoinKeyFunction<T>,
-    rightJoinKey: keyof T | JoinKeyFunction<T>
+    rightJoinKey: keyof R | JoinKeyFunction<R>
   ): ResultSet<T>;
-  eqJoin(
+  eqJoin<R = T>(
     joinData: T[] | Collection<T> | ResultSet<T>,
     leftJoinKey: keyof T | JoinKeyFunction<T>,
-    rightJoinKey: keyof T | JoinKeyFunction<T>,
+    rightJoinKey: keyof R | JoinKeyFunction<R>,
     mapFunction: undefined,
     dataOptions?: IResultSetDataOptions
   ): ResultSet<T>;
-  eqJoin<R0>(
+  eqJoin<R = T, R0 extends object = T>(
     joinData: T[] | Collection<T> | ResultSet<T>,
     leftJoinKey: keyof T | JoinKeyFunction<T>,
-    rightJoinKey: keyof T | JoinKeyFunction<T>,
+    rightJoinKey: keyof R | JoinKeyFunction<R>,
     mapFunction: (left: T, right: T) => R0,
     dataOptions?: IResultSetDataOptions
-  ): ResultSet<T>;
-  eqJoin(
+  ): ResultSet<R0>;
+  eqJoin<R = T>(
     joinData: T[] | Collection<T> | ResultSet<T>,
     leftJoinKey: keyof T | JoinKeyFunction<T>,
-    rightJoinKey: keyof T | JoinKeyFunction<T>,
+    rightJoinKey: keyof R | JoinKeyFunction<R>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mapFunction: any = (left: any, right: any) => ({
       left,
@@ -1468,9 +1472,9 @@ export class ResultSet<T extends object> {
     dataOptions?: IResultSetDataOptions
   ) {
     let leftData = [];
-    let rightData: T[] = [];
+    let rightData: R[] = [];
     const result: T[] = [];
-    const joinMap = new Map<keyof T | T[keyof T], T>();
+    const joinMap = new Map<keyof R | R[keyof R], R>();
 
     // get the left data
     leftData = this.data(dataOptions);
@@ -1481,7 +1485,7 @@ export class ResultSet<T extends object> {
     } else if (joinData instanceof Resultset) {
       rightData = joinData.data(dataOptions);
     } else if (Array.isArray(joinData)) {
-      rightData = joinData;
+      rightData = joinData as unknown as R[];
     } else {
       throw new TypeError('joinData needs to be an array or result set');
     }
