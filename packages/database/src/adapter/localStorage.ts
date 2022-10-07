@@ -1,6 +1,8 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable class-methods-use-this */
 
+import { PersistenceAdapter, PersistenceAdapterMode } from './typings';
+
 const globalScope =
   typeof globalThis !== 'undefined'
     ? globalThis
@@ -28,7 +30,11 @@ export const ensureLocalStorage = () => {
  * A loki persistence adapter which persists to web browser's local storage
  * object
  */
-export class LocalStorageAdapter {
+export class LocalStorageAdapter
+  implements PersistenceAdapter<PersistenceAdapterMode.Default>
+{
+  mode = PersistenceAdapterMode.Default as const;
+
   /**
    * Load data from localStorage
    *
@@ -58,6 +64,6 @@ export class LocalStorageAdapter {
   deleteDatabase = async (databaseName: string) => {
     ensureLocalStorage();
     localStorage.removeItem(databaseName);
-    return Promise.resolve(null);
+    return Promise.resolve();
   };
 }

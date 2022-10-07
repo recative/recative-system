@@ -4,7 +4,7 @@ import { stat, readFile, writeFile, rename, unlink } from 'fs/promises';
 /**
  * A persistence adapter which persists using node fs module
  */
-export class LokiFsAdapter {
+export class FsAdapter {
   /**
    * Load data from file, will throw an error if the file does not exist
    *

@@ -1,3 +1,5 @@
+import { PersistenceAdapter, PersistenceAdapterMode } from './typings';
+
 export interface IHashStore {
   saveCount: number;
   lastSave: Date;
@@ -8,7 +10,11 @@ export interface IHashStore {
  * In in-memory persistence adapter for an in-memory database.
  * This simple 'key/value' adapter is intended for unit testing and diagnostics.
  */
-export class LokiMemoryAdapter {
+export class LokiMemoryAdapter
+  implements PersistenceAdapter<PersistenceAdapterMode.Default>
+{
+  mode = PersistenceAdapterMode.Default as const;
+
   hashStore = new Map<string, IHashStore>();
 
   /**
@@ -17,7 +23,7 @@ export class LokiMemoryAdapter {
    * @param databaseName - name of the database (fileName/keyName)
    */
   loadDatabase = (databaseName: string) => {
-    return new Promise((resolve) => {
+    return new Promise<string | null>((resolve) => {
       const hash = this.hashStore.get(databaseName);
       if (hash) {
         resolve(hash.value);
@@ -53,6 +59,7 @@ export class LokiMemoryAdapter {
    * @param {string} databaseName - name of the database (fileName/keyName)
    */
   deleteDatabase = (databaseName: string) => {
-    return Promise.resolve(this.hashStore.delete(databaseName));
+    this.hashStore.delete(databaseName);
+    return Promise.resolve();
   };
 }

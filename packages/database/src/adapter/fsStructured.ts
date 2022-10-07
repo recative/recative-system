@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 /* eslint-disable no-restricted-syntax */
 
 /*
@@ -20,6 +21,7 @@ import stream, { Writable } from 'stream';
 import readline from 'readline';
 
 import { Database, SerializationMethod } from '../Database';
+import { PersistenceAdapter, PersistenceAdapterMode } from './typings';
 
 interface IGenerateDestructuredIOption {
   /**
@@ -36,17 +38,19 @@ export class DatabaseReferenceNotAvailableError extends Error {
   }
 }
 
-export class FsStructuredAdapter {
-  mode = 'reference';
+export class FsStructuredAdapter
+  implements PersistenceAdapter<PersistenceAdapterMode.Reference>
+{
+  mode = PersistenceAdapterMode.Reference as const;
 
-  databaseReference: Database | null = null;
+  databaseReference: Database<PersistenceAdapterMode> | null = null;
 
   dirtyPartitions = [];
 
   /**
    * Loki structured (node) filesystem adapter class.
-   * This class fulfills the loki 'reference' abstract adapter interface which can
-   *  be applied to other storage methods.
+   * This class fulfills the loki 'reference' abstract adapter interface which
+   * can be applied to other storage methods.
    *
    * @constructor LokiFsStructuredAdapter
    *
@@ -62,7 +66,7 @@ export class FsStructuredAdapter {
    *
    * @param options - output format options for use externally to loki
    *
-   * @returns {string|array} A custom, restructured aggregation of independent serializations.
+   * @returns A custom, restructured aggregation of independent serializations.
    */
   *generateDestructured(options: Partial<IGenerateDestructuredIOption> = {}) {
     let index;
@@ -156,24 +160,26 @@ export class FsStructuredAdapter {
 
     // when that is done, examine its collection array to sequence loading
     // each
-    return new Promise<Database | null>((resolve, reject) => {
-      lineReader.on('close', async () => {
-        if (jsonError) {
-          // a json error was encountered reading the container file.
-          reject(jsonError);
-        } else if (
-          !this.databaseReference ||
-          !this.databaseReference.collections.length
-        ) {
-          resolve(this.databaseReference);
-        } else if (this.databaseReference.collections.length > 0) {
-          await this.loadNextCollection(databaseName, 0);
-          resolve(this.databaseReference);
-        } else {
-          throw new Error('Unexpected lineReader finish condition branch');
-        }
-      });
-    });
+    return new Promise<Database<PersistenceAdapterMode> | null>(
+      (resolve, reject) => {
+        lineReader.on('close', async () => {
+          if (jsonError) {
+            // a json error was encountered reading the container file.
+            reject(jsonError);
+          } else if (
+            !this.databaseReference ||
+            !this.databaseReference.collections.length
+          ) {
+            resolve(this.databaseReference);
+          } else if (this.databaseReference.collections.length > 0) {
+            await this.loadNextCollection(databaseName, 0);
+            resolve(this.databaseReference);
+          } else {
+            throw new Error('Unexpected lineReader finish condition branch');
+          }
+        });
+      }
+    );
   };
 
   /**
@@ -291,17 +297,16 @@ export class FsStructuredAdapter {
   }
 
   /**
-   * Loki reference adapter interface function.  Saves structured json via loki
-   * database object reference.
+   * Saves structured json via database object reference.
    *
    * @param databaseName - the name to give the serialized database within the
    * catalog.
-   * @param databaseReference - the loki database object reference to save.
+   * @param databaseReference - the database object reference to save.
    */
 
-  exportDatabase = async (
+  saveDatabase = async (
     databaseName: string,
-    databaseReference: Database
+    databaseReference: Database<PersistenceAdapterMode>
   ) => {
     this.databaseReference = databaseReference;
 
@@ -309,8 +314,6 @@ export class FsStructuredAdapter {
     const pi = this.getPartition();
 
     await this.saveNextPartition(databaseName, pi);
-
-    return null;
   };
 
   /**
@@ -349,5 +352,9 @@ export class FsStructuredAdapter {
         resolve();
       });
     });
+  };
+
+  deleteDatabase = () => {
+    throw new Error(`This method is not implemented`);
   };
 }
