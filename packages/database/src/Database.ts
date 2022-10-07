@@ -13,6 +13,7 @@ import type {
 } from './Collection';
 import { delay } from './utils/delay';
 import { PersistenceAdapter, PersistenceAdapterMode } from './adapter/typings';
+import { MemoryAdapter } from './adapter/memory';
 
 export enum SerializationMethod {
   Normal = 'normal',
@@ -314,7 +315,9 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
   copy = (options?: ICopyDatabaseOptions) => {
     // in case running in an environment without accurate environment detection,
     // pass 'NA'
-    const databaseCopy = new Database(this.fileName, { env: Environment.Na });
+    const databaseCopy = new Database(this.fileName, {
+      adapter: new MemoryAdapter()
+    });
 
     // currently inverting and letting loadJSONObject do most of the work
     databaseCopy.loadJSONObject(this, { retainDirtyFlags: true });
@@ -507,8 +510,8 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
 
   /**
    * Database level destructured JSON serialization routine to allow alternate
-   * serialization methods. Internally, Database supports destructuring via database
-   * "serializationMethod' option and the optional LokiPartitioningAdapter
+   * serialization methods. Internally, Database supports destructuring via
+   * database "serializationMethod' option and the optional PartitioningAdapter
    * class. It is also available if you wish to do your own structured
    * persistence or data exchange.
    */
@@ -540,7 +543,11 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
 
     // not just an individual collection, so we will need to serialize db
     // container via shallow copy
-    let databaseCopy: Database<T> | null = new Database(this.fileName);
+    let databaseCopy: Database<PersistenceAdapterMode.Default> | null =
+      new Database(this.fileName, {
+        adapter: new MemoryAdapter()
+      });
+
     databaseCopy.loadJSONObject(this);
 
     for (let i = 0; i < databaseCopy.collections.length; i += 1) {

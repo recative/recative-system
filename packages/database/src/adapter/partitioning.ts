@@ -1,6 +1,7 @@
 import { Database } from '../Database';
 import { PersistenceAdapterMode } from './typings';
 import type { PersistenceAdapter } from './typings';
+import { MemoryAdapter } from './memory';
 
 export class DatabaseReferenceNotReadyError extends Error {
   name = 'DatabaseReferenceNotReadyError';
@@ -87,7 +88,9 @@ export class PartitioningAdapter
    */
   loadDatabase = async (databaseName: string) => {
     this.databaseName = databaseName;
-    this.databaseReference = new Database(databaseName);
+    this.databaseReference = new Database(databaseName, {
+      adapter: new MemoryAdapter()
+    });
 
     // load the db container (without data)
     const result = await this.adapter.loadDatabase(databaseName);

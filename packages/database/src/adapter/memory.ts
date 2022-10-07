@@ -10,7 +10,7 @@ export interface IHashStore {
  * In in-memory persistence adapter for an in-memory database.
  * This simple 'key/value' adapter is intended for unit testing and diagnostics.
  */
-export class LokiMemoryAdapter
+export class MemoryAdapter
   implements PersistenceAdapter<PersistenceAdapterMode.Default>
 {
   mode = PersistenceAdapterMode.Default as const;
