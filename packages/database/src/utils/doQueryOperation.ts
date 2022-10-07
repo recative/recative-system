@@ -5,7 +5,7 @@ import { IQuery } from '../typings';
 
 export const doQueryOperation = <T, R = unknown>(
   value: T[keyof T] | T,
-  operations: IQuery,
+  operations: IQuery<T>,
   record: R
 ) => {
   const operationKeys = Object.keys(operations);

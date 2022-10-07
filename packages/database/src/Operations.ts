@@ -321,7 +321,7 @@ export const Operators = {
     if (typeof documentEntry === 'string') {
       return typeof queryEntry !== 'object'
         ? documentEntry.length === queryEntry
-        : doQueryOperation(documentEntry.length, queryEntry, record);
+        : doQueryOperation<any, any>(documentEntry.length, queryEntry, record);
     }
     return false;
   },
