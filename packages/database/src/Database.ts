@@ -98,8 +98,8 @@ const PERSISTENCE_METHODS = {
  * @field autosave - Enables autosave
  * @field autosaveInterval - Time interval (in milliseconds) between saves
  *        (if dirty)
- * @field autoload - Enables autoload on database instantiation
- * @field autoloadCallback - User callback called after database load
+ * @field autoLoad - Enables auto load on database instantiation
+ * @field autoLoadCallback - User callback called after database load
  * @field autosaveCallback - User callback called after database saved
  * @field adapter - An instance of a database persistence adapter
  * @field serializationMethod - How to serialize the data
@@ -114,8 +114,8 @@ export interface IDatabaseOptions {
   verbose: boolean;
   autosave: boolean;
   autosaveInterval: number | null;
-  autoload: boolean;
-  autoloadCallback?: () => void;
+  autoLoad: boolean;
+  autoLoadCallback?: () => void;
   autosaveCallback?: () => void;
   adapter: PersistenceAdapter | null;
   serializationMethod: SerializationMethod;
@@ -128,7 +128,7 @@ const DEFAULT_OPTION = {
   verbose: false,
   autosave: false,
   autosaveInterval: 5000,
-  autoload: false,
+  autoLoad: false,
   adapter: null,
   serializationMethod: SerializationMethod.Normal,
   destructureDelimiter: '$<\n',
@@ -357,11 +357,11 @@ export class Database extends EventTarget {
 
     // if they want to load database on instantiation, now is a good time to
     // load... after adapter set and before possible autosave initiation.
-    if (options.autoload && initialConfig) {
-      // for autoload, let the constructor complete before firing callback
+    if (options.autoLoad && initialConfig) {
+      // for auto load, let the constructor complete before firing callback
 
       delay(() => {
-        this.loadDatabase(options).then(options.autoloadCallback);
+        this.loadDatabase(options).then(options.autoLoadCallback);
       });
     }
 

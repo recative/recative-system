@@ -47,7 +47,7 @@ export interface ISimpleSortTransformRequest<T> {
 
 export interface ICompoundSortTransformRequest<T> {
   type: TransformType.CompoundSort;
-  properties: (keyof T | [keyof T, boolean])[];
+  properties: [keyof T, boolean][];
 }
 
 export interface ISortTransformRequest<T> {
@@ -651,7 +651,7 @@ export class ResultSet<T extends object> {
  * @returns Reference to this resultset, sorted, for future chain operations.
  
  */
-  compoundSort = (properties: (keyof T | [keyof T, boolean])[]) => {
+  compoundSort = (properties: [keyof T, boolean][]) => {
     if (properties.length === 0) {
       throw new Error(
         'Invalid call to compound sort, need at least one property'
