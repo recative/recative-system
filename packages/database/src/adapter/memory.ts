@@ -56,7 +56,7 @@ export class MemoryAdapter
   /**
    * Deletes a database from its in-memory store.
    *
-   * @param {string} databaseName - name of the database (fileName/keyName)
+   * @param databaseName - name of the database (fileName/keyName)
    */
   deleteDatabase = (databaseName: string) => {
     this.hashStore.delete(databaseName);

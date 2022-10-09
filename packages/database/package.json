@@ -4,7 +4,11 @@
   "type": "commonjs",
   "dependencies": {
     "@recative/open-promise": "workspace:^",
-    "@types/lokijs": "^1.5.7",
     "@ungap/event-target": "^0.2.3"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^7.5.0",
+    "@types/tmp": "^0.2.3",
+    "tmp": "^0.2.1"
   }
 }

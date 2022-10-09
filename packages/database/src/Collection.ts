@@ -29,6 +29,7 @@ import type { IDynamicViewOptions } from './DynamicView';
 // eslint-disable-next-line import/no-cycle
 import { CollectionDocumentDeleteEvent, ErrorEvent } from './Events';
 import { sub, mean, parseBase10, standardDeviation } from './utils/math';
+import { UniqueIndex } from './UniqueIndex';
 
 export interface ICollectionChange<T extends object> {
   name: string;
@@ -1008,17 +1009,17 @@ export class Collection<T extends object> extends EventTarget {
           // calculate random position
           const position = Math.floor(Math.random() * (binaryIndicesCount - 1));
           if (
-            !LokiOps.$lte(
+            !Operators.$lte(
               lens(
                 this.data[binaryIndicesValues[position]],
                 property,
                 usingDotNotation
-              ),
+              ) as number,
               lens(
                 this.data[binaryIndicesValues[position + 1]],
                 property,
                 usingDotNotation
-              )
+              ) as number
             )
           ) {
             valid = false;
@@ -1030,13 +1031,17 @@ export class Collection<T extends object> extends EventTarget {
       // validate that the binary index is sequenced properly
       for (let i = 0; i < binaryIndicesCount - 1; i += 1) {
         if (
-          !LokiOps.$lte(
-            lens(this.data[binaryIndicesValues[i]], property, usingDotNotation),
+          !Operators.$lte(
+            lens(
+              this.data[binaryIndicesValues[i]],
+              property,
+              usingDotNotation
+            ) as number,
             lens(
               this.data[binaryIndicesValues[i + 1]],
               property,
               usingDotNotation
-            )
+            ) as number
           )
         ) {
           valid = false;
@@ -1089,7 +1094,7 @@ export class Collection<T extends object> extends EventTarget {
     }
 
     // if index already existed, (re)loading it will likely cause collisions, rebuild always
-    const newIndex = new UniqueIndex<T>(field);
+    const newIndex = new UniqueIndex<T, keyof T>(field);
     this.constraints.unique[field] = newIndex;
 
     for (let i = 0; i < this.data.length; i += 1) {

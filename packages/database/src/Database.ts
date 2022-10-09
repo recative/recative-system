@@ -347,7 +347,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
    */
   addCollection = <P extends object>(
     name: string,
-    options: Partial<ICollectionOptions<P>>
+    options?: Partial<ICollectionOptions<P>>
   ) => {
     let i;
     const len = this.collections.length;
@@ -993,7 +993,6 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
       const copiedCollection = this.addCollection(collection.name, {
         disableChangesApi: collection.disableChangesApi,
         disableDeltaChangesApi: collection.disableDeltaChangesApi,
-        // @ts-ignore Let refactor this later
         disableMeta: collection.disableMeta,
         disableFreeze:
           'disableFreeze' in collection ? collection.disableFreeze : true
