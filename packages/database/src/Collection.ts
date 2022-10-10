@@ -905,7 +905,7 @@ export class Collection<T extends object> extends EventTarget {
    * valid = coll.checkIndex('name', { repair: true, randomSampling: true });
    */
 
-  checkIndex = (property: keyof T, options: ICheckCollectionIndexOptions) => {
+  checkIndex = (property: keyof T, options?: Partial<ICheckCollectionIndexOptions>) => {
     const internalOptions = { ...options };
     // if 'randomSamplingFactor' specified but not 'randomSampling', assume true
     if (
@@ -1515,7 +1515,7 @@ export class Collection<T extends object> extends EventTarget {
       // reference
       let newInternal =
         this.cloneObjects ||
-        (!this.disableDeltaChangesApi && this.disableFreeze)
+          (!this.disableDeltaChangesApi && this.disableFreeze)
           ? clone(document, this.cloneMethod)
           : document;
 
@@ -2135,11 +2135,11 @@ export class Collection<T extends object> extends EventTarget {
       index.length === 0
         ? 0
         : this.calculateRangeStart(
-            binaryIndexName,
-            value as T[K],
-            true,
-            usingDotNotation
-          );
+          binaryIndexName,
+          value as T[K],
+          true,
+          usingDotNotation
+        );
 
     // insert new data index into our binary index at the proper sorted location
     // for relevant property calculated by `indexPosition`.
