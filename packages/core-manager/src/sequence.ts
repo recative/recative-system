@@ -297,7 +297,7 @@ export class ContentSequence {
     try {
       this.dependencyReady.resolve();
       // eslint-disable-next-line no-empty
-    } catch {}
+    } catch { }
   };
 
   private async internalDestroy() {
@@ -639,6 +639,8 @@ export class ContentSequence {
     this.updateStuck();
     if (this.playing.get()) {
       this.playCurrentContent();
+    } else {
+      this.pauseCurrentContent();
     }
     // TODO: postpone preparing when current content is a video
     const nextContent = this.contentList[this.currentSegment + 1];
