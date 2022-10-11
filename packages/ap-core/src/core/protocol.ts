@@ -92,6 +92,7 @@ export const TEXT_FIELD_UPDATE = EventDefinition<IUpdateTextFieldEventDetail>();
 export const SEQUENCE_ENDED = EventDefinition<ISequenceEndedEventDetail>();
 
 export const ACT_POINT_SHOWN = AtomDefinition(false);
+export const ACT_POINT_PLAYING = AtomDefinition(false);
 export const ENV_VARIABLE_STORE = FunctionalAtomDefinition<null | IEnvVariable>(
   () => null,
 );
@@ -102,7 +103,7 @@ export const INITIALIZE_TASK_STORE = FunctionalAtomDefinition(
 export const connectToHost = (context: IComponentContext) => {
   const contentFunctions: ContentFunctions = new Proxy(
     {
-      requestHeartbeat() {},
+      requestHeartbeat() { },
       // preload() {
       //   context.eventTarget.fire(PRELOAD_ACT_POINT);
       // },
@@ -110,7 +111,10 @@ export const connectToHost = (context: IComponentContext) => {
         logProtocol('Showing the act point');
         context.store.register(ACT_POINT_SHOWN);
         context.store.setValue(ACT_POINT_SHOWN, true);
-        context.ticker.replay();
+        context.store.register(ACT_POINT_PLAYING);
+        if (context.store.getValue(ACT_POINT_PLAYING)) {
+          context.ticker.replay();
+        }
         context.eventTarget.fire(SHOW_ACT_POINT);
       },
       hide() {
@@ -120,10 +124,14 @@ export const connectToHost = (context: IComponentContext) => {
         context.eventTarget.fire(DESTROY);
       },
       play() {
+        context.store.register(ACT_POINT_PLAYING);
+        context.store.setValue(ACT_POINT_PLAYING, true);
         context.ticker.replay();
         context.eventTarget.fire(PLAY);
       },
       pause() {
+        context.store.register(ACT_POINT_PLAYING);
+        context.store.setValue(ACT_POINT_PLAYING, false);
         context.ticker.pause();
         context.eventTarget.fire(PAUSE);
       },
@@ -162,7 +170,7 @@ export const connectToHost = (context: IComponentContext) => {
       finishPayment(type: string) {
         context.eventTarget.fire(FINISHED_PAYMENT, { type });
       },
-      videoModalClosed() {},
+      videoModalClosed() { },
       async runQueuedTask(taskId: string) {
         const initializeTasks = context.store.getValue(INITIALIZE_TASK_STORE);
         const initializeTask = initializeTasks.get(taskId);
