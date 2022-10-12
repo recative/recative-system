@@ -1629,11 +1629,12 @@ export class Collection<T extends object> extends EventTarget {
     // try adding object to collection
     try {
       this.startTransaction();
-      this.maxId += 1;
 
       if (typeof this.maxId !== 'number' || Number.isNaN(this.maxId)) {
         // THIS IS EXTREMELY DANGEROUS, FIX THIS!
-        this.maxId = this.data[this.data.length - 1].$loki + 1;
+        this.maxId = Math.max(...this.data.map((x) => x.$loki)) + 1;
+      } else {
+        this.maxId += 1;
       }
 
       const newId = this.maxId;
