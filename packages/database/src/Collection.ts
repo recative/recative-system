@@ -1631,7 +1631,6 @@ export class Collection<T extends object> extends EventTarget {
       this.startTransaction();
 
       if (typeof this.maxId !== 'number' || Number.isNaN(this.maxId)) {
-        // THIS IS EXTREMELY DANGEROUS, FIX THIS!
         this.maxId = Math.max(...this.data.map((x) => x.$loki)) + 1;
       } else {
         this.maxId += 1;
