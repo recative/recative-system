@@ -339,7 +339,7 @@ export class EpisodeCore<
       dependencyLoadedPromise: allSettled([
         preload,
         Promise.resolve(config.externalDependency),
-      ]).then(() => {}),
+      ]).then(() => { }),
       audioStation: this.audioStation,
       managedCoreStateManager: this.managedCoreStateManager,
       volume: this.volume.get(),
@@ -396,7 +396,7 @@ export class EpisodeCore<
     this.mainSequence.switchToFirstContent();
     this.updateManagedCoreStateLoop();
 
-    if ((config.attemptAutoplay ?? true) && this.autoplayReady.get()) {
+    if ((config.attemptAutoplay ?? true)) {
       this.play();
     }
   }
@@ -531,21 +531,21 @@ export class EpisodeCore<
     };
 
     const forwardToInstanceFunctions = <
-        N extends keyof ContentInstance,
-        K extends keyof ContentInstance[N],
-        F extends Extract<ContentInstance[N][K], (...args: never[]) => unknown>,
-      >(
-        feature: N,
-        key: K,
-      ) => (...args: Parameters<F>) => {
-        this.ensureNotDestroyed();
-        const instance = getInstanceFromComponentName();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (instance[feature][key] as any)?.call(
-          instance[feature],
-          ...args,
-        ) as ReturnType<F>;
-      };
+      N extends keyof ContentInstance,
+      K extends keyof ContentInstance[N],
+      F extends Extract<ContentInstance[N][K], (...args: never[]) => unknown>,
+    >(
+      feature: N,
+      key: K,
+    ) => (...args: Parameters<F>) => {
+      this.ensureNotDestroyed();
+      const instance = getInstanceFromComponentName();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (instance[feature][key] as any)?.call(
+        instance[feature],
+        ...args,
+      ) as ReturnType<F>;
+    };
 
     return {
       core: this,
@@ -586,8 +586,8 @@ export class EpisodeCore<
           audioClip:
             'resourceLabel' in x
               ? this.getEpisodeData()!.resources.getResourceByLabel<
-              AudioElementInit,
-              PostProcessCallback<AudioElementInit, IResourceFileForClient>
+                AudioElementInit,
+                PostProcessCallback<AudioElementInit, IResourceFileForClient>
               >(
                 x.resourceLabel,
                 addAudioEnv,
@@ -595,8 +595,8 @@ export class EpisodeCore<
                 selectUrlAudioElementInitPostProcess,
               )
               : this.getEpisodeData()!.resources.getResourceById<
-              AudioElementInit,
-              PostProcessCallback<AudioElementInit, IResourceFileForClient>
+                AudioElementInit,
+                PostProcessCallback<AudioElementInit, IResourceFileForClient>
               >(
                 x.resourceId,
                 addAudioEnv,
@@ -751,7 +751,7 @@ export class EpisodeCore<
     if (this.components.has(name)) {
       this.logComponent(
         `Another component with the name "${name}" have been registered,`
-          + ' it will be unregistered to allow the new component to be registered',
+        + ' it will be unregistered to allow the new component to be registered',
       );
       this.unregisterComponent(name);
     }
