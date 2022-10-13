@@ -101,7 +101,11 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
       iFrameWidth: width === undefined ? -1 : width,
       iFrameHeight: height === undefined ? -1 : height,
     };
-  }, [height, props.spec.height, props.spec.resolutionMode, props.spec.width, width]);
+  }, [
+    width, height,
+    props.spec.width, props.spec.height,
+    props.spec.resolutionMode
+  ]);
 
   const updateActPointScale = useThrottledCallback(
     () => {
