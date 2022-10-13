@@ -41,17 +41,15 @@ export const bindAppToPlayerEvent = (
   logBingAppToPlayerEvent(`Try to preload resources: ${preloadedResources.length}`);
 
   preloadedResources.forEach((resource) => {
-    requireInitializeTask(() => new Promise<void>((resolve) => hostFunctions
-      .connector
-      .getResourceUrl(resource.id, 'id')
-      .then((resourceUrl) => {
-        if (!resourceUrl) { return null; }
+    requireInitializeTask(async () => {
+      const resourceUrl = await hostFunctions
+        .connector
+        .getResourceUrl(resource.id, 'id');
 
-        return fetch(resourceUrl);
-      })
-      .then(() => {
-        resolve();
-      })));
+      if (!resourceUrl) { return null; }
+
+      return fetch(resourceUrl);
+    });
   });
 
   // Initialize registered tasks
@@ -65,9 +63,7 @@ export const bindAppToPlayerEvent = (
   resourceBridgeFunctions.initialize();
 
   // Initialize envVariable
-  const envVariable = context.store.getValue(ENV_VARIABLE_STORE);
-
-  if (!envVariable) {
+  if (!context.store.getValue(ENV_VARIABLE_STORE)) {
     await new Promise((resolveEnv) => {
       const unsubscribe = context.store.subscribe(
         ENV_VARIABLE_STORE,
