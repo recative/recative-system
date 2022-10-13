@@ -1,10 +1,16 @@
+import { getGPUTier, TierType } from 'detect-gpu';
+
 export interface IDiagnosisInformation {
   browserVariable: boolean;
   glSupport: boolean;
   stencilSupport: boolean;
   performanceCaveat: boolean;
   summary: boolean;
-  device: string;
+  device: string | undefined;
+  tier: number;
+  type: TierType;
+  isMobile?: boolean | undefined;
+  fps?: number | undefined;
 }
 
 let diagnosisInformation: IDiagnosisInformation | null = null;
@@ -33,25 +39,12 @@ const ifSupportWebGL = (options?: WebGLContextAttributes) => {
   }
 };
 
-const getGraphicsCardName = () => {
-  const canvas = document.createElement('canvas');
-  const gl = canvas.getContext('experimental-webgl') || canvas.getContext('webgl');
-
-  if (!gl) return 'Unknown';
-
-  const ext = (gl as WebGLRenderingContext).getExtension(
-    'WEBGL_debug_renderer_info',
-  );
-
-  if (!ext) return 'Unknown';
-
-  return (gl as WebGLRenderingContext).getParameter(
-    ext.UNMASKED_RENDERER_WEBGL,
-  ) as string;
-};
-
-export const getDiagnosisInformation = () => {
+export const getDiagnosisInformation = async () => {
   if (!diagnosisInformation) {
+    const { gpu: device, ...tier } = await getGPUTier({
+      failIfMajorPerformanceCaveat: false
+    });
+
     diagnosisInformation = {
       browserVariable: !!window.WebGLRenderingContext,
       glSupport: ifSupportWebGL(),
@@ -63,7 +56,8 @@ export const getDiagnosisInformation = () => {
         stencil: true,
         failIfMajorPerformanceCaveat: true,
       }),
-      device: getGraphicsCardName(),
+      device,
+      ...tier,
     };
   }
 

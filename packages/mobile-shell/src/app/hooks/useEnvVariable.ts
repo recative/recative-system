@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { useEpisodes, getDiagnosisInformation } from '@recative/client-sdk';
+import { useEpisodes } from '@recative/client-sdk';
 import type { IEpisodeDetail } from '@recative/client-sdk';
 
 const getSafeArea = () => ({
@@ -29,8 +29,6 @@ export const useEnvVariable = (
 
   const episode = episodeDetail?.episode;
 
-  const diagnosisInformation = getDiagnosisInformation();
-
   const result = React.useMemo(() => {
     return {
       saves,
@@ -49,10 +47,9 @@ export const useEnvVariable = (
       episodeIdInDatabase: episode?.id,
       assets: episodeDetail?.assets,
       episodes: saves,
-      diagnosisInformation,
       ...getSafeArea(),
     };
-  }, [saves, episode, diagnosisInformation, episodeDetail]);
+  }, [saves, episode, episodeDetail]);
 
   return result;
 };

@@ -5968,7 +5968,7 @@ __metadata:
     "@recative/act-protocol": ^0.2.8
     "@recative/core-manager": ^0.8.0
     "@recative/definitions": ^0.4.2
-    "@recative/smart-resource": "workspace:^"
+    "@recative/smart-resource": ^0.2.0
     "@types/debug": ^4.1.7
     "@types/fs-extra": ^9.0.13
     "@types/lodash": ^4.14.177
@@ -6174,6 +6174,7 @@ __metadata:
     "@types/debug": ^4.1.7
     classnames: ^2.3.1
     debug: ^4.3.3
+    detect-gpu: ^4.0.43
     lottie-react: ^2.3.1
     nanoid: ^3.3.3
     nanostores: ^0.5.10
@@ -6437,7 +6438,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/smart-resource@^0.2.0, @recative/smart-resource@workspace:^, @recative/smart-resource@workspace:packages/smart-resource":
+"@recative/smart-resource@^0.2.0, @recative/smart-resource@workspace:packages/smart-resource":
   version: 0.0.0-use.local
   resolution: "@recative/smart-resource@workspace:packages/smart-resource"
   dependencies:
@@ -12802,6 +12803,15 @@ __metadata:
   dependencies:
     repeat-string: ^1.5.4
   checksum: 34b077521ecd4c6357d32ff7923be644d34aa6f6b7d717d40ec4a9168243eefaea2b512a75a460a6f70c31b0bbc31ff90f820a891803b4ddaf99e9d04d0d389d
+  languageName: node
+  linkType: hard
+
+"detect-gpu@npm:^4.0.43":
+  version: 4.0.43
+  resolution: "detect-gpu@npm:4.0.43"
+  dependencies:
+    webgl-constants: ^1.1.1
+  checksum: 8ba25da1785ad75ebdcaba5278a6d60fe9515daa7439869f17c33eb3e788d46edc259fa6316cdf1f1c451a534827229cada0d05bda4507418486c75c77ab33f4
   languageName: node
   linkType: hard
 
@@ -28418,6 +28428,13 @@ __metadata:
   version: 0.2.4
   resolution: "web-vitals@npm:0.2.4"
   checksum: 128a4e87730b0a02fb6af3eef7d31f9a79b4646e83cfe4465aa8ce6054fe16f7b1f4125a384f1b4f039091bd9513cb54b4e559c0b10ae953c01900786a16b1c2
+  languageName: node
+  linkType: hard
+
+"webgl-constants@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "webgl-constants@npm:1.1.1"
+  checksum: b40091528a1c30ff9b2413f97a67b98be720f76629fe105f05e955f33ed440d441dd69de4d7cf46d27ca9d74bcc6218809ae9a2a90557aa5963e78d11c1b39a5
   languageName: node
   linkType: hard
 

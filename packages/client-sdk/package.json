@@ -57,6 +57,7 @@
     "@recative/open-promise": "^0.2.3",
     "@recative/ugly-json": "workspace:^",
     "debug": "^4.3.3",
+    "detect-gpu": "^4.0.43",
     "nanoid": "^3.3.3"
   }
 }
