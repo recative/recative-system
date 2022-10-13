@@ -1630,8 +1630,16 @@ export class Collection<T extends object> extends EventTarget {
     try {
       this.startTransaction();
 
-      if (typeof this.maxId !== 'number' || Number.isNaN(this.maxId)) {
-        this.maxId = Math.max(...this.data.map((x) => x.$loki)) + 1;
+      if (
+        typeof this.maxId !== 'number'
+        || Number.isNaN(this.maxId)
+        || !Number.isFinite(this.maxId)
+      ) {
+        this.maxId = (
+          this.data?.length
+            ? Math.max(...this.data.map((x) => x.$loki))
+            : 0
+        ) + 1;
       } else {
         this.maxId += 1;
       }
