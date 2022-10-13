@@ -9,8 +9,6 @@ import type {
   IResourceItemForClient,
 } from '@recative/definitions';
 
-import useConstant from 'use-constant';
-
 export interface PlayerAssetProp extends Omit<IAssetForClient, 'duration'> {
   duration: number | null;
 }
@@ -23,13 +21,13 @@ export const useEpisodeInitializer = (
   core: EpisodeCore,
 ) => {
   const [episodeData, setEpisodeData] = React.useState<InternalEpisodeData | null>(null);
-  const episodeInitialized = useConstant(() => ({ value: false }));
+  const episodeInitialized = React.useRef(false);
 
-  React.useEffect(() => {
-    if (episodeInitialized.value) return;
+  React.useLayoutEffect(() => {
+    if (episodeInitialized.current) return;
     if (!assets || !resources) return;
 
-    episodeInitialized.value = true;
+    episodeInitialized.current = true;
 
     const nextEpisodeData = core.initializeEpisode({
       assets: assets.map((asset) => ({
