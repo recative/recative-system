@@ -68,7 +68,9 @@ export class AudioTrack extends WithLogger implements Track {
       return;
     }
     const time = performance.now();
-    if (this.audioElement.isPlaying() && !this.mixer?.isSuspended()) {
+    if (this.audioElement.isPlaying()
+      && !this.mixer?.isSuspended()
+      && this.station.audioContext?.state === 'running') {
       if (
         force
         || this.audioElement.time * 1000 - this.lastProgress > (time - this.lastUpdateTime) * 0.01
@@ -85,6 +87,9 @@ export class AudioTrack extends WithLogger implements Track {
   }
 
   check() {
+    if (this.station.audioContext?.state === 'suspended') {
+      return undefined;
+    }
     if (this.audioElement !== null) {
       this.updateTime();
       return {
@@ -119,13 +124,6 @@ export class AudioTrack extends WithLogger implements Track {
     if (this.pendingBuffer !== null && this.audioElement === null) {
       if (!this.lastStuck) {
         this.log(`Audio track ${this.id} stuck, reason: not loaded`);
-      }
-      this.lastStuck = true;
-      return true;
-    }
-    if (this.station.audioContext?.state === 'suspended') {
-      if (!this.lastStuck) {
-        this.log(`Audio track ${this.id} stuck, reason: audio station suspended`);
       }
       this.lastStuck = true;
       return true;
