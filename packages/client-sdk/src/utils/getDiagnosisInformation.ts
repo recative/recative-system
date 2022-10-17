@@ -6,7 +6,7 @@ export interface IDiagnosisInformation {
   stencilSupport: boolean;
   performanceCaveat: boolean;
   summary: boolean;
-  device: string | undefined;
+  gpu?: string | undefined;
   tier: number;
   type: TierType;
   isMobile?: boolean | undefined;
@@ -41,7 +41,8 @@ const ifSupportWebGL = (options?: WebGLContextAttributes) => {
 
 export const getDiagnosisInformation = async () => {
   if (!diagnosisInformation) {
-    const { gpu: device, ...tier } = await getGPUTier({
+    const tier = await getGPUTier({
+      benchmarksURL: 'https://npm.elemecdn.com/detect-gpu@4.0.43/dist/benchmarks',
       failIfMajorPerformanceCaveat: false
     });
 
@@ -56,7 +57,6 @@ export const getDiagnosisInformation = async () => {
         stencil: true,
         failIfMajorPerformanceCaveat: true,
       }),
-      device,
       ...tier,
     };
   }

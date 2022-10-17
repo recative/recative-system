@@ -42,15 +42,51 @@ const IFRAME_STYLES = {
   borderWidth: 0,
 } as const;
 
+const SIZE_LIMIT_MAP = new Map<number, [number, number]>();
+
+SIZE_LIMIT_MAP.set(1, [1280, 720]);
+SIZE_LIMIT_MAP.set(2, [1920, 1080]);
+SIZE_LIMIT_MAP.set(3, [Infinity, Infinity]);
+
+const computedLimitedActPointRatio = (
+  tier: unknown,
+  element: HTMLDivElement | null
+) => {
+  if (!element) {
+    return 1;
+  }
+
+  const tierLimit = SIZE_LIMIT_MAP.get(tier as number);
+
+  if (!tierLimit) {
+    return 1;
+  }
+
+  const { clientWidth, clientHeight } = element;
+  const clientBox = [
+    clientWidth * window.devicePixelRatio,
+    clientHeight * window.devicePixelRatio
+  ] as const;
+
+  return Math.min(
+    1,
+    Math.max(...tierLimit) / Math.max(...clientBox),
+    Math.min(...tierLimit) / Math.min(...clientBox),
+  )
+};
+
 export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
   const [css] = useStyletron();
   const [scale, setScale] = React.useState(1);
+  const [iFrameWidth, setIFrameWidth] = React.useState(-1);
+  const [iFrameHeight, setIFrameHeight] = React.useState(-1);
   const iFrameRef = React.useRef<HTMLIFrameElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const videoComponentInitialized = React.useRef(false);
   const resolution = useStore(props.core.resolution);
   const width: number | undefined = resolution?.width;
   const height: number | undefined = resolution?.height;
+  const envVariable = useStore(props.core.envVariableManager.envVariableAtom);
 
   const getEntryPointUrl = React.useCallback(async () => {
     const episodeData = props.core.getEpisodeData()!;
@@ -81,32 +117,6 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
     entryPointAction.execute();
   }, [entryPointAction]);
 
-  const { iFrameWidth, iFrameHeight } = React.useMemo(() => {
-    const specResolution = props.spec.resolutionMode as ResolutionMode;
-    const resolutionMode = specResolution ?? ResolutionMode.FollowPlayerSetting;
-
-    if (resolutionMode === ResolutionMode.FixedSize) {
-      return {
-        iFrameWidth: props.spec.width as number,
-        iFrameHeight: props.spec.height as number,
-      };
-    }
-    if (resolutionMode === ResolutionMode.FollowWindowSize) {
-      return {
-        iFrameWidth: -1,
-        iFrameHeight: -1,
-      };
-    }
-    return {
-      iFrameWidth: width === undefined ? -1 : width,
-      iFrameHeight: height === undefined ? -1 : height,
-    };
-  }, [
-    width, height,
-    props.spec.width, props.spec.height,
-    props.spec.resolutionMode
-  ]);
-
   const updateActPointScale = useThrottledCallback(
     () => {
       if (!containerRef.current) return;
@@ -115,14 +125,49 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
       }
 
       const $container = containerRef.current;
-      const actPointRatio = iFrameWidth / iFrameHeight;
-      const containerRatio = $container.clientWidth / $container.clientHeight;
+      const specResolution = props.spec.resolutionMode as ResolutionMode;
+      const resolutionMode = specResolution ?? ResolutionMode.FollowPlayerSetting;
 
-      const nextScale = actPointRatio < containerRatio
-        ? $container.clientHeight / iFrameHeight
-        : $container.clientWidth / iFrameWidth;
+      if (resolutionMode === ResolutionMode.FixedSize) {
+        setIFrameWidth(props.spec.width as number);
+        setIFrameHeight(props.spec.height as number);
+      } else if (resolutionMode === ResolutionMode.FollowWindowSize) {
+        setIFrameWidth(-1);
+        setIFrameHeight(-1);
+      } else {
+        setIFrameWidth(width === undefined ? -1 : width);
+        setIFrameHeight(height === undefined ? -1 : height);
+      }
 
-      setScale(nextScale);
+      if (
+        resolutionMode === ResolutionMode.FixedSize
+        || resolutionMode === ResolutionMode.FollowPlayerSetting
+        || (
+          resolutionMode === ResolutionMode.FollowWindowSize
+          && (envVariable?.tier === 3 || !envVariable?.tier)
+        )
+      ) {
+        const actPointRatio = iFrameWidth / iFrameHeight;
+
+        const containerRatio = $container.clientWidth / $container.clientHeight;
+
+        const nextScale = actPointRatio < containerRatio
+          ? $container.clientHeight / iFrameHeight
+          : $container.clientWidth / iFrameWidth;
+
+        setScale(nextScale);
+      } else {
+        const actPointRatio = computedLimitedActPointRatio(
+          envVariable.tier,
+          containerRef.current,
+        );
+
+        const { clientWidth, clientHeight } = $container;
+
+        setScale(1 / actPointRatio);
+        setIFrameWidth(actPointRatio * clientWidth);
+        setIFrameHeight(actPointRatio * clientHeight);
+      };
     },
     [iFrameWidth, iFrameHeight, containerRef.current],
     100,
