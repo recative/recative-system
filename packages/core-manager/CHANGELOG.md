@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.0
+
+### Minor Changes
+
+- f1c3093: feat: Don't wait for audio ready before autoplay
+
+### Patch Changes
+
+- 9fdeb4b: fix: Pause new content explicitly when switching
+- Updated dependencies [be5bc59]
+  - @recative/time-schedule@0.2.1
+
 ## 0.8.0
 
 ### Minor Changes

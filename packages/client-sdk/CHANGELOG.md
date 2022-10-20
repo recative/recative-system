@@ -1,5 +1,21 @@
 # Changelog
 
+## 9.0.0
+
+### Minor Changes
+
+- b252f5f: feat: Implement dynamic resolution for full-screen act-point
+- 7cc61a1: feat: Use online database to resolve GPU performance information
+
+### Patch Changes
+
+- 1c27eb0: fix(client-sdk): Episode initialize error
+- Updated dependencies [f1c3093]
+- Updated dependencies [b252f5f]
+- Updated dependencies [9fdeb4b]
+  - @recative/core-manager@0.9.0
+  - @recative/act-player@0.5.0
+
 ## 8.0.0
 
 ### Patch Changes

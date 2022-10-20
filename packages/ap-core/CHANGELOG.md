@@ -1,5 +1,12 @@
 # @recative/ap-core
 
+## 0.5.1
+
+### Patch Changes
+
+- e5e87d5: fix: DataSource in useQuery should always update
+- 6f80779: fix: Show after pause should not play actPoint
+
 ## 0.5.0
 
 ### Minor Changes

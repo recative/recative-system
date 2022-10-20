@@ -1,6 +1,6 @@
 {
   "name": "@recative/client-sdk",
-  "version": "8.0.0",
+  "version": "9.0.0",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
@@ -15,9 +15,9 @@
   "devDependencies": {
     "@nanostores/react": "^0.1.5",
     "@paciolan/remote-module-loader": "^3.0.2",
-    "@recative/act-player": "^0.4.2",
+    "@recative/act-player": "^0.5.0",
     "@recative/act-protocol": "^0.2.8",
-    "@recative/core-manager": "^0.8.0",
+    "@recative/core-manager": "^0.9.0",
     "@recative/smart-resource": "^0.2.0",
     "@types/debug": "^4.1.7",
     "classnames": "^2.3.1",
@@ -30,9 +30,9 @@
   "peerDependencies": {
     "@nanostores/react": "^0.1.5",
     "@paciolan/remote-module-loader": "*",
-    "@recative/act-player": "0.4.2",
+    "@recative/act-player": "0.5.0",
     "@recative/act-protocol": "*",
-    "@recative/core-manager": "0.8.0",
+    "@recative/core-manager": "0.9.0",
     "@recative/smart-resource": "*",
     "baseui": "^12.1.0",
     "classnames": "*",

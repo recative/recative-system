@@ -1,5 +1,19 @@
 # @recative/mobile-shell
 
+## 0.2.0
+
+### Minor Changes
+
+- 7cc61a1: feat: Use online database to resolve GPU performance information
+
+### Patch Changes
+
+- Updated dependencies [b252f5f]
+- Updated dependencies [1c27eb0]
+- Updated dependencies [7cc61a1]
+  - @recative/act-player@0.5.0
+  - @recative/client-sdk@9.0.0
+
 ## 0.1.3
 
 ### Patch Changes

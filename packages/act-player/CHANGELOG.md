@@ -1,5 +1,17 @@
 # @recative/act-player
 
+## 0.5.0
+
+### Minor Changes
+
+- b252f5f: feat: Implement dynamic resolution for full-screen act-point
+
+### Patch Changes
+
+- Updated dependencies [f1c3093]
+- Updated dependencies [9fdeb4b]
+  - @recative/core-manager@0.9.0
+
 ## 0.4.2
 
 ### Patch Changes
