@@ -1,5 +1,7 @@
 import * as React from 'react';
 import debug from 'debug';
+import { atom } from 'nanostores';
+import { useStore } from '@nanostores/react';
 
 import { ActPlayer, InterfaceExtensionComponent } from '@recative/act-player';
 import {
@@ -39,6 +41,8 @@ const error = debug('sdk:content:error');
 // This is on purpose
 // eslint-disable-next-line no-console
 error.log = console.error.bind(console);
+
+const TRUE_ATOM = atom(true);
 
 export interface IContentProps<
   PlayerPropsInjectedDependencies,
@@ -271,6 +275,7 @@ export const ContentModuleFactory = <
     useCustomEventWrapper(playerOnSegmentStart, hookOnSegmentStart, 'segmentStart', seriesCore);
     useCustomEventWrapper(resetInitialAsset, playerOnInitialized, 'initialized', seriesCore);
 
+    const destroyed = useStore(episodeCore?.destroyed ?? TRUE_ATOM);
     const playerReady = episodeDetail
       && episodeCore
       && episodeDetail.assets
@@ -298,7 +303,7 @@ export const ContentModuleFactory = <
         {...injectToContainer}
       >
         {
-          playerReady
+          playerReady && !destroyed
             ? (
               <ActPlayer<true, EnvVariable>
                 core={episodeCore}

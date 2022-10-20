@@ -143,7 +143,9 @@ export class EpisodeCore<
 
   readonly coreState = readonlyAtom(this.state);
 
-  private destroyed = false;
+  private internalDestroyed = atom(false);
+
+  readonly destroyed = readonlyAtom(this.internalDestroyed);
 
   private destroyPromise: Promise<void> | null = null;
 
@@ -306,7 +308,7 @@ export class EpisodeCore<
   }
 
   getUserImplementedFunctions(): Partial<UserImplementedFunctions> {
-    if (this.destroyed) {
+    if (this.internalDestroyed.get()) {
       return {};
     }
 
@@ -438,7 +440,7 @@ export class EpisodeCore<
     }
 
     this.envVariableManager.destroy();
-    this.destroyed = true;
+    this.internalDestroyed.set(true);
     this.updateState();
     this.logMain('Core fully destroyed');
   }
@@ -452,14 +454,14 @@ export class EpisodeCore<
   }
 
   private ensureNotDestroyed() {
-    if (this.destroyed) {
+    if (this.internalDestroyed.get()) {
       throw new Error('The core was destroyed');
     }
   }
 
   private updateState() {
     let state: CoreState = 'waitingForResource';
-    if (this.destroyed) {
+    if (this.internalDestroyed.get()) {
       state = 'destroyed';
     } else if (this.destroyPromise !== null) {
       state = 'destroying';
