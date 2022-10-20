@@ -42,7 +42,7 @@ const error = debug('sdk:content:error');
 // eslint-disable-next-line no-console
 error.log = console.error.bind(console);
 
-const TRUE_ATOM = atom(true);
+const VOID_ATOM = atom('void' as const);
 
 export interface IContentProps<
   PlayerPropsInjectedDependencies,
@@ -275,7 +275,7 @@ export const ContentModuleFactory = <
     useCustomEventWrapper(playerOnSegmentStart, hookOnSegmentStart, 'segmentStart', seriesCore);
     useCustomEventWrapper(resetInitialAsset, playerOnInitialized, 'initialized', seriesCore);
 
-    const destroyed = useStore(episodeCore?.destroyed ?? TRUE_ATOM);
+    const coreState = useStore(episodeCore?.coreState ?? VOID_ATOM);
     const playerReady = episodeDetail
       && episodeCore
       && episodeDetail.assets
@@ -303,7 +303,7 @@ export const ContentModuleFactory = <
         {...injectToContainer}
       >
         {
-          playerReady && !destroyed
+          playerReady && coreState !== 'destroyed'
             ? (
               <ActPlayer<true, EnvVariable>
                 core={episodeCore}
