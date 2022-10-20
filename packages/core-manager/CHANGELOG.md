@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.10.0
+
+### Minor Changes
+
+- fc982ac: feat: Subscribe to destroy state and hide the whole player instance to prevent time-sequence issue
+
 ## 0.9.0
 
 ### Minor Changes

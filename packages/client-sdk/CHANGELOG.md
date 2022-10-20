@@ -1,5 +1,17 @@
 # Changelog
 
+## 10.0.0
+
+### Minor Changes
+
+- fc982ac: feat: Subscribe to destroy state and hide the whole player instance to prevent time-sequence issue
+
+### Patch Changes
+
+- Updated dependencies [fc982ac]
+  - @recative/core-manager@0.10.0
+  - @recative/act-player@0.5.1
+
 ## 9.0.0
 
 ### Minor Changes

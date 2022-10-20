@@ -1,5 +1,13 @@
 # @recative/mobile-shell
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [fc982ac]
+  - @recative/client-sdk@10.0.0
+  - @recative/act-player@0.5.1
+
 ## 0.2.0
 
 ### Minor Changes
