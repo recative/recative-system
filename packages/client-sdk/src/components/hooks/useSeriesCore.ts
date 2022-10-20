@@ -18,7 +18,6 @@ import { useSdkConfig } from '../../external';
 import { useEpisodeIdNormalizer } from './useEpisodeIdNormalizer';
 import type { IEpisodeDetail } from '../../external';
 
-const log = debug('sdk:series-core');
 const logWarn = debug('sdk:series-core');
 // eslint-disable-next-line no-console
 logWarn.log = console.warn;
@@ -49,13 +48,13 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
   envVariable: EnvVariable | undefined,
   userData: IUserRelatedEnvVariable | undefined,
   getInjectedEpisodeMetadata:
-  | ((episodeId: string, episodeMetadata: IEpisodeMetadata) => (
-    | IEpisodeMetadata
-    | Promise<IEpisodeMetadata>
-    | undefined
-    | Promise<undefined>
-  ))
-  | undefined,
+    | ((episodeId: string, episodeMetadata: IEpisodeMetadata) => (
+      | IEpisodeMetadata
+      | Promise<IEpisodeMetadata>
+      | undefined
+      | Promise<undefined>
+    ))
+    | undefined,
   navigate: ISeriesCoreConfig['navigate'],
 ) => {
   const sdkConfig = useSdkConfig();
@@ -162,42 +161,6 @@ export const useSeriesCore = <EnvVariable extends Record<string, unknown>>(
   }, [userData, seriesCore.userData]);
 
   const episodeCore = useStore(seriesCore.currentEpisodeCore);
-
-  React.useLayoutEffect(() => {
-    const episodeData = episodeCore?.getEpisodeData();
-
-    if (episodeDetail?.assets && episodeDetail?.resources && episodeId) {
-      const nextEpisodeData = {
-        assets: episodeDetail.assets,
-        resources: episodeDetail.resources,
-        preferredUploaders,
-        trustedUploaders,
-      };
-
-      if (!episodeData) {
-        const initializedData = episodeCore?.initializeEpisode(nextEpisodeData);
-
-        log(
-          'Episode initialized',
-          initializedData,
-        );
-      } else {
-        logWarn(
-          'Suppressed initialize',
-          episodeData,
-
-          '->',
-          nextEpisodeData,
-        );
-      }
-    }
-  }, [
-    episodeCore,
-    episodeId,
-    episodeDetail,
-    trustedUploaders,
-    preferredUploaders,
-  ]);
 
   useEpisodeDetailReloadDiagnosisTool('episodeId', episodeId, episodeCore);
   useEpisodeDetailReloadDiagnosisTool('episodeDetail', episodeDetail, episodeCore);
