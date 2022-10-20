@@ -5,24 +5,6 @@ import { IAdapter } from './adapters/IAdapter';
 
 import Clip from './Clip';
 
-const id3Header = new Uint8Array([0x49, 0x44, 0x33, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-
-const prependId3Header = (original: Uint8Array) => {
-  if (original.length >= 3) {
-    if (original[0] === 0x49 && original[1] === 0x44 && original[2] === 0x33) {
-      // already has ID3 header
-      return original
-    }
-  }
-  const result = new Uint8Array(id3Header.length + original.length)
-  for (let i = 0; i < id3Header.length; i++) {
-    result[i] = id3Header[i]
-  }
-  for (let i = 0; i < original.length; i++) {
-    result[i + id3Header.length] = original[i]
-  }
-  return result
-}
 
 export default class Chunk<Metadata> {
   clip: Clip<Metadata>;
@@ -75,7 +57,7 @@ export default class Chunk<Metadata> {
 
     const decode = (callback: () => void, errback: (err: Error) => void) => {
       const buffer = slice(raw, this._firstByte, raw.length);
-      const bufferWithId3Header = prependId3Header(buffer).buffer
+      const bufferWithId3Header = this.adapter.wrapChunk(buffer).buffer
 
       this.context.decodeAudioData(bufferWithId3Header, callback, (err) => {
         if (err) {
@@ -216,7 +198,7 @@ export default class Chunk<Metadata> {
             ? slice(this.raw, this._firstByte, this.raw.length)
             : this.raw;
       }
-      this.extendedWithHeader = prependId3Header(this.extended)
+      this.extendedWithHeader = this.adapter.wrapChunk(this.extended)
 
       this._fire('ready');
     }

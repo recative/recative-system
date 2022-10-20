@@ -5,6 +5,7 @@ import parseMetadata from './parseMetadata';
 
 import { Metadata } from './types';
 import { validateHeader } from './validateHeader';
+import wrapChunk from './wrapChunk';
 
 export const mp3Adapter: IAdapter<Metadata> = {
   validateChunk: validateHeader,
@@ -27,4 +28,7 @@ export const mp3Adapter: IAdapter<Metadata> = {
 
     return parseMetadata(rawMetadata);
   },
+  wrapChunk: (rawData) => {
+    return wrapChunk(rawData);
+  }
 };
