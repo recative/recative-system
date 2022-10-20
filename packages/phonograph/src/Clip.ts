@@ -169,8 +169,7 @@ export default class Clip<Metadata> {
       };
 
       const drainBuffer = () => {
-        const isFirstChunk = this._chunks.length === 0;
-        const firstByte = isFirstChunk ? 32 : 0;
+        const firstByte = 0;
 
         const chunk = new Chunk<Metadata>({
           clip: this,
@@ -429,7 +428,7 @@ export default class Clip<Metadata> {
       this._currentTime = currentTime;
       this._audioBufferCache = null;
       this.trySetupAudioBufferCache();
-      this.play().catch(() => {});
+      this.play().catch(() => { });
     } else {
       this._currentTime = currentTime;
       this._audioBufferCache = null;

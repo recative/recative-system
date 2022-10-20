@@ -5,6 +5,7 @@ import { IAdapter } from './adapters/IAdapter';
 
 import Clip from './Clip';
 
+
 export default class Chunk<Metadata> {
   clip: Clip<Metadata>;
   context: AudioContext;
@@ -12,6 +13,7 @@ export default class Chunk<Metadata> {
   numFrames: number | null = null;
   raw: Uint8Array;
   extended: Uint8Array | null;
+  extendedWithHeader: Uint8Array | null;;
   ready: boolean;
   next: Chunk<Metadata> | null = null;
   readonly adapter: IAdapter<Metadata>;
@@ -38,6 +40,7 @@ export default class Chunk<Metadata> {
 
     this.raw = raw;
     this.extended = null;
+    this.extendedWithHeader = null;
 
     this.adapter = adapter;
 
@@ -53,10 +56,13 @@ export default class Chunk<Metadata> {
     this._firstByte = 0;
 
     const decode = (callback: () => void, errback: (err: Error) => void) => {
-      const buffer = slice(raw, this._firstByte, raw.length).buffer;
+      const buffer = slice(raw, this._firstByte, raw.length);
+      const bufferWithId3Header = this.adapter.wrapChunk(buffer).buffer
 
-      this.context.decodeAudioData(buffer, callback, (err) => {
-        if (err) return errback(err);
+      this.context.decodeAudioData(bufferWithId3Header, callback, (err) => {
+        if (err) {
+          return errback(err)
+        };
 
         this._firstByte += 1;
 
@@ -161,7 +167,7 @@ export default class Chunk<Metadata> {
       );
     }
     return this.context.decodeAudioData(
-      slice(this.extended!, 0, this.extended!.length).buffer
+      slice(this.extendedWithHeader!, 0, this.extendedWithHeader!.length).buffer
     );
   }
 
@@ -192,6 +198,7 @@ export default class Chunk<Metadata> {
             ? slice(this.raw, this._firstByte, this.raw.length)
             : this.raw;
       }
+      this.extendedWithHeader = this.adapter.wrapChunk(this.extended)
 
       this._fire('ready');
     }
