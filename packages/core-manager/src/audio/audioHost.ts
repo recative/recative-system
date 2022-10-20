@@ -9,6 +9,7 @@ import {
   ManagedCoreStateList,
   ManagedCoreStateManager,
   SUBTITLE_MANAGED_CORE_STATE_EXTENSION_ID,
+  UpdateReason,
 } from '@recative/definitions';
 import { AdditionalSubtitleDefine } from '@recative/act-protocol';
 
@@ -22,13 +23,15 @@ class LoadableAudioElement extends WithLogger {
   private audioElement: AudioElement | null = null;
 
   private pendingBuffer:
-  | Promise<AudioElementInit | null>
-  | null = null;
+    | Promise<AudioElementInit | null>
+    | null = null;
 
   private pendingClipLoading: Promise<void> | null = null;
 
   // For attached subtitle
   states: ManagedCoreStateList = new ManagedCoreStateList();
+
+  cachedManagedStateDirty = false;
 
   working = true;
 
@@ -109,6 +112,7 @@ class LoadableAudioElement extends WithLogger {
     const result = this.audioElement.time;
     if (time) {
       this.audioElement.time = time;
+      this.cachedManagedStateDirty = this.states.seek(this.audioElement.time * 1000, UpdateReason.Manually)
     }
     return result;
   }
@@ -254,7 +258,9 @@ export class AudioHost extends WithLogger {
       }
       if (playing) {
         this.managedCoreStateManager.addStateList(source.states);
-        dirty ||= source.states.seek(source.seek() * 1000);
+        dirty ||= source.states.seek(source.seek() * 1000, UpdateReason.Tick);
+        dirty ||= source.cachedManagedStateDirty;
+        source.cachedManagedStateDirty = false;
       } else {
         this.managedCoreStateManager.removeStateList(source.states);
       }

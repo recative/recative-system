@@ -8,6 +8,7 @@ import {
   ContentSpec,
   ManagedCoreStateList,
   ManagedCoreStateManager,
+  UpdateReason,
 } from '@recative/definitions';
 import { AudioStation } from '@recative/audio-station';
 
@@ -76,6 +77,8 @@ export class ContentInstance extends WithLogger {
 
   // state on the main timeline
   managedCoreStateList = new ManagedCoreStateList();
+
+  cachedManagedStateDirty = false;
 
   audioTrack: AudioTrack;
 
@@ -248,9 +251,11 @@ export class ContentInstance extends WithLogger {
   }
 
   updateManagedCoreState() {
-    let dirty = this.managedCoreStateList.seek(this.timeline.time);
+    let dirty = this.managedCoreStateList.seek(this.timeline.time, UpdateReason.Tick);
     dirty ||= this.audioHost.updateManagedState();
     dirty ||= this.subsequenceManager.updateManagedState();
+    dirty ||= this.cachedManagedStateDirty
+    this.cachedManagedStateDirty = false
     return dirty;
   }
 
@@ -281,11 +286,16 @@ export class ContentInstance extends WithLogger {
     await this.subsequenceManager.destroy();
   }
 
+  setTime(time: number) {
+    this.timeline.time = time
+    this.cachedManagedStateDirty = this.managedCoreStateList.seek(time, UpdateReason.Manually)
+  }
+
   private async internalDestroy() {
     this.log(
       'Content instance start to destroy',
     );
-    await this.option.getComponent(this.id)!.destroyItself?.()?.finally(() => {});
+    await this.option.getComponent(this.id)!.destroyItself?.()?.finally(() => { });
     this.option.forEachComponent((component) => {
       component.destroyContent?.(this.id);
     });
