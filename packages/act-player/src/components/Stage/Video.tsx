@@ -244,6 +244,12 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
           videoSourceRef.current!.src = selectedVideo;
           videoSourceRef.current!.type = mime;
           videoRef.current!.load();
+          if (videoRef.current!.currentSrc === "") {
+            // Firefox may not load the source immediately after setting the source element
+            setTimeout(() => {
+              videoRef.current!.load();
+            }, 0)
+          }
           clearUnstuckCheckInterval();
         }
       });
@@ -259,9 +265,9 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
 
   React.useLayoutEffect(() => {
     const matchedResource = episodeData.resources.getResourceByQuery<
-    AudioElementInit, PostProcessCallback<
-    AudioElementInit, IResourceFileForClient
-    >
+      AudioElementInit, PostProcessCallback<
+        AudioElementInit, IResourceFileForClient
+      >
     >(
       query,
       queryMethod,
