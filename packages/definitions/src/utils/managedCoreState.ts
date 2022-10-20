@@ -1,6 +1,8 @@
+import EventTarget from '@ungap/event-target';
+
 import type {
-  ManagerCoreStateTrigger,
   ManagedCoreState,
+  ManagerCoreStateTrigger,
 } from '../typings/client/managedCoreState';
 
 const hasKey = <T extends object>(obj: T, k: keyof any): k is keyof T => k in obj;
@@ -9,9 +11,9 @@ const FreezedSet = <T>(x: Set<T>) => new Proxy(x, {
   get: (target, key) => {
     if (
       key === 'add'
-        || key === 'get'
-        || key === 'delete'
-        || key === 'clear'
+      || key === 'get'
+      || key === 'delete'
+      || key === 'clear'
     ) {
       throw new Error('You cannot operate the state directly.');
     }
@@ -25,9 +27,9 @@ const FreezedMap = <T, P>(x: Map<T, P>) => new Proxy(x, {
   get: (target, key) => {
     if (
       key === 'set'
-        || key === 'get'
-        || key === 'delete'
-        || key === 'clear'
+      || key === 'get'
+      || key === 'delete'
+      || key === 'clear'
     ) {
       throw new Error('You cannot operate the state directly.');
     }
@@ -37,7 +39,12 @@ const FreezedMap = <T, P>(x: Map<T, P>) => new Proxy(x, {
   },
 });
 
-export class ManagedCoreStateManager {
+export enum UpdateReason {
+  Manually = 'manually',
+  Tick = 'tick',
+}
+
+export class ManagedCoreStateManager extends EventTarget {
   /**
    * All registered managed state list.
    */
@@ -77,6 +84,10 @@ export class ManagedCoreStateManager {
    */
   readonly stateByType = FreezedMap(this.stateByTypeCache);
 
+  handleEvent = (event: CustomEvent) => {
+    this.dispatchEvent(event);
+  }
+
   /**
    * Add a new managed state list to the manager.
    * @param state The state list to be added.
@@ -88,6 +99,7 @@ export class ManagedCoreStateManager {
     this.states.add(state);
     this.stateUpdateTimeMap.set(state, -Infinity);
     this.updateStateCache(true);
+    state.addEventListener('event', this.handleEvent as EventListener);
   };
 
   /**
@@ -101,6 +113,7 @@ export class ManagedCoreStateManager {
     this.states.delete(state);
     this.stateUpdateTimeMap.delete(state);
     this.updateStateCache(true);
+    state.removeEventListener('event', this.handleEvent as EventListener);
   };
 
   /**
@@ -115,7 +128,8 @@ export class ManagedCoreStateManager {
   };
 
   /**
-   * Update the state cache, pick all state from different state list, and merge them to a cache.
+   * Update the state cache, pick all state from different state list, and merge
+   * them to a cache.
    */
   private updateStateCache = (force?: boolean) => {
     if (!force && !this.ifManagerDirty()) return;
@@ -169,18 +183,20 @@ export class ManagedCoreStateManager {
 /**
  * Managed Core State List
  *
- * Managed core state stores data like BGM, subtitles, etc. these data will change when the
- * time is changed.
+ * Managed core state stores data like BGM, subtitles, etc. these data will
+ * change when the time is changed.
  *
  * The update of managed core state is triggered by triggers,
- *  * ManagedCoreStateTimeRangeTrigger: When the timeline enter the time range, the state will
- *    be added to the state list, when the timeline leave the time range, the state will be removed.
- *  * ManagedCoreStateTimePointTrigger: When the timeline passed the time point, the state will be
- *    triggered.
+ *  * ManagedCoreStateTimeRangeTrigger: When the timeline enter the time range,
+ *    the state will be added to the state list, when the timeline leave the
+ *    time range, the state will be removed.
+ *  * ManagedCoreStateTimePointTrigger: When the timeline passed the time point,
+ *    the state will be triggered.
  *
- * States could be added or removed manually, call `addState` or `removeState` to operate them.
+ * States could be added or removed manually, call `addState` or `removeState`
+ * to operate them.
  */
-export class ManagedCoreStateList {
+export class ManagedCoreStateList extends EventTarget {
   /**
    * Current managed core state list.
    */
@@ -272,15 +288,19 @@ export class ManagedCoreStateList {
     this.stateByType.get(state.managedStateExtensionId)?.delete(state);
   };
 
+  private triggeredStates = new Set<ManagerCoreStateTrigger>();
+
   /**
    * Seek managed core state list for current asset.
    * @param time - Current playing time.
    */
-  seek = (time: number) => {
+  seek = (time: number, reason: UpdateReason) => {
     if (!this.triggers) return false;
 
     const lastHash = [...this.stateById.keys()].join();
     this.clearState();
+
+    let eventTriggered = false;
 
     this.triggers.forEach((trigger) => {
       if ('from' in trigger) {
@@ -294,7 +314,19 @@ export class ManagedCoreStateList {
           this.addState(state);
         }
       } else {
-        console.warn('`ManagedCoreStateTimePointTrigger` not implemented');
+        if (!trigger.triggerWhenManuallySeek && reason === UpdateReason.Manually) {
+          return;
+        }
+
+        if (time >= trigger.time && this.lastUpdateTime <= trigger.time) {
+          if (!this.triggeredStates.has(trigger) && trigger.once) {
+            return;
+          }
+
+          this.dispatchEvent(new CustomEvent('event', { detail: trigger }));
+          this.triggeredStates.add(trigger);
+          eventTriggered = true;
+        }
       }
     });
 
@@ -302,7 +334,7 @@ export class ManagedCoreStateList {
 
     const dirty = lastHash !== thisHash;
 
-    if (dirty) {
+    if (dirty || eventTriggered) {
       this.lastUpdateTime = Date.now();
     }
 

@@ -14,6 +14,7 @@ export interface ManagedCoreStateTimePointTrigger<T>
   extends ManagedCoreState<T> {
   time: number;
   once: boolean;
+  triggerWhenManuallySeek: boolean;
 }
 
 export type ManagerCoreStateTrigger<T = unknown> =
