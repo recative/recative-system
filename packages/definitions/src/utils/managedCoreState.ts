@@ -2,6 +2,7 @@ import EventTarget from '@ungap/event-target';
 
 import type {
   ManagedCoreState,
+  ManagedCoreStateTimePointTrigger,
   ManagerCoreStateTrigger,
 } from '../typings/client/managedCoreState';
 
@@ -43,6 +44,13 @@ export enum UpdateReason {
   Manually = 'manually',
   Tick = 'tick',
 }
+
+export interface ManagedCoreStateTriggerEventDetail {
+  trigger: ManagedCoreStateTimePointTrigger<unknown>;
+  managedCoreStateList: ManagedCoreStateList;
+}
+
+export type ManagedCoreStateTriggerEvent = CustomEvent<ManagedCoreStateTriggerEventDetail>
 
 export class ManagedCoreStateManager extends EventTarget {
   /**
@@ -327,7 +335,7 @@ export class ManagedCoreStateList extends EventTarget {
             detail: {
               trigger,
               managedCoreStateList: this
-            }
+            } as ManagedCoreStateTriggerEventDetail
           }));
           this.triggeredStates.add(trigger);
           eventTriggered = true;
