@@ -74,7 +74,6 @@ export const getConfig = (
         chunks: 'all',
         minSize: 1,
         name: (module: { context: string }) => {
-          console.log(module.context);
           const splittedPath = module.context.split(path.sep);
 
           if (splittedPath.includes('node_modules')) {
