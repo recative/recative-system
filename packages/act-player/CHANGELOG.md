@@ -1,5 +1,11 @@
 # @recative/act-player
 
+## 0.5.2
+
+### Patch Changes
+
+- 7243ff3: fix: Video do not load on Firefox
+
 ## 0.5.1
 
 ### Patch Changes

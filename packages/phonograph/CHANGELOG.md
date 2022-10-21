@@ -1,5 +1,15 @@
 # phonograph changelog
 
+## 2.1.0
+
+### Minor Changes
+
+- abdf6c1: feat: Firefox compatibility by prepending ID3 header
+
+### Patch Changes
+
+- 0a44c3d: fix: Incorrect skipping of ID3 header
+
 ## 2.0.0
 
 ### Major Changes
