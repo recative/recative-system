@@ -326,7 +326,7 @@ export class ManagedCoreStateList extends EventTarget {
           this.dispatchEvent(new CustomEvent('event', {
             detail: {
               trigger,
-              list: this
+              managedCoreStateList: this
             }
           }));
           this.triggeredStates.add(trigger);
