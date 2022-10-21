@@ -1,0 +1,30 @@
+{
+  "name": "@recative/ap-manager",
+  "version": "0.0.0",
+  "source": "src/index.ts",
+  "main": "dist/main.js",
+  "module": "dist/module.js",
+  "types": "dist/types.d.ts",
+  "repository": "https://github.com/recative/recative-system",
+  "scripts": {
+    "prepack": "yarn clean && yarn build",
+    "clean": "rimraf ./dist",
+    "watch": "rollup -c -w",
+    "build": "rollup -c"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.7"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "browserslist": [
+    "Chrome 70"
+  ],
+  "dependencies": {
+    "@recative/act-protocol": "workspace:^",
+    "@ungap/event-target": "^0.2.3",
+    "async-call-rpc": "^6.1.5",
+    "debug": "^4.3.4"
+  }
+}

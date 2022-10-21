@@ -1,7 +1,9 @@
-export { 
+export {
     MessagePortChannel,
     BatchedMessagePortChannel,
-    LazyMessagePortChannel
+    LazyMessagePortChannel,
+    IFramePortHostChannel,
+    IFramePortClientChannel,
 } from './messagePortChannel';
 export { createHostConnector, createClientConnector } from './connector';
 export * from './protocol';
