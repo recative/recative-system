@@ -4,7 +4,7 @@ import nativeFs from 'fs';
 
 import fs from 'fs-extra';
 import mkdirp from 'mkdirp';
-import { webpack } from 'webpack';
+import webpack from 'webpack';
 import WebpackDevServer from 'webpack-dev-server';
 
 import { getConfig } from './config';
@@ -14,7 +14,7 @@ import type { Logger } from './types';
 const nativeWebpackFs = {
   ...nativeFs,
   join: path.join.bind(path),
-  mkdirp: mkdirp.bind(mkdirp),
+  mkdirp: mkdirp.bind(mkdirp) as any,
 };
 
 export const start = (
@@ -22,7 +22,7 @@ export const start = (
   logError: Logger = console.error,
 ) => {
   const mode = process.env.NODE_ENV === 'production' ? 'production' : 'development';
-  const compiler = webpack(getConfig(mode, true, logError));
+  const compiler = webpack(getConfig(mode, true));
   const BASE_PATH = path.join(os.homedir(), '.ap-studio');
   const CERT_PATH = path.join(BASE_PATH, 'cert');
   const KEY_PATH = path.join(BASE_PATH, 'privkey');

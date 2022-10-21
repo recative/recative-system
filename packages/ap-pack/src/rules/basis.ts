@@ -5,8 +5,8 @@ export const basisRule = [{
       loader: 'file-loader',
       options: {
         name: '[name].[hash].[ext]',
-        publicPath: '../../imgs',
-        outputPath: 'imgs',
+        publicPath: '../../assets/images',
+        outputPath: 'assets/images',
       },
     },
   ],

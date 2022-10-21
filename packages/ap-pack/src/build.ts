@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import crypto from 'crypto';
 
-import { webpack } from 'webpack';
+import webpack from 'webpack';
 import { dumpLargeJSON } from './utils';
 import { getConfig } from './config';
 
@@ -13,7 +13,7 @@ export const build = (
   logError: Logger = console.error,
 ) => {
   const mode = process.env.NODE_ENV === 'development' ? 'development' : 'production';
-  const config = getConfig(mode, false, logError);
+  const config = getConfig(mode, false);
   const compiler = webpack(config);
 
   compiler.run(async (err, stats) => {

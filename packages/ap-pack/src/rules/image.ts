@@ -7,8 +7,8 @@ export const imageRule = [
         options: {
           limit: false,
           name: '[name].[hash].[ext]',
-          publicPath: '../../imgs',
-          outputPath: 'imgs',
+          publicPath: '../../assets/images',
+          outputPath: 'assets/images',
         },
       },
     ],

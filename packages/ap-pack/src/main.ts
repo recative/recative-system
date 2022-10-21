@@ -1,11 +1,13 @@
 import { build } from './build';
 import { start } from './start';
+import { writeLog } from './writeLog';
 
 const args = process.argv.slice(2);
 
 const commands: Record<string, () => void> = {
   build,
   start,
+  writeLog,
 };
 
 if (args.length < 1) {

@@ -1,18 +1,13 @@
 {
   "compilerOptions": {
     "target": "esnext",
+    "module": "CommonJS",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node"
   },
-  "include": [
-    "src",
-    "example"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["src", "example"],
+  "exclude": ["node_modules"]
 }
-

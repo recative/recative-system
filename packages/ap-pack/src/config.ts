@@ -2,12 +2,12 @@ import path from 'path';
 import os from 'os';
 import fs from 'fs-extra';
 
+import { resolve as withRoot } from 'app-root-path';
 import { Configuration, ProgressPlugin } from 'webpack';
 
 import NodePolyfillPlugin from 'node-polyfill-webpack-plugin';
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import { WebpackManifestPlugin } from 'webpack-manifest-plugin';
-import type { EntryObject } from 'webpack';
 
 import { avRule } from './rules/av';
 import { tsRule } from './rules/ts';
@@ -22,33 +22,17 @@ import { envPlugin } from './plugins/env';
 import { copyPlugin } from './plugins/copy';
 import { htmlPlugin } from './plugins/html';
 
-import { getProjectMetadata } from './utils';
-import type { Logger } from './types';
-
 // TODO: more generic config
 export const getConfig = (
   mode: 'development' | 'production',
   server: boolean,
-  logError: Logger = console.error,
 ): Configuration => {
-  const entry: EntryObject = {};
-
   const production = mode === 'production';
   const root = process.cwd();
 
-  const metadata = getProjectMetadata(logError);
-
-  if (metadata.index !== undefined) {
-    entry.dev = metadata.index;
-  }
-
-  metadata.episodeMetadata.forEach(({ path: entryPath }, name) => {
-    entry[name] = entryPath;
-  });
-
-  return {
+  const result: Configuration = {
     mode,
-    entry,
+    entry: require.resolve('@recative/ap-pack/src/shell.ts'),
     devtool: production ? false : 'inline-source-map',
     module: {
       rules: [
@@ -65,32 +49,43 @@ export const getConfig = (
     plugins: [
       ...envPlugin,
       ...copyPlugin,
-      ...htmlPlugin(production, metadata),
+      ...htmlPlugin(),
       new ProgressPlugin(),
       new CleanWebpackPlugin(),
       new NodePolyfillPlugin(),
       new WebpackManifestPlugin({}),
     ],
-    optimization: {
-      splitChunks: {
-        chunks: 'all',
-        cacheGroups: {
-          defaultVendors: {
-            filename: production
-              ? 'vendors/[contenthash].vendor.js'
-              : '[chunkhash].vendor.js',
-          },
-        },
-      },
-    },
     resolve: {
       extensions: ['.tsx', '.ts', '.js', '.json', '.fnt', '.ttf'],
       modules: [path.resolve(root, 'src'), path.resolve(root, 'node_modules')],
+      alias: {
+        src: withRoot('src'),
+      },
     },
     output: {
-      filename: production ? 'js/[name]/index.js' : '[name]/index.js',
+      filename: '[name].js',
       path: server ? fs.mkdtempSync(path.resolve(os.tmpdir(), 'ap-pack-')) : path.resolve(root, 'dist'),
       publicPath: '/',
     },
+    optimization: {
+      chunkIds: 'named',
+      runtimeChunk: 'single',
+      splitChunks: {
+        chunks: 'all',
+        minSize: 1,
+        name: (module: { context: string }) => {
+          console.log(module.context);
+          const splittedPath = module.context.split(path.sep);
+
+          if (splittedPath.includes('node_modules')) {
+            return 'shared';
+          }
+
+          return 0;
+        },
+      },
+    },
   };
+
+  return result;
 };
