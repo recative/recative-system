@@ -85,7 +85,7 @@ export class ManagedCoreStateManager extends EventTarget {
   readonly stateByType = FreezedMap(this.stateByTypeCache);
 
   handleEvent = (event: CustomEvent) => {
-    this.dispatchEvent(event);
+    this.dispatchEvent(new CustomEvent(event.type, event));
   }
 
   /**
@@ -323,7 +323,12 @@ export class ManagedCoreStateList extends EventTarget {
             return;
           }
 
-          this.dispatchEvent(new CustomEvent('event', { detail: trigger }));
+          this.dispatchEvent(new CustomEvent('event', {
+            detail: {
+              trigger,
+              list: this
+            }
+          }));
           this.triggeredStates.add(trigger);
           eventTriggered = true;
         }
