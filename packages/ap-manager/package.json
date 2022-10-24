@@ -23,6 +23,7 @@
   ],
   "dependencies": {
     "@recative/act-protocol": "workspace:^",
+    "@recative/open-promise": "workspace:^",
     "@ungap/event-target": "^0.2.3",
     "async-call-rpc": "^6.1.5",
     "debug": "^4.3.4"
