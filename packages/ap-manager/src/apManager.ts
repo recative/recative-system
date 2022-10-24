@@ -58,9 +58,13 @@ export class ApManagerInstance extends EventTarget {
     ready: () => {
       this.ready.resolve(this.iFrame);
     },
+    getConstants: () => this.constants,
   }
 
-  constructor(readonly clientSrc: string) {
+  constructor(
+    readonly clientSrc: string,
+    private readonly constants: Record<string, unknown>
+  ) {
     super();
 
     this.iFrame.src = clientSrc;
@@ -94,15 +98,20 @@ export class ApManagerSource {
     return this.availableInstances.size + this.occupiedInstances.size;
   }
 
-  constructor(readonly source: string, private readonly queueLength: number) {
+  constructor(
+    readonly source: string,
+    private readonly constants: Record<string, unknown>,
+    private readonly queueLength: number
+  ) {
     for (let i = 0; i < queueLength; i += 1) {
-      this.availableInstances.add(new ApManagerInstance(source));
+      this.availableInstances.add(new ApManagerInstance(source, constants));
     }
   }
 
   getInstance = () => {
     const [firstInstance,] = this.availableInstances;
-    const rentedInstances = firstInstance ?? new ApManagerInstance(this.source);
+    const rentedInstances = firstInstance
+      ?? new ApManagerInstance(this.source, this.constants);
 
     this.availableInstances.delete(rentedInstances);
     this.occupiedInstances.add(rentedInstances);
@@ -113,7 +122,9 @@ export class ApManagerSource {
         i < this.queueLength - this.availableInstances.size;
         i += 1
       ) {
-        this.availableInstances.add(new ApManagerInstance(this.source));
+        this.availableInstances.add(
+          new ApManagerInstance(this.source, this.constants)
+        );
       }
     }
   }
@@ -130,8 +141,12 @@ export class ApManager {
 
   constructor(private readonly queueLength: number) { };
 
-  setupSource = (source: string) => {
-    const newInstance = new ApManagerSource(source, this.queueLength);
+  setupSource = (source: string, constants: Record<string, unknown>) => {
+    const newInstance = new ApManagerSource(
+      source,
+      constants,
+      this.queueLength
+    );
 
     this.apManagerMap.set(source, newInstance);
 

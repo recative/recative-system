@@ -22,7 +22,7 @@
     "@babel/runtime-corejs3": "7.16.8",
     "@paciolan/remote-module-loader": "^3.0.2",
     "@recative/act-player": "^0.5.0",
-    "@recative/ap-manager": "workspace:^",
+    "@recative/ap-manager": "^0.0.0",
     "@types/fs-extra": "9.0.13",
     "@types/mkdirp": "1.0.2",
     "app-root-path": "^3.1.0",
