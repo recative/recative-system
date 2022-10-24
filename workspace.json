@@ -23,6 +23,6 @@
     "database": "packages/database",
     "ugly-json": "packages/ugly-json",
     "web-shell": "packages/web-shell",
-    "ap-manager": "packages/web-shell"
+    "ap-manager": "packages/ap-manager"
   }
 }

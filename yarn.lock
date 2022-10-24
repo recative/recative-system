@@ -5958,7 +5958,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@recative/act-player@^0.5.0, @recative/act-player@^0.5.1, @recative/act-player@workspace:packages/act-player":
+"@recative/act-player@^0.5.0, @recative/act-player@^0.5.1, @recative/act-player@^0.5.2, @recative/act-player@workspace:packages/act-player":
   version: 0.0.0-use.local
   resolution: "@recative/act-player@workspace:packages/act-player"
   dependencies:
@@ -6047,11 +6047,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/ap-manager@workspace:packages/ap-manager":
+"@recative/ap-manager@workspace:^, @recative/ap-manager@workspace:packages/ap-manager":
   version: 0.0.0-use.local
   resolution: "@recative/ap-manager@workspace:packages/ap-manager"
   dependencies:
     "@recative/act-protocol": "workspace:^"
+    "@recative/open-promise": "workspace:^"
     "@types/debug": ^4.1.7
     "@ungap/event-target": ^0.2.3
     async-call-rpc: ^6.1.5
@@ -6071,6 +6072,7 @@ __metadata:
     "@babel/runtime-corejs3": 7.16.8
     "@paciolan/remote-module-loader": ^3.0.2
     "@recative/act-player": ^0.5.0
+    "@recative/ap-manager": "workspace:^"
     "@recative/resource-bridge": ^0.2.2
     "@types/fs-extra": 9.0.13
     "@types/mkdirp": 1.0.2
@@ -6177,7 +6179,7 @@ __metadata:
     "@nanostores/react": ^0.1.5
     "@paciolan/remote-module-loader": ^3.0.2
     "@react-hookz/web": ^15.1.0
-    "@recative/act-player": ^0.5.1
+    "@recative/act-player": ^0.5.2
     "@recative/act-protocol": ^0.2.8
     "@recative/core-manager": ^0.10.0
     "@recative/definitions": ^0.4.3
@@ -6197,7 +6199,7 @@ __metadata:
   peerDependencies:
     "@nanostores/react": ^0.1.5
     "@paciolan/remote-module-loader": "*"
-    "@recative/act-player": 0.5.1
+    "@recative/act-player": 0.5.2
     "@recative/act-protocol": "*"
     "@recative/core-manager": 0.10.0
     "@recative/smart-resource": "*"
