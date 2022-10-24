@@ -11,4 +11,5 @@ export interface IAdapter<Metadata> {
     index?: number
   ) => number | null;
   getChunkMetadata: (rawData: Uint8Array, index?: number) => Metadata | null;
+  wrapChunk: (rawData: Uint8Array) => Uint8Array
 }
