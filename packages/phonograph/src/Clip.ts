@@ -84,7 +84,10 @@ export default class Clip<Metadata> {
   private _loadStarted: boolean = false;
   private _actualPlaying = false;
   public get stuck() {
-    return this.playing && !this._actualPlaying;
+    if (this.playing) {
+      return !this._actualPlaying
+    }
+    return !this.audioBufferCacheHit();
   }
   private _currentSource: IAudioBufferSourceNode<AudioContext> | null = null;
   private _nextSource: IAudioBufferSourceNode<AudioContext> | null = null;
