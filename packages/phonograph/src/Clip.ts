@@ -700,7 +700,10 @@ export default class Clip<Metadata> {
   }
 
   // Advance to next Chunk if playback of current source ends
-  private onCurrentSourceEnd = () => {
+  private onCurrentSourceEnd = (event: Event) => {
+    if (event.target !== this._currentSource) {
+      return;
+    }
     if (!this.playing || !this._actualPlaying) {
       return;
     }
