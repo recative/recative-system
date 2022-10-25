@@ -32,7 +32,9 @@ export const getConfig = (
 
   const result: Configuration = {
     mode,
-    entry: require.resolve('@recative/ap-pack/src/shell.ts'),
+    entry: production
+      ? require.resolve('@recative/ap-pack/src/shell.ts')
+      : require.resolve('@recative/ap-pack/src/devShell.ts'),
     devtool: production ? false : 'inline-source-map',
     module: {
       rules: [
