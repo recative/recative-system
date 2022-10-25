@@ -4,6 +4,7 @@ import { debug } from 'debug';
 
 import { RawUserImplementedFunctions } from '@recative/definitions';
 import { createHostConnector, HostFunctions } from '@recative/act-protocol';
+
 import type { ResourceLoaderCacheLevel } from '@recative/definitions';
 import type { ComponentFunctions, CoreFunctions } from '@recative/core-manager';
 
@@ -31,37 +32,37 @@ export const getController = (id: string) => {
   };
 
   const forwardToCoreFunctions = <
-      T extends keyof CoreFunctions,
-      F extends Extract<CoreFunctions[T], (...args: never[]) => unknown>,
-      P extends Parameters<F>,
-    >(
-      key: T,
-    ) => (...args: P) => {
-      if (!coreFunctions) {
-        throw new Error('Core functions not set');
-      }
+    T extends keyof CoreFunctions,
+    F extends Extract<CoreFunctions[T], (...args: never[]) => unknown>,
+    P extends Parameters<F>,
+  >(
+    key: T,
+  ) => (...args: P) => {
+    if (!coreFunctions) {
+      throw new Error('Core functions not set');
+    }
 
-      return (coreFunctions[key] as Function)?.(...args);
-    };
+    return (coreFunctions[key] as Function)?.(...args);
+  };
 
   const forwardToUserImplementedFunctions = <
-      T extends keyof RawUserImplementedFunctions,
-      F extends Extract<
+    T extends keyof RawUserImplementedFunctions,
+    F extends Extract<
       RawUserImplementedFunctions[T],
       (...args: never[]) => unknown
-      >,
-      P extends Parameters<F>,
-    >(
-      key: T,
-    ) => (...args: P) => {
-      if (!coreFunctions) {
-        throw new Error('Core functions not set');
-      }
+    >,
+    P extends Parameters<F>,
+  >(
+    key: T,
+  ) => (...args: P) => {
+    if (!coreFunctions) {
+      throw new Error('Core functions not set');
+    }
 
-      return (coreFunctions.core.getUserImplementedFunctions()[key] as Function)?.(
-        ...args,
-      );
-    };
+    return (coreFunctions.core.getUserImplementedFunctions()[key] as Function)?.(
+      ...args,
+    );
+  };
 
   const setActPointTag = (actPointTag: HTMLIFrameElement) => {
     if ($actPoint) return;
@@ -331,7 +332,7 @@ export const getController = (id: string) => {
 
       return connector.connector.runQueuedTask(taskId);
     },
-    sequenceEnded(sequenceId:string) {
+    sequenceEnded(sequenceId: string) {
       return connector?.connector.sequenceEnded(sequenceId);
     },
   };

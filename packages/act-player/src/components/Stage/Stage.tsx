@@ -38,11 +38,11 @@ const useStyles = () => {
   }), [css, theme.colors.backgroundAlwaysDark]);
 
   const bufferingStyles = React.useMemo(() => css({
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
     top: '0',
     left: '0',
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
   }), [css]);
 
   return { stageContainerStyles, elementContainerStyles, bufferingStyles };
@@ -87,10 +87,10 @@ export const Stage: InterfaceExtensionComponent = React.memo((props) => {
           );
         })}
       </Block>
-      { playing && stuck && (
-          <Block className={cn(bufferingStyles)}>
-            <Buffering loadingComponent={props.loadingComponent} />
-          </Block>
+      {playing && stuck && (
+        <Block className={cn(bufferingStyles)}>
+          <Buffering loadingComponent={props.loadingComponent} />
+        </Block>
       )}
     </ModuleContainer>
   );

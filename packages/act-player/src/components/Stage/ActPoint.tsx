@@ -9,16 +9,19 @@ import { useStore } from '@nanostores/react';
 import { useStyletron } from 'baseui';
 import { useAsync, useThrottledCallback } from '@react-hookz/web';
 
+import { getApManager } from '@recative/ap-manager';
 import { ResolutionMode } from '@recative/definitions';
 
 import { Block } from 'baseui/block';
 
+import { Error } from '../Panic/Error';
 import { Loading } from '../Loading/Loading';
 import { ModuleContainer } from '../Layout/ModuleContainer';
 import type { AssetExtensionComponent } from '../../types/ExtensionCore';
 
 import { getController } from './actPointControllers';
-import { Error } from '../Panic/Error';
+
+const apManager = getApManager(3);
 
 const logError = debug('player:ap-component');
 // eslint-disable-next-line no-console
@@ -80,42 +83,16 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
   const [scale, setScale] = React.useState(1);
   const [iFrameWidth, setIFrameWidth] = React.useState(-1);
   const [iFrameHeight, setIFrameHeight] = React.useState(-1);
-  const iFrameRef = React.useRef<HTMLIFrameElement>(null);
+
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const iFrameContainerRef = React.useRef<HTMLDivElement>(null);
   const videoComponentInitialized = React.useRef(false);
+
   const resolution = useStore(props.core.resolution);
   const width: number | undefined = resolution?.width;
   const height: number | undefined = resolution?.height;
+
   const envVariable = useStore(props.core.envVariableManager.envVariableAtom);
-
-  const getEntryPointUrl = React.useCallback(async () => {
-    const episodeData = props.core.getEpisodeData()!;
-    const entryPoints = props.spec.entryPoints as Record<string, string>;
-
-    return episodeData.resources.getResourceByUrlMap(entryPoints);
-  }, [props.core, props.spec.entryPoints]);
-
-  const [{
-    result: entryPoint,
-    error,
-  }, entryPointAction] = useAsync(getEntryPointUrl);
-
-  const injectedEntryPoint = React.useMemo(() => {
-    if (!entryPoint) return null;
-
-    const formattedEntryPoint = new URL(entryPoint, window.location.href);
-    const currentPage = new URL(window.location.href);
-
-    currentPage.searchParams.forEach((value, key) => {
-      return formattedEntryPoint.searchParams.set(key, value);
-    });
-
-    return formattedEntryPoint.toString();
-  }, [entryPoint]);
-
-  React.useEffect(() => {
-    entryPointAction.execute();
-  }, [entryPointAction]);
 
   const updateActPointScale = useThrottledCallback(
     () => {
@@ -206,11 +183,11 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
     setTimeout(updateActPointScale, 0);
   }, [width, height, props.show, updateActPointScale]);
 
-  const fullSizeStyles = css(FULL_SIZE_STYLES);
-  const visibleStyles = css(VISIBLE_STYLES);
-  const resetPositionStyles = css(RESET_POSITION_STYLES);
   const iFrameStyles = css(IFRAME_STYLES);
+  const visibleStyles = css(VISIBLE_STYLES);
+  const fullSizeStyles = css(FULL_SIZE_STYLES);
   const iFrameSizeStyles = css(iFrameSizeStyleDefinition);
+  const resetPositionStyles = css(RESET_POSITION_STYLES);
 
   const core = useConstant(() => {
     const controller = getController(props.id);
@@ -224,6 +201,56 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
 
     return { controller, coreFunctions, destroyConnector: controller.destroyConnector };
   });
+
+  const episodeData = props.core.getEpisodeData()!;
+
+  const [{ result, error }, srcActions] = useAsync(async () => {
+    const apEntryPoint = await episodeData.resources.getResourceById('@RECATIVE_AP');
+
+    if (!apEntryPoint) throw new TypeError(`AP entry point not found`);
+
+    const formattedSrc = new URL(apEntryPoint, window.location.href);
+    const currentPage = new URL(window.location.href);
+
+    currentPage.searchParams.forEach((value, key) => {
+      return formattedSrc.searchParams.set(key, value);
+    });
+
+    const finalSrc = formattedSrc.toString();
+
+    const apManagerSource = apManager.setupSource(
+      apEntryPoint,
+      Reflect.get(window, 'constant') ?? {}
+    );
+    const apInstance = apManagerSource.getInstance();
+
+    iFrameContainerRef.current?.append(apInstance.iFrame);
+
+    return { src: finalSrc, iFrame: apInstance.iFrame }
+  });
+
+  React.useLayoutEffect(() => {
+    if (result) {
+      result.iFrame.className = cn(iFrameStyles, iFrameSizeStyles);
+    }
+  }, [iFrameSizeStyles, iFrameStyles, result]);
+
+  React.useLayoutEffect(() => {
+    if (result) {
+      result.iFrame.width = iFrameWidth.toString();
+      result.iFrame.height = iFrameHeight.toString();
+    }
+  }, [iFrameHeight, iFrameWidth, result]);
+
+  React.useLayoutEffect(() => {
+    if (result) {
+      result.iFrame.hidden = !props.show;
+    }
+  }, [iFrameSizeStyles, iFrameStyles, props.show, result]);
+
+  React.useEffect(() => {
+    srcActions.execute();
+  }, [srcActions]);
 
   const handleEmergencyMessage = React.useCallback((event: MessageEvent) => {
     core.coreFunctions.log(`Emergency message received: ${event.data}`);
@@ -249,9 +276,9 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
 
   React.useLayoutEffect(() => {
     if (videoComponentInitialized.current) return;
-    if (!entryPoint) return;
+    if (!result?.src) return;
 
-    const $iFrame = iFrameRef.current;
+    const $iFrame = result?.iFrame;
     if (!$iFrame) return;
 
     const messageChannel = new MessageChannel();
@@ -273,7 +300,7 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
       );
       messageChannel.port1.close();
     };
-  }, [core.controller, entryPoint, handleEmergencyMessage]);
+  }, [core.controller, handleEmergencyMessage, result?.iFrame, result?.src]);
 
   React.useEffect(() => {
     core.coreFunctions.updateContentState('preloading');
@@ -317,19 +344,10 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
         ref={containerRef}
         className={blockStyle}
       >
-        {injectedEntryPoint ? (
-          <iframe
-            title="Interactive Content"
-            hidden={!props.show}
-            ref={iFrameRef}
-            className={cn(iFrameStyles, iFrameSizeStyles)}
-            width={iFrameWidth}
-            height={iFrameHeight}
-            src={injectedEntryPoint}
-          />
-        ) : (
-          loading
-        )}
+        {result?.src
+          ? <div ref={iFrameContainerRef} />
+          : loading
+        }
       </Block>
     </ModuleContainer>
   );
