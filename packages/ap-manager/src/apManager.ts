@@ -68,6 +68,7 @@ export class ApManagerInstance extends EventTarget {
     super();
 
     this.iFrame.src = clientSrc;
+    this.iFrame.title = 'Interactive Content';
 
     const channel = new IFramePortHostChannel(this.iFrame);
 
@@ -127,6 +128,8 @@ export class ApManagerSource {
         );
       }
     }
+
+    return rentedInstances;
   }
 
   destroyInstance = (x: ApManagerInstance) => {
