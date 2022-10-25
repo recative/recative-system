@@ -173,6 +173,7 @@ export default class Clip<Metadata> {
 
         const chunk = new Chunk<Metadata>({
           clip: this,
+          chunkIndex: this.__chunks.length,
           raw: slice(tempBuffer, firstByte, p),
           onready: () => {
             if (!this.canplaythrough) {
