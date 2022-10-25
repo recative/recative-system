@@ -1,5 +1,12 @@
 # phonograph changelog
 
+## 2.1.1
+
+### Patch Changes
+
+- 4551f19: fix: Suppress unexpected source ended event
+- 2081c08: fix: Clip can be stuck when not playing
+
 ## 2.1.0
 
 ### Minor Changes
