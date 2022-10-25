@@ -86,7 +86,6 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const iFrameContainerRef = React.useRef<HTMLDivElement>(null);
-  const videoComponentInitialized = React.useRef(false);
 
   const resolution = useStore(props.core.resolution);
   const width: number | undefined = resolution?.width;
@@ -224,6 +223,13 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
     );
     const apInstance = apManagerSource.getInstance();
 
+    await apInstance.ready;
+
+    apInstance.connector.loadAp(
+      (props.spec as Record<string, string>).firstLevelPath,
+      (props.spec as Record<string, string>).secondLevelPath
+    );
+
     iFrameContainerRef.current?.append(apInstance.iFrame);
 
     return { src: finalSrc, iFrame: apInstance.iFrame }
@@ -252,55 +258,11 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
     srcActions.execute();
   }, [srcActions]);
 
-  const handleEmergencyMessage = React.useCallback((event: MessageEvent) => {
-    core.coreFunctions.log(`Emergency message received: ${event.data}`);
-
-    if (event.data === 'ap-sw-not-available') {
-      props.core.panicCode.set('Service Worker not Available');
-    }
-
-    if (event.data === 'ap-sw-register-error') {
-      props.core.panicCode.set('Unable to Initialize the Service Worker');
-    }
-
-    if (event.data === 'ap-script-load-error') {
-      props.core.panicCode.set('Unable to Load the Script');
-    }
-  }, [core.coreFunctions, props.core.panicCode]);
-
   React.useEffect(() => {
     return () => {
       core.destroyConnector();
     };
   }, [core]);
-
-  React.useLayoutEffect(() => {
-    if (videoComponentInitialized.current) return;
-    if (!result?.src) return;
-
-    const $iFrame = result?.iFrame;
-    if (!$iFrame) return;
-
-    const messageChannel = new MessageChannel();
-    messageChannel.port1.addEventListener('message', handleEmergencyMessage);
-
-    $iFrame.contentWindow!.postMessage('ap-emergency-channel', '*', [
-      messageChannel.port2,
-    ]);
-
-    videoComponentInitialized.current = true;
-
-    core.controller.setActPointTag($iFrame);
-
-    return () => {
-      core.controller.removeActPointTag();
-      messageChannel.port1.removeEventListener(
-        'message',
-        handleEmergencyMessage,
-      );
-      messageChannel.port1.close();
-    };
-  }, [core.controller, handleEmergencyMessage, result?.iFrame, result?.src]);
 
   React.useEffect(() => {
     core.coreFunctions.updateContentState('preloading');

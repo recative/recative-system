@@ -42,7 +42,7 @@ export class ApManagerInstance extends EventTarget {
 
   readonly connector: _AsyncVersionOf<ManagedAp['functions']>;
 
-  private ready = new OpenPromise<HTMLIFrameElement>();
+  readonly ready = new OpenPromise<HTMLIFrameElement>();
 
   serviceWorkerRegistered = false;
 
