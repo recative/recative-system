@@ -1,6 +1,6 @@
 {
   "name": "@recative/client-sdk",
-  "version": "10.0.1",
+  "version": "11.0.0-beta.0",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
@@ -15,9 +15,9 @@
   "devDependencies": {
     "@nanostores/react": "^0.1.5",
     "@paciolan/remote-module-loader": "^3.0.2",
-    "@recative/act-player": "^0.5.2",
-    "@recative/act-protocol": "^0.2.8",
-    "@recative/core-manager": "^0.10.0",
+    "@recative/act-player": "^0.6.0-beta.0",
+    "@recative/act-protocol": "^0.3.0-beta.0",
+    "@recative/core-manager": "^0.11.0-beta.0",
     "@recative/smart-resource": "^0.2.0",
     "@types/debug": "^4.1.7",
     "classnames": "^2.3.1",
@@ -30,9 +30,9 @@
   "peerDependencies": {
     "@nanostores/react": "^0.1.5",
     "@paciolan/remote-module-loader": "*",
-    "@recative/act-player": "0.5.2",
-    "@recative/act-protocol": "*",
-    "@recative/core-manager": "0.10.0",
+    "@recative/act-player": "0.6.0-beta.0",
+    "@recative/act-protocol": "0.3.0-beta.0",
+    "@recative/core-manager": "0.11.0-beta.0",
     "@recative/smart-resource": "*",
     "baseui": "^12.1.0",
     "classnames": "*",
@@ -53,7 +53,7 @@
   "dependencies": {
     "@msgpack/msgpack": "^2.7.2",
     "@react-hookz/web": "^15.1.0",
-    "@recative/definitions": "^0.4.3",
+    "@recative/definitions": "^0.5.0-beta.0",
     "@recative/open-promise": "^0.2.3",
     "@recative/ugly-json": "workspace:^",
     "debug": "^4.3.3",

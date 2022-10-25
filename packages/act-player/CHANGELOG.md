@@ -1,5 +1,19 @@
 # @recative/act-player
 
+## 0.6.0-beta.0
+
+### Minor Changes
+
+- feat: New act point loading method
+
+### Patch Changes
+
+- Updated dependencies
+  - @recative/act-protocol@0.3.0-beta.0
+  - @recative/ap-manager@0.1.0-beta.0
+  - @recative/core-manager@0.11.0-beta.0
+  - @recative/definitions@0.5.0-beta.0
+
 ## 0.5.2
 
 ### Patch Changes

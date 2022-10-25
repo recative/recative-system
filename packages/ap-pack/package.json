@@ -1,13 +1,13 @@
 {
   "name": "@recative/ap-pack",
-  "version": "0.4.4",
+  "version": "0.5.0-beta.0",
   "source": "src/main.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
   "types": "dist/types.d.ts",
   "repository": "https://github.com/recative/recative-system",
   "devDependencies": {
-    "@recative/resource-bridge": "^0.2.2"
+    "@recative/resource-bridge": "^0.2.5-beta.0"
   },
   "bin": "./bin/ap-pack.js",
   "browserslist": [
@@ -21,8 +21,8 @@
     "@babel/preset-typescript": "7.16.7",
     "@babel/runtime-corejs3": "7.16.8",
     "@paciolan/remote-module-loader": "^3.0.2",
-    "@recative/act-player": "^0.5.0",
-    "@recative/ap-manager": "^0.0.0",
+    "@recative/act-player": "^0.6.0-beta.0",
+    "@recative/ap-manager": "^0.1.0-beta.0",
     "@types/fs-extra": "9.0.13",
     "@types/mkdirp": "1.0.2",
     "app-root-path": "^3.1.0",

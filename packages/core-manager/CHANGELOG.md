@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.11.0-beta.0
+
+### Minor Changes
+
+- feat: New act point loading method
+
+### Patch Changes
+
+- Updated dependencies
+  - @recative/act-protocol@0.3.0-beta.0
+  - @recative/definitions@0.5.0-beta.0
+  - @recative/resource-loader@0.2.3-beta.0
+
 ## 0.10.0
 
 ### Minor Changes

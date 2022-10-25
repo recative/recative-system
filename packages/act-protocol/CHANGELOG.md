@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0-beta.0
+
+### Minor Changes
+
+- feat: New act point loading method
+
+### Patch Changes
+
+- Updated dependencies
+  - @recative/definitions@0.5.0-beta.0
+
 ## 0.2.8
 
 ### Patch Changes

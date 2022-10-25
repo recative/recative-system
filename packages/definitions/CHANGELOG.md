@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0-beta.0
+
+### Minor Changes
+
+- feat: New act point loading method
+
 ## 0.4.3
 
 ### Patch Changes

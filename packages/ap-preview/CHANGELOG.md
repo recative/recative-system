@@ -1,5 +1,15 @@
 # @recative/ap-preview
 
+## 0.4.8-beta.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @recative/act-player@0.6.0-beta.0
+  - @recative/act-protocol@0.3.0-beta.0
+  - @recative/core-manager@0.11.0-beta.0
+  - @recative/definitions@0.5.0-beta.0
+
 ## 0.4.7
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@recative/act-protocol",
-  "version": "0.2.8",
+  "version": "0.3.0-beta.0",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
@@ -16,7 +16,7 @@
     "@types/debug": "^4.1.7"
   },
   "dependencies": {
-    "@recative/definitions": "^0.4.0",
+    "@recative/definitions": "^0.5.0-beta.0",
     "async-call-rpc": "6.1.2",
     "debug": "^4.3.3"
   },

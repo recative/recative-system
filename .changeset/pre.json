@@ -1,0 +1,31 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "@recative/act-player": "0.5.2",
+    "@recative/act-protocol": "0.2.8",
+    "@recative/ap-core": "0.5.1",
+    "@recative/ap-manager": "0.0.0",
+    "@recative/ap-pack": "0.4.4",
+    "@recative/ap-preview": "0.4.7",
+    "@recative/atlas": "0.0.1",
+    "@recative/audio-station": "0.3.0",
+    "@recative/client-sdk": "10.0.1",
+    "@recative/core-manager": "0.10.0",
+    "@recative/database": "0.0.1",
+    "@recative/definitions": "0.4.3",
+    "@recative/documents": "0.0.0",
+    "@recative/mobile-shell": "0.2.1",
+    "@recative/open-promise": "0.2.3",
+    "@recative/phonograph": "2.1.0",
+    "@recative/resource-bridge": "0.2.4",
+    "@recative/resource-loader": "0.2.2",
+    "@recative/smart-resource": "0.2.0",
+    "@recative/time-schedule": "0.2.1",
+    "@recative/ugly-json": "0.0.1",
+    "@recative/web-shell": "0.2.0"
+  },
+  "changesets": [
+    "big-keys-jam"
+  ]
+}

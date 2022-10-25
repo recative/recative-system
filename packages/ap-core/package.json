@@ -1,6 +1,6 @@
 {
   "name": "@recative/ap-core",
-  "version": "0.5.1",
+  "version": "0.5.2-beta.0",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
@@ -16,10 +16,10 @@
   },
   "dependencies": {
     "@nanostores/persistent": "^0.5.1",
-    "@recative/act-protocol": "^0.2.8",
-    "@recative/definitions": "^0.4.2",
+    "@recative/act-protocol": "^0.3.0-beta.0",
+    "@recative/definitions": "^0.5.0-beta.0",
     "@recative/open-promise": "^0.2.3",
-    "@recative/resource-bridge": "^0.2.3",
+    "@recative/resource-bridge": "^0.2.5-beta.0",
     "@recative/smart-resource": "^0.2.0",
     "@ungap/event-target": "^0.2.2",
     "debug": "^4.3.3",

@@ -1,7 +1,7 @@
 {
   "name": "@recative/mobile-shell",
   "packageManager": "yarn@3.2.1",
-  "version": "0.2.1",
+  "version": "0.2.2-beta.0",
   "scripts": {
     "start": "cross-env NODE_ENV=development craco start",
     "build": "craco build",
@@ -47,8 +47,8 @@
     "@ionic/react": "^6.0.0",
     "@ionic/react-router": "^6.0.0",
     "@paciolan/remote-module-loader": "^3.0.2",
-    "@recative/act-player": "^0.5.1",
-    "@recative/client-sdk": "^10.0.0",
+    "@recative/act-player": "^0.6.0-beta.0",
+    "@recative/client-sdk": "^11.0.0-beta.0",
     "cordova-plugin-fullscreen": "^1.3.0",
     "cordova-plugin-screen-orientation": "^3.0.2",
     "debug": "^4.3.3",
