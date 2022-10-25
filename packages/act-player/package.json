@@ -34,6 +34,7 @@
     "@nanostores/react": "0.2.0",
     "@react-hookz/web": "^15.1.0",
     "@recative/act-protocol": "^0.2.8",
+    "@recative/ap-manager": "workspace:^",
     "@recative/core-manager": "^0.10.0",
     "@recative/definitions": "^0.4.2",
     "@recative/smart-resource": "^0.2.0",
