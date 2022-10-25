@@ -225,12 +225,12 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
 
     await apInstance.ready;
 
+    core.controller.setActPointTag(apInstance);
+
     apInstance.connector.loadAp(
       (props.spec as Record<string, string>).firstLevelPath,
       (props.spec as Record<string, string>).secondLevelPath
     );
-
-    iFrameContainerRef.current?.append(apInstance.iFrame);
 
     return { src: finalSrc, iFrame: apInstance.iFrame }
   });
@@ -278,6 +278,21 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
     ? cn(fullSizeStyles, resetPositionStyles, visibleStyles)
     : cn(fullSizeStyles, resetPositionStyles);
 
+  React.useLayoutEffect(() => {
+    const $container = iFrameContainerRef.current;
+    if ($container && result) {
+      if ($container.children[0] !== result.iFrame) {
+        $container.prepend(result.iFrame);
+      }
+    }
+
+    return () => {
+      if ($container && result) {
+        $container.removeChild(result.iFrame);
+      }
+    }
+  }, [result]);
+
   if (error) {
     logError(
       '\r\nUnable to render this asset',
@@ -307,7 +322,7 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
         className={blockStyle}
       >
         {result?.src
-          ? <div ref={iFrameContainerRef} />
+          ? <Block id="apContainer" ref={iFrameContainerRef} />
           : loading
         }
       </Block>

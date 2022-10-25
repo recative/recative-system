@@ -2,6 +2,7 @@
 /* eslint-disable no-await-in-loop */
 import { debug } from 'debug';
 
+import { ApManagerInstance } from '@recative/ap-manager';
 import { RawUserImplementedFunctions } from '@recative/definitions';
 import { createHostConnector, HostFunctions } from '@recative/act-protocol';
 
@@ -15,7 +16,7 @@ const logWarn = debug('player:ap-control');
 logWarn.log = console.warn.bind(console);
 
 export const getController = (id: string) => {
-  let $actPoint: HTMLIFrameElement | null = null;
+  let actPoint: ApManagerInstance | null = null;
   let connector: ReturnType<typeof createHostConnector> | null = null;
   let coreFunctions: CoreFunctions | null = null;
 
@@ -23,7 +24,7 @@ export const getController = (id: string) => {
   let actPointShown = false;
 
   const startActPoint = () => {
-    if (!$actPoint) return false;
+    if (!actPoint) return false;
     if (!connector) return false;
     if (!actPointReady) return false;
     if (!actPointShown) return false;
@@ -64,10 +65,10 @@ export const getController = (id: string) => {
     );
   };
 
-  const setActPointTag = (actPointTag: HTMLIFrameElement) => {
-    if ($actPoint) return;
+  const setActPointTag = (instance: ApManagerInstance) => {
+    if (actPoint) return;
 
-    $actPoint = actPointTag;
+    actPoint = instance;
 
     const getResourceMetadata = (resourceId: string, type: 'label' | 'id') => {
       const { resources } = coreFunctions!.core.getEpisodeData()!;
@@ -280,13 +281,13 @@ export const getController = (id: string) => {
           },
         },
       ) as HostFunctions,
-      actPointTag,
+      instance.iFrame,
     );
     startActPoint();
   };
 
   const removeActPointTag = () => {
-    $actPoint = null;
+    actPoint = null;
   };
 
   const setActPointReady = () => {
@@ -322,8 +323,8 @@ export const getController = (id: string) => {
     async destroyItself() {
       connector?.channel.destroy();
       connector = null;
-      $actPoint!.src = 'about:blank';
-      $actPoint = null;
+      actPoint!.destroy();
+      actPoint = null;
     },
     runQueuedTask(taskId: string) {
       if (!connector) {
