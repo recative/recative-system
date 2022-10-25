@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "type": "commonjs",
   "dependencies": {
-    "@recative/open-promise": "workspace:^",
+    "@recative/open-promise": "^0.2.3",
     "@ungap/event-target": "^0.2.3"
   },
   "devDependencies": {

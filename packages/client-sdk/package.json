@@ -55,7 +55,7 @@
     "@react-hookz/web": "^15.1.0",
     "@recative/definitions": "^0.5.0-beta.0",
     "@recative/open-promise": "^0.2.3",
-    "@recative/ugly-json": "workspace:^",
+    "@recative/ugly-json": "^0.0.1",
     "debug": "^4.3.3",
     "detect-gpu": "^4.0.43",
     "nanoid": "^3.3.3"

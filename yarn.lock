@@ -5958,17 +5958,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@recative/act-player@^0.5.0, @recative/act-player@^0.5.1, @recative/act-player@^0.5.2, @recative/act-player@workspace:packages/act-player":
+"@recative/act-player@^0.6.0-beta.0, @recative/act-player@workspace:packages/act-player":
   version: 0.0.0-use.local
   resolution: "@recative/act-player@workspace:packages/act-player"
   dependencies:
     "@nanostores/react": 0.2.0
     "@paciolan/remote-module-loader": ^3.0.2
     "@react-hookz/web": ^15.1.0
-    "@recative/act-protocol": ^0.2.8
-    "@recative/ap-manager": "workspace:^"
-    "@recative/core-manager": ^0.10.0
-    "@recative/definitions": ^0.4.2
+    "@recative/act-protocol": ^0.3.0-beta.0
+    "@recative/ap-manager": ^0.1.0-beta.0
+    "@recative/core-manager": ^0.11.0-beta.0
+    "@recative/definitions": ^0.5.0-beta.0
     "@recative/smart-resource": ^0.2.0
     "@types/debug": ^4.1.7
     "@types/fs-extra": ^9.0.13
@@ -6005,11 +6005,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/act-protocol@^0.2.7, @recative/act-protocol@^0.2.8, @recative/act-protocol@workspace:^, @recative/act-protocol@workspace:packages/act-protocol":
+"@recative/act-protocol@^0.3.0-beta.0, @recative/act-protocol@workspace:packages/act-protocol":
   version: 0.0.0-use.local
   resolution: "@recative/act-protocol@workspace:packages/act-protocol"
   dependencies:
-    "@recative/definitions": ^0.4.0
+    "@recative/definitions": ^0.5.0-beta.0
     "@types/debug": ^4.1.7
     async-call-rpc: 6.1.2
     debug: ^4.3.3
@@ -6021,10 +6021,10 @@ __metadata:
   resolution: "@recative/ap-core@workspace:packages/ap-core"
   dependencies:
     "@nanostores/persistent": ^0.5.1
-    "@recative/act-protocol": ^0.2.8
-    "@recative/definitions": ^0.4.2
+    "@recative/act-protocol": ^0.3.0-beta.0
+    "@recative/definitions": ^0.5.0-beta.0
     "@recative/open-promise": ^0.2.3
-    "@recative/resource-bridge": ^0.2.3
+    "@recative/resource-bridge": ^0.2.5-beta.0
     "@recative/smart-resource": ^0.2.0
     "@types/animejs": ^3.1.2
     "@types/debug": ^4.1.5
@@ -6048,12 +6048,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/ap-manager@^0.0.0, @recative/ap-manager@workspace:^, @recative/ap-manager@workspace:packages/ap-manager":
+"@recative/ap-manager@^0.1.0-beta.0, @recative/ap-manager@workspace:packages/ap-manager":
   version: 0.0.0-use.local
   resolution: "@recative/ap-manager@workspace:packages/ap-manager"
   dependencies:
-    "@recative/act-protocol": "workspace:^"
-    "@recative/open-promise": "workspace:^"
+    "@recative/act-protocol": ^0.3.0-beta.0
+    "@recative/open-promise": ^0.2.3
     "@types/debug": ^4.1.7
     "@ungap/event-target": ^0.2.3
     async-call-rpc: ^6.1.5
@@ -6072,9 +6072,9 @@ __metadata:
     "@babel/preset-typescript": 7.16.7
     "@babel/runtime-corejs3": 7.16.8
     "@paciolan/remote-module-loader": ^3.0.2
-    "@recative/act-player": ^0.5.0
-    "@recative/ap-manager": ^0.0.0
-    "@recative/resource-bridge": ^0.2.2
+    "@recative/act-player": ^0.6.0-beta.0
+    "@recative/ap-manager": ^0.1.0-beta.0
+    "@recative/resource-bridge": ^0.2.5-beta.0
     "@types/fs-extra": 9.0.13
     "@types/mkdirp": 1.0.2
     app-root-path: ^3.1.0
@@ -6115,10 +6115,10 @@ __metadata:
     "@parcel/transformer-react-refresh-wrap": ^2.7.0
     "@parcel/transformer-typescript-types": ^2.7.0
     "@react-hookz/web": ^15.1.0
-    "@recative/act-player": ^0.5.1
-    "@recative/act-protocol": ^0.2.8
-    "@recative/core-manager": ^0.10.0
-    "@recative/definitions": ^0.4.2
+    "@recative/act-player": ^0.6.0-beta.0
+    "@recative/act-protocol": ^0.3.0-beta.0
+    "@recative/core-manager": ^0.11.0-beta.0
+    "@recative/definitions": ^0.5.0-beta.0
     "@recative/smart-resource": ^0.2.0
     "@types/debug": ^4.1.7
     "@types/fs-extra": ^9.0.13
@@ -6172,7 +6172,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/client-sdk@^10.0.0, @recative/client-sdk@workspace:packages/client-sdk":
+"@recative/client-sdk@^11.0.0-beta.0, @recative/client-sdk@workspace:packages/client-sdk":
   version: 0.0.0-use.local
   resolution: "@recative/client-sdk@workspace:packages/client-sdk"
   dependencies:
@@ -6180,13 +6180,13 @@ __metadata:
     "@nanostores/react": ^0.1.5
     "@paciolan/remote-module-loader": ^3.0.2
     "@react-hookz/web": ^15.1.0
-    "@recative/act-player": ^0.5.2
-    "@recative/act-protocol": ^0.2.8
-    "@recative/core-manager": ^0.10.0
-    "@recative/definitions": ^0.4.3
+    "@recative/act-player": ^0.6.0-beta.0
+    "@recative/act-protocol": ^0.3.0-beta.0
+    "@recative/core-manager": ^0.11.0-beta.0
+    "@recative/definitions": ^0.5.0-beta.0
     "@recative/open-promise": ^0.2.3
     "@recative/smart-resource": ^0.2.0
-    "@recative/ugly-json": "workspace:^"
+    "@recative/ugly-json": ^0.0.1
     "@types/debug": ^4.1.7
     classnames: ^2.3.1
     debug: ^4.3.3
@@ -6200,9 +6200,9 @@ __metadata:
   peerDependencies:
     "@nanostores/react": ^0.1.5
     "@paciolan/remote-module-loader": "*"
-    "@recative/act-player": 0.5.2
-    "@recative/act-protocol": "*"
-    "@recative/core-manager": 0.10.0
+    "@recative/act-player": 0.6.0-beta.0
+    "@recative/act-protocol": 0.3.0-beta.0
+    "@recative/core-manager": 0.11.0-beta.0
     "@recative/smart-resource": "*"
     baseui: ^12.1.0
     classnames: "*"
@@ -6216,17 +6216,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/core-manager@^0.10.0, @recative/core-manager@workspace:packages/core-manager":
+"@recative/core-manager@^0.11.0-beta.0, @recative/core-manager@workspace:packages/core-manager":
   version: 0.0.0-use.local
   resolution: "@recative/core-manager@workspace:packages/core-manager"
   dependencies:
     "@nanostores/persistent": ^0.5.2
-    "@recative/act-protocol": ^0.2.8
+    "@recative/act-protocol": ^0.3.0-beta.0
     "@recative/audio-station": ^0.3.0
-    "@recative/definitions": ^0.4.2
+    "@recative/definitions": ^0.5.0-beta.0
     "@recative/open-promise": ^0.2.3
     "@recative/phonograph": ^2.0.0
-    "@recative/resource-loader": ^0.2.2
+    "@recative/resource-loader": ^0.2.3-beta.0
     "@recative/smart-resource": ^0.2.0
     "@recative/time-schedule": ^0.2.1
     "@types/debug": ^4.1.7
@@ -6244,14 +6244,14 @@ __metadata:
   resolution: "@recative/database@workspace:packages/database"
   dependencies:
     "@faker-js/faker": ^7.5.0
-    "@recative/open-promise": "workspace:^"
+    "@recative/open-promise": ^0.2.3
     "@types/tmp": ^0.2.3
     "@ungap/event-target": ^0.2.3
     tmp: ^0.2.1
   languageName: unknown
   linkType: soft
 
-"@recative/definitions@^0.4.0, @recative/definitions@^0.4.2, @recative/definitions@^0.4.3, @recative/definitions@workspace:packages/definitions":
+"@recative/definitions@^0.5.0-beta.0, @recative/definitions@workspace:packages/definitions":
   version: 0.0.0-use.local
   resolution: "@recative/definitions@workspace:packages/definitions"
   dependencies:
@@ -6297,8 +6297,8 @@ __metadata:
     "@ionic/react": ^6.0.0
     "@ionic/react-router": ^6.0.0
     "@paciolan/remote-module-loader": ^3.0.2
-    "@recative/act-player": ^0.5.1
-    "@recative/client-sdk": ^10.0.0
+    "@recative/act-player": ^0.6.0-beta.0
+    "@recative/client-sdk": ^11.0.0-beta.0
     "@types/craco__craco": ^6.4.0
     "@types/fs-extra": ^9.0.13
     "@types/path-browserify": ^1.0.0
@@ -6339,7 +6339,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/open-promise@^0.2.0, @recative/open-promise@^0.2.3, @recative/open-promise@workspace:^, @recative/open-promise@workspace:packages/open-promise":
+"@recative/open-promise@^0.2.0, @recative/open-promise@^0.2.3, @recative/open-promise@workspace:packages/open-promise":
   version: 0.0.0-use.local
   resolution: "@recative/open-promise@workspace:packages/open-promise"
   dependencies:
@@ -6426,12 +6426,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/resource-bridge@^0.2.2, @recative/resource-bridge@^0.2.3, @recative/resource-bridge@workspace:packages/resource-bridge":
+"@recative/resource-bridge@^0.2.5-beta.0, @recative/resource-bridge@workspace:packages/resource-bridge":
   version: 0.0.0-use.local
   resolution: "@recative/resource-bridge@workspace:packages/resource-bridge"
   dependencies:
-    "@recative/act-protocol": ^0.2.7
-    "@recative/definitions": ^0.4.0
+    "@recative/act-protocol": ^0.3.0-beta.0
+    "@recative/definitions": ^0.5.0-beta.0
     "@recative/open-promise": ^0.2.0
     "@types/debug": ^4.1.7
     async-call-rpc: 6.1.2
@@ -6444,11 +6444,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/resource-loader@^0.2.2, @recative/resource-loader@workspace:packages/resource-loader":
+"@recative/resource-loader@^0.2.3-beta.0, @recative/resource-loader@workspace:packages/resource-loader":
   version: 0.0.0-use.local
   resolution: "@recative/resource-loader@workspace:packages/resource-loader"
   dependencies:
-    "@recative/definitions": ^0.4.0
+    "@recative/definitions": ^0.5.0-beta.0
     "@recative/open-promise": ^0.2.0
     idb-keyval: ^6.0.3
   languageName: unknown
@@ -6471,7 +6471,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/ugly-json@workspace:^, @recative/ugly-json@workspace:packages/ugly-json":
+"@recative/ugly-json@^0.0.1, @recative/ugly-json@workspace:packages/ugly-json":
   version: 0.0.0-use.local
   resolution: "@recative/ugly-json@workspace:packages/ugly-json"
   languageName: unknown

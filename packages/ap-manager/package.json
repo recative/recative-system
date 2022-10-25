@@ -22,8 +22,8 @@
     "Chrome 70"
   ],
   "dependencies": {
-    "@recative/act-protocol": "workspace:^",
-    "@recative/open-promise": "workspace:^",
+    "@recative/act-protocol": "^0.3.0-beta.0",
+    "@recative/open-promise": "^0.2.3",
     "@ungap/event-target": "^0.2.3",
     "async-call-rpc": "^6.1.5",
     "debug": "^4.3.4"
