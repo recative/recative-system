@@ -41,7 +41,7 @@ export interface IInitialAssetStatus {
 
 export interface SequenceOption {
   id: string;
-  showing?: boolean;
+  parentShowing?: boolean;
   parentPlaying?: boolean;
   dependencyLoadedPromise?: Promise<void>;
   logger: Logger;
@@ -227,9 +227,19 @@ export class ContentSequence {
   managedStateEnabled = false;
 
   /**
-   * Is the sequence started by switch to first Content.
+   * Is the sequence itself showing
    */
-  showing = true;
+  selfShowing = false;
+
+  /**
+   * Is the parent of the sequence showing
+   */
+  parentShowing = false;
+
+  /**
+   * Is the sequence actual showing, when it is showing itself and parent is also showing
+   */
+  showing = false
 
   /**
    * Is the sequence finally destroyed.
@@ -249,7 +259,7 @@ export class ContentSequence {
       this.setDependencyReady();
     }
 
-    this.showing = option.showing ?? true;
+    this.parentShowing = option.parentShowing ?? true;
 
     const contentInfos: ContentInfo[] = option.assets.map((asset) => ({
       ...asset,
@@ -389,6 +399,7 @@ export class ContentSequence {
       audioStation: this.option.audioStation,
       managedCoreStateManager: this.option.managedCoreStateManager,
       volume: this.volume,
+      parentShowing: this.showing,
       onUpdate: () => {
         if (this.contentList[this.currentSegment] === content) {
           this.updateProgress();
@@ -448,27 +459,7 @@ export class ContentSequence {
       return;
     }
     this.logContent(`\`showContent\` ${instance.id}`);
-    if (this.showing) {
-      if (this.managedStateEnabled) {
-        instance.setManagedStateEnabled(true);
-        this.managedCoreStateDirty = true;
-      }
-      this.option.getComponent(instance.id)!.showItself?.();
-      this.option.forEachComponent((component) => {
-        component.showContent?.(instance.id);
-      });
-    }
-    if (!instance.showing) {
-      instance.showing = true;
-      if (this.showing) {
-        this.option.showingContentCount.set(
-          this.option.showingContentCount.get() + 1,
-        );
-        this.logContent(
-          `showing count ${this.option.showingContentCount.get()}`,
-        );
-      }
-    }
+    instance.show();
   }
 
   /**
@@ -481,34 +472,13 @@ export class ContentSequence {
       return;
     }
     this.logContent(`\`hideContent\` ${instance.id}`);
-    if (this.showing) {
-      if (this.managedStateEnabled) {
-        instance.setManagedStateEnabled(false);
-        this.managedCoreStateDirty = true;
-      }
-      this.option.getComponent(instance.id)!.hideItself?.();
-      this.option.forEachComponent((component) => {
-        component.hideContent?.(instance.id);
-      });
-    }
-    if (instance.showing) {
-      instance.showing = false;
-      if (this.showing) {
-        this.option.showingContentCount.set(
-          this.option.showingContentCount.get() - 1,
-        );
-        this.logContent(
-          `showing count ${this.option.showingContentCount.get()}`,
-        );
-      }
-    }
+    instance.hide();
   }
 
   private handleAssetInstanceReady(instance: ContentInstance) {
     if (this.firstAssetInstanceReady.state === OpenPromiseState.Idle) {
       this.firstAssetInstanceReady.resolve();
     }
-
     const currentContent = this.contentList[this.currentSegment];
     // Since we have a preload mechanism, if the asset instance is already shown
     // on the stage, we can try to start this instance immediately, or this
@@ -633,7 +603,7 @@ export class ContentSequence {
     }
     this.logProgress('Finished content switching');
     this.switching = false;
-    content.instance!.timeline.time = this.nextSegmentStartTime;
+    content.instance!.setTime(this.nextSegmentStartTime);
     this.nextSegmentStartTime = 0;
     this.updateProgress();
     this.updateStuck();
@@ -672,26 +642,16 @@ export class ContentSequence {
     }
   }
 
+  private getCurrentContent() {
+    return this.contentList[this.currentSegment]?.instance ?? null;
+  }
+
   private playCurrentContent() {
-    const instance = this.contentList[this.currentSegment]?.instance ?? null;
-    if (instance === null) {
-      return;
-    }
-    if (instance.state === 'ready') {
-      instance.timeline.play();
-      instance.subsequenceManager.play();
-    }
+    this.getCurrentContent()?.playIfReady();
   }
 
   private pauseCurrentContent() {
-    const instance = this.contentList[this.currentSegment]?.instance ?? null;
-    if (instance === null) {
-      return;
-    }
-    if (instance.state === 'ready') {
-      instance.timeline.pause();
-      instance.subsequenceManager.pause();
-    }
+    this.getCurrentContent()?.pauseIfReady();
   }
 
   /**
@@ -759,7 +719,7 @@ export class ContentSequence {
     }
     this.logProgress(`Seek to ${time} at segment ${segment}`);
     if (segment === this.currentSegment) {
-      this.contentList[this.currentSegment].instance!.timeline.time = time;
+      this.contentList[this.currentSegment].instance!.setTime(time);
     } else {
       this.nextSegment = segment;
       this.nextSegmentStartTime = time;
@@ -767,54 +727,44 @@ export class ContentSequence {
     }
   }
 
+  updateShowing() {
+    const showing = this.selfShowing && this.parentShowing
+    if (this.showing === showing) {
+      return
+    }
+    if (showing) {
+      this.showing = true;
+      this.contentList.forEach((content) => {
+        const { instance } = content;
+        instance?.parentShow()
+      });
+    } else {
+      this.showing = false;
+      this.contentList.forEach((content) => {
+        const { instance } = content;
+        instance?.parentHide()
+      });
+    }
+  }
+
   show() {
-    this.showing = true;
-    this.contentList.forEach((content) => {
-      const { instance } = content;
-      if (instance !== null) {
-        if (instance.showing) {
-          if (this.managedStateEnabled) {
-            instance.setManagedStateEnabled(true);
-            this.managedCoreStateDirty = true;
-          }
-          this.option.getComponent(instance.id)!.showItself?.();
-          this.option.forEachComponent((component) => {
-            component.showContent?.(instance.id);
-          });
-          this.option.showingContentCount.set(
-            this.option.showingContentCount.get() + 1,
-          );
-          this.logContent(
-            `showing count ${this.option.showingContentCount.get()}`,
-          );
-        }
-      }
-    });
+    this.selfShowing = true
+    this.updateShowing()
   }
 
   hide() {
-    this.showing = false;
-    this.contentList.forEach((content) => {
-      const { instance } = content;
-      if (instance !== null) {
-        if (instance.showing) {
-          if (this.managedStateEnabled) {
-            instance.setManagedStateEnabled(false);
-            this.managedCoreStateDirty = true;
-          }
-          this.option.getComponent(instance.id)!.hideItself?.();
-          this.option.forEachComponent((component) => {
-            component.hideContent?.(instance.id);
-          });
-          this.option.showingContentCount.set(
-            this.option.showingContentCount.get() - 1,
-          );
-          this.logContent(
-            `showing count ${this.option.showingContentCount.get()}`,
-          );
-        }
-      }
-    });
+    this.selfShowing = false
+    this.updateShowing()
+  }
+
+  parentShow() {
+    this.parentShowing = true
+    this.updateShowing()
+  }
+
+  parentHide() {
+    this.parentShowing = false
+    this.updateShowing()
   }
 
   setVolume(volume: number) {
@@ -832,21 +782,6 @@ export class ContentSequence {
       dirty ||= instance.updateManagedCoreState();
     }
     return dirty;
-  }
-
-  setManagedStateEnabled(enabled: boolean) {
-    this.managedStateEnabled = enabled;
-    if (this.showing) {
-      this.contentList.forEach((content) => {
-        const { instance } = content;
-        if (instance !== null) {
-          if (instance.showing) {
-            instance.setManagedStateEnabled(enabled);
-            this.managedCoreStateDirty = true;
-          }
-        }
-      });
-    }
   }
 
   private ensureNotDestroyed() {

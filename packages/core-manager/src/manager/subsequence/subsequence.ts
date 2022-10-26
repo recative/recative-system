@@ -16,6 +16,8 @@ export class SubsequenceManager extends WithLogger {
 
   playing = false;
 
+  showing = false;
+
   private destroyed = false;
 
   managedCoreStateDirty = true;
@@ -41,6 +43,21 @@ export class SubsequenceManager extends WithLogger {
     this.playing = false;
     this.subsequences.forEach((subsequence) => {
       subsequence.parentPause();
+    });
+  }
+
+
+  show() {
+    this.showing = true;
+    this.subsequences.forEach((subsequence) => {
+      subsequence.parentShow();
+    });
+  }
+
+  hide() {
+    this.showing = false;
+    this.subsequences.forEach((subsequence) => {
+      subsequence.parentHide();
     });
   }
 
@@ -76,7 +93,7 @@ export class SubsequenceManager extends WithLogger {
     const subsequence = new ContentSequence({
       id: `${this.instanceId}-subsequence|${id}`,
       logger: this.logger.extend(`subsequence|${id}`),
-      showing: false,
+      parentShowing: false,
       parentPlaying: this.playing,
       audioStation: this.option.audioStation,
       managedCoreStateManager: this.option.managedCoreStateManager,
@@ -92,9 +109,6 @@ export class SubsequenceManager extends WithLogger {
     subsequence.eventTarget.addEventListener('end', () => {
       this.option.getComponent(this.instanceId)?.sequenceEnded?.(id);
     });
-    if (this.managedStateEnabled) {
-      subsequence.setManagedStateEnabled(true);
-    }
     subsequence.switchToFirstContent();
     this.subsequences.set(id, subsequence);
     this.managedCoreStateDirty = true;
@@ -142,12 +156,5 @@ export class SubsequenceManager extends WithLogger {
       dirty ||= subsequence.updateManagedCoreState();
     });
     return dirty;
-  }
-
-  setManagedStateEnabled(enabled: boolean) {
-    this.managedStateEnabled = enabled;
-    this.subsequences.forEach((subsequence) => {
-      subsequence.setManagedStateEnabled(enabled);
-    });
   }
 }

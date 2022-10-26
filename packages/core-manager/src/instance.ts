@@ -8,6 +8,7 @@ import {
   ContentSpec,
   ManagedCoreStateList,
   ManagedCoreStateManager,
+  UpdateReason,
 } from '@recative/definitions';
 import { AudioStation } from '@recative/audio-station';
 
@@ -31,6 +32,7 @@ export interface InstanceOption {
   spec: ContentSpec;
   audioStation: AudioStation;
   volume: number;
+  parentShowing: boolean;
   taskQueue: TimeSlicingQueue;
   managedCoreStateManager: ManagedCoreStateManager;
   contentInstances: Map<string, ContentInstance>;
@@ -55,9 +57,19 @@ export class ContentInstance extends WithLogger {
   state: ContentState = 'idle';
 
   /**
-   * Is the ContentInstance showing
+   * Is the ContentInstance itself showing
    */
-  showing: boolean = false;
+  selfShowing = false;
+
+  /**
+   * Is the parent of the ContentInstance showing
+   */
+  parentShowing = false;
+
+  /**
+   * Is the ContentInstance actual showing, when it is showing itself and parent is also showing
+   */
+  showing = false
 
   /**
    * Timeline, for scheduling and synchronization
@@ -76,6 +88,8 @@ export class ContentInstance extends WithLogger {
 
   // state on the main timeline
   managedCoreStateList = new ManagedCoreStateList();
+
+  managedCoreStateDirty = true;
 
   audioTrack: AudioTrack;
 
@@ -100,6 +114,7 @@ export class ContentInstance extends WithLogger {
   constructor(public id: string, private option: InstanceOption) {
     super();
 
+    this.parentShowing = option.parentShowing
     this.logger = option.logger;
     this.option.managedCoreStateManager.addStateList(this.managedCoreStateList);
     this.timeline = new Timeline();
@@ -247,10 +262,77 @@ export class ContentInstance extends WithLogger {
     this.option.handleFinish();
   }
 
+  playIfReady() {
+    if (this.state === 'ready') {
+      this.timeline.play();
+      this.subsequenceManager.play();
+    }
+  }
+
+  pauseIfReady() {
+    if (this.state === 'ready') {
+      this.timeline.pause();
+      this.subsequenceManager.pause();
+    }
+  }
+
+  updateShowing() {
+    const showing = this.selfShowing && this.parentShowing
+    if (this.showing === showing) {
+      return
+    }
+    this.setManagedStateEnabled(showing)
+    this.managedCoreStateDirty = true;
+    if (showing) {
+      this.option.getComponent(this.id)!.showItself?.();
+      this.option.forEachComponent((component) => {
+        component.showContent?.(this.id);
+      });
+      this.subsequenceManager.show();
+      this.option.showingContentCount.set(
+        this.option.showingContentCount.get() + 1,
+      );
+      this.log(`\`showingContentCount\` increase to ${this.option.showingContentCount.get()}`);
+    } else {
+      this.option.getComponent(this.id)!.hideItself?.();
+      this.option.forEachComponent((component) => {
+        component.hideContent?.(this.id);
+      });
+      this.subsequenceManager.hide();
+      this.option.showingContentCount.set(
+        this.option.showingContentCount.get() - 1,
+      );
+      this.log(`\`showingContentCount\` decease to ${this.option.showingContentCount.get()}`);
+    }
+    this.showing = showing;
+  }
+
+  show() {
+    this.selfShowing = true
+    this.updateShowing()
+  }
+
+  hide() {
+    this.selfShowing = false
+    this.updateShowing()
+  }
+
+  parentShow() {
+    this.parentShowing = true
+    this.updateShowing()
+  }
+
+  parentHide() {
+    this.parentShowing = false
+    this.updateShowing()
+  }
+
   updateManagedCoreState() {
-    let dirty = this.managedCoreStateList.seek(this.timeline.time);
+    let dirty = this.managedCoreStateList.seek(this.timeline.time, UpdateReason.Tick);
     dirty ||= this.audioHost.updateManagedState();
     dirty ||= this.subsequenceManager.updateManagedState();
+    dirty ||= this.managedCoreStateDirty
+    this.managedCoreStateDirty = false;
     return dirty;
   }
 
@@ -265,7 +347,6 @@ export class ContentInstance extends WithLogger {
       this.option.managedCoreStateManager.addStateList(this.managedCoreStateList);
     }
     this.audioHost.setManagedStateEnabled(enabled);
-    this.subsequenceManager.setManagedStateEnabled(enabled);
   }
 
   setVolume(volume: number) {
@@ -281,11 +362,16 @@ export class ContentInstance extends WithLogger {
     await this.subsequenceManager.destroy();
   }
 
+  setTime(time: number) {
+    this.timeline.time = time
+    this.managedCoreStateDirty ||= this.managedCoreStateList.seek(time, UpdateReason.Manually)
+  }
+
   private async internalDestroy() {
     this.log(
       'Content instance start to destroy',
     );
-    await this.option.getComponent(this.id)!.destroyItself?.()?.finally(() => {});
+    await this.option.getComponent(this.id)!.destroyItself?.()?.finally(() => { });
     this.option.forEachComponent((component) => {
       component.destroyContent?.(this.id);
     });
