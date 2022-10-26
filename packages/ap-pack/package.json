@@ -41,6 +41,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.4.2",
+    "source-map-loader": "^4.0.1",
     "style-loader": "^2.0.0",
     "styletron-engine-monolithic": "^1.0.0",
     "styletron-react": "^6.1.0",

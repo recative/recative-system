@@ -21,6 +21,7 @@ import { imageRule } from './rules/image';
 import { envPlugin } from './plugins/env';
 import { copyPlugin } from './plugins/copy';
 import { htmlPlugin } from './plugins/html';
+import { jsRule } from './rules/js';
 
 // TODO: more generic config
 export const getConfig = (
@@ -35,9 +36,10 @@ export const getConfig = (
     entry: production
       ? require.resolve('@recative/ap-pack/src/shell.ts')
       : require.resolve('@recative/ap-pack/src/devShell.ts'),
-    devtool: production ? false : 'inline-source-map',
+    devtool: production ? false : 'eval-source-map',
     module: {
       rules: [
+        ...jsRule,
         ...tsRule,
         ...avRule,
         ...cssRule,
@@ -48,6 +50,7 @@ export const getConfig = (
         ...tsxRule(production),
       ],
     },
+    ignoreWarnings: [/Failed to parse source map/],
     plugins: [
       ...envPlugin,
       ...copyPlugin,
