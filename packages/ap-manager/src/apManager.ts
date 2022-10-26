@@ -31,7 +31,9 @@ export const ErrorEventDispatcher = (
   reason: string
 ) => {
   return (code: string, message: string, stack: string | undefined) => {
-    eventTarget.dispatchEvent(new ErrorEvent(code, message, stack, reason));
+    const errorEvent = new ErrorEvent(code, message, stack, reason);
+    logHost('An error occurred', errorEvent);
+    eventTarget.dispatchEvent(errorEvent);
   }
 }
 
@@ -56,6 +58,7 @@ export class ApManagerInstance extends EventTarget {
       this.serviceWorkerRegistered = true;
     },
     ready: () => {
+      logHost(`AP instance is ready`);
       this.ready.resolve(this.iFrame);
     },
     getConstants: () => this.constants,
@@ -63,14 +66,27 @@ export class ApManagerInstance extends EventTarget {
 
   constructor(
     readonly clientSrc: string,
+    readonly container: HTMLDivElement,
     private readonly constants: Record<string, unknown>
   ) {
     super();
 
+    logHost(
+      'Initializing ApManagerInstance with src:',
+      clientSrc,
+      'frame:',
+      this.iFrame
+    );
+
     this.iFrame.src = clientSrc;
     this.iFrame.title = 'Interactive Content';
+    container.append(this.iFrame);
 
-    const channel = new IFramePortHostChannel(this.iFrame);
+    const channel = new IFramePortHostChannel(
+      this.iFrame,
+      new URL(clientSrc, window.location.href).origin,
+      '@recative/ap-manager/message'
+    );
 
     this.channel = channel;
 
@@ -95,6 +111,8 @@ export class ApManagerSource {
 
   private occupiedInstances = new Set<ApManagerInstance>();
 
+  private container = document.createElement('div');
+
   get totalInstances() {
     return this.availableInstances.size + this.occupiedInstances.size;
   }
@@ -104,15 +122,23 @@ export class ApManagerSource {
     private readonly constants: Record<string, unknown>,
     private readonly queueLength: number
   ) {
+    logHost(`Initializing instances with queue length of ${queueLength}`);
+
+    this.container.hidden = true;
+    this.container.id = 'apManagerContainer';
+    document.body.appendChild(this.container);
+
     for (let i = 0; i < queueLength; i += 1) {
-      this.availableInstances.add(new ApManagerInstance(source, constants));
+      this.availableInstances.add(
+        new ApManagerInstance(source, this.container, constants)
+      );
     }
   }
 
   getInstance = () => {
     const [firstInstance,] = this.availableInstances;
     const rentedInstances = firstInstance
-      ?? new ApManagerInstance(this.source, this.constants);
+      ?? new ApManagerInstance(this.source, this.container, this.constants);
 
     this.availableInstances.delete(rentedInstances);
     this.occupiedInstances.add(rentedInstances);
@@ -124,10 +150,12 @@ export class ApManagerSource {
         i += 1
       ) {
         this.availableInstances.add(
-          new ApManagerInstance(this.source, this.constants)
+          new ApManagerInstance(this.source, this.container, this.constants)
         );
       }
     }
+
+    logHost(`Getting instance`, firstInstance);
 
     return rentedInstances;
   }
@@ -142,9 +170,13 @@ export class ApManagerSource {
 export class ApManager {
   private readonly apManagerMap = new Map<string, ApManagerSource>();
 
-  constructor(private readonly queueLength: number) { };
+  constructor(private readonly queueLength: number) {
+    logHost(`Initializing AP Manager`);
+  };
 
   setupSource = (source: string, constants: Record<string, unknown>) => {
+    logHost(`Setting up the source: ${source}`);
+    logHost(`Setting up constants:`, constants);
     const newInstance = new ApManagerSource(
       source,
       constants,

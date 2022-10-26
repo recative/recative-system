@@ -6,7 +6,7 @@ import { logClient } from './log';
 import type { ApManagerInstance } from './apManager';
 
 export class ManagedAp {
-  readonly channel = new IFramePortClientChannel();
+  readonly channel = new IFramePortClientChannel('@recative/ap-manager/message');
 
   readonly connector: _AsyncVersionOf<ApManagerInstance['functions']>;
 
@@ -19,6 +19,7 @@ export class ManagedAp {
   constructor(
     private apImporter: (firstLevelPath: string, secondLevel: string) => void
   ) {
+    logClient(`Initializing Managed AP`);
     this.connector = AsyncCall<ApManagerInstance['functions']>(this.functions, {
       channel: this.channel,
       logger: { log: logClient },

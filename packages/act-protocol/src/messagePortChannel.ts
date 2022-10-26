@@ -26,13 +26,13 @@ const isTransferable = (obj: object): obj is Transferable => {
   }
   if (
     typeof WritableStream !== 'undefined'
-   && obj instanceof WritableStream
+    && obj instanceof WritableStream
   ) {
     return true;
   }
   if (
     typeof TransformStream !== 'undefined'
-   && obj instanceof TransformStream
+    && obj instanceof TransformStream
   ) {
     return true;
   }
@@ -237,6 +237,7 @@ export class IFramePortHostChannel extends LazyMessagePortChannel {
   constructor(
     $iFrame: HTMLIFrameElement,
     origin = new URL($iFrame.src).origin,
+    private msgId = 'iframe-request-host-port',
   ) {
     super();
     this.$iframe = $iFrame;
@@ -247,9 +248,10 @@ export class IFramePortHostChannel extends LazyMessagePortChannel {
 
   onMessage = (event: MessageEvent) => {
     if (this.ready) return;
-    if (event.data !== 'iframe-request-host-port') return;
+    if (event.data !== this.msgId) return;
 
     logHost('Received protocol connection request');
+
 
     if (!this.$iframe?.contentWindow) {
       throw new TypeError('Content window does not exists');
@@ -261,7 +263,7 @@ export class IFramePortHostChannel extends LazyMessagePortChannel {
 
     this.initialize(rpcChannel);
 
-    this.$iframe.contentWindow.postMessage('iframe-host-port', this.origin, [
+    this.$iframe.contentWindow.postMessage(this.msgId, this.origin, [
       messageChannel.port2,
     ]);
 
@@ -275,17 +277,17 @@ export class IFramePortHostChannel extends LazyMessagePortChannel {
 }
 
 export class IFramePortClientChannel extends LazyMessagePortChannel {
-  constructor() {
+  constructor(private msgId = 'iframe-request-host-port') {
     super();
 
     window.addEventListener('message', this.onMessage);
     logClient('Sending protocol connection request');
-    window.parent.postMessage('iframe-request-host-port', '*');
+    window.parent.postMessage(msgId, '*');
   }
 
   onMessage = (event: MessageEvent) => {
     if (this.ready) return;
-    if (event.data !== 'iframe-host-port') return;
+    if (event.data !== this.msgId) return;
 
     logClient('Received protocol port');
     const rpcChannel = new BatchedMessagePortChannel(event.ports[0]);

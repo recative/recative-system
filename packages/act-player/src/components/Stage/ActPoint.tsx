@@ -322,6 +322,7 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
   return (
     <ModuleContainer>
       <Block
+        id="actPoint"
         ref={containerRef}
         className={blockStyle}
       >

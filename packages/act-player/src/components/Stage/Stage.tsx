@@ -70,6 +70,7 @@ export const Stage: InterfaceExtensionComponent = React.memo((props) => {
   return (
     <ModuleContainer>
       <Block
+        id="stageContainer"
         className={cn(stageContainerStyles, elementContainerStyles)}
         display={stageEmpty ? 'none' : 'block'}
       >
