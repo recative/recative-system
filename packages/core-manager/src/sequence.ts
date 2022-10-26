@@ -227,15 +227,18 @@ export class ContentSequence {
   managedStateEnabled = false;
 
   /**
-   * Is the sequence showing itself
+   * Is the sequence itself showing
    */
   selfShowing = false;
 
   /**
-   * Is the sequence showing itself
+   * Is the parent of the sequence showing
    */
   parentShowing = false;
 
+  /**
+   * Is the sequence actual showing, when it is showing itself and parent is also showing
+   */
   showing = false
 
   /**
@@ -396,6 +399,7 @@ export class ContentSequence {
       audioStation: this.option.audioStation,
       managedCoreStateManager: this.option.managedCoreStateManager,
       volume: this.volume,
+      parentShowing: this.showing,
       onUpdate: () => {
         if (this.contentList[this.currentSegment] === content) {
           this.updateProgress();
@@ -455,26 +459,10 @@ export class ContentSequence {
       return;
     }
     this.logContent(`\`showContent\` ${instance.id}`);
-    if (this.showing) {
-      if (this.managedStateEnabled) {
-        instance.setManagedStateEnabled(true);
-        this.managedCoreStateDirty = true;
-      }
-      this.option.getComponent(instance.id)!.showItself?.();
-      this.option.forEachComponent((component) => {
-        component.showContent?.(instance.id);
-      });
-    }
-    if (!instance.showing) {
-      instance.showing = true;
-      if (this.showing) {
-        this.option.showingContentCount.set(
-          this.option.showingContentCount.get() + 1,
-        );
-        this.logContent(
-          `showing count ${this.option.showingContentCount.get()}`,
-        );
-      }
+    instance.show();
+    if (this.managedStateEnabled) {
+      instance.setManagedStateEnabled(true);
+      this.managedCoreStateDirty = true;
     }
   }
 
@@ -488,26 +476,10 @@ export class ContentSequence {
       return;
     }
     this.logContent(`\`hideContent\` ${instance.id}`);
-    if (this.showing) {
-      if (this.managedStateEnabled) {
-        instance.setManagedStateEnabled(false);
-        this.managedCoreStateDirty = true;
-      }
-      this.option.getComponent(instance.id)!.hideItself?.();
-      this.option.forEachComponent((component) => {
-        component.hideContent?.(instance.id);
-      });
-    }
-    if (instance.showing) {
-      instance.showing = false;
-      if (this.showing) {
-        this.option.showingContentCount.set(
-          this.option.showingContentCount.get() - 1,
-        );
-        this.logContent(
-          `showing count ${this.option.showingContentCount.get()}`,
-        );
-      }
+    instance.hide();
+    if (this.managedStateEnabled) {
+      instance.setManagedStateEnabled(false);
+      this.managedCoreStateDirty = true;
     }
   }
 
@@ -515,7 +487,6 @@ export class ContentSequence {
     if (this.firstAssetInstanceReady.state === OpenPromiseState.Idle) {
       this.firstAssetInstanceReady.resolve();
     }
-
     const currentContent = this.contentList[this.currentSegment];
     // Since we have a preload mechanism, if the asset instance is already shown
     // on the stage, we can try to start this instance immediately, or this
@@ -770,47 +741,13 @@ export class ContentSequence {
       this.showing = true;
       this.contentList.forEach((content) => {
         const { instance } = content;
-        if (instance !== null) {
-          if (instance.showing) {
-            if (this.managedStateEnabled) {
-              instance.setManagedStateEnabled(true);
-              this.managedCoreStateDirty = true;
-            }
-            this.option.getComponent(instance.id)!.showItself?.();
-            this.option.forEachComponent((component) => {
-              component.showContent?.(instance.id);
-            });
-            this.option.showingContentCount.set(
-              this.option.showingContentCount.get() + 1,
-            );
-            this.logContent(
-              `showing count ${this.option.showingContentCount.get()}`,
-            );
-          }
-        }
+        instance?.parentShow()
       });
     } else {
       this.showing = false;
       this.contentList.forEach((content) => {
         const { instance } = content;
-        if (instance !== null) {
-          if (instance.showing) {
-            if (this.managedStateEnabled) {
-              instance.setManagedStateEnabled(false);
-              this.managedCoreStateDirty = true;
-            }
-            this.option.getComponent(instance.id)!.hideItself?.();
-            this.option.forEachComponent((component) => {
-              component.hideContent?.(instance.id);
-            });
-            this.option.showingContentCount.set(
-              this.option.showingContentCount.get() - 1,
-            );
-            this.logContent(
-              `showing count ${this.option.showingContentCount.get()}`,
-            );
-          }
-        }
+        instance?.parentHide()
       });
     }
   }

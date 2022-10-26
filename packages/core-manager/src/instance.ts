@@ -31,6 +31,7 @@ export interface InstanceOption {
   spec: ContentSpec;
   audioStation: AudioStation;
   volume: number;
+  parentShowing: boolean;
   taskQueue: TimeSlicingQueue;
   managedCoreStateManager: ManagedCoreStateManager;
   contentInstances: Map<string, ContentInstance>;
@@ -55,9 +56,19 @@ export class ContentInstance extends WithLogger {
   state: ContentState = 'idle';
 
   /**
-   * Is the ContentInstance showing
+   * Is the ContentInstance itself showing
    */
-  showing: boolean = false;
+  selfShowing = false;
+
+  /**
+   * Is the parent of the ContentInstance showing
+   */
+  parentShowing = false;
+
+  /**
+   * Is the ContentInstance actual showing, when it is showing itself and parent is also showing
+   */
+  showing = false
 
   /**
    * Timeline, for scheduling and synchronization
@@ -100,6 +111,7 @@ export class ContentInstance extends WithLogger {
   constructor(public id: string, private option: InstanceOption) {
     super();
 
+    this.parentShowing = option.parentShowing
     this.logger = option.logger;
     this.option.managedCoreStateManager.addStateList(this.managedCoreStateList);
     this.timeline = new Timeline();
@@ -259,6 +271,50 @@ export class ContentInstance extends WithLogger {
       this.timeline.pause();
       this.subsequenceManager.pause();
     }
+  }
+
+  updateShowing() {
+    const showing = this.selfShowing && this.parentShowing
+    if (showing) {
+      this.option.getComponent(this.id)!.showItself?.();
+      this.option.forEachComponent((component) => {
+        component.showContent?.(this.id);
+      });
+      this.subsequenceManager.show();
+      this.option.showingContentCount.set(
+        this.option.showingContentCount.get() + 1,
+      );
+    } else {
+      this.option.getComponent(this.id)!.hideItself?.();
+      this.option.forEachComponent((component) => {
+        component.hideContent?.(this.id);
+      });
+      this.subsequenceManager.hide();
+      this.option.showingContentCount.set(
+        this.option.showingContentCount.get() - 1,
+      );
+    }
+    this.showing = showing;
+  }
+
+  show() {
+    this.selfShowing = true
+    this.updateShowing()
+  }
+
+  hide() {
+    this.selfShowing = false
+    this.updateShowing()
+  }
+
+  parentShow() {
+    this.parentShowing = true
+    this.updateShowing()
+  }
+
+  parentHide() {
+    this.parentShowing = false
+    this.updateShowing()
   }
 
   updateManagedCoreState() {
