@@ -36,7 +36,7 @@ export const ErrorEventDispatcher = (
 }
 
 export class ApManagerInstance extends EventTarget {
-  readonly iFrame = new HTMLIFrameElement();
+  readonly iFrame = document.createElement('iframe');
 
   readonly channel: IFramePortHostChannel;
 

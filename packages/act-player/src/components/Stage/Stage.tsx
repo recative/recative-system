@@ -69,7 +69,10 @@ export const Stage: InterfaceExtensionComponent = React.memo((props) => {
 
   return (
     <ModuleContainer>
-      <Block className={cn(stageContainerStyles, elementContainerStyles)} display={stageEmpty ? 'none' : 'block'}>
+      <Block
+        className={cn(stageContainerStyles, elementContainerStyles)}
+        display={stageEmpty ? 'none' : 'block'}
+      >
         {stageContents.map(({ id, spec }) => {
           const Component = CONTENT_EXTENSIONS[spec?.contentExtensionId || ''];
 

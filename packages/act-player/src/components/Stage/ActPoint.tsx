@@ -196,10 +196,16 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
       controller.controller,
     );
 
-    controller.setCoreFunctions(coreFunctions);
-
-    return { controller, coreFunctions, destroyConnector: controller.destroyConnector };
+    return {
+      controller,
+      coreFunctions,
+      destroyConnector: controller.destroyConnector
+    };
   });
+
+  React.useEffect(() => {
+    core.controller.setCoreFunctions(core.coreFunctions);
+  }, [core.controller, core.coreFunctions]);
 
   const episodeData = props.core.getEpisodeData()!;
 
@@ -295,18 +301,16 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
 
   if (error) {
     logError(
-      '\r\nUnable to render this asset',
-      '\r\n============================',
       '\r\nUnable to get the entry point',
-
-      { error },
-      '\r\nSpec of this asset is',
-
+      '\r\n=============================',
+      '\r\nSpec of this asset is\r\n',
       props.spec,
-
-      '\r\nPreferred Uploaders are',
+      '\r\nPreferred Uploaders are\r\n',
       core.coreFunctions.core.getEpisodeData()?.preferredUploaders,
+      '\r\nThe error is\r\n',
     );
+
+    logError(error);
 
     return (
       <ModuleContainer>
