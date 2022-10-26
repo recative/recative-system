@@ -275,6 +275,9 @@ export class ContentInstance extends WithLogger {
 
   updateShowing() {
     const showing = this.selfShowing && this.parentShowing
+    if (this.showing === showing) {
+      return
+    }
     if (showing) {
       this.option.getComponent(this.id)!.showItself?.();
       this.option.forEachComponent((component) => {
@@ -284,6 +287,7 @@ export class ContentInstance extends WithLogger {
       this.option.showingContentCount.set(
         this.option.showingContentCount.get() + 1,
       );
+      this.log(`\`showingContentCount\` increase to ${this.option.showingContentCount.get()}`);
     } else {
       this.option.getComponent(this.id)!.hideItself?.();
       this.option.forEachComponent((component) => {
@@ -293,6 +297,7 @@ export class ContentInstance extends WithLogger {
       this.option.showingContentCount.set(
         this.option.showingContentCount.get() - 1,
       );
+      this.log(`\`showingContentCount\` decease to ${this.option.showingContentCount.get()}`);
     }
     this.showing = showing;
   }

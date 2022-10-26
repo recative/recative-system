@@ -737,6 +737,9 @@ export class ContentSequence {
 
   updateShowing() {
     const showing = this.selfShowing && this.parentShowing
+    if (this.showing === showing) {
+      return
+    }
     if (showing) {
       this.showing = true;
       this.contentList.forEach((content) => {
