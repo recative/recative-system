@@ -1,7 +1,6 @@
 import * as React from 'react';
 import debug from 'debug';
 import { atom } from 'nanostores';
-import { useStore } from '@nanostores/react';
 
 import { ActPlayer, InterfaceExtensionComponent } from '@recative/act-player';
 import {
@@ -32,6 +31,7 @@ import { useEpisodeDetail } from '../hooks/useEpisodeDetail';
 import { useMemoryLeakFixer } from '../hooks/useMemoryLeakFixer';
 import { useResetAssetStatusCallback } from '../hooks/useResetAssetStatusCallback';
 
+import { useLazyStore } from './hooks/useLazyStore';
 import { useDataFetcher } from './hooks/useDataFetcher';
 import { CONTAINER_COMPONENT } from '../constant/storageKeys';
 import { useEpisodeIdNormalizer } from './hooks/useEpisodeIdNormalizer';
@@ -275,7 +275,7 @@ export const ContentModuleFactory = <
     useCustomEventWrapper(playerOnSegmentStart, hookOnSegmentStart, 'segmentStart', seriesCore);
     useCustomEventWrapper(resetInitialAsset, playerOnInitialized, 'initialized', seriesCore);
 
-    const coreState = useStore(episodeCore?.coreState ?? VOID_ATOM);
+    const coreState = useLazyStore(episodeCore?.coreState ?? VOID_ATOM);
     const playerReady = episodeDetail
       && episodeCore
       && episodeDetail.assets
