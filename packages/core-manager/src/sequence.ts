@@ -41,7 +41,7 @@ export interface IInitialAssetStatus {
 
 export interface SequenceOption {
   id: string;
-  showing?: boolean;
+  parentShowing?: boolean;
   parentPlaying?: boolean;
   dependencyLoadedPromise?: Promise<void>;
   logger: Logger;
@@ -227,9 +227,16 @@ export class ContentSequence {
   managedStateEnabled = false;
 
   /**
-   * Is the sequence started by switch to first Content.
+   * Is the sequence showing itself
    */
-  showing = true;
+  selfShowing = false;
+
+  /**
+   * Is the sequence showing itself
+   */
+  parentShowing = false;
+
+  showing = false
 
   /**
    * Is the sequence finally destroyed.
@@ -249,7 +256,7 @@ export class ContentSequence {
       this.setDependencyReady();
     }
 
-    this.showing = option.showing ?? true;
+    this.parentShowing = option.parentShowing ?? true;
 
     const contentInfos: ContentInfo[] = option.assets.map((asset) => ({
       ...asset,
@@ -757,54 +764,75 @@ export class ContentSequence {
     }
   }
 
-  show() {
-    this.showing = true;
-    this.contentList.forEach((content) => {
-      const { instance } = content;
-      if (instance !== null) {
-        if (instance.showing) {
-          if (this.managedStateEnabled) {
-            instance.setManagedStateEnabled(true);
-            this.managedCoreStateDirty = true;
+  updateShowing() {
+    const showing = this.selfShowing && this.parentShowing
+    if (showing) {
+      this.showing = true;
+      this.contentList.forEach((content) => {
+        const { instance } = content;
+        if (instance !== null) {
+          if (instance.showing) {
+            if (this.managedStateEnabled) {
+              instance.setManagedStateEnabled(true);
+              this.managedCoreStateDirty = true;
+            }
+            this.option.getComponent(instance.id)!.showItself?.();
+            this.option.forEachComponent((component) => {
+              component.showContent?.(instance.id);
+            });
+            this.option.showingContentCount.set(
+              this.option.showingContentCount.get() + 1,
+            );
+            this.logContent(
+              `showing count ${this.option.showingContentCount.get()}`,
+            );
           }
-          this.option.getComponent(instance.id)!.showItself?.();
-          this.option.forEachComponent((component) => {
-            component.showContent?.(instance.id);
-          });
-          this.option.showingContentCount.set(
-            this.option.showingContentCount.get() + 1,
-          );
-          this.logContent(
-            `showing count ${this.option.showingContentCount.get()}`,
-          );
         }
-      }
-    });
+      });
+    } else {
+      this.showing = false;
+      this.contentList.forEach((content) => {
+        const { instance } = content;
+        if (instance !== null) {
+          if (instance.showing) {
+            if (this.managedStateEnabled) {
+              instance.setManagedStateEnabled(false);
+              this.managedCoreStateDirty = true;
+            }
+            this.option.getComponent(instance.id)!.hideItself?.();
+            this.option.forEachComponent((component) => {
+              component.hideContent?.(instance.id);
+            });
+            this.option.showingContentCount.set(
+              this.option.showingContentCount.get() - 1,
+            );
+            this.logContent(
+              `showing count ${this.option.showingContentCount.get()}`,
+            );
+          }
+        }
+      });
+    }
+  }
+
+  show() {
+    this.selfShowing = true
+    this.updateShowing()
   }
 
   hide() {
-    this.showing = false;
-    this.contentList.forEach((content) => {
-      const { instance } = content;
-      if (instance !== null) {
-        if (instance.showing) {
-          if (this.managedStateEnabled) {
-            instance.setManagedStateEnabled(false);
-            this.managedCoreStateDirty = true;
-          }
-          this.option.getComponent(instance.id)!.hideItself?.();
-          this.option.forEachComponent((component) => {
-            component.hideContent?.(instance.id);
-          });
-          this.option.showingContentCount.set(
-            this.option.showingContentCount.get() - 1,
-          );
-          this.logContent(
-            `showing count ${this.option.showingContentCount.get()}`,
-          );
-        }
-      }
-    });
+    this.selfShowing = false
+    this.updateShowing()
+  }
+
+  parentShow() {
+    this.parentShowing = true
+    this.updateShowing()
+  }
+
+  parentHide() {
+    this.parentShowing = false
+    this.updateShowing()
   }
 
   setVolume(volume: number) {
