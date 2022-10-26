@@ -672,26 +672,16 @@ export class ContentSequence {
     }
   }
 
+  private getCurrentContent() {
+    return this.contentList[this.currentSegment]?.instance ?? null;
+  }
+
   private playCurrentContent() {
-    const instance = this.contentList[this.currentSegment]?.instance ?? null;
-    if (instance === null) {
-      return;
-    }
-    if (instance.state === 'ready') {
-      instance.timeline.play();
-      instance.subsequenceManager.play();
-    }
+    this.getCurrentContent()?.playIfReady();
   }
 
   private pauseCurrentContent() {
-    const instance = this.contentList[this.currentSegment]?.instance ?? null;
-    if (instance === null) {
-      return;
-    }
-    if (instance.state === 'ready') {
-      instance.timeline.pause();
-      instance.subsequenceManager.pause();
-    }
+    this.getCurrentContent()?.pauseIfReady();
   }
 
   /**

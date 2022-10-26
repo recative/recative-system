@@ -247,6 +247,20 @@ export class ContentInstance extends WithLogger {
     this.option.handleFinish();
   }
 
+  playIfReady() {
+    if (this.state === 'ready') {
+      this.timeline.play();
+      this.subsequenceManager.play();
+    }
+  }
+
+  pauseIfReady() {
+    if (this.state === 'ready') {
+      this.timeline.pause();
+      this.subsequenceManager.pause();
+    }
+  }
+
   updateManagedCoreState() {
     let dirty = this.managedCoreStateList.seek(this.timeline.time);
     dirty ||= this.audioHost.updateManagedState();
@@ -285,7 +299,7 @@ export class ContentInstance extends WithLogger {
     this.log(
       'Content instance start to destroy',
     );
-    await this.option.getComponent(this.id)!.destroyItself?.()?.finally(() => {});
+    await this.option.getComponent(this.id)!.destroyItself?.()?.finally(() => { });
     this.option.forEachComponent((component) => {
       component.destroyContent?.(this.id);
     });
