@@ -18,6 +18,8 @@ import {
   IResourceFileForClient,
   ManagedCoreState,
   ManagedCoreStateManager,
+  ManagedCoreStateTriggerEvent,
+  PAUSE_CORE_STATE_EXTENSION_ID,
   RawUserImplementedFunctions,
   UserImplementedFunctions,
 } from '@recative/definitions';
@@ -93,6 +95,8 @@ export class EpisodeCore<
   private logComponent = this.logCollector.Logger('component');
 
   private logAudio = this.logCollector.Logger('audio');
+
+  private logTrigger = this.logCollector.Logger('trigger');
 
   readonly eventTarget = new EventTarget() as EpisodeCoreEventTarget;
 
@@ -236,6 +240,8 @@ export class EpisodeCore<
       '@recative/core-manager/subtitle-lang',
       config.defaultSubtitleLanguage ?? DEFAULT_LANGUAGE,
     );
+
+    this.managedCoreStateManager.addEventListener("event", this.handleManagedCoreState)
 
     this.criticalComponentReady = new OpenPromise();
     this.episodeData = new OpenPromise();
@@ -405,6 +411,15 @@ export class EpisodeCore<
     this.eventTarget.dispatchEvent(new CustomEvent(event.type, event));
   };
 
+  private handleManagedCoreState = (event: Event) => {
+    const { trigger } = (event as ManagedCoreStateTriggerEvent).detail
+    this.logTrigger(`ManagedCoreStateEvent`, trigger)
+    if (trigger.managedStateExtensionId === PAUSE_CORE_STATE_EXTENSION_ID) {
+      // TODO: pause the specific sequence/audio
+      this.pause();
+    }
+  }
+
   private async internalDestroy() {
     this.logMain('Core start to destroy');
     this.updateState();
@@ -438,6 +453,7 @@ export class EpisodeCore<
     }
 
     this.envVariableManager.destroy();
+    this.managedCoreStateManager.removeEventListener("event", this.handleManagedCoreState)
     this.destroyed = true;
     this.updateState();
     this.logMain('Core fully destroyed');

@@ -603,7 +603,7 @@ export class ContentSequence {
     }
     this.logProgress('Finished content switching');
     this.switching = false;
-    content.instance!.timeline.time = this.nextSegmentStartTime;
+    content.instance!.setTime(this.nextSegmentStartTime);
     this.nextSegmentStartTime = 0;
     this.updateProgress();
     this.updateStuck();
@@ -719,7 +719,7 @@ export class ContentSequence {
     }
     this.logProgress(`Seek to ${time} at segment ${segment}`);
     if (segment === this.currentSegment) {
-      this.contentList[this.currentSegment].instance!.timeline.time = time;
+      this.contentList[this.currentSegment].instance!.setTime(time);
     } else {
       this.nextSegment = segment;
       this.nextSegmentStartTime = time;

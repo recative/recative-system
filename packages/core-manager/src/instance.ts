@@ -8,6 +8,7 @@ import {
   ContentSpec,
   ManagedCoreStateList,
   ManagedCoreStateManager,
+  UpdateReason,
 } from '@recative/definitions';
 import { AudioStation } from '@recative/audio-station';
 
@@ -327,7 +328,7 @@ export class ContentInstance extends WithLogger {
   }
 
   updateManagedCoreState() {
-    let dirty = this.managedCoreStateList.seek(this.timeline.time);
+    let dirty = this.managedCoreStateList.seek(this.timeline.time, UpdateReason.Tick);
     dirty ||= this.audioHost.updateManagedState();
     dirty ||= this.subsequenceManager.updateManagedState();
     dirty ||= this.managedCoreStateDirty
@@ -359,6 +360,11 @@ export class ContentInstance extends WithLogger {
     this.audioTrack.destroy();
     this.audioHost.destroy();
     await this.subsequenceManager.destroy();
+  }
+
+  setTime(time: number) {
+    this.timeline.time = time
+    this.managedCoreStateDirty ||= this.managedCoreStateList.seek(time, UpdateReason.Manually)
   }
 
   private async internalDestroy() {
