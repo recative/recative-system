@@ -109,9 +109,6 @@ export class SubsequenceManager extends WithLogger {
     subsequence.eventTarget.addEventListener('end', () => {
       this.option.getComponent(this.instanceId)?.sequenceEnded?.(id);
     });
-    if (this.managedStateEnabled) {
-      subsequence.setManagedStateEnabled(true);
-    }
     subsequence.switchToFirstContent();
     this.subsequences.set(id, subsequence);
     this.managedCoreStateDirty = true;
@@ -159,12 +156,5 @@ export class SubsequenceManager extends WithLogger {
       dirty ||= subsequence.updateManagedCoreState();
     });
     return dirty;
-  }
-
-  setManagedStateEnabled(enabled: boolean) {
-    this.managedStateEnabled = enabled;
-    this.subsequences.forEach((subsequence) => {
-      subsequence.setManagedStateEnabled(enabled);
-    });
   }
 }

@@ -460,10 +460,6 @@ export class ContentSequence {
     }
     this.logContent(`\`showContent\` ${instance.id}`);
     instance.show();
-    if (this.managedStateEnabled) {
-      instance.setManagedStateEnabled(true);
-      this.managedCoreStateDirty = true;
-    }
   }
 
   /**
@@ -477,10 +473,6 @@ export class ContentSequence {
     }
     this.logContent(`\`hideContent\` ${instance.id}`);
     instance.hide();
-    if (this.managedStateEnabled) {
-      instance.setManagedStateEnabled(false);
-      this.managedCoreStateDirty = true;
-    }
   }
 
   private handleAssetInstanceReady(instance: ContentInstance) {
@@ -790,21 +782,6 @@ export class ContentSequence {
       dirty ||= instance.updateManagedCoreState();
     }
     return dirty;
-  }
-
-  setManagedStateEnabled(enabled: boolean) {
-    this.managedStateEnabled = enabled;
-    if (this.showing) {
-      this.contentList.forEach((content) => {
-        const { instance } = content;
-        if (instance !== null) {
-          if (instance.showing) {
-            instance.setManagedStateEnabled(enabled);
-            this.managedCoreStateDirty = true;
-          }
-        }
-      });
-    }
   }
 
   private ensureNotDestroyed() {

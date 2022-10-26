@@ -88,6 +88,8 @@ export class ContentInstance extends WithLogger {
   // state on the main timeline
   managedCoreStateList = new ManagedCoreStateList();
 
+  managedCoreStateDirty = true;
+
   audioTrack: AudioTrack;
 
   managedStateEnabled = false;
@@ -278,6 +280,8 @@ export class ContentInstance extends WithLogger {
     if (this.showing === showing) {
       return
     }
+    this.setManagedStateEnabled(showing)
+    this.managedCoreStateDirty = true;
     if (showing) {
       this.option.getComponent(this.id)!.showItself?.();
       this.option.forEachComponent((component) => {
@@ -326,6 +330,8 @@ export class ContentInstance extends WithLogger {
     let dirty = this.managedCoreStateList.seek(this.timeline.time);
     dirty ||= this.audioHost.updateManagedState();
     dirty ||= this.subsequenceManager.updateManagedState();
+    dirty ||= this.managedCoreStateDirty
+    this.managedCoreStateDirty = false;
     return dirty;
   }
 
@@ -340,7 +346,6 @@ export class ContentInstance extends WithLogger {
       this.option.managedCoreStateManager.addStateList(this.managedCoreStateList);
     }
     this.audioHost.setManagedStateEnabled(enabled);
-    this.subsequenceManager.setManagedStateEnabled(enabled);
   }
 
   setVolume(volume: number) {
