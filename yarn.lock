@@ -6093,6 +6093,7 @@ __metadata:
     react: ^18.2.0
     react-dom: ^18.2.0
     react-router-dom: ^6.4.2
+    source-map-loader: ^4.0.1
     style-loader: ^2.0.0
     styletron-engine-monolithic: ^1.0.0
     styletron-react: ^6.1.0
@@ -8487,7 +8488,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"abab@npm:^2.0.3, abab@npm:^2.0.5":
+"abab@npm:^2.0.3, abab@npm:^2.0.5, abab@npm:^2.0.6":
   version: 2.0.6
   resolution: "abab@npm:2.0.6"
   checksum: 6ffc1af4ff315066c62600123990d87551ceb0aafa01e6539da77b0f5987ac7019466780bf480f1787576d4385e3690c81ccc37cfda12819bf510b8ab47e5a3e
@@ -25596,6 +25597,19 @@ __metadata:
   peerDependencies:
     webpack: ^5.0.0
   checksum: 6ff27ba9335307e64edaab8fb8f87aa82a88d7efb12260732f7e3649c3fffe8bd3f77b6970c39c0bdd5e3a9b2a5ed8f11ac805bea90a6c99f186aa52033e53e0
+  languageName: node
+  linkType: hard
+
+"source-map-loader@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "source-map-loader@npm:4.0.1"
+  dependencies:
+    abab: ^2.0.6
+    iconv-lite: ^0.6.3
+    source-map-js: ^1.0.2
+  peerDependencies:
+    webpack: ^5.72.1
+  checksum: 4ddca8b03dc61f406effd4bffe70de4b87fef48bae6f737017b2dabcbc7d609133325be1e73838e9265331de28039111d729fcbb8bce88a6018a816bef510eb1
   languageName: node
   linkType: hard
 
