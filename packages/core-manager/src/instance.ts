@@ -8,6 +8,7 @@ import {
   ContentSpec,
   ManagedCoreStateList,
   ManagedCoreStateManager,
+  ManagerCoreStateTrigger,
   UpdateReason,
 } from '@recative/definitions';
 import { AudioStation } from '@recative/audio-station';
@@ -30,6 +31,7 @@ export interface ProgressReporter {
 
 export interface InstanceOption {
   spec: ContentSpec;
+  triggers?: ManagerCoreStateTrigger[];
   audioStation: AudioStation;
   volume: number;
   parentShowing: boolean;
@@ -89,6 +91,8 @@ export class ContentInstance extends WithLogger {
   // state on the main timeline
   managedCoreStateList = new ManagedCoreStateList();
 
+  additionalManagedCoreStateList = new ManagedCoreStateList();
+
   managedCoreStateDirty = true;
 
   audioTrack: AudioTrack;
@@ -116,7 +120,7 @@ export class ContentInstance extends WithLogger {
 
     this.parentShowing = option.parentShowing
     this.logger = option.logger;
-    this.option.managedCoreStateManager.addStateList(this.managedCoreStateList);
+    this.managedCoreStateList.updateTriggers(option.triggers ?? [])
     this.timeline = new Timeline();
     this.taskQueueManager = new TaskQueueManager(this, option);
     const remote = {
@@ -329,6 +333,7 @@ export class ContentInstance extends WithLogger {
 
   updateManagedCoreState() {
     let dirty = this.managedCoreStateList.seek(this.timeline.time, UpdateReason.Tick);
+    dirty ||= this.additionalManagedCoreStateList.seek(this.timeline.time, UpdateReason.Tick);
     dirty ||= this.audioHost.updateManagedState();
     dirty ||= this.subsequenceManager.updateManagedState();
     dirty ||= this.managedCoreStateDirty
@@ -343,8 +348,10 @@ export class ContentInstance extends WithLogger {
     this.managedStateEnabled = enabled;
     if (!this.managedStateEnabled) {
       this.option.managedCoreStateManager.removeStateList(this.managedCoreStateList);
+      this.option.managedCoreStateManager.removeStateList(this.additionalManagedCoreStateList);
     } else {
       this.option.managedCoreStateManager.addStateList(this.managedCoreStateList);
+      this.option.managedCoreStateManager.addStateList(this.additionalManagedCoreStateList);
     }
     this.audioHost.setManagedStateEnabled(enabled);
   }
@@ -365,6 +372,7 @@ export class ContentInstance extends WithLogger {
   setTime(time: number) {
     this.timeline.time = time
     this.managedCoreStateDirty ||= this.managedCoreStateList.seek(time, UpdateReason.Manually)
+    this.managedCoreStateDirty ||= this.additionalManagedCoreStateList.seek(time, UpdateReason.Manually)
   }
 
   private async internalDestroy() {

@@ -715,22 +715,22 @@ export class EpisodeCore<
         'reportUnstuck',
       ),
       setManagedCoreStateTriggers: (triggers) => {
-        getInstanceFromComponentName().managedCoreStateList.updateTriggers(
+        getInstanceFromComponentName().additionalManagedCoreStateList.updateTriggers(
           triggers,
         );
         this.managedCoreStateDirty = true;
       },
-      getManagedCoreState: () => getInstanceFromComponentName().managedCoreStateList.state,
+      getManagedCoreState: () => getInstanceFromComponentName().additionalManagedCoreStateList.state,
       addManagedCoreState: (state: ManagedCoreState<unknown>) => {
-        getInstanceFromComponentName().managedCoreStateList.addState(state);
+        getInstanceFromComponentName().additionalManagedCoreStateList.addState(state);
         this.managedCoreStateDirty = true;
       },
       deleteManagedCoreState: (state: ManagedCoreState<unknown>) => {
-        getInstanceFromComponentName().managedCoreStateList.deleteState(state);
+        getInstanceFromComponentName().additionalManagedCoreStateList.deleteState(state);
         this.managedCoreStateDirty = true;
       },
       clearCoreState: () => {
-        getInstanceFromComponentName().managedCoreStateList.clearState();
+        getInstanceFromComponentName().additionalManagedCoreStateList.clearState();
         this.managedCoreStateDirty = true;
       },
       requireQueuedTask: (taskId: string, instanceId: string) => {

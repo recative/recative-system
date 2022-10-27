@@ -2,6 +2,7 @@ import {
   IAssetForClient,
   ContentSpec,
   ManagedCoreStateManager,
+  ManagerCoreStateTrigger,
 } from '@recative/definitions';
 import {
   atom, computed, ReadableAtom, WritableAtom,
@@ -30,6 +31,7 @@ export interface ContentInfo {
   instance: ContentInstance | null;
   duration: number;
   spec: ContentSpec;
+  triggers?: ManagerCoreStateTrigger[];
   preloadDisabled: boolean;
   earlyDestroyOnSwitch: boolean;
 }
@@ -396,6 +398,7 @@ export class ContentSequence {
     const instanceId = `${this.option.id}|content-${content.id}|${nanoid()}`;
     const instance = new ContentInstance(instanceId, {
       spec: content.spec,
+      triggers: content.triggers,
       audioStation: this.option.audioStation,
       managedCoreStateManager: this.option.managedCoreStateManager,
       volume: this.volume,
