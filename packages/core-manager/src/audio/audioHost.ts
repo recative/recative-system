@@ -64,21 +64,19 @@ class LoadableAudioElement extends WithLogger {
   private async loadAudio(
     audioClipResponsePromise: Promise<AudioElementInit | null>,
   ) {
-    if (!this.working) {
-      return;
-    }
 
     const audioElementInit = await audioClipResponsePromise;
-    if (!audioElementInit) {
-      return;
-    }
-    if (this.pendingBuffer !== audioClipResponsePromise) {
-      destroyAudioElementInit(audioElementInit);
-      // setAudio when audio is loading or destroyed
+    if (this.pendingBuffer !== audioClipResponsePromise || !this.working) {
+      if (audioElementInit) {
+        destroyAudioElementInit(audioElementInit);
+        // setAudio when audio is loading or destroyed
+      }
       return;
     }
 
-    this.audioElement = createAudioElement(this.mixer!, audioElementInit);
+    if (audioElementInit !== null) {
+      this.audioElement = createAudioElement(this.mixer!, audioElementInit);
+    }
     this.pendingClipLoading = null;
   }
 

@@ -166,31 +166,34 @@ export class AudioTrack extends WithLogger implements Track {
   private async loadAudio(
     audioClipResponsePromise: Promise<AudioElementInit | null>,
   ) {
-    if (this.destroyed) {
-      return;
-    }
     const audioElementInit = await audioClipResponsePromise;
 
-    if (!audioElementInit) return;
-    if (this.pendingBuffer !== audioClipResponsePromise) {
-      destroyAudioElementInit(audioElementInit);
-      // setAudio when audio is loading or destroyed
-      return;
+    if (this.pendingBuffer !== audioClipResponsePromise || this.destroyed) {
+      if (audioElementInit) {
+        destroyAudioElementInit(audioElementInit);
+        // setAudio when audio is loading or destroyed
+        return;
+      }
     }
+
     this.audioElement?.destroy();
-    this.audioElement = createAudioElement(this.mixer!, audioElementInit);
-    this.audioElement.volume = this.volume;
-    this.log(`Audio track for ${this.id} loaded`);
-    let targetTime = (this.cachedProgress) / 1000;
-    if (this.playing && !this.mixer?.isSuspended()) {
-      this.audioElement.play();
-      const now = performance.now();
-      targetTime = (this.cachedProgress + now - this.cachedUpdateTime) / 1000;
+    if (audioElementInit) {
+      this.audioElement = createAudioElement(this.mixer!, audioElementInit);
+      this.audioElement.volume = this.volume;
+      this.log(`Audio track for ${this.id} loaded`);
+      let targetTime = (this.cachedProgress) / 1000;
+      if (this.playing && !this.mixer?.isSuspended()) {
+        this.audioElement.play();
+        const now = performance.now();
+        targetTime = (this.cachedProgress + now - this.cachedUpdateTime) / 1000;
+      }
+      if (this.playing) {
+        this.audioElement.play();
+      }
+      this.audioElement.time = targetTime;
+    } else {
+      this.audioElement = null
     }
-    if (this.playing) {
-      this.audioElement.play();
-    }
-    this.audioElement.time = targetTime;
     this.updateTime();
     this.pendingBuffer = null;
   }
