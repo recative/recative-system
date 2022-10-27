@@ -288,7 +288,7 @@ export class IFramePortClientChannel extends LazyMessagePortChannel {
     if (this.ready) return;
     if (event.data !== this.msgId) return;
 
-    logClient('Received protocol port');
+    logClient('Received protocol port', event.ports);
     const rpcChannel = new BatchedMessagePortChannel(event.ports[0]);
 
     this.initialize(rpcChannel);

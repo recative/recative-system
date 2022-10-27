@@ -36,7 +36,7 @@ export const getConfig = (
     entry: production
       ? require.resolve('@recative/ap-pack/src/shell.ts')
       : require.resolve('@recative/ap-pack/src/devShell.ts'),
-    devtool: production ? false : 'eval-source-map',
+    devtool: production ? false : 'source-map',
     module: {
       rules: [
         ...jsRule,
