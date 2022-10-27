@@ -11,6 +11,7 @@ export default class Chunk<Metadata> {
   context: AudioContext;
   duration: number | null = null;
   numFrames: number | null = null;
+  chunkIndex: number;
   raw: Uint8Array;
   extended: Uint8Array | null;
   extendedWithHeader: Uint8Array | null;;
@@ -28,14 +29,17 @@ export default class Chunk<Metadata> {
     onready,
     onerror,
     adapter,
+    chunkIndex
   }: {
     clip: Clip<Metadata>;
     raw: Uint8Array;
     onready: (() => void) | null;
     onerror: (error: Error) => void;
     adapter: IAdapter<Metadata>;
+    chunkIndex: number
   }) {
     this.clip = clip;
+    this.chunkIndex = chunkIndex
     this.context = clip.context;
 
     this.raw = raw;

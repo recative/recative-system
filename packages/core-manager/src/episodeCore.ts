@@ -395,7 +395,7 @@ export class EpisodeCore<
     this.internalDuration.set(this.mainSequence.duration);
     connect(this.mainSequence.preciseTime, this.internalPreciseTime);
     connect(this.mainSequence.time.atom, this.internalTime);
-    this.mainSequence.setManagedStateEnabled(true);
+    this.mainSequence.show();
     // TODO: link sequence atom to core atom to here
     this.updateState();
     this.logMain('Core initialized');

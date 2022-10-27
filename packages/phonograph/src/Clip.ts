@@ -84,7 +84,10 @@ export default class Clip<Metadata> {
   private _loadStarted: boolean = false;
   private _actualPlaying = false;
   public get stuck() {
-    return this.playing && !this._actualPlaying;
+    if (this.playing) {
+      return !this._actualPlaying
+    }
+    return !this.audioBufferCacheHit();
   }
   private _currentSource: IAudioBufferSourceNode<AudioContext> | null = null;
   private _nextSource: IAudioBufferSourceNode<AudioContext> | null = null;
@@ -173,6 +176,7 @@ export default class Clip<Metadata> {
 
         const chunk = new Chunk<Metadata>({
           clip: this,
+          chunkIndex: this.__chunks.length,
           raw: slice(tempBuffer, firstByte, p),
           onready: () => {
             if (!this.canplaythrough) {
@@ -700,7 +704,10 @@ export default class Clip<Metadata> {
   }
 
   // Advance to next Chunk if playback of current source ends
-  private onCurrentSourceEnd = () => {
+  private onCurrentSourceEnd = (event: Event) => {
+    if (event.target !== this._currentSource) {
+      return;
+    }
     if (!this.playing || !this._actualPlaying) {
       return;
     }
