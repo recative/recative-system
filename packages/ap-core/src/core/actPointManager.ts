@@ -14,11 +14,12 @@ import { FrameRateLevel } from './TimeMagic';
 import { createComponentContext } from './componentContext';
 import { INITIALIZE_TASK_STORE } from './protocol';
 
-import { useStore } from '../hooks/baseHooks';
+import { useEventTarget, useStore } from '../hooks/baseHooks';
 import { useHostFunctions } from '../hooks/hostFunctionsHooks';
 
 import { bindAppToPlayerEvent } from '../utils/bindAppToPlayerEvent';
 import { InconsistentContextError } from '../constants/errors/InconsistentContextError';
+import { EventDefinition } from './EventTarget';
 
 type ISubApp = IPixiApp | IThreeApp;
 
@@ -82,8 +83,11 @@ export class InitializeQueueClosedError extends Error {
   }
 }
 
+export const NEW_INITIALIZE_TASK = EventDefinition<Promise<unknown>>();
+
 const useRequireInitializeTaskCallback = () => {
   const hostFunctions = useHostFunctions();
+  const eventTarget = useEventTarget();
   const [getInitializeTask] = useStore(INITIALIZE_TASK_STORE);
   let initializeWindowClosed = false;
 
@@ -104,6 +108,12 @@ const useRequireInitializeTaskCallback = () => {
 
     initializeTasks.set(taskId, task);
   };
+
+  eventTarget.on(NEW_INITIALIZE_TASK, (event) => {
+    if (!initializeWindowClosed) {
+      requireInitializeTask(() => event.detail);
+    }
+  });
 
   window.setTimeout(() => {
     initializeWindowClosed = true;
@@ -169,7 +179,7 @@ export const createActPointManager = () => {
     if (x.context !== context) {
       const error = new InconsistentContextError();
       error.message = 'The context of the app is inconsistent with the context of the manager, '
-       + 'you may forget to pass the context parameter to the pixi app initialize parameter.';
+        + 'you may forget to pass the context parameter to the pixi app initialize parameter.';
       throw error;
     }
 

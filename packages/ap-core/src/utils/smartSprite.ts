@@ -3,6 +3,7 @@ import * as PIXI from 'pixi.js-legacy';
 import { IResourceFileForClient } from '@recative/definitions';
 import { getMatchedResource, ResourceEntry } from '@recative/smart-resource';
 
+import { OpenPromise, OpenPromiseState } from '@recative/open-promise';
 import { IFailedResponse, useQuery } from '../hooks/fetchDataHooks';
 import { DataSource, useCombinator, useSelector } from '../core/DataSource';
 import {
@@ -19,6 +20,7 @@ import {
 import type { DataSourceNode, DataSourceNodeController, Subscribable } from '../types/dataSource';
 import { useEventTarget } from '../hooks/baseHooks';
 import { CHECK_SMART_TEXTURE_RELEASE } from './smartTextureReleaseChecker';
+import { NEW_INITIALIZE_TASK } from '../core/actPointManager';
 
 const useSmartTextureInfo = (
   labelDataSource: Subscribable<string>,
@@ -143,6 +145,8 @@ export class SmartSprite extends PIXI.Sprite {
 
   private pendingTexture: PIXI.Texture | null = null;
 
+  private firstTextureUpdated = new OpenPromise<void>
+
   constructor(option: SmartSpriteOption) {
     super(PIXI.Texture.EMPTY);
     this.autoReleaseTexture = option.autoReleaseTexture ?? false;
@@ -158,6 +162,7 @@ export class SmartSprite extends PIXI.Sprite {
     this.smartTextureInfoController = this.smartTextureInfoDataSource(this.updateTexture);
     this.updateTexture(this.smartTextureInfoController.getter());
     this.eventTarget = useEventTarget();
+    this.eventTarget.fire(NEW_INITIALIZE_TASK, this.firstTextureUpdated)
     if (this.autoReleaseTexture) {
       this.eventTarget.on(CHECK_SMART_TEXTURE_RELEASE, this.checkTextureRelease);
     }
@@ -216,6 +221,10 @@ export class SmartSprite extends PIXI.Sprite {
         this.smartTextureRc.release(oldUrl);
       }
       this.emit('textureupdate', {});
+      if (this.firstTextureUpdated.state === OpenPromiseState.Idle
+        || this.firstTextureUpdated.state === OpenPromiseState.Pending) {
+        this.firstTextureUpdated.resolve()
+      }
     }
   }
 
