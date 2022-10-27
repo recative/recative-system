@@ -232,6 +232,8 @@ export class ManagedCoreStateList extends EventTarget {
 
   lastUpdateTime = Date.now();
 
+  currentTime = 0;
+
   /**
    * Replace trigger list for current asset.
    * @param triggers - Core state configuration for current playing asset.
@@ -303,7 +305,10 @@ export class ManagedCoreStateList extends EventTarget {
    * @param time - Current playing time.
    */
   seek = (time: number, reason: UpdateReason) => {
-    if (!this.triggers) return false;
+    if (!this.triggers) {
+      this.currentTime = time;
+      return false;
+    }
 
     const lastHash = [...this.stateById.keys()].join();
     this.clearState();
@@ -326,7 +331,7 @@ export class ManagedCoreStateList extends EventTarget {
           return;
         }
 
-        if (time >= trigger.time && this.lastUpdateTime <= trigger.time) {
+        if (time >= trigger.time && this.currentTime <= trigger.time) {
           if (!this.triggeredStates.has(trigger) && trigger.once) {
             return;
           }
@@ -351,6 +356,7 @@ export class ManagedCoreStateList extends EventTarget {
       this.lastUpdateTime = Date.now();
     }
 
+    this.currentTime = time;
     return dirty;
   };
 }
