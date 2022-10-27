@@ -1,7 +1,14 @@
+import debug from 'debug';
 import { ManagedAp } from '@recative/ap-manager';
 
+const log = debug('ap-pack:shell');
+
 (() => {
+  log('Initializing the shell');
+
   const manager = new ManagedAp((firstLevelPath, secondLevelPath) => {
+    log('Received ap loading request');
+
     import(`src/episodes/${firstLevelPath}/${secondLevelPath}/index.ts`);
   });
 
@@ -11,78 +18,98 @@ import { ManagedAp } from '@recative/ap-manager';
   let readyForUse = false;
 
   const stateCheckup = () => {
+    log(
+      'State checkup, serviceWorkerLoaded:',
+      serviceWorkerLoaded,
+      'constantsLoaded:',
+      constantsLoaded,
+      'readyForUse:',
+      readyForUse
+    );
     if (constantsLoaded && serviceWorkerLoaded && !readyForUse) {
+      log('Marking ap as ready');
       readyForUse = true;
       manager.connector.ready();
     }
   }
 
-  const loadConstants = () => manager.connector.getConstants()
-    .then((data: Record<string, unknown>) => {
-      Reflect.set(window, 'constant', data);
-      if (typeof data === 'object' && data !== null) {
-        if (
-          typeof data.localStorage === 'object'
-          && data.localStorage !== null
-        ) {
-          const storage = data.localStorage as Record<string, string>;
+  const loadConstants = async () => {
+    const data = await manager.connector.getConstants();
 
-          Object.keys(storage).forEach((key) => {
-            localStorage.setItem(key, storage[key]);
-          });
-        }
+    Reflect.set(window, 'constant', data);
+
+    if (typeof data === 'object' && data !== null) {
+      if (
+        typeof data.localStorage === 'object'
+        && data.localStorage !== null
+      ) {
+        const storage = data.localStorage as Record<string, string>;
+
+        Object.keys(storage).forEach((key) => {
+          localStorage.setItem(key, storage[key]);
+        });
       }
+    }
 
-      constantsLoaded = true;
-      stateCheckup();
-    });
+    constantsLoaded = true;
+    stateCheckup();
 
-  loadConstants();
+    log('Got constants', data);
+  }
 
   if (
     'serviceWorker' in navigator
     && localStorage.getItem('@recative/ap-pack/experimental-sw')
   ) {
-    window.addEventListener('load', () => {
+    log('Initializing experimental service worker support');
+    window.addEventListener('load', async () => {
+      await loadConstants();
+
       const root = window.location.pathname.split('/');
       root.pop();
 
-      navigator.serviceWorker
-        .register(
-          'sw.js',
-          { scope: window.location.origin + root.join('/') }
-        )
-        .then((register) => register.update())
-        .then(() => manager.connector.serviceWorkerRegistered())
-        .then(() => {
-          serviceWorkerLoaded = true;
-          stateCheckup();
-        })
-        .catch((error) => {
-          console.error('Unable to load the service worker, because the following error: ', error);
-          console.warn('Will use fallback mode, resource preload and caching feature will not work');
+      try {
+        const register = await navigator.serviceWorker
+          .register(
+            'sw.js',
+            { scope: window.location.origin + root.join('/') }
+          );
 
-          if (error instanceof Error) {
-            manager.connector.serviceWorkerRegisterError(
-              error.name,
-              error.message,
-              error.stack
-            );
-          } else {
-            const internalError = new Error(error);
-            manager.connector.serviceWorkerRegisterError(
-              internalError.name,
-              internalError.message,
-              internalError.stack
-            );
-          }
+        await register.update();
 
-          serviceWorkerLoaded = true;
-          stateCheckup();
-        });
+        await manager.connector.serviceWorkerRegistered();
+        serviceWorkerLoaded = true;
+        stateCheckup();
+
+      } catch (error) {
+
+        log('Unable to load the service worker, because the following error: ', error);
+        log('Will use fallback mode, resource preload and caching feature will not work');
+
+        if (error instanceof Error) {
+          manager.connector.serviceWorkerRegisterError(
+            error.name,
+            error.message,
+            error.stack
+          );
+        } else {
+          const internalError = new Error(String(error));
+          manager.connector.serviceWorkerRegisterError(
+            internalError.name,
+            internalError.message,
+            internalError.stack
+          );
+        }
+
+        serviceWorkerLoaded = true;
+        stateCheckup();
+      }
     });
   } else {
-    serviceWorkerLoaded = true;
-    stateCheckup();
+    log('Initializing the system without the service worker support');
+    loadConstants().then(() => {
+      serviceWorkerLoaded = true;
+      stateCheckup();
+    });
   }
 })();

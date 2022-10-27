@@ -277,7 +277,7 @@ export const getController = (id: string) => {
             if (prop in target) {
               return target[prop as keyof HostFunctions];
             }
-            throw new Error(`Not implemented host function:${prop.toString()}`);
+            throw new Error(`Not implemented host function: ${prop.toString()}`);
           },
         },
       ) as HostFunctions,

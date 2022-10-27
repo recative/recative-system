@@ -237,7 +237,7 @@ export class IFramePortHostChannel extends LazyMessagePortChannel {
   constructor(
     $iFrame: HTMLIFrameElement,
     origin = new URL($iFrame.src).origin,
-    private msgId = 'iframe-request-host-port',
+    readonly msgId = '@recative/act-protocol/message',
   ) {
     super();
     this.$iframe = $iFrame;
@@ -250,8 +250,7 @@ export class IFramePortHostChannel extends LazyMessagePortChannel {
     if (this.ready) return;
     if (event.data !== this.msgId) return;
 
-    logHost('Received protocol connection request');
-
+    logHost('Received pairing request', this.msgId);
 
     if (!this.$iframe?.contentWindow) {
       throw new TypeError('Content window does not exists');
@@ -277,11 +276,11 @@ export class IFramePortHostChannel extends LazyMessagePortChannel {
 }
 
 export class IFramePortClientChannel extends LazyMessagePortChannel {
-  constructor(private msgId = 'iframe-request-host-port') {
+  constructor(readonly msgId = '@recative/act-protocol/message') {
     super();
 
     window.addEventListener('message', this.onMessage);
-    logClient('Sending protocol connection request');
+    logClient('Sending pairing request', msgId);
     window.parent.postMessage(msgId, '*');
   }
 

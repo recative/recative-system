@@ -233,6 +233,8 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
 
     core.controller.setActPointTag(apInstance);
 
+    apInstance.connector.ping();
+
     apInstance.connector.loadAp(
       (props.spec as Record<string, string>).firstLevelPath,
       (props.spec as Record<string, string>).secondLevelPath

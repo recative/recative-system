@@ -78,14 +78,19 @@ export class ApManagerInstance extends EventTarget {
       this.iFrame
     );
 
-    this.iFrame.src = clientSrc;
+    const randomId = Math.random().toString(36).replace('0.', 'c-');
+
+    const iFrameUrl = new URL(clientSrc, window.location.href);
+    iFrameUrl.searchParams.set('channelId', randomId);
+
+    this.iFrame.src = iFrameUrl.toString();
     this.iFrame.title = 'Interactive Content';
     container.append(this.iFrame);
 
     const channel = new IFramePortHostChannel(
       this.iFrame,
       new URL(clientSrc, window.location.href).origin,
-      '@recative/ap-manager/message'
+      `@recative/ap-manager/message/${randomId}`
     );
 
     this.channel = channel;
