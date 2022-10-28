@@ -6,10 +6,24 @@ const log = debug('ap-pack:shell');
 (() => {
   log('Initializing the shell');
 
-  const manager = new ManagedAp((firstLevelPath, secondLevelPath) => {
-    log('Received ap loading request');
+  const manager = new ManagedAp(async (firstLevelPath, secondLevelPath) => {
+    log(`Received ap loading request: '${firstLevelPath}/${secondLevelPath}'`);
 
-    import(`src/episodes/${firstLevelPath}/${secondLevelPath}/index.ts`);
+    const importRequest = import(
+      // eslint-disable-next-line prefer-template
+      'src/episodes/' + firstLevelPath + '/' + secondLevelPath + '/index.ts'
+    )
+
+    log(`Request generated:`, importRequest);
+
+    try {
+      const module = await importRequest;
+      log(`Imported: '${firstLevelPath}/${secondLevelPath}'`, module);
+    } catch (error) {
+      log(`Failed to import: '${firstLevelPath}/${secondLevelPath}'`, error);
+    }
+
+    return importRequest;
   });
 
   let constantsLoaded = false;

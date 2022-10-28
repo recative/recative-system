@@ -90,7 +90,8 @@ export class ApManagerInstance extends EventTarget {
     const channel = new IFramePortHostChannel(
       this.iFrame,
       new URL(clientSrc, window.location.href).origin,
-      `@recative/ap-manager/message/${randomId}`
+      `@recative/ap-manager/message/${randomId}`,
+      false
     );
 
     this.channel = channel;

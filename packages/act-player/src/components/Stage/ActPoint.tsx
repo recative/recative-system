@@ -21,7 +21,7 @@ import type { AssetExtensionComponent } from '../../types/ExtensionCore';
 
 import { getController } from './actPointControllers';
 
-const apManager = getApManager(3);
+const apManager = getApManager(1);
 
 const logError = debug('player:ap-component');
 // eslint-disable-next-line no-console
@@ -233,7 +233,7 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
 
     core.controller.setActPointTag(apInstance);
 
-    apInstance.connector.ping();
+    await apInstance.connector.ping();
 
     apInstance.connector.loadAp(
       (props.spec as Record<string, string>).firstLevelPath,

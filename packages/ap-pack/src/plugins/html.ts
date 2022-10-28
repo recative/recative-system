@@ -6,6 +6,7 @@ export const htmlPlugin = (
     new HtmlWebpackPlugin({
       template: require.resolve('../../view/index.ejs'),
       inject: 'body',
+      scriptLoading: 'blocking',
     }),
   ];
 

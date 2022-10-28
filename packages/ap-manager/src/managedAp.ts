@@ -20,7 +20,11 @@ export class ManagedAp {
     },
     ping: () => {
       logClient(`ping`);
-      return 'pong';
+      return new Promise((resolve) => {
+        window.setTimeout(() => {
+          resolve('pong');
+        }, 0);
+      });
     }
   }
 
@@ -33,7 +37,8 @@ export class ManagedAp {
     const channelId = clientUrl.searchParams.get('channelId');
 
     this.channel = new IFramePortClientChannel(
-      `@recative/ap-manager/message/${channelId}`
+      `@recative/ap-manager/message/${channelId}`,
+      false
     );
 
     logClient(`Channel ID: ${this.channel.msgId}`);

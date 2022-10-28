@@ -1,3 +1,5 @@
 import { renderPlayer } from './index';
 
-renderPlayer();
+window.setTimeout(() => {
+  renderPlayer();
+}, 0);

@@ -68,9 +68,13 @@ export const getConfig = (
       },
     },
     output: {
+      clean: true,
       filename: '[name].js',
-      path: server ? fs.mkdtempSync(path.resolve(os.tmpdir(), 'ap-pack-')) : path.resolve(root, 'dist'),
+      path: server
+        ? fs.mkdtempSync(path.resolve(os.tmpdir(), 'ap-pack-'))
+        : path.resolve(root, 'dist'),
       publicPath: '/',
+      // crossOriginLoading: 'use-credentials',
     },
     optimization: {
       chunkIds: 'named',
@@ -78,15 +82,44 @@ export const getConfig = (
       splitChunks: {
         chunks: 'all',
         minSize: 1,
-        name: (module: { context: string }) => {
-          const splittedPath = module.context.split(path.sep);
+        name: 'scripts/shared/common',
+        cacheGroups: {
+          shared: {
+            test: /[\\/]node_modules[\\/]/,
+            name: () => 'scripts/shared/modules',
+          },
+          ap: {
+            test: /[\\/]src[\\/]/,
+            name: (module: { context: string }) => {
+              if (!module.context) {
+                return 'scripts/shared/unknown';
+              }
 
-          if (splittedPath.includes('node_modules')) {
-            return 'shared';
+              if (module.context.includes('mode_modules')) {
+                return `scripts/shared/modules`;
+              }
+
+              const splittedPath = module.context.split(path.sep);
+
+              const srcIndex = splittedPath.findIndex(
+                (x) => x === 'src'
+              ) + 1;
+              const episodeIndex = splittedPath.findIndex(
+                (x) => x === 'episodes'
+              ) + 1;
+
+              if (srcIndex && episodeIndex) {
+                return `scripts/ap/${splittedPath[episodeIndex]}-${splittedPath[episodeIndex + 1]}`;
+              }
+
+              if (srcIndex) {
+                return `scripts/shared/${splittedPath[srcIndex]}`;
+              }
+
+              return undefined
+            },
           }
-
-          return 0;
-        },
+        }
       },
     },
   };

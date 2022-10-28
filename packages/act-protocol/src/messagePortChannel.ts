@@ -154,7 +154,8 @@ export class BatchedMessagePortChannel extends MessagePortChannel {
   };
 
   scheduleSendTask = () => {
-    // If there is already a setTimeout, there is no need to do another setTimeout
+    // If there is already a setTimeout, there is no need to do another
+    // setTimeout.
     if (this.timeout < 0) {
       this.timeout = window.setTimeout(() => {
         this.forceSendTask();
@@ -169,7 +170,6 @@ export class BatchedMessagePortChannel extends MessagePortChannel {
 
     this.port.addEventListener('message', (event) => {
       // For mobile platform, raf is not available when the iFrame is not shown.
-
       if (Array.isArray(event.data)) {
         event.data.forEach(listener);
       } else {
@@ -247,6 +247,7 @@ export class IFramePortHostChannel extends LazyMessagePortChannel {
     $iFrame: HTMLIFrameElement,
     origin = new URL($iFrame.src).origin,
     readonly msgId = '@recative/act-protocol/message',
+    private readonly batch = true,
   ) {
     super();
     this.$iframe = $iFrame;
@@ -267,7 +268,9 @@ export class IFramePortHostChannel extends LazyMessagePortChannel {
 
     const messageChannel = new MessageChannel();
     const port = messageChannel.port1;
-    const rpcChannel = new BatchedMessagePortChannel(port);
+    const rpcChannel = this.batch
+      ? new BatchedMessagePortChannel(port)
+      : new MessagePortChannel(port);
 
     this.initialize(rpcChannel);
 
@@ -285,7 +288,10 @@ export class IFramePortHostChannel extends LazyMessagePortChannel {
 }
 
 export class IFramePortClientChannel extends LazyMessagePortChannel {
-  constructor(readonly msgId = '@recative/act-protocol/message') {
+  constructor(
+    readonly msgId = '@recative/act-protocol/message',
+    private readonly batch = true
+  ) {
     super();
 
     window.addEventListener('message', this.onMessage);
@@ -298,7 +304,9 @@ export class IFramePortClientChannel extends LazyMessagePortChannel {
     if (event.data !== this.msgId) return;
 
     logClient('Received protocol port', event.ports);
-    const rpcChannel = new BatchedMessagePortChannel(event.ports[0]);
+    const rpcChannel = this.batch
+      ? new BatchedMessagePortChannel(event.ports[0])
+      : new MessagePortChannel(event.ports[0]);
 
     this.initialize(rpcChannel);
 
