@@ -87,6 +87,8 @@ const extractTransferables = (data: unknown) => {
 
 type Listener = (data: unknown) => void;
 
+type WrappedListener = (event: MessageEvent) => void;
+
 export class DestroyedError extends Error {
   name = 'DestroyedError';
 
@@ -96,7 +98,7 @@ export class DestroyedError extends Error {
 }
 
 export class MessagePortChannel implements EventBasedChannel {
-  listeners: Set<Listener> = new Set();
+  listeners: Set<WrappedListener> = new Set();
 
   destroyed = false;
 
@@ -109,11 +111,13 @@ export class MessagePortChannel implements EventBasedChannel {
   on(listener: Listener): void | (() => void) {
     if (this.destroyed) throw new DestroyedError();
 
-    this.listeners.add(listener);
-
-    this.port.addEventListener('message', (event) => {
+    const wrappedListener = (event: MessageEvent) => {
       listener(event.data);
-    });
+    };
+
+    this.listeners.add(wrappedListener);
+
+    this.port.addEventListener('message', wrappedListener);
     this.port.start();
   }
 
@@ -126,7 +130,9 @@ export class MessagePortChannel implements EventBasedChannel {
   destroy() {
     this.destroyed = true;
     this.port.close();
-    this.listeners.forEach((listener) => this.port.removeEventListener('message', listener));
+    this.listeners.forEach((listener) => {
+      this.port.removeEventListener('message', listener);
+    });
   }
 }
 
@@ -138,7 +144,10 @@ export class BatchedMessagePortChannel extends MessagePortChannel {
   forceSendTask = () => {
     if (this.destroyed) return;
 
-    this.port.postMessage(this.messageBuffer, extractTransferables(this.messageBuffer));
+    this.port.postMessage(
+      this.messageBuffer,
+      extractTransferables(this.messageBuffer)
+    );
     this.messageBuffer = [];
     globalThis.clearTimeout(this.timeout);
     this.timeout = -1;
