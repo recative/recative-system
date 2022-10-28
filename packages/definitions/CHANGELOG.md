@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.0
+
+### Minor Changes
+
+- 94ada38: feat: Support ManagerCoreStateTrigger in IAssetForClient
+
+### Patch Changes
+
+- c0142d7: fix: Event of ManagedCoreStateList not fired
+
 ## 0.4.3
 
 ### Patch Changes

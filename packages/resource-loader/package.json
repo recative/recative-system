@@ -1,6 +1,6 @@
 {
   "name": "@recative/resource-loader",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
@@ -15,7 +15,7 @@
   },
   "packageManager": "yarn@3.1.0",
   "dependencies": {
-    "@recative/definitions": "^0.4.0",
+    "@recative/definitions": "^0.5.0",
     "@recative/open-promise": "^0.2.0",
     "idb-keyval": "^6.0.3"
   },

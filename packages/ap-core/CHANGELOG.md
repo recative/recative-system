@@ -1,5 +1,19 @@
 # @recative/ap-core
 
+## 0.6.0
+
+### Minor Changes
+
+- 4b0efc9: feat: SmartSprite as initialize task
+
+### Patch Changes
+
+- Updated dependencies [94ada38]
+- Updated dependencies [c0142d7]
+  - @recative/definitions@0.5.0
+  - @recative/act-protocol@0.2.9
+  - @recative/resource-bridge@0.2.5
+
 ## 0.5.1
 
 ### Patch Changes

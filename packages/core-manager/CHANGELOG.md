@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.11.0
+
+### Minor Changes
+
+- 94ada38: feat: Support ManagerCoreStateTrigger in IAssetForClient
+- cffb93b: fix: Incorrect showingContentCount
+
+### Patch Changes
+
+- 68448ee: fix: Stuck when audio track is set to null
+- Updated dependencies [94ada38]
+- Updated dependencies [c0142d7]
+  - @recative/definitions@0.5.0
+  - @recative/act-protocol@0.2.9
+  - @recative/resource-loader@0.2.3
+
 ## 0.10.0
 
 ### Minor Changes

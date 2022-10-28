@@ -1,5 +1,18 @@
 # Changelog
 
+## 11.0.0
+
+### Patch Changes
+
+- Updated dependencies [68448ee]
+- Updated dependencies [94ada38]
+- Updated dependencies [c0142d7]
+- Updated dependencies [cffb93b]
+  - @recative/core-manager@0.11.0
+  - @recative/definitions@0.5.0
+  - @recative/act-player@0.5.3
+  - @recative/act-protocol@0.2.9
+
 ## 10.0.1
 
 ### Patch Changes
