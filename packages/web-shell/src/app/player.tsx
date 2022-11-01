@@ -13,7 +13,7 @@ import type { SegmentEndEventDetail } from '@recative/core-manager';
 import { Block } from 'baseui/block';
 
 import { NaiveStore } from './utils/NaiveStore';
-import { InAppBrowser } from './utils/Browser';
+import { InAppBrowser, Browser } from './utils/Browser';
 import { useEnvVariable } from './hooks/useEnvVariable';
 import {
   trustedUploaders,
@@ -49,8 +49,9 @@ const InternalPlayer: React.FC = () => {
   const dependencies = React.useMemo(
     () => ({
       navigate,
+      browser: { InAppBrowser },
       secureStore: SECURE_STORE,
-      browser: { InAppBrowser }
+      secureBrowser: { Browser },
     }),
     [navigate],
   );
