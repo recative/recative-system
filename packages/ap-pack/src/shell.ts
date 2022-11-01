@@ -1,37 +1,56 @@
 import debug from 'debug';
 import { ManagedAp } from '@recative/ap-manager';
+import { LoadApRequestEvent } from '@recative/ap-manager/src';
 
 const log = debug('ap-pack:shell');
 
-(() => {
+interface IApMetadata {
+  firstLevelPath: string;
+  secondLevelPath: string;
+}
+
+(async () => {
+  const apMetadata: IApMetadata = {
+    firstLevelPath: '',
+    secondLevelPath: '',
+  };
+
+  let apLoaded = false;
+
   log('Initializing the shell');
 
-  const manager = new ManagedAp(async (firstLevelPath, secondLevelPath) => {
-    log(`Received ap loading request: '${firstLevelPath}/${secondLevelPath}'`);
+  const manager = new ManagedAp();
 
-    const importRequest = import(
-      // eslint-disable-next-line prefer-template
-      'src/episodes/' + firstLevelPath + '/' + secondLevelPath + '/index.ts'
-    )
+  const handleLoadApRequest = (
+    async ({ detail }: LoadApRequestEvent) => {
+      if (apLoaded) return;
 
-    log(`Request generated:`, importRequest);
+      apLoaded = true;
+      log(`Received ap loading request: '${detail.firstLevelPath}/${detail.secondLevelPath}'`);
 
-    try {
-      const module = await importRequest;
-      log(`Imported: '${firstLevelPath}/${secondLevelPath}'`, module);
-    } catch (error) {
-      log(`Failed to import: '${firstLevelPath}/${secondLevelPath}'`, error);
-    }
+      apMetadata.firstLevelPath = detail.firstLevelPath;
+      apMetadata.secondLevelPath = detail.secondLevelPath;
 
-    return importRequest;
-  });
+      try {
+        const importRequest = await import(
+          // eslint-disable-next-line prefer-template
+          'src/episodes/' + detail.firstLevelPath + '/' + detail.secondLevelPath + '/index.ts'
+        );
+
+        log('Resolved import request', importRequest);
+      } catch (error) {
+        log('Request error', error);
+      }
+    }) as unknown as EventListener;
+
+  manager.addEventListener('load-ap-request', handleLoadApRequest);
 
   let constantsLoaded = false;
   let serviceWorkerLoaded = false;
 
   let readyForUse = false;
 
-  const stateCheckup = () => {
+  const stateCheckup = async () => {
     log(
       'State checkup, serviceWorkerLoaded:',
       serviceWorkerLoaded,
@@ -40,10 +59,15 @@ const log = debug('ap-pack:shell');
       'readyForUse:',
       readyForUse
     );
+
     if (constantsLoaded && serviceWorkerLoaded && !readyForUse) {
       log('Marking ap as ready');
       readyForUse = true;
-      manager.connector.ready();
+
+      await manager.connector.ready();
+
+      // @ts-ignore
+      // import('src/Catalog/p1/index.ts');
     }
   }
 
@@ -66,9 +90,10 @@ const log = debug('ap-pack:shell');
     }
 
     constantsLoaded = true;
-    stateCheckup();
 
     log('Got constants', data);
+
+    await stateCheckup();
   }
 
   if (
@@ -76,54 +101,56 @@ const log = debug('ap-pack:shell');
     && localStorage.getItem('@recative/ap-pack/experimental-sw')
   ) {
     log('Initializing experimental service worker support');
-    window.addEventListener('load', async () => {
-      await loadConstants();
-
-      const root = window.location.pathname.split('/');
-      root.pop();
-
-      try {
-        const register = await navigator.serviceWorker
-          .register(
-            'sw.js',
-            { scope: window.location.origin + root.join('/') }
-          );
-
-        await register.update();
-
-        await manager.connector.serviceWorkerRegistered();
-        serviceWorkerLoaded = true;
-        stateCheckup();
-
-      } catch (error) {
-
-        log('Unable to load the service worker, because the following error: ', error);
-        log('Will use fallback mode, resource preload and caching feature will not work');
-
-        if (error instanceof Error) {
-          manager.connector.serviceWorkerRegisterError(
-            error.name,
-            error.message,
-            error.stack
-          );
-        } else {
-          const internalError = new Error(String(error));
-          manager.connector.serviceWorkerRegisterError(
-            internalError.name,
-            internalError.message,
-            internalError.stack
-          );
-        }
-
-        serviceWorkerLoaded = true;
-        stateCheckup();
-      }
+    await new Promise((resolve) => {
+      window.addEventListener('load', async () => {
+        resolve(0);
+      })
     });
-  } else {
-    log('Initializing the system without the service worker support');
-    loadConstants().then(() => {
+
+    await loadConstants();
+
+    const root = window.location.pathname.split('/');
+    root.pop();
+
+    try {
+      const register = await navigator.serviceWorker
+        .register(
+          'sw.js',
+          { scope: window.location.origin + root.join('/') }
+        );
+
+      await register.update();
+
+      await manager.connector.serviceWorkerRegistered();
       serviceWorkerLoaded = true;
       stateCheckup();
-    });
+
+    } catch (error) {
+      log('Unable to load the service worker, because the following error: ', error);
+      log('Will use fallback mode, resource preload and caching feature will not work');
+
+      if (error instanceof Error) {
+        manager.connector.serviceWorkerRegisterError(
+          error.name,
+          error.message,
+          error.stack
+        );
+      } else {
+        const internalError = new Error(String(error));
+        manager.connector.serviceWorkerRegisterError(
+          internalError.name,
+          internalError.message,
+          internalError.stack
+        );
+      }
+
+      serviceWorkerLoaded = true;
+      stateCheckup();
+    }
+  } else {
+    log('Initializing the system without the service worker support');
+    await loadConstants();
+    serviceWorkerLoaded = true;
+    stateCheckup();
   }
 })();

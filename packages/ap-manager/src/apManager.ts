@@ -130,7 +130,9 @@ export class ApManagerSource {
   ) {
     logHost(`Initializing instances with queue length of ${queueLength}`);
 
-    this.container.hidden = true;
+    this.container.style.width = '0';
+    this.container.style.height = '0';
+    this.container.style.opacity = '0';
     this.container.id = 'apManagerContainer';
     document.body.appendChild(this.container);
 

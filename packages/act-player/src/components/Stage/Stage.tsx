@@ -10,7 +10,10 @@ import { useBugFreeStore } from '../../hooks/useBugFreeStore';
 
 import { Buffering } from '../Loading/Buffering';
 import { ModuleContainer } from '../Layout/ModuleContainer';
-import type { InterfaceExtensionComponent, AssetExtensionComponent } from '../../types/ExtensionCore';
+import type {
+  AssetExtensionComponent,
+  InterfaceExtensionComponent,
+} from '../../types/ExtensionCore';
 
 import { Video } from './Video';
 import { ActPoint } from './ActPoint';
@@ -63,7 +66,6 @@ export const Stage: InterfaceExtensionComponent = React.memo((props) => {
 
   const assetsShow = useStore(core.controller.assetShowAtom);
   const stageContents = useBugFreeStore(core.controller.stageContentsAtom);
-  const stageEmpty = useStore(props.core.stageEmpty);
   const playing = useStore(props.core.playing);
   const stuck = useStore(props.core.stuck);
 
@@ -72,7 +74,6 @@ export const Stage: InterfaceExtensionComponent = React.memo((props) => {
       <Block
         id="stageContainer"
         className={cn(stageContainerStyles, elementContainerStyles)}
-        display={stageEmpty ? 'none' : 'block'}
       >
         {stageContents.map(({ id, spec }) => {
           const Component = CONTENT_EXTENSIONS[spec?.contentExtensionId || ''];

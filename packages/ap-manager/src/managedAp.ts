@@ -1,3 +1,5 @@
+import EventTarget from '@ungap/event-target';
+
 import { AsyncCall, _AsyncVersionOf } from 'async-call-rpc';
 
 import { IFramePortClientChannel } from "@recative/act-protocol";
@@ -5,7 +7,14 @@ import { IFramePortClientChannel } from "@recative/act-protocol";
 import { logClient } from './log';
 import type { ApManagerInstance } from './apManager';
 
-export class ManagedAp {
+export interface LoadApRequestEventDetail {
+  firstLevelPath: string;
+  secondLevelPath: string;
+}
+
+export interface LoadApRequestEvent extends CustomEvent<LoadApRequestEventDetail> { }
+
+export class ManagedAp extends EventTarget {
 
   readonly channel: IFramePortClientChannel;
 
@@ -16,21 +25,22 @@ export class ManagedAp {
       logClient(
         `Received load ap request for ${firstLevelPath}/${secondLevelPath}`
       );
-      this.apImporter(firstLevelPath, secondLevelPath);
-    },
-    ping: () => {
-      logClient(`ping`);
-      return new Promise((resolve) => {
-        window.setTimeout(() => {
-          resolve('pong');
-        }, 0);
-      });
+      this.dispatchEvent(
+        new CustomEvent(
+          'load-ap-request',
+          {
+            detail: {
+              firstLevelPath,
+              secondLevelPath,
+            }
+          }
+        )
+      );
     }
   }
 
-  constructor(
-    private apImporter: (firstLevelPath: string, secondLevel: string) => void
-  ) {
+  constructor() {
+    super();
     logClient(`Initializing Managed AP`);
 
     const clientUrl = new URL(window.location.href);

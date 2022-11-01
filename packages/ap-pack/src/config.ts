@@ -7,6 +7,7 @@ import { Configuration, ProgressPlugin } from 'webpack';
 
 import NodePolyfillPlugin from 'node-polyfill-webpack-plugin';
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
+import { RetryChunkLoadPlugin } from 'webpack-retry-chunk-load-plugin';
 import { WebpackManifestPlugin } from 'webpack-manifest-plugin';
 
 import { avRule } from './rules/av';
@@ -58,6 +59,7 @@ export const getConfig = (
       new ProgressPlugin(),
       new CleanWebpackPlugin(),
       new NodePolyfillPlugin(),
+      new RetryChunkLoadPlugin({}),
       new WebpackManifestPlugin({}),
     ],
     resolve: {
@@ -69,11 +71,15 @@ export const getConfig = (
     },
     output: {
       clean: true,
-      filename: '[name].js',
       path: server
         ? fs.mkdtempSync(path.resolve(os.tmpdir(), 'ap-pack-'))
         : path.resolve(root, 'dist'),
+      filename: '[name].js',
       publicPath: '/',
+      asyncChunks: true,
+      // chunkLoading: 'import',
+      chunkLoadTimeout: 2000,
+      trustedTypes: true,
       // crossOriginLoading: 'use-credentials',
     },
     optimization: {

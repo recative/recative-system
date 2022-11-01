@@ -15,7 +15,6 @@ import { ResolutionMode } from '@recative/definitions';
 import { Block } from 'baseui/block';
 
 import { Error } from '../Panic/Error';
-import { Loading } from '../Loading/Loading';
 import { ModuleContainer } from '../Layout/ModuleContainer';
 import type { AssetExtensionComponent } from '../../types/ExtensionCore';
 
@@ -85,7 +84,6 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
   const [iFrameHeight, setIFrameHeight] = React.useState(-1);
 
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const iFrameContainerRef = React.useRef<HTMLDivElement>(null);
 
   const resolution = useStore(props.core.resolution);
   const width: number | undefined = resolution?.width;
@@ -209,62 +207,41 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
 
   const episodeData = props.core.getEpisodeData()!;
 
-  const [{ result, error }, srcActions] = useAsync(async () => {
-    const apEntryPoint = await episodeData.resources.getResourceById('@RECATIVE_AP');
+  const getEntryPoint = React.useCallback(async () => {
+    return episodeData.resources.getResourceById('@RECATIVE_AP');
+  }, [episodeData.resources]);
 
-    if (!apEntryPoint) throw new TypeError(`AP entry point not found`);
+  const [{ result: apEntryPoint, error }, srcActions] = useAsync(getEntryPoint);
+  React.useEffect(() => {
+    srcActions.execute();
+  }, [srcActions]);
 
-    const formattedSrc = new URL(apEntryPoint, window.location.href);
-    const currentPage = new URL(window.location.href);
-
-    currentPage.searchParams.forEach((value, key) => {
-      return formattedSrc.searchParams.set(key, value);
-    });
-
-    const finalSrc = formattedSrc.toString();
+  const apManagerInstance = React.useMemo(() => {
+    if (!apEntryPoint) return null;
 
     const apManagerSource = apManager.setupSource(
       apEntryPoint,
       Reflect.get(window, 'constant') ?? {}
     );
+
     const apInstance = apManagerSource.getInstance();
-
-    await apInstance.ready;
-
     core.controller.setActPointTag(apInstance);
 
-    await apInstance.connector.ping();
-
-    apInstance.connector.loadAp(
-      (props.spec as Record<string, string>).firstLevelPath,
-      (props.spec as Record<string, string>).secondLevelPath
-    );
-
-    return { src: finalSrc, iFrame: apInstance.iFrame }
-  });
+    return apInstance;
+  }, [apEntryPoint, core.controller]);
 
   React.useLayoutEffect(() => {
-    if (result) {
-      result.iFrame.className = cn(iFrameStyles, iFrameSizeStyles);
+    if (apManagerInstance) {
+      apManagerInstance.iFrame.className = cn(iFrameStyles, iFrameSizeStyles);
     }
-  }, [iFrameSizeStyles, iFrameStyles, result]);
+  }, [apManagerInstance, iFrameSizeStyles, iFrameStyles]);
 
   React.useLayoutEffect(() => {
-    if (result) {
-      result.iFrame.width = iFrameWidth.toString();
-      result.iFrame.height = iFrameHeight.toString();
+    if (apManagerInstance) {
+      apManagerInstance.iFrame.width = props.show ? iFrameWidth.toString() : '1';
+      apManagerInstance.iFrame.height = props.show ? iFrameHeight.toString() : '1';
     }
-  }, [iFrameHeight, iFrameWidth, result]);
-
-  React.useLayoutEffect(() => {
-    if (result) {
-      result.iFrame.hidden = !props.show;
-    }
-  }, [iFrameSizeStyles, iFrameStyles, props.show, result]);
-
-  React.useEffect(() => {
-    srcActions.execute();
-  }, [srcActions]);
+  }, [apManagerInstance, iFrameHeight, iFrameWidth, props.show]);
 
   React.useEffect(() => {
     return () => {
@@ -278,28 +255,24 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
     return () => props.core.unregisterComponent(props.id);
   }, [core.coreFunctions, props.core, props.id]);
 
-  const LoadingComponent = props.loadingComponent ?? Loading;
-
-  const loading = props.show ? <LoadingComponent /> : null;
-
   const blockStyle = props.show
     ? cn(fullSizeStyles, resetPositionStyles, visibleStyles)
     : cn(fullSizeStyles, resetPositionStyles);
 
   React.useLayoutEffect(() => {
-    const $container = iFrameContainerRef.current;
-    if ($container && result) {
-      if ($container.children[0] !== result.iFrame) {
-        $container.prepend(result.iFrame);
-      }
-    }
+    const $container = containerRef.current;
+    if ($container && apManagerInstance) {
+      if ($container.children[0] !== apManagerInstance.iFrame) {
+        $container.prepend(apManagerInstance.iFrame);
+        const spec = props.spec as Record<string, string>;
 
-    return () => {
-      if ($container && result) {
-        $container.removeChild(result.iFrame);
+        apManagerInstance.connector.loadAp(
+          spec.firstLevelPath,
+          spec.secondLevelPath,
+        );
       }
     }
-  }, [result]);
+  }, [props.spec, apManagerInstance]);
 
   if (error) {
     logError(
@@ -323,16 +296,7 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
 
   return (
     <ModuleContainer>
-      <Block
-        id="actPoint"
-        ref={containerRef}
-        className={blockStyle}
-      >
-        {result?.src
-          ? <Block id="apContainer" ref={iFrameContainerRef} />
-          : loading
-        }
-      </Block>
+      <Block ref={containerRef} id="actPoint" className={blockStyle} />
     </ModuleContainer>
   );
 });
