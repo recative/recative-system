@@ -22,6 +22,7 @@ import { getController } from './actPointControllers';
 
 const apManager = getApManager(1);
 
+const log = debug('player:ap-component');
 const logError = debug('player:ap-component');
 // eslint-disable-next-line no-console
 logError.log = console.error.bind(console);
@@ -244,12 +245,6 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
   }, [apManagerInstance, iFrameHeight, iFrameWidth, props.show]);
 
   React.useEffect(() => {
-    return () => {
-      core.destroyConnector();
-    };
-  }, [core]);
-
-  React.useEffect(() => {
     core.coreFunctions.updateContentState('preloading');
 
     return () => props.core.unregisterComponent(props.id);
@@ -261,16 +256,18 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
 
   React.useLayoutEffect(() => {
     const $container = containerRef.current;
-    if ($container && apManagerInstance) {
-      if ($container.children[0] !== apManagerInstance.iFrame) {
-        $container.prepend(apManagerInstance.iFrame);
-        const spec = props.spec as Record<string, string>;
+    if (
+      $container && apManagerInstance
+      && $container.children[0] !== apManagerInstance.iFrame
+    ) {
+      $container.prepend(apManagerInstance.iFrame);
+      const { firstLevelPath, secondLevelPath } = props.spec as Record<string, string>;
 
-        apManagerInstance.connector.loadAp(
-          spec.firstLevelPath,
-          spec.secondLevelPath,
-        );
-      }
+      log(`~ ap-manager:manager loading spec: '${firstLevelPath}/${secondLevelPath}'`, apManagerInstance);
+
+      window.setTimeout(() => {
+        apManagerInstance.loadAp(firstLevelPath, secondLevelPath);
+      }, 0);
     }
   }, [props.spec, apManagerInstance]);
 

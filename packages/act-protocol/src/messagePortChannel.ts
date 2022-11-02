@@ -103,8 +103,11 @@ export class MessagePortChannel implements EventBasedChannel {
   destroyed = false;
 
   constructor(protected port: MessagePort) {
-    this.port = port;
+    port.start();
+  }
 
+  replacePort(port: MessagePort) {
+    this.port = port;
     port.start();
   }
 
@@ -194,7 +197,7 @@ export class BatchedMessagePortChannel extends MessagePortChannel {
 export class LazyMessagePortChannel implements EventBasedChannel {
   ready = false;
 
-  private channel: MessagePortChannel | null = null;
+  protected channel: MessagePortChannel | null = null;
 
   private listenerBuffer: Set<Listener> = new Set();
 
@@ -229,6 +232,7 @@ export class LazyMessagePortChannel implements EventBasedChannel {
     }
 
     this.channel.send(data);
+    this.messageBuffer.delete(data);
   }
 
   destroy() {
@@ -256,11 +260,8 @@ export class IFramePortHostChannel extends LazyMessagePortChannel {
     window.addEventListener('message', this.onMessage);
   }
 
-  onMessage = (event: MessageEvent) => {
-    if (this.ready) return;
-    if (event.data !== this.msgId) return;
-
-    logHost('Received pairing request', this.msgId);
+  manuallyPairing = () => {
+    logHost('Pairing', this.msgId);
 
     if (!this.$iframe?.contentWindow) {
       throw new TypeError('Content window does not exists');
@@ -268,17 +269,28 @@ export class IFramePortHostChannel extends LazyMessagePortChannel {
 
     const messageChannel = new MessageChannel();
     const port = messageChannel.port1;
-    const rpcChannel = this.batch
-      ? new BatchedMessagePortChannel(port)
-      : new MessagePortChannel(port);
 
-    this.initialize(rpcChannel);
+    if (!this.channel) {
+      const rpcChannel = this.batch
+        ? new BatchedMessagePortChannel(port)
+        : new MessagePortChannel(port);
+
+      this.initialize(rpcChannel);
+    } else {
+      this.channel.replacePort(port);
+    }
 
     this.$iframe.contentWindow.postMessage(this.msgId, this.origin, [
       messageChannel.port2,
     ]);
+  }
 
-    window.removeEventListener('message', this.onMessage);
+  onMessage = (event: MessageEvent) => {
+    if (event.data !== this.msgId) return;
+
+    logHost('Received pairing request', this.msgId);
+
+    this.manuallyPairing();
   };
 
   destroy(): void {
@@ -300,7 +312,6 @@ export class IFramePortClientChannel extends LazyMessagePortChannel {
   }
 
   onMessage = (event: MessageEvent) => {
-    if (this.ready) return;
     if (event.data !== this.msgId) return;
 
     logClient('Received protocol port', event.ports);
@@ -309,7 +320,5 @@ export class IFramePortClientChannel extends LazyMessagePortChannel {
       : new MessagePortChannel(event.ports[0]);
 
     this.initialize(rpcChannel);
-
-    window.removeEventListener('message', this.onMessage);
   };
 }

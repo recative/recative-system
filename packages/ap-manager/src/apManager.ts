@@ -40,9 +40,11 @@ export const ErrorEventDispatcher = (
 export class ApManagerInstance extends EventTarget {
   readonly iFrame = document.createElement('iframe');
 
-  readonly channel: IFramePortHostChannel;
+  private readonly channelA: IFramePortHostChannel;
 
-  readonly connector: _AsyncVersionOf<ManagedAp['functions']>;
+  private channelB: IFramePortHostChannel | undefined;
+
+  protected connector: _AsyncVersionOf<ManagedAp['functions']>;
 
   readonly ready = new OpenPromise<HTMLIFrameElement>();
 
@@ -61,63 +63,92 @@ export class ApManagerInstance extends EventTarget {
       logHost(`AP instance is ready`);
       this.ready.resolve(this.iFrame);
     },
-    getConstants: () => this.constants,
+    getConstants: () => this.source.constants,
   }
 
+  randomId: string;
+
   constructor(
-    readonly clientSrc: string,
-    readonly container: HTMLDivElement,
-    private readonly constants: Record<string, unknown>
+    public readonly source: ApManagerSource,
   ) {
     super();
 
     logHost(
       'Initializing ApManagerInstance with src:',
-      clientSrc,
+      this.source.source,
       'frame:',
       this.iFrame
     );
 
-    const randomId = Math.random().toString(36).replace('0.', 'c-');
+    this.randomId = Math.random().toString(36).replace('0.', 'c-');
 
-    const iFrameUrl = new URL(clientSrc, window.location.href);
-    iFrameUrl.searchParams.set('channelId', randomId);
+    const iFrameUrl = new URL(this.source.source, window.location.href);
+    iFrameUrl.searchParams.set('channelId', this.randomId);
 
     this.iFrame.src = iFrameUrl.toString();
     this.iFrame.title = 'Interactive Content';
-    container.append(this.iFrame);
+    source.container.append(this.iFrame);
 
-    const channel = new IFramePortHostChannel(
+    const channelA = new IFramePortHostChannel(
       this.iFrame,
-      new URL(clientSrc, window.location.href).origin,
-      `@recative/ap-manager/message/${randomId}`,
+      new URL(this.source.source, window.location.href).origin,
+      `@recative/ap-manager/message/${this.randomId}-A`,
       false
     );
 
-    this.channel = channel;
+    this.channelA = channelA;
 
     this.connector = AsyncCall<ManagedAp['functions']>(
       this.functions,
       {
-        channel,
+        channel: channelA,
         logger: { log: logHost },
         log: { sendLocalStack: true, type: 'pretty' },
       }
     );
   }
 
+  loadAp = (firstLevelPath: string, secondLevelPath: string) => {
+    const channelB = new IFramePortHostChannel(
+      this.iFrame,
+      new URL(this.source.source, window.location.href).origin,
+      `@recative/ap-manager/message/${this.randomId}-B`,
+      false
+    );
+
+    this.channelB = channelB;
+
+    this.connector = AsyncCall<ManagedAp['functions']>(
+      this.functions,
+      {
+        channel: channelB,
+        logger: { log: logHost },
+        log: { sendLocalStack: true, type: 'pretty' },
+      }
+    );
+
+    this.connector.loadAp(firstLevelPath, secondLevelPath);
+  }
+
   destroy = () => {
+    logHost('Destroying the act point instance');
     this.iFrame.src = 'about:blank';
-    this.channel.destroy();
+    this.iFrame.remove();
+    this.channelA.destroy();
+    this.channelB?.destroy();
   }
 }
+
+const ELEMENT_ID = 'apManagerContainer';
 
 export class ApManagerSource {
   private availableInstances = new Set<ApManagerInstance>();
 
   private occupiedInstances = new Set<ApManagerInstance>();
 
-  private container = document.createElement('div');
+  readonly container =
+    document.getElementById(ELEMENT_ID) as HTMLDivElement
+    ?? document.createElement('div');
 
   get totalInstances() {
     return this.availableInstances.size + this.occupiedInstances.size;
@@ -125,32 +156,36 @@ export class ApManagerSource {
 
   constructor(
     readonly source: string,
-    private readonly constants: Record<string, unknown>,
-    private readonly queueLength: number
+    readonly constants: Record<string, unknown>,
+    readonly queueLength: number
   ) {
     logHost(`Initializing instances with queue length of ${queueLength}`);
 
-    this.container.style.width = '0';
-    this.container.style.height = '0';
-    this.container.style.opacity = '0';
-    this.container.id = 'apManagerContainer';
-    document.body.appendChild(this.container);
-
-    for (let i = 0; i < queueLength; i += 1) {
-      this.availableInstances.add(
-        new ApManagerInstance(source, this.container, constants)
-      );
+    if (this.container.id !== ELEMENT_ID) {
+      this.container.style.width = '0';
+      this.container.style.height = '0';
+      this.container.style.overflow = 'hidden';
+      this.container.id = ELEMENT_ID;
+      document.body.appendChild(this.container);
     }
+
+    this.ensureInstanceCount();
   }
 
   getInstance = () => {
     const [firstInstance,] = this.availableInstances;
     const rentedInstances = firstInstance
-      ?? new ApManagerInstance(this.source, this.container, this.constants);
+      ?? new ApManagerInstance(this);
 
     this.availableInstances.delete(rentedInstances);
     this.occupiedInstances.add(rentedInstances);
 
+    logHost(`Getting instance`, firstInstance);
+
+    return rentedInstances;
+  }
+
+  ensureInstanceCount = () => {
     if (this.availableInstances.size < this.queueLength) {
       for (
         let i = 0;
@@ -158,14 +193,10 @@ export class ApManagerSource {
         i += 1
       ) {
         this.availableInstances.add(
-          new ApManagerInstance(this.source, this.container, this.constants)
+          new ApManagerInstance(this)
         );
       }
     }
-
-    logHost(`Getting instance`, firstInstance);
-
-    return rentedInstances;
   }
 
   destroyInstance = (x: ApManagerInstance) => {
@@ -185,6 +216,11 @@ export class ApManager {
   setupSource = (source: string, constants: Record<string, unknown>) => {
     logHost(`Setting up the source: ${source}`);
     logHost(`Setting up constants:`, constants);
+
+    const result = this.apManagerMap.get(source);
+
+    if (result) return result;
+
     const newInstance = new ApManagerSource(
       source,
       constants,

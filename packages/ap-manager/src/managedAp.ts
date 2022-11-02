@@ -16,9 +16,13 @@ export interface LoadApRequestEvent extends CustomEvent<LoadApRequestEventDetail
 
 export class ManagedAp extends EventTarget {
 
-  readonly channel: IFramePortClientChannel;
+  readonly channelA: IFramePortClientChannel;
+
+  readonly channelB: IFramePortClientChannel;
 
   readonly connector: _AsyncVersionOf<ApManagerInstance['functions']>;
+
+  private connectorB: _AsyncVersionOf<ApManagerInstance['functions']>;
 
   readonly functions = {
     loadAp: (firstLevelPath: string, secondLevelPath: string) => {
@@ -28,12 +32,7 @@ export class ManagedAp extends EventTarget {
       this.dispatchEvent(
         new CustomEvent(
           'load-ap-request',
-          {
-            detail: {
-              firstLevelPath,
-              secondLevelPath,
-            }
-          }
+          { detail: { firstLevelPath, secondLevelPath } }
         )
       );
     }
@@ -46,17 +45,31 @@ export class ManagedAp extends EventTarget {
     const clientUrl = new URL(window.location.href);
     const channelId = clientUrl.searchParams.get('channelId');
 
-    this.channel = new IFramePortClientChannel(
-      `@recative/ap-manager/message/${channelId}`,
+    this.channelA = new IFramePortClientChannel(
+      `@recative/ap-manager/message/${channelId}-A`,
       false
     );
 
-    logClient(`Channel ID: ${this.channel.msgId}`);
+    this.channelB = new IFramePortClientChannel(
+      `@recative/ap-manager/message/${channelId}-B`,
+      false
+    );
+
+    logClient(`Channel ID: ${this.channelA.msgId}`);
 
     this.connector = AsyncCall<ApManagerInstance['functions']>(
       this.functions,
       {
-        channel: this.channel,
+        channel: this.channelA,
+        logger: { log: logClient },
+        log: { sendLocalStack: true, type: 'pretty' },
+      }
+    );
+
+    this.connectorB = AsyncCall<ApManagerInstance['functions']>(
+      this.functions,
+      {
+        channel: this.channelB,
         logger: { log: logClient },
         log: { sendLocalStack: true, type: 'pretty' },
       }

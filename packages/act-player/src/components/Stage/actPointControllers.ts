@@ -89,6 +89,7 @@ export const getController = (id: string) => {
           ready: () => {
             try {
               coreFunctions!.updateContentState('ready');
+              instance.source.ensureInstanceCount();
             } catch (e) {
               log('Unable to create a host connector', e);
             }
@@ -322,8 +323,9 @@ export const getController = (id: string) => {
     },
     async destroyItself() {
       connector?.channel.destroy();
+      connector?.destroy();
       connector = null;
-      actPoint!.destroy();
+      actPoint?.destroy();
       actPoint = null;
     },
     runQueuedTask(taskId: string) {
