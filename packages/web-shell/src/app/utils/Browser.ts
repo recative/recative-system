@@ -1,8 +1,12 @@
-const convertInAppBrowserOption = (options?: string | Record<string, string>) => {
-  if (!options || typeof options === "string") {
+const convertInAppBrowserOption = (
+  options?: string | Record<string, string>
+) => {
+  if (!options || typeof options === 'string') {
     return options;
   }
-  return Object.entries(options).map(([key, value]) => `${key}=${value}`).join(",");
+  return Object.entries(options)
+    .map(([key, value]) => `${key}=${value}`)
+    .join(',');
 };
 
 /**
@@ -10,64 +14,64 @@ const convertInAppBrowserOption = (options?: string | Record<string, string>) =>
  * compatible with implementation in @awesome-cordova-plugins/in-app-browser.
  */
 export const InAppBrowser = {
-  create: (url: string, target?: string, options?: string | Record<string, string>) => {
+  create: (
+    url: string,
+    target?: string,
+    options?: string | Record<string, string>
+  ) => {
     return window.open(url, target, convertInAppBrowserOption(options));
-  }
+  },
 };
 
+let lastWindow: WindowProxy | null = null;
 
-let lastWindow: WindowProxy | null = null
+let browserFinishedListeners: (() => void)[] = [];
 
-let browserFinishedListeners: (() => void)[] = []
-
-let checkWindowClosedInterval: ReturnType<typeof setInterval> | null = null
+let checkWindowClosedInterval: ReturnType<typeof setInterval> | null = null;
 
 // Its impossible to add event listener to a cross domain window, so query it every second
 const checkWindowClosed = () => {
   if (lastWindow?.closed) {
     lastWindow = null;
     browserFinishedListeners.forEach((listener) => {
-      listener()
-    })
+      listener();
+    });
   }
-}
+};
 
 const closeWindow = () => {
   if (lastWindow !== null) {
     lastWindow.close();
     lastWindow = null;
     browserFinishedListeners.forEach((listener) => {
-      listener()
-    })
+      listener();
+    });
   }
-  clearInterval(checkWindowClosedInterval ?? undefined)
-}
+  clearInterval(checkWindowClosedInterval ?? undefined);
+};
 
 /**
  * Another minimal utility used to open a new tab
  * compatible with implementation in @capacitor/browser.
  */
 export const Browser = {
-  open: async (option: {
-    url: string,
-    windowName?: string,
-  }) => {
-    closeWindow()
+  open: async (option: { url: string; windowName?: string }) => {
+    closeWindow();
     lastWindow = window.open(option.url, option.windowName ?? '_blank');
-    checkWindowClosedInterval = setInterval(checkWindowClosed, 1000)
+    checkWindowClosedInterval = setInterval(checkWindowClosed, 1000);
   },
   close: async () => {
     if (lastWindow === null) {
       throw new Error('No active window to close!');
     }
-    closeWindow()
+    closeWindow();
   },
   addListener: (type: string, listener: () => void) => {
-    if (type === "browserFinished") {
-      browserFinishedListeners.push(listener)
+    if (type === 'browserFinished') {
+      browserFinishedListeners.push(listener);
     }
   },
   removeAllListeners: () => {
-    browserFinishedListeners = []
+    browserFinishedListeners = [];
   },
-}
+};

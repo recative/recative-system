@@ -3,10 +3,7 @@
  * compatible with implementation in capacitor-blob-writer.
  */
 export const blobWriter = {
-  default: (option: {
-    path: string,
-    blob: Blob,
-  }) => {
+  default: (option: { path: string; blob: Blob }) => {
     const link = document.createElement('a');
     link.style.display = 'none';
     document.body.appendChild(link);
@@ -16,5 +13,5 @@ export const blobWriter = {
     link.href = URL.createObjectURL(option.blob);
     link.download = option.path;
     link.click();
-  }
+  },
 };
