@@ -19,6 +19,7 @@ import {
   trustedUploaders,
   preferredUploaders,
 } from './constants/configurations';
+import { blobWriter } from './utils/BlobWriter';
 
 const log = debug('web-shell:player');
 
@@ -52,6 +53,7 @@ const InternalPlayer: React.FC = () => {
       browser: { InAppBrowser },
       secureStore: SECURE_STORE,
       secureBrowser: { Browser },
+      blobWriter,
     }),
     [navigate],
   );
