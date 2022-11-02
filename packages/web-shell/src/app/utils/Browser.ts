@@ -36,5 +36,8 @@ export const Browser = {
   },
   addListener: () => {
     // do nothing
-  }
+  },
+  removeAllListeners: () => {
+    // do nothing
+  },
 }
