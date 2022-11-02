@@ -1,6 +1,6 @@
 {
   "name": "@recative/web-shell",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "dependencies": {
     "@react-hookz/web": "^15.1.0",
