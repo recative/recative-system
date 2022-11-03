@@ -417,6 +417,10 @@ export class EpisodeCore<
     if (trigger.managedStateExtensionId === PAUSE_CORE_STATE_EXTENSION_ID) {
       // TODO: pause the specific sequence/audio
       this.pause();
+      // Make sure the video stop at the specific time
+      if (this.mainSequence!.progress.get().progress - trigger.time > 33) {
+        this.seek(this.mainSequence!.currentSegment, trigger.time + 1)
+      }
     }
   }
 
