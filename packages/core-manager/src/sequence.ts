@@ -102,6 +102,11 @@ export class ContentSequence {
   contentList: ContentInfo[] = [];
 
   /**
+   * All preloaded contents
+   */
+  preloadedContents = new Set<ContentInfo>();
+
+  /**
    * ContentInstance managed by the ContentSequence
    */
   managedContentInstance = new Set<ContentInstance>();
@@ -328,6 +333,7 @@ export class ContentSequence {
       ),
     );
     this.contents.clear();
+    this.preloadedContents.clear();
     this.contentList = [];
     this.logProgress('Sequence fully destroyed');
   }
@@ -584,6 +590,7 @@ export class ContentSequence {
       this.createContent(content);
     }
     this.setupCurrentContentReady();
+    this.preloadedContents.delete(content);
 
     await allSettled([
       this.switchingUnblocked!,
@@ -659,9 +666,13 @@ export class ContentSequence {
 
   /**
    * Preload new ContentInstance
-   * TODO: also destroy unused preloaded ContentInstance here
+   * also destroy unused preloaded ContentInstance here
    */
   private prepareNextContent() {
+    this.preloadedContents.forEach((content) => {
+      this.destroyContent(content)
+    })
+    this.preloadedContents.clear()
     if (this.currentSegment + 1 < this.contentList.length) {
       const content = this.contentList[this.currentSegment + 1];
       if (content.instance !== null) {
@@ -669,6 +680,7 @@ export class ContentSequence {
       } else {
         this.logContent(`Preparing next content ${content.id}`);
         this.createContent(content);
+        this.preloadedContents.add(content);
       }
     }
   }
