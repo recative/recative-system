@@ -5,8 +5,9 @@ import { ClientSideRequestError } from './ClientSideRequestError';
 
 const log = debug('client:fetch');
 
-export const fetchUson = async <T>(url: string) => {
-  const response = await fetch(url);
+export const fetchUson = async <T>(x: string | Response) => {
+  const response = typeof x === 'string' ? await fetch(x) : x;
+  const url = typeof x === 'string' ? x : x.url;
 
   if (!response.ok) {
     throw new ClientSideRequestError(url, response.status);
@@ -14,6 +15,6 @@ export const fetchUson = async <T>(url: string) => {
 
   const raw = await response.text();
   const data = parse(raw) as T;
-  log(`fetched ${url}, with data:`, data);
+  log(`fetched ${x}, with data:`, data);
   return data as T;
 };

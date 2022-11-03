@@ -3,7 +3,7 @@ import debug from 'debug';
 
 import { useAsync } from '@react-hookz/web';
 
-import { fetch } from './utils/fetch';
+import { fetch, cache } from './utils/fetch';
 import type { IClientSdkConfig } from './types/IClientSdkConfig';
 import type { IEpisodeAbstraction } from './types/IEpisodeDetail';
 
@@ -54,6 +54,14 @@ export const PlayerSdkProvider: React.FC<IPlayerSdkProviderProps> = ({
         pathPattern,
         setClientSdkConfig,
       );
+
+      if (result) {
+        for (let i = 0; i < result.length; i += 1) {
+          const episode = result[i];
+          cache(episode.episode.id, dataType, pathPattern);
+        }
+      }
+
       log('Fetched episode list,', result);
       return result;
     }

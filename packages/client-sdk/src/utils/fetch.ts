@@ -7,10 +7,48 @@ import { fetchJson } from './fetchJson';
 import { fetchBson } from './fetchBson';
 import { fetchUson } from './fetchUson';
 import { postProcessUrl } from './postProcessUrl';
+import { ClientSideRequestError } from './ClientSideRequestError';
+
+const responseCache = new Map<string, Response>();
+const resultCache = new Map<string, unknown>();
+
+export type DataType = 'bson' | 'json' | 'uson';
+
+const getCacheKey = (
+  fileName: string,
+  dataType: DataType,
+  pathPattern: string,
+) => {
+  return `${fileName}~${dataType}~${pathPattern}`;
+}
+
+export const cache = async (
+  fileName: string,
+  dataType: DataType,
+  pathPattern: string,
+) => {
+  const cacheKey = getCacheKey(fileName, dataType, pathPattern);
+
+  if (resultCache.has(cacheKey)) return;
+
+  const cachedResponse = responseCache.get(cacheKey);
+
+  if (cachedResponse && cachedResponse.ok) return;
+
+  const url = postProcessUrl(fileName, pathPattern, dataType);
+
+  const response = await window.fetch(url);
+
+  if (!response.ok) {
+    throw new ClientSideRequestError(url, response.status);
+  }
+
+  responseCache.set(cacheKey, response);
+};
 
 export const fetch = async <T>(
   fileName: string,
-  dataType: 'bson' | 'json' | 'uson',
+  dataType: DataType,
   pathPattern: string,
   setClientSdkConfig?: React.Dispatch<React.SetStateAction<IClientSdkConfig>>,
   requestId = Math.random().toString(36).replace('0.', 'req-'),
@@ -23,20 +61,30 @@ export const fetch = async <T>(
     return config;
   });
 
+  const cacheKey = getCacheKey(fileName, dataType, pathPattern);
+
+  const cachedResult = resultCache.get(cacheKey);
+  if (cachedResult) return cachedResult as T;
+
+  const cachedResponse = responseCache.get(cacheKey);
+  responseCache.delete(cacheKey);
+
   try {
     const url = postProcessUrl(fileName, pathPattern, dataType);
 
     let result: T;
 
+    const request = cachedResponse && cachedResponse.ok ? cachedResponse : url;
+
     switch (dataType) {
       case 'bson':
-        result = await fetchBson<T>(url);
+        result = await fetchBson<T>(request);
         break;
       case 'json':
-        result = await fetchJson<T>(url);
+        result = await fetchJson<T>(request);
         break;
       case 'uson':
-        result = await fetchUson<T>(url);
+        result = await fetchUson<T>(request);
         break;
       default:
         throw new TypeError(`Unknown data type: ${dataType}`);
@@ -54,6 +102,10 @@ export const fetch = async <T>(
       `${performanceMark}-start`,
       `${performanceMark}-end`
     );
+
+    if (result && cachedResponse) {
+      resultCache.set(cacheKey, result);
+    }
 
     return result;
   } catch (e) {
