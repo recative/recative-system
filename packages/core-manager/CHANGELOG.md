@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.11.1
+
+### Patch Changes
+
+- f5a4267: feat: Seek after pause if pause is too late
+- 509e568: feat: Destroy unused preloaded content
+- Updated dependencies [685ef92]
+  - @recative/smart-resource@0.2.1
+
 ## 0.11.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@recative/core-manager",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
@@ -23,7 +23,7 @@
     "@recative/open-promise": "^0.2.3",
     "@recative/phonograph": "^2.0.0",
     "@recative/resource-loader": "^0.2.3",
-    "@recative/smart-resource": "^0.2.0",
+    "@recative/smart-resource": "^0.2.1",
     "@recative/time-schedule": "^0.2.1",
     "@ungap/event-target": "^0.2.3",
     "debug": "^4.3.3",

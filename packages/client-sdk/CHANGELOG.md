@@ -1,5 +1,15 @@
 # Changelog
 
+## 11.0.1
+
+### Patch Changes
+
+- Updated dependencies [f5a4267]
+- Updated dependencies [685ef92]
+- Updated dependencies [509e568]
+  - @recative/core-manager@0.11.1
+  - @recative/smart-resource@0.2.1
+
 ## 11.0.0
 
 ### Patch Changes
