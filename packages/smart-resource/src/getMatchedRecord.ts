@@ -52,14 +52,6 @@ export const getMatchedResource = <T>(
     }
   }
 
-  const weightKeys = Object.keys(trueWeights);
-
-  for (let i = 0; i < weightKeys.length; i += 1) {
-    const weightKey = weightKeys[i];
-
-    trueWeights[weightKey + '!'] = trueWeights[weightKey];
-  }
-
   const assetScores = resources
     .map(({ selector }) => calculateResourceScore(
       parseSelector(selector),
@@ -68,7 +60,7 @@ export const getMatchedResource = <T>(
     ));
 
   if (localStorage.getItem('@recative/smart-resource/report-match-score')) {
-    const table = resources
+    const scoreTable = resources
       .map((x, i) => ({ ...x, score: assetScores[i] }))
       .sort((a, b) => b.score - a.score)
       .map((x) => `${x.score}\t${x.selector.join(', ')}\t${x.item}`)
@@ -77,14 +69,14 @@ export const getMatchedResource = <T>(
     const title = `${taskId}\r\n${new Array(taskId.length + 1).fill('=').join('')}\r\n\r\n`;
     const header = 'score\tselector\titem\r\n';
     const sep = '------\t---------\t-----\r\n';
-    const envTitle = 'Environment Variable\r\n~~~~~~~~~~~~~~~~~~~~~~';
+    const envTitle = 'Environment Variable\r\n\r\n~~~~~~~~~~~~~~~~~~~~~~\r\n\r\n';
     const envHeader = 'key\tvalue\r\n';
     const envSep = '------\t-----\r\n';
     const envTable = Object.keys(envConfig).map((x) => `${x}: ${envConfig[x]}`).join('\r\n');
 
     log(
       'Resource Report\r\n%s%s%s%s%s%s%s%s',
-      title, header, sep, table,
+      title, header, sep, scoreTable,
       envTitle, envHeader, envSep, envTable,
     );
   }
