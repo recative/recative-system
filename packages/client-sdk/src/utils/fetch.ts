@@ -13,7 +13,11 @@ export const fetch = async <T>(
   dataType: 'bson' | 'json' | 'uson',
   pathPattern: string,
   setClientSdkConfig?: React.Dispatch<React.SetStateAction<IClientSdkConfig>>,
+  requestId = Math.random().toString(36).replace('0.', 'req-'),
 ) => {
+  const performanceMark = `${fileName}:${requestId}`;
+  performance.mark(`${performanceMark}-start`);
+
   setClientSdkConfig?.((config) => {
     config.requestStatus[fileName] = NetworkRequestStatus.PENDING;
     return config;
@@ -42,6 +46,14 @@ export const fetch = async <T>(
       config.requestStatus[fileName] = NetworkRequestStatus.SUCCESS;
       return config;
     });
+
+    performance.mark(`${performanceMark}-end`);
+
+    performance.measure(
+      performanceMark,
+      `${performanceMark}-start`,
+      `${performanceMark}-end`
+    );
 
     return result;
   } catch (e) {
