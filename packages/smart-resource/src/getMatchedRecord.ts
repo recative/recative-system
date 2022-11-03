@@ -52,6 +52,14 @@ export const getMatchedResource = <T>(
     }
   }
 
+  const weightKeys = Object.keys(trueWeights);
+
+  for (let i = 0; i < weightKeys.length; i += 1) {
+    const weightKey = weightKeys[i];
+
+    trueWeights[weightKey + '!'] = trueWeights[weightKey];
+  }
+
   const assetScores = resources
     .map(({ selector }) => calculateResourceScore(
       parseSelector(selector),
