@@ -3,7 +3,7 @@
   "sourceRoot": "packages/database/src",
   "projectType": "library",
   "targets": {
-    "build": {
+    "build:experimental": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
         "command": "yarn build",
@@ -25,14 +25,20 @@
     },
     "lint": {
       "executor": "@nrwl/linter:eslint",
-      "outputs": ["{options.outputFile}"],
+      "outputs": [
+        "{options.outputFile}"
+      ],
       "options": {
-        "lintFilePatterns": ["packages/database/**/*.ts"]
+        "lintFilePatterns": [
+          "packages/database/**/*.ts"
+        ]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/packages/database"],
+      "outputs": [
+        "coverage/packages/database"
+      ],
       "options": {
         "jestConfig": "packages/database/jest.config.ts",
         "passWithNoTests": true
