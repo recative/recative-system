@@ -331,7 +331,7 @@ export class ManagedCoreStateList extends EventTarget {
           return;
         }
 
-        if (time >= trigger.time && this.currentTime <= trigger.time) {
+        if (time > trigger.time && this.currentTime <= trigger.time) {
           if (!this.triggeredStates.has(trigger) && trigger.once) {
             return;
           }
