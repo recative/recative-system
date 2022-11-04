@@ -201,7 +201,7 @@ export class AudioTrack extends WithLogger implements Track {
     } else {
       this.audioElement = null
     }
-    this.updateTime();
+    this.updateTime(true);
     this.pendingBuffer = null;
   }
 
