@@ -1,5 +1,15 @@
 # Changelog
 
+## 11.0.2
+
+### Patch Changes
+
+- Updated dependencies [3fbfcf2]
+- Updated dependencies [0ee108e]
+- Updated dependencies [52ccfd1]
+  - @recative/core-manager@0.11.2
+  - @recative/definitions@0.5.1
+
 ## 11.0.1
 
 ### Patch Changes

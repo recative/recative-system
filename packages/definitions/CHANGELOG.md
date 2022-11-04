@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1
+
+### Patch Changes
+
+- 52ccfd1: fix: Do not repeatedly trigger event when time do not change
+
 ## 0.5.0
 
 ### Minor Changes

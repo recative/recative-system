@@ -1,6 +1,6 @@
 {
   "name": "@recative/core-manager",
-  "version": "0.11.1",
+  "version": "0.11.2",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
@@ -19,7 +19,7 @@
     "@nanostores/persistent": "^0.5.2",
     "@recative/act-protocol": "^0.2.9",
     "@recative/audio-station": "^0.3.0",
-    "@recative/definitions": "^0.5.0",
+    "@recative/definitions": "^0.5.1",
     "@recative/open-promise": "^0.2.3",
     "@recative/phonograph": "^2.0.0",
     "@recative/resource-loader": "^0.2.3",

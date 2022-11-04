@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.11.2
+
+### Patch Changes
+
+- 3fbfcf2: fix: AudioTrack time rewind
+- 0ee108e: fix: AudioTrack time should force update after AudioElement load
+- Updated dependencies [52ccfd1]
+  - @recative/definitions@0.5.1
+
 ## 0.11.1
 
 ### Patch Changes
