@@ -28,7 +28,7 @@ export class PreloadManager {
 
   readonly nonBlockingResourceCacheScheduled = atom(false);
 
-  constructor(private core: EpisodeCore) {}
+  constructor(private core: EpisodeCore) { }
 
   private ensureEpisodeData = () => {
     const episodeData = this.core.getEpisodeData();
@@ -41,6 +41,7 @@ export class PreloadManager {
   };
 
   cacheAllResourceFileUrl = async () => {
+    performance.mark('cacheResourceFileUrl-start');
     if (this.urlCacheScheduled.get()) {
       return;
     }
@@ -59,7 +60,13 @@ export class PreloadManager {
 
     await allSettled(tasks);
 
+    performance.mark('cacheResourceFileUrl-end');
     log('URL cache finished');
+    performance.measure(
+      'cacheResourceFileUrl',
+      'cacheResourceFileUrl-start',
+      'cacheResourceFileUrl-end'
+    );
 
     this.urlCached.set(true);
   };
@@ -71,8 +78,8 @@ export class PreloadManager {
   ) => {
     const episodeData = this.ensureEpisodeData();
     return episodeData.resources.getResourceById<
-    string,
-    PostProcessCallback<string, unknown>
+      string,
+      PostProcessCallback<string, unknown>
     >(
       resource.id,
       null,
@@ -119,6 +126,8 @@ export class PreloadManager {
       return;
     }
 
+    performance.mark('fetchBlockingResources-start');
+
     this.blockingResourceCacheScheduled.set(true);
 
     const episodeData = this.ensureEpisodeData();
@@ -135,7 +144,13 @@ export class PreloadManager {
 
     await allSettled(tasks);
 
+    performance.mark('fetchBlockingResources-end');
     log('Blocking resources finished');
+    performance.measure(
+      'fetchBlockingResources',
+      'fetchBlockingResources-start',
+      'fetchBlockingResources-end'
+    );
     this.blockingResourceCached.set(true);
   };
 

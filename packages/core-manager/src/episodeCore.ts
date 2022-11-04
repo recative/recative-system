@@ -325,10 +325,17 @@ export class EpisodeCore<
 
   private async launchPreloader() {
     const episodeData = await this.episodeData;
+    performance.mark('launchPreloader-start');
     await allSettled([
       episodeData.preloader.cacheAllResourceFileUrl(),
       episodeData.preloader.fetchBlockingResources(),
     ]);
+    performance.mark('launchPreloader-end');
+    performance.measure(
+      'launchPreloader',
+      'launchPreloader-start',
+      'launchPreloader-end',
+    )
     episodeData.preloader.fetchNonBlockingResources();
   }
 
@@ -338,7 +345,14 @@ export class EpisodeCore<
       this.internalAutoplayReady.set(true);
     });
     const preload = this.launchPreloader();
+    performance.mark('initializeEpisode-start');
     await Promise.all([this.criticalComponentReady, this.episodeData]);
+    performance.mark('initializeEpisode-end');
+    performance.measure(
+      'initializeEpisode',
+      'initializeEpisode-start',
+      'initializeEpisode-end'
+    );
     this.mainSequence = new ContentSequence({
       id: 'main',
       logger: this.logCollector.Logger('mainSequence'),
