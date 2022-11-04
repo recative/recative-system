@@ -234,7 +234,7 @@ export class EpisodeCore<
     this.episodeId = config.episodeId;
     this.contentLanguage = jsonAtom(
       '@recative/core-manager/content-lang',
-      config.defaultSubtitleLanguage ?? DEFAULT_LANGUAGE,
+      config.defaultContentLanguage ?? DEFAULT_LANGUAGE,
     );
     this.subtitleLanguage = jsonAtom(
       '@recative/core-manager/subtitle-lang',
