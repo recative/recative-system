@@ -62,6 +62,8 @@ export class AudioTrack extends WithLogger implements Track {
   }
 
   private updateTime(force: boolean = false) {
+    // NOTE: It's just impossible to get the audio time right
+    // without the AudioContext.getOutputTimestamp
     if (this.audioElement === null) {
       this.lastUpdateTime = this.cachedUpdateTime;
       this.lastProgress = this.cachedProgress;
@@ -149,9 +151,14 @@ export class AudioTrack extends WithLogger implements Track {
   }
 
   pause(): void {
-    this.updateTime();
     this.playing = false;
     this.audioElement?.pause();
+    if (this.audioElement) {
+      // make sure the time do not rewind after pause
+      const time = performance.now();
+      this.audioElement.time = (time - this.lastUpdateTime + this.lastProgress) / 1000;
+    }
+    this.updateTime();
   }
 
   setAudio(audioClipResponsePromise: Promise<AudioElementInit | null> | null) {
