@@ -1952,14 +1952,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@capacitor/android-geckoview@workspace:packages/capacitor-geckoview":
-  version: 0.0.0-use.local
-  resolution: "@capacitor/android-geckoview@workspace:packages/capacitor-geckoview"
-  peerDependencies:
-    "@capacitor/core": ^3.6.0
-  languageName: unknown
-  linkType: soft
-
 "@capacitor/android@npm:3.8.0":
   version: 3.8.0
   resolution: "@capacitor/android@npm:3.8.0"
@@ -6164,6 +6156,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@recative/capacitor-geckoview@workspace:packages/capacitor-geckoview":
+  version: 0.0.0-use.local
+  resolution: "@recative/capacitor-geckoview@workspace:packages/capacitor-geckoview"
+  peerDependencies:
+    "@capacitor/core": ^3.6.0
+  languageName: unknown
+  linkType: soft
+
 "@recative/client-sdk@^11.0.0, @recative/client-sdk@workspace:packages/client-sdk":
   version: 0.0.0-use.local
   resolution: "@recative/client-sdk@workspace:packages/client-sdk"
@@ -6174,7 +6174,7 @@ __metadata:
     "@react-hookz/web": ^15.1.0
     "@recative/act-player": ^0.5.3
     "@recative/act-protocol": ^0.2.9
-    "@recative/core-manager": ^0.11.2
+    "@recative/core-manager": ^0.11.3
     "@recative/definitions": ^0.5.1
     "@recative/open-promise": ^0.2.3
     "@recative/smart-resource": ^0.2.1
@@ -6194,7 +6194,7 @@ __metadata:
     "@paciolan/remote-module-loader": "*"
     "@recative/act-player": 0.5.3
     "@recative/act-protocol": "*"
-    "@recative/core-manager": 0.11.2
+    "@recative/core-manager": 0.11.3
     "@recative/smart-resource": "*"
     baseui: ^12.1.0
     classnames: "*"
@@ -6208,7 +6208,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/core-manager@^0.11.0, @recative/core-manager@^0.11.2, @recative/core-manager@workspace:packages/core-manager":
+"@recative/core-manager@^0.11.0, @recative/core-manager@^0.11.3, @recative/core-manager@workspace:packages/core-manager":
   version: 0.0.0-use.local
   resolution: "@recative/core-manager@workspace:packages/core-manager"
   dependencies:

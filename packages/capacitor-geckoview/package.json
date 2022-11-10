@@ -1,5 +1,5 @@
 {
-  "name": "@capacitor/android-geckoview",
+  "name": "@recative/capacitor-geckoview",
   "version": "0.0.2",
   "repository": "https://github.com/recative/recative-system",
   "scripts": {
