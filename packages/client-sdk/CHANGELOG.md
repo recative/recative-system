@@ -1,5 +1,12 @@
 # Changelog
 
+## 11.0.3
+
+### Patch Changes
+
+- Updated dependencies [bbc22e4]
+  - @recative/core-manager@0.11.3
+
 ## 11.0.2
 
 ### Patch Changes

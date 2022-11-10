@@ -1952,6 +1952,14 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@capacitor/android-geckoview@workspace:packages/capacitor-geckoview":
+  version: 0.0.0-use.local
+  resolution: "@capacitor/android-geckoview@workspace:packages/capacitor-geckoview"
+  peerDependencies:
+    "@capacitor/core": ^3.6.0
+  languageName: unknown
+  linkType: soft
+
 "@capacitor/android@npm:3.8.0":
   version: 3.8.0
   resolution: "@capacitor/android@npm:3.8.0"
@@ -6166,10 +6174,10 @@ __metadata:
     "@react-hookz/web": ^15.1.0
     "@recative/act-player": ^0.5.3
     "@recative/act-protocol": ^0.2.9
-    "@recative/core-manager": ^0.11.0
-    "@recative/definitions": ^0.5.0
+    "@recative/core-manager": ^0.11.2
+    "@recative/definitions": ^0.5.1
     "@recative/open-promise": ^0.2.3
-    "@recative/smart-resource": ^0.2.0
+    "@recative/smart-resource": ^0.2.1
     "@recative/ugly-json": "workspace:^"
     "@types/debug": ^4.1.7
     classnames: ^2.3.1
@@ -6186,7 +6194,7 @@ __metadata:
     "@paciolan/remote-module-loader": "*"
     "@recative/act-player": 0.5.3
     "@recative/act-protocol": "*"
-    "@recative/core-manager": 0.11.0
+    "@recative/core-manager": 0.11.2
     "@recative/smart-resource": "*"
     baseui: ^12.1.0
     classnames: "*"
@@ -6200,18 +6208,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/core-manager@^0.11.0, @recative/core-manager@workspace:packages/core-manager":
+"@recative/core-manager@^0.11.0, @recative/core-manager@^0.11.2, @recative/core-manager@workspace:packages/core-manager":
   version: 0.0.0-use.local
   resolution: "@recative/core-manager@workspace:packages/core-manager"
   dependencies:
     "@nanostores/persistent": ^0.5.2
     "@recative/act-protocol": ^0.2.9
     "@recative/audio-station": ^0.3.0
-    "@recative/definitions": ^0.5.0
+    "@recative/definitions": ^0.5.1
     "@recative/open-promise": ^0.2.3
     "@recative/phonograph": ^2.0.0
     "@recative/resource-loader": ^0.2.3
-    "@recative/smart-resource": ^0.2.0
+    "@recative/smart-resource": ^0.2.1
     "@recative/time-schedule": ^0.2.1
     "@types/debug": ^4.1.7
     "@ungap/event-target": ^0.2.3
@@ -6235,7 +6243,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/definitions@^0.5.0, @recative/definitions@workspace:packages/definitions":
+"@recative/definitions@^0.5.0, @recative/definitions@^0.5.1, @recative/definitions@workspace:packages/definitions":
   version: 0.0.0-use.local
   resolution: "@recative/definitions@workspace:packages/definitions"
   dependencies:
@@ -6438,7 +6446,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/smart-resource@^0.2.0, @recative/smart-resource@workspace:packages/smart-resource":
+"@recative/smart-resource@^0.2.0, @recative/smart-resource@^0.2.1, @recative/smart-resource@workspace:packages/smart-resource":
   version: 0.0.0-use.local
   resolution: "@recative/smart-resource@workspace:packages/smart-resource"
   dependencies:

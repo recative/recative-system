@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.3
+
+### Patch Changes
+
+- bbc22e4: fix: Incorrect default language
+
 ## 0.11.2
 
 ### Patch Changes
