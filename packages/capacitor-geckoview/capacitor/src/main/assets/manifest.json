@@ -1,0 +1,33 @@
+{
+  "manifest_version": 2,
+  "name": "messaging",
+  "version": "1.0",
+  "description": "Example messaging web extension.",
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self';",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "messaging@example.com"
+    }
+  },
+  "web_accessible_resources": [
+    "native-bridge.js"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "permissions": [
+    "nativeMessaging",
+    "geckoViewAddons",
+    "activeTab",
+    "webRequest",
+    "*://localhost/*",
+    "webRequestBlocking",
+    "*://localhost/*"
+  ]
+}
