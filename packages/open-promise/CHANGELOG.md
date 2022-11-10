@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.4
+
+### Patch Changes
+
+- chore: Add a CustomEvent polyfill for node side
+
 ## 0.2.3
 
 ### Patch Changes

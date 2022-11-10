@@ -1,6 +1,7 @@
 import debug from 'debug';
 import EventTarget from '@ungap/event-target';
 
+import { CustomEvent } from './CustomEvent';
 import { OpenPromise } from './OpenPromise';
 import { allSettled } from './allSettled';
 
@@ -95,16 +96,16 @@ export class SequentialQueue extends EventTarget {
     if (this.taskMap.has(task)) {
       this.taskMap.delete(task);
     }
-    
+
     this.dispatchEvent(
       new SequentialQueueUpdateEvent(this, SequentialQueueUpdateAction.Remove)
-      );
-    }
-    
-    tick() {
-      const openPromiseTasks: OpenPromise<any>[] = [];
-      
-      if (this.dependencyQueue && this.dependencyQueue.remainTasks !== 0) {
+    );
+  }
+
+  tick() {
+    const openPromiseTasks: OpenPromise<any>[] = [];
+
+    if (this.dependencyQueue && this.dependencyQueue.remainTasks !== 0) {
       log(`[${this.queueId}] Waiting for the dependency queue with ${this.dependencyQueue.remainTasks} tasks.`);
       return Promise.resolve([]);
     }
@@ -114,7 +115,7 @@ export class SequentialQueue extends EventTarget {
     for (let i = 0; i < this.concurrency; i += 1) {
       taskCleared += 1;
       const task = this.queue.shift();
-      
+
       if (task) {
         if (this.taskMap.has(task)) {
           this.taskMap.delete(task);
