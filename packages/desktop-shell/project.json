@@ -1,0 +1,43 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/desktop-shell/src",
+  "projectType": "application",
+  "targets": {
+    "bundle": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "command": "yarn bundle",
+        "cwd": "packages/desktop-shell"
+      }
+    },
+    "start": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "command": "yarn start",
+        "cwd": "packages/desktop-shell"
+      }
+    },
+    "dev": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "command": "yarn dev",
+        "cwd": "packages/desktop-shell"
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "command": "yarn lint",
+        "cwd": "packages/desktop-shell"
+      }
+    },
+    "test": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "command": "yarn test",
+        "cwd": "packages/desktop-shell"
+      }
+    }
+  },
+  "tags": []
+}
