@@ -23,6 +23,7 @@
     "database": "packages/database",
     "ugly-json": "packages/ugly-json",
     "web-shell": "packages/web-shell",
-    "capacitor-geckoview": "packages/capacitor-geckoview"
+    "capacitor-geckoview": "packages/capacitor-geckoview",
+    "desktop-shell": "packages/desktop-shell"
   }
 }
