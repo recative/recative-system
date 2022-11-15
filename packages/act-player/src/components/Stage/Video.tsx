@@ -365,12 +365,9 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
   }, []);
 
   const handleTimeUpdate = React.useCallback(() => {
-    core.controller.updateSyncTime();
-    core.coreFunctions.reportProgress(
-      videoRef.current!.currentTime * 1000,
-    );
     core.controller.checkVideoPlayingState();
-  }, [core.controller, core.coreFunctions]);
+    core.controller.reportProgress();
+  }, [core.controller]);
 
   const handleWaiting = React.useCallback(() => {
     stuck();

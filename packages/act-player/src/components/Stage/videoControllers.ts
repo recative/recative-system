@@ -27,12 +27,6 @@ export const getController = (id: string) => {
     $video.play().catch(() => { });
   };
 
-  let lastSyncTime = Date.now();
-
-  const updateSyncTime = () => {
-    lastSyncTime = Date.now();
-  };
-
   const checkVideoPlayingState = () => {
     // For iOS Safari: sometime the video is unexpected paused by browser when the window is hidden
     if (!$video || !videoReady) {
@@ -52,6 +46,17 @@ export const getController = (id: string) => {
     }
   };
 
+  let lastSyncTime = Date.now();
+
+  const reportProgress = () => {
+    if (!coreFunctions) return;
+    if (!$video) return;
+    coreFunctions.reportProgress(
+      $video.currentTime * 1000,
+    );
+    lastSyncTime = Date.now();
+  }
+
   const forceCheckup = () => {
     if (!coreFunctions) return;
     if (!$video) return;
@@ -61,10 +66,7 @@ export const getController = (id: string) => {
     const syncΔt = Date.now() - lastSyncTime;
 
     if (isPlaying && syncΔt > 300) {
-      coreFunctions.reportProgress(
-        $video.currentTime * 1000,
-      );
-      updateSyncTime();
+      reportProgress()
     }
   };
 
@@ -174,7 +176,7 @@ export const getController = (id: string) => {
     setVideoReady,
     setVideoShown,
     setCoreFunctions,
-    updateSyncTime,
+    reportProgress,
     forceCheckup,
     checkVideoPlayingState,
   };
