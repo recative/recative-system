@@ -46,7 +46,7 @@ export const getController = (id: string) => {
     }
   };
 
-  let lastSyncTime = Date.now();
+  let lastSyncTime: number | null = null;
 
   const reportProgress = () => {
     if (!coreFunctions) return;
@@ -57,15 +57,21 @@ export const getController = (id: string) => {
     lastSyncTime = Date.now();
   }
 
+  const needCheckup = () => {
+    if (lastSyncTime === null) {
+      return true
+    }
+    return Date.now() - lastSyncTime > 300
+  }
+
   const forceCheckup = () => {
     if (!coreFunctions) return;
     if (!$video) return;
     checkVideoPlayingState();
 
     const isPlaying = trackPlaying && !trackSuspended;
-    const syncΔt = Date.now() - lastSyncTime;
 
-    if (isPlaying && syncΔt > 300) {
+    if (isPlaying && needCheckup()) {
       reportProgress()
     }
   };
