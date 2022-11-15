@@ -1,4 +1,7 @@
 import type { ComponentFunctions, CoreFunctions } from '@recative/core-manager';
+import { isSafari } from '../../variables/safari';
+
+const IS_SAFARI = isSafari();
 
 const isVideoPlaying = (video: HTMLVideoElement) => {
   // From: https://stackoverflow.com/questions/6877403/how-to-tell-if-a-video-element-is-currently-playing
@@ -17,6 +20,9 @@ export const getController = (id: string) => {
   let trackPlaying = false;
   let trackSuspended = false;
   let cachedTime = 0;
+
+  let lastSyncTime: number | null = null;
+  let lastProgress = 0;
 
   const playVideo = () => {
     if (!$video) return false;
@@ -41,20 +47,39 @@ export const getController = (id: string) => {
       if (isPlaying) {
         playVideo();
       } else {
+        lastSyncTime = null;
         $video.pause();
       }
     }
   };
 
-  let lastSyncTime: number | null = null;
+  const reloadVideo = () => {
+    $video?.load();
+    videoReady = false;
+    lastSyncTime = null;
+  }
 
   const reportProgress = () => {
     if (!coreFunctions) return;
     if (!$video) return;
-    coreFunctions.reportProgress(
-      $video.currentTime * 1000,
-    );
-    lastSyncTime = Date.now();
+    const progress = $video.currentTime * 1000
+    const time = Date.now()
+    // For iOS 16 Safari: recover from broken video element when
+    // everything looks fine but the progress do not grow and the video is black
+    if (IS_SAFARI) {
+      if ($video.readyState >= $video.HAVE_ENOUGH_DATA && $video.networkState === $video.NETWORK_IDLE) {
+        if (lastSyncTime !== null && trackPlaying && !trackSuspended) {
+          if (time > lastSyncTime && progress - lastProgress < Math.min(time - lastSyncTime, 1)) {
+            coreFunctions?.log(`The video element is broken, reload video`);
+            reloadVideo();
+            return
+          }
+        }
+      }
+    }
+    coreFunctions.reportProgress(progress);
+    lastProgress = progress;
+    lastSyncTime = time;
   }
 
   const needCheckup = () => {
@@ -98,6 +123,7 @@ export const getController = (id: string) => {
     if (trackPlaying && !trackSuspended) {
       playVideo();
     } else {
+      lastSyncTime = null;
       $video?.pause();
     }
     if ($video !== null) {
@@ -110,11 +136,6 @@ export const getController = (id: string) => {
   };
 
   const removeVideoTag = () => { $video = null; };
-
-  const reloadVideo = () => {
-    $video?.load();
-    videoReady = false;
-  }
 
   const setVideoReady = () => {
     if (videoReady) {
@@ -146,6 +167,7 @@ export const getController = (id: string) => {
     pause() {
       trackPlaying = false;
       if (!trackSuspended) {
+        lastSyncTime = null;
         $video?.pause();
       }
     },
@@ -164,6 +186,7 @@ export const getController = (id: string) => {
     suspend() {
       trackSuspended = true;
       if (trackPlaying) {
+        lastSyncTime = null;
         $video?.pause();
       }
     },
