@@ -27,10 +27,6 @@ const log = debug('player:video');
 // milliseconds
 const UNSTUCK_CHECK_INTERVAL = 500;
 
-// seconds
-const BUFFER_SIZE_TARGET = 5;
-const BUFFER_SIZE_DELTA = 1;
-
 // data url for one pixel black png
 const BLANK_POSTER = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAWJQAAFiUBSVIk8AAAABNJREFUCB1jZGBg+A/EDEwgAgQADigBA//q6GsAAAAASUVORK5CYII%3D';
 
@@ -44,38 +40,6 @@ const RESOURCE_QUERY_WEIGHTS = {
 };
 
 const IS_SAFARI = isSafari();
-
-const isVideoWaiting = (video: HTMLVideoElement) => {
-  let buffering = true;
-  const { buffered, currentTime } = video;
-  for (let i = 0; i < buffered.length; i += 1) {
-    if (buffered.start(i) <= currentTime && currentTime < buffered.end(i)) {
-      buffering = false;
-    }
-  }
-  return video.seeking || buffering;
-};
-
-const hasEnoughBuffer = (video: HTMLVideoElement) => {
-  // Note: sometime the browser do not update buffered
-  // when it actually has enough data (like chrome)
-  // However you can always trust readyState
-  if (video.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
-    return true;
-  }
-  const { buffered, duration, currentTime } = video;
-  for (let i = 0; i < buffered.length; i += 1) {
-    if (buffered.start(i) <= currentTime && currentTime < buffered.end(i)) {
-      if (
-        buffered.end(i)
-        >= Math.min(duration - BUFFER_SIZE_DELTA, currentTime + BUFFER_SIZE_TARGET)
-      ) {
-        return true;
-      }
-    }
-  }
-  return false;
-};
 
 export const InternalVideo: AssetExtensionComponent = (props) => {
   const [css] = useStyletron();
@@ -119,8 +83,7 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
   }, []);
 
   const unstuckCheck = React.useCallback(() => {
-    if (hasEnoughBuffer(videoRef.current!)) {
-      core.coreFunctions.reportUnstuck();
+    if (core.controller.unstuckCheck()) {
       clearUnstuckCheckInterval();
     }
   }, [core, clearUnstuckCheckInterval]);
@@ -136,24 +99,7 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
   }, [unstuckCheck]);
 
   const stuck = React.useCallback(() => {
-    if (!isVideoWaiting(videoRef.current!)) {
-      // Chrome somehow gives false positive here
-      // maybe it is just seeking but it seeks so fast that
-      // we already complete seeking here
-      return;
-    }
-    if (videoRef.current!.readyState <= HTMLMediaElement.HAVE_CURRENT_DATA) {
-      core.coreFunctions.log('Stuck reason: do not have data');
-    } else if (videoRef.current!.seeking) {
-      core.coreFunctions.log('Stuck reason: seeking');
-    } else {
-      core.coreFunctions.log('Stuck reason: unknown');
-    }
-    // As a workaround to force the browser to update the readyState
-    if (!videoRef.current!.seeking) {
-      videoRef.current!.currentTime = videoRef.current!.currentTime;
-    }
-    core.coreFunctions.reportStuck();
+    core.controller.stuck();
     clearUnstuckCheckInterval();
   }, [core, clearUnstuckCheckInterval]);
 

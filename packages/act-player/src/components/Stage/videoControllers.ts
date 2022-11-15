@@ -11,6 +11,42 @@ const isVideoPlaying = (video: HTMLVideoElement) => {
     && video.readyState > HTMLMediaElement.HAVE_CURRENT_DATA);
 };
 
+const isVideoWaiting = (video: HTMLVideoElement) => {
+  let buffering = true;
+  const { buffered, currentTime } = video;
+  for (let i = 0; i < buffered.length; i += 1) {
+    if (buffered.start(i) <= currentTime && currentTime < buffered.end(i)) {
+      buffering = false;
+    }
+  }
+  return video.seeking || buffering;
+};
+
+// seconds
+const BUFFER_SIZE_TARGET = 5;
+const BUFFER_SIZE_DELTA = 1;
+
+const hasEnoughBuffer = (video: HTMLVideoElement) => {
+  // Note: sometime the browser do not update buffered
+  // when it actually has enough data (like chrome)
+  // However you can always trust readyState
+  if (video.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
+    return true;
+  }
+  const { buffered, duration, currentTime } = video;
+  for (let i = 0; i < buffered.length; i += 1) {
+    if (buffered.start(i) <= currentTime && currentTime < buffered.end(i)) {
+      if (
+        buffered.end(i)
+        >= Math.min(duration - BUFFER_SIZE_DELTA, currentTime + BUFFER_SIZE_TARGET)
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
 export const getController = (id: string) => {
   let $video: HTMLVideoElement | null = null;
   let coreFunctions: CoreFunctions | null = null;
@@ -152,6 +188,40 @@ export const getController = (id: string) => {
     }
   };
 
+  const stuck = () => {
+    if (!$video) return;
+    if (!coreFunctions) return;
+    if (!isVideoWaiting($video)) {
+      // Chrome somehow gives false positive here
+      // maybe it is just seeking but it seeks so fast that
+      // we already complete seeking here
+      return;
+    }
+    if ($video.readyState <= HTMLMediaElement.HAVE_CURRENT_DATA) {
+      coreFunctions.log('Stuck reason: do not have data');
+    } else if ($video.seeking) {
+      coreFunctions.log('Stuck reason: seeking');
+    } else {
+      coreFunctions.log('Stuck reason: unknown');
+    }
+    // As a workaround to force the browser to update the readyState
+    if (!$video.seeking) {
+      // eslint-disable-next-line no-self-assign
+      $video.currentTime = $video.currentTime;
+    }
+    coreFunctions.reportStuck();
+  }
+
+  const unstuckCheck = () => {
+    if (!$video) return false;
+    if (!coreFunctions) return false;
+    if (hasEnoughBuffer($video)) {
+      coreFunctions.reportUnstuck();
+      return true;
+    }
+    return false;
+  }
+
   const controller: Partial<ComponentFunctions> = {
     showContent: (contentId) => {
       if (contentId !== id) return;
@@ -204,6 +274,8 @@ export const getController = (id: string) => {
     removeVideoTag,
     setVideoReady,
     setVideoShown,
+    stuck,
+    unstuckCheck,
     setCoreFunctions,
     reportProgress,
     forceCheckup,
