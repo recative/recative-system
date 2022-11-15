@@ -298,9 +298,7 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
 
   const handleCanPlay = React.useCallback(() => {
     scheduleUnstuckCheck();
-    core.coreFunctions.updateContentState('ready');
-    core.controller.setVideoReady();
-  }, [core.controller, core.coreFunctions, scheduleUnstuckCheck]);
+  }, [scheduleUnstuckCheck]);
 
   const handleLoadedMetadata = React.useCallback(() => {
     // For iOS Safari: the browser won't load the data until the video start to play

@@ -217,6 +217,8 @@ export const getController = (id: string) => {
     if (!coreFunctions) return false;
     if (hasEnoughBuffer($video)) {
       coreFunctions.reportUnstuck();
+      coreFunctions.updateContentState('ready');
+      setVideoReady();
       return true;
     }
     return false;
@@ -272,7 +274,6 @@ export const getController = (id: string) => {
     seekVideo,
     reloadVideo,
     removeVideoTag,
-    setVideoReady,
     setVideoShown,
     stuck,
     unstuckCheck,
