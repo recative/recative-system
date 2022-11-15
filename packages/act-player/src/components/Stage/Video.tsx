@@ -243,11 +243,11 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
         if (selectedVideo !== videoSourceRef.current!.src) {
           videoSourceRef.current!.src = selectedVideo;
           videoSourceRef.current!.type = mime;
-          videoRef.current!.load();
+          core.controller.reloadVideo();
           if (videoRef.current!.currentSrc === "") {
             // Firefox may not load the source immediately after setting the source element
             setTimeout(() => {
-              videoRef.current!.load();
+              core.controller.reloadVideo();
             }, 0)
           }
           clearUnstuckCheckInterval();
@@ -261,6 +261,7 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
     queryMethod,
     clearUnstuckCheckInterval,
     episodeData.resources,
+    core.controller,
   ]);
 
   React.useLayoutEffect(() => {

@@ -24,7 +24,7 @@ export const getController = (id: string) => {
     if (!videoShown) return false;
     if (isVideoPlaying($video)) return false;
 
-    $video.play().catch(() => {});
+    $video.play().catch(() => { });
   };
 
   let lastSyncTime = Date.now();
@@ -103,6 +103,11 @@ export const getController = (id: string) => {
 
   const removeVideoTag = () => { $video = null; };
 
+  const reloadVideo = () => {
+    $video?.load();
+    videoReady = false;
+  }
+
   const setVideoReady = () => {
     if (videoReady) {
       return;
@@ -164,6 +169,7 @@ export const getController = (id: string) => {
     controller,
     setVideoTag,
     seekVideo,
+    reloadVideo,
     removeVideoTag,
     setVideoReady,
     setVideoShown,
