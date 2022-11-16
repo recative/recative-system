@@ -197,13 +197,18 @@ export const getController = (id: string) => {
       // we already complete seeking here
       return;
     }
-    if ($video.readyState <= HTMLMediaElement.HAVE_CURRENT_DATA) {
-      coreFunctions.log('Stuck reason: do not have data');
-    } else if ($video.seeking) {
+    const stuckReasons = []
+    if ($video.seeking) {
+      stuckReasons.push("seeking")
       coreFunctions.log('Stuck reason: seeking');
-    } else {
-      coreFunctions.log('Stuck reason: unknown');
     }
+    if ($video.readyState <= HTMLMediaElement.HAVE_CURRENT_DATA) {
+      stuckReasons.push("do not have data")
+    }
+    if (stuckReasons.length <= 0) {
+      stuckReasons.push("unknown")
+    }
+    coreFunctions.log(`Stuck reason: ${stuckReasons.join(", ")}`);
     // As a workaround to force the browser to update the readyState
     if (!$video.seeking) {
       // eslint-disable-next-line no-self-assign
