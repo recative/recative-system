@@ -10,6 +10,13 @@
         "cwd": "packages/desktop-shell"
       }
     },
+    "package": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "command": "yarn package",
+        "cwd": "packages/desktop-shell"
+      }
+    },
     "start": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
