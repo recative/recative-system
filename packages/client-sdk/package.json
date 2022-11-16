@@ -1,6 +1,6 @@
 {
   "name": "@recative/client-sdk",
-  "version": "11.0.3",
+  "version": "11.0.4",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
@@ -58,6 +58,8 @@
     "@recative/ugly-json": "workspace:^",
     "debug": "^4.3.3",
     "detect-gpu": "^4.0.43",
-    "nanoid": "^3.3.3"
+    "i18next": "^22.0.5",
+    "nanoid": "^3.3.3",
+    "react-i18next": "^12.0.0"
   }
 }
