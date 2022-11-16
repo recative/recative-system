@@ -69,26 +69,6 @@ export const getController = (id: string) => {
     $video.play().catch(() => { });
   };
 
-  const checkVideoPlayingState = () => {
-    // For iOS Safari: sometime the video is unexpected paused by browser when the window is hidden
-    if (!$video || !videoReady) {
-      return;
-    }
-    if ($video.ended) {
-      return;
-    }
-    const isPlaying = trackPlaying && !trackSuspended;
-    if (isPlaying !== !$video.paused) {
-      coreFunctions?.log(`Unmatched playing state: should be ${isPlaying} instead of ${!$video.paused}`);
-      if (isPlaying) {
-        playVideo();
-      } else {
-        lastSyncTime = null;
-        $video.pause();
-      }
-    }
-  };
-
   const reloadVideo = () => {
     $video?.load();
     videoReady = false;
@@ -117,6 +97,27 @@ export const getController = (id: string) => {
     lastProgress = progress;
     lastSyncTime = time;
   }
+
+  const checkVideoPlayingState = () => {
+    // For iOS Safari: sometime the video is unexpected paused by browser when the window is hidden
+    if (!$video || !videoReady) {
+      return;
+    }
+    if ($video.ended) {
+      return;
+    }
+    const isPlaying = trackPlaying && !trackSuspended;
+    if (isPlaying !== !$video.paused) {
+      coreFunctions?.log(`Unmatched playing state: should be ${isPlaying} instead of ${!$video.paused}`);
+      if (isPlaying) {
+        playVideo();
+      } else {
+        lastSyncTime = null;
+        $video.pause();
+      }
+      reportProgress();
+    }
+  };
 
   const needCheckup = () => {
     if (lastSyncTime === null) {
@@ -240,6 +241,7 @@ export const getController = (id: string) => {
       if (!trackSuspended) {
         playVideo();
       }
+      reportProgress();
     },
     pause() {
       trackPlaying = false;
@@ -247,12 +249,14 @@ export const getController = (id: string) => {
         lastSyncTime = null;
         $video?.pause();
       }
+      reportProgress();
     },
     resume() {
       trackSuspended = false;
       if (trackPlaying) {
         playVideo();
       }
+      reportProgress();
     },
     sync(time) {
       if (!$video) return false;
@@ -266,6 +270,7 @@ export const getController = (id: string) => {
         lastSyncTime = null;
         $video?.pause();
       }
+      reportProgress();
     },
   };
 
