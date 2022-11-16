@@ -10,16 +10,9 @@ import { PlayerSdkProvider } from '@recative/client-sdk';
 import {
   pathPattern,
   dataType,
-} from './app/constants/configurations';
+} from './render/constants/configurations';
 
-import App from './app/app';
-import { WebSocketMessageChannel } from 'async-call-rpc/utils/web/websocket.client.js'
-import { Msgpack_Serialization } from 'async-call-rpc/utils/node/msgpack.js'
-
-// import { AsyncCall } from 'async-call-rpc'
-// import * as server from "./native/electron"
-// import * as MessagePack from '@msgpack/msgpack'
-// const client = AsyncCall<typeof server>({}, { channel: new WebSocketMessageChannel('ws://localhost:12219'), serializer: Msgpack_Serialization(MessagePack) })
+import App from './render/app';
 
 const engine = new Styletron();
 

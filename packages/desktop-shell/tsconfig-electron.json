@@ -16,6 +16,5 @@
     "jsx": "react-jsx",
     "outDir": "build"
   },
-  // "files": [],
-  "include": ["src/native/**/*", "src/preload/**/*"]
+  "include": ["src/main/**/*"]
 }
