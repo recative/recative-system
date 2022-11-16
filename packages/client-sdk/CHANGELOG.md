@@ -1,5 +1,11 @@
 # Changelog
 
+## 11.0.4
+
+### Patch Changes
+
+- 314c46e: chore: Add new dependency
+
 ## 11.0.3
 
 ### Patch Changes
