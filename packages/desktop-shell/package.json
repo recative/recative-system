@@ -17,10 +17,10 @@
     "start-web": "react-scripts start",
     "start-electron": "npm-run-all -l prepare electron",
     "electron": "electron-forge start",
-    "start": "npm-run-all -p start-web start-electron",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "start": "npm-run-all -l -p start-web start-electron",
+    "build": "craco build",
+    "test": "craco test",
+    "eject": "craco eject",
     "package": "electron-forge package",
     "make": "electron-forge make"
   },
@@ -43,6 +43,7 @@
     ]
   },
   "devDependencies": {
+    "@craco/craco": "^7.0.0",
     "@electron-forge/cli": "^6.0.0-beta.70",
     "@electron-forge/maker-deb": "^6.0.0-beta.70",
     "@electron-forge/maker-rpm": "^6.0.0-beta.70",

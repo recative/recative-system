@@ -1,7 +1,7 @@
 import path from 'path';
 import isDev from 'electron-is-dev';
 import { app, BrowserWindow, ipcMain } from 'electron';
-import './init'
+import {initializeServer} from './rpc'
 
 // import path from 'path';
 // import { app, BrowserWindow } from 'electron';
@@ -12,6 +12,8 @@ import './init'
 
 console.error(__dirname);
 
+initializeServer()
+
 function createWindow() {
   // Create the browser window.
   const win = new BrowserWindow({
@@ -19,6 +21,7 @@ function createWindow() {
     height: 600,
     webPreferences: {
       nodeIntegration: true,
+      preload: path.join(__dirname, 'preload.js'),
     },
   });
 

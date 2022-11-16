@@ -81,7 +81,8 @@
     "react-dom": "18.2.0",
     "baseui": "12.1.2",
     "styletron-engine-monolithic": "1.0.0",
-    "styletron-react": "6.1.0"
+    "styletron-react": "6.1.0",
+    "sharp": "0.29.3"
   },
   "workspaces": [
     "packages/*"

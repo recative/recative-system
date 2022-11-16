@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { debug } from 'debug';
+import { server } from './channel/index'
 
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -19,7 +20,7 @@ import {
   preferredUploaders,
 } from './constants/configurations';
 
-const log = debug('web-shell:player');
+const log = debug('desktop-shell:player');
 
 // This is actually not secure on web platform, we name it as secure to keep
 // compatibility with the mobile platform
@@ -49,6 +50,19 @@ const InternalPlayer: React.FC = () => {
     () => ({
       navigate,
       secureStore: SECURE_STORE,
+      browser: {
+        InAppBrowser: {
+          create: server.InAppBrowserCreate,
+        }
+      },
+      secureBrowser: {
+        Browser: {
+          open: server.BrowserOpen,
+          close: server.BrowserClose,
+          addListener: server.BrowserAddListener,
+          removeAllListeners: server.BrowserRemoveAllListeners,
+        }
+      }
     }),
     [navigate],
   );
