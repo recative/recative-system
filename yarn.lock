@@ -13172,7 +13172,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:^3.1.1, debug@npm:^3.2.7":
+"debug@npm:^3.1.0, debug@npm:^3.1.1, debug@npm:^3.2.7":
   version: 3.2.7
   resolution: "debug@npm:3.2.7"
   dependencies:
@@ -15818,13 +15818,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"flora-colossus@npm:2.0.0":
-  version: 2.0.0
-  resolution: "flora-colossus@npm:2.0.0"
+"flora-colossus@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "flora-colossus@npm:1.0.1"
   dependencies:
-    debug: ^4.3.4
-    fs-extra: ^10.1.0
-  checksum: b31b30697de4969e97201f1b17353c533430d1606911c4d3e4f7f6dafda4a62f50c4ddf99fdd2f6f6313666a572e83c0831302a3e25c997a5679998b440d6265
+    debug: ^4.1.1
+    fs-extra: ^7.0.0
+  checksum: c3d0387aee84a4f95564c6eb0b38a5925226f8561c309ddea49984db5ae19eaa95f08b6b0005bcae062cceea01dcd837968341dc24855e0c3f53479a5ed6854c
   languageName: node
   linkType: hard
 
@@ -16028,7 +16028,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fs-extra@npm:^7.0.1":
+"fs-extra@npm:^4.0.0":
+  version: 4.0.3
+  resolution: "fs-extra@npm:4.0.3"
+  dependencies:
+    graceful-fs: ^4.1.2
+    jsonfile: ^4.0.0
+    universalify: ^0.1.0
+  checksum: c5ae3c7043ad7187128e619c0371da01b58694c1ffa02c36fb3f5b459925d9c27c3cb1e095d9df0a34a85ca993d8b8ff6f6ecef868fd5ebb243548afa7fc0936
+  languageName: node
+  linkType: hard
+
+"fs-extra@npm:^7.0.0, fs-extra@npm:^7.0.1":
   version: 7.0.1
   resolution: "fs-extra@npm:7.0.1"
   dependencies:
@@ -16168,14 +16179,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"galactus@npm:1.0.0":
-  version: 1.0.0
-  resolution: "galactus@npm:1.0.0"
+"galactus@npm:^0.2.1":
+  version: 0.2.1
+  resolution: "galactus@npm:0.2.1"
   dependencies:
-    debug: ^4.3.4
-    flora-colossus: ^2.0.0
-    fs-extra: ^10.1.0
-  checksum: f7a3bd16c8bd5304e27b0e631defb8750ab8a9676c4fc754ec48f97f8d56b0841850372d9bf9932bd77833d16225c81dedb0e7366ccd82c11c2bd5cc41644493
+    debug: ^3.1.0
+    flora-colossus: ^1.0.0
+    fs-extra: ^4.0.0
+  checksum: c026c180ea7bd5a80c3e493a561e30973fcbc9b05dbf036b9143d8fbfdfac81d969159f319c3d7088217e59a8b74389aa1d55217062ffbd793dc952c85d2bc97
   languageName: node
   linkType: hard
 

@@ -54,5 +54,8 @@
   },
   "config": {
     "forge": {}
+  },
+  "installConfig": {
+    "hoistingLimits": "workspaces"
   }
 }
