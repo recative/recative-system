@@ -26,6 +26,8 @@ const dependencies = {
   'react-slider': require('react-slider'),
   'use-constant': require('use-constant'),
   'lottie-react': require('lottie-react'),
+  'i18next': require('i18next'),
+  'react-i18next': require('react-i18next'),
   '@recative/client-sdk': sdk,
   '@recative/act-player': require('@recative/act-player'),
   '@recative/definitions': require('@recative/definitions'),
