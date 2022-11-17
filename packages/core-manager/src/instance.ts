@@ -248,7 +248,7 @@ export class ContentInstance extends WithLogger {
     );
     this.state = state;
     if (state === 'preloading') {
-      this.timeline.addTrack(new RemoteTrack(this.remote, 100), -1);
+      this.timeline.addTrack(new RemoteTrack(this.remote, 200), -1);
     } else if (state === 'destroying') {
       this.destroy();
     } else if (state === 'destroyed') {

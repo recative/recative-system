@@ -7,7 +7,7 @@ import { Track } from '@recative/time-schedule';
 
 import { WithLogger } from '../LogCollector';
 import {
-  AudioElement, AudioElementInit, createAudioElement, destroyAudioElementInit,
+  AudioElement, AudioElementInit, createAudioElement, destroyAudioElementInit, getAudioElementInitUrl,
 } from './audioElement';
 
 /**
@@ -15,6 +15,8 @@ import {
  */
 export class AudioTrack extends WithLogger implements Track {
   private audioElement: AudioElement | null = null;
+
+  private url: string | null = null;
 
   private pendingBuffer: Promise<AudioElementInit | null> | null = null;
 
@@ -162,8 +164,6 @@ export class AudioTrack extends WithLogger implements Track {
   }
 
   setAudio(audioClipResponsePromise: Promise<AudioElementInit | null> | null) {
-    this.audioElement?.destroy();
-    this.audioElement = null;
     this.pendingBuffer = audioClipResponsePromise;
     if (this.pendingBuffer !== null) {
       this.loadAudio(this.pendingBuffer);
@@ -183,22 +183,29 @@ export class AudioTrack extends WithLogger implements Track {
       }
     }
 
-    this.audioElement?.destroy();
     if (audioElementInit) {
-      this.audioElement = createAudioElement(this.mixer!, audioElementInit);
-      this.audioElement.volume = this.volume;
-      this.log(`Audio track for ${this.id} loaded`);
-      let targetTime = (this.cachedProgress) / 1000;
-      if (this.playing && !this.mixer?.isSuspended()) {
-        this.audioElement.play();
-        const now = performance.now();
-        targetTime = (this.cachedProgress + now - this.cachedUpdateTime) / 1000;
+      const newUrl = getAudioElementInitUrl(audioElementInit);
+      if (newUrl !== this.url) {
+        this.url = newUrl
+        this.audioElement?.destroy();
+        this.audioElement = createAudioElement(this.mixer!, audioElementInit);
+        this.audioElement.volume = this.volume;
+        let targetTime = (this.cachedProgress) / 1000;
+        if (this.playing && !this.mixer?.isSuspended()) {
+          this.audioElement.play();
+          const now = performance.now();
+          targetTime = (this.cachedProgress + now - this.cachedUpdateTime) / 1000;
+        }
+        if (this.playing) {
+          this.audioElement.play();
+        }
+        this.audioElement.time = targetTime;
+      } else {
+        destroyAudioElementInit(audioElementInit);
       }
-      if (this.playing) {
-        this.audioElement.play();
-      }
-      this.audioElement.time = targetTime;
     } else {
+      this.audioElement?.destroy();
+      this.url = null
       this.audioElement = null
     }
     this.updateTime(true);
@@ -207,6 +214,8 @@ export class AudioTrack extends WithLogger implements Track {
 
   destroy() {
     this.audioElement?.destroy();
+    this.audioElement = null
+    this.url = null
     this.mixer?.destroy();
     this.mixer = null;
     this.pendingBuffer = null;
