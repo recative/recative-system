@@ -64,7 +64,7 @@
     "ts-node": "10.9.1",
     "typescript": "4.8.2"
   },
-  "packageManager": "yarn@3.2.3",
+  "packageManager": "yarn@3.3.0",
   "dependencies": {
     "@rollup/plugin-commonjs": "^22.0.2",
     "baseui": "12.1.2",
