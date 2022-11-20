@@ -1,4 +1,4 @@
-import { isDotNotation, lens } from '@recative/lens';
+import { isDotNotation, lens, LensResult, ValidSimpleLensField } from '@recative/lens';
 
 import { Operators } from './Operations';
 // eslint-disable-next-line import/no-cycle
@@ -188,8 +188,7 @@ type TransformResult<T extends AnyTransformRequest | AnyTransformRequest[]> =
  * those 2nd pass filter functions should be similar to LokiOps functions,
  * accepting 2 values to compare.
  */
-const indexedOps = {
-  $eq: Operators.$eq,
+const firstPassIndexedOps = {
   $aeq: true,
   $dteq: true,
   $gt: true,
@@ -197,7 +196,11 @@ const indexedOps = {
   $lt: true,
   $lte: true,
   $in: true,
-  $between: true
+  $between: true,
+};
+
+const secondPassIndexedOps = {
+  $eq: Operators.$eq,
 };
 
 /**
@@ -883,10 +886,15 @@ export class ResultSet<T extends object> {
   /**
    * Internal method which can find single entry
    */
-  private findDocumentEntry = (
-    propertyOrOperation: Operator | keyof T | string,
+  private findDocumentEntry = <
+    P extends ValidSimpleLensField,
+    O extends Operator,
+    D extends boolean
+  >(
+    propertyOrOperation: O | P,
     queryEntry: unknown,
-    firstOnly: boolean = false
+    firstOnly: boolean = false,
+    usingDotNotation?: D,
   ): ResultSet<T> => {
     const result: number[] = [];
 
@@ -899,9 +907,6 @@ export class ResultSet<T extends object> {
       value = ResultSet.precompileQuery(propertyOrOperation as '$regex', value);
     }
 
-    // if user is deep querying the object such as find('name.first': 'odin')
-    const usingDotNotation = isDotNotation(propertyOrOperation);
-
     // if an index exists for the property being queried against, use it
     // for now only enabling where it is the first filter applied and prop is
     // indexed
@@ -911,7 +916,7 @@ export class ResultSet<T extends object> {
       doIndexCheck &&
       isKey(queryEntry) &&
       hasOwn(this.collection.binaryIndices, queryEntry) &&
-      hasOwn(indexedOps, propertyOrOperation)
+      hasOwn(firstPassIndexedOps, propertyOrOperation)
     ) {
       // this is where our lazy index rebuilding will take place
       // basically we will leave all indexes dirty until we need them
@@ -972,7 +977,7 @@ export class ResultSet<T extends object> {
           const rowData = collectionData[rowIndex];
           if (
             (operator as Function)(
-              rowData[propertyOrOperation as keyof T],
+              lens(rowData, propertyOrOperation, usingDotNotation),
               value,
               rowData
             )
@@ -1008,7 +1013,7 @@ export class ResultSet<T extends object> {
 
           if (
             (operator as Function)(
-              record[propertyOrOperation as keyof T],
+              lens(record, propertyOrOperation, usingDotNotation),
               value,
               record
             )
@@ -1026,9 +1031,10 @@ export class ResultSet<T extends object> {
     } else {
       // search by index
       const segment = this.collection.calculateRange(
-        propertyOrOperation as Operator,
-        queryEntry as keyof T,
-        value as T[keyof T]
+        propertyOrOperation as O,
+        queryEntry as P,
+        value as LensResult<T, P, D>,
+        usingDotNotation
       );
 
       if (!index) {
@@ -1037,21 +1043,22 @@ export class ResultSet<T extends object> {
       if (propertyOrOperation !== '$in') {
         for (let i = segment[0]; i <= segment[1]; i += 1) {
           const secondPhaseFilter = Reflect.get(
-            indexedOps,
+            secondPassIndexedOps,
             propertyOrOperation
-          );
-          if (secondPhaseFilter !== true) {
+          ) as (typeof secondPassIndexedOps)[keyof typeof secondPassIndexedOps] | undefined;
+
+          if (secondPhaseFilter) {
             // must be a function, implying 2nd phase filtering of results from
             // calculateRange
+            const lensValue = lens(
+              collectionData[index.values[i]],
+              propertyOrOperation as P,
+              usingDotNotation
+            );
+
             if (
-              secondPhaseFilter(
-                lens(
-                  collectionData[index.values[i]],
-                  propertyOrOperation,
-                  usingDotNotation
-                ),
-                value
-              )
+              lensValue !== undefined
+              && secondPhaseFilter(lensValue as unknown as LensResult<T, P, D>, value)
             ) {
               result.push(index.values[i]);
               if (firstOnly) {

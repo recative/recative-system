@@ -112,9 +112,9 @@ export const Operators = {
   /**
    * If two values are qual.
    */
-  $eq: <T extends object, K extends keyof T>(
-    documentEntry: T[K],
-    queryEntry: T[K]
+  $eq: <T>(
+    documentEntry: T,
+    queryEntry: T
   ) => {
     return documentEntry === queryEntry;
   },
@@ -122,9 +122,9 @@ export const Operators = {
   /**
    * abstract/loose equality
    */
-  $aeq: <T extends object, K extends keyof T>(
-    documentEntry: T[K],
-    queryEntry: T[K]
+  $aeq: <T>(
+    documentEntry: T,
+    queryEntry: T
   ) => {
     // eslint-disable-next-line eqeqeq
     return documentEntry == queryEntry;
