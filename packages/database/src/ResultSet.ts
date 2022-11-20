@@ -3,14 +3,15 @@ import { isDotNotation, lens } from '@recative/lens';
 import { Operators } from './Operations';
 // eslint-disable-next-line import/no-cycle
 import { Collection } from './Collection';
-import { CompareFunction } from './DynamicView';
 import { hasOwn, isKey } from './utils/hasOwn';
+import { CompareFunction } from './DynamicView';
 import { compoundEval, sortHelper } from './utils/helpers';
 import { resolveTransformParameters } from './utils/resolveTransform';
 
 import type { IQuery } from './typings';
 import type { Operator } from './Operations';
 import type { ICollectionDocument } from './Collection';
+
 import { dotSubScan } from './utils/doDotScan';
 import { clone, CloneMethod } from './utils/clone';
 
@@ -394,9 +395,10 @@ export class ResultSet<T extends object> {
     // if transform is name, then do lookup first
     let internalTransform: TransformInstance[] = Array.isArray(transform)
       ? transform
-      : ([transform] as TransformInstance[]);
+      : ([transform] as unknown as TransformInstance[]);
 
     if (parameters) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       internalTransform = resolveTransformParameters<T, any, any>(
         internalTransform,
         parameters
