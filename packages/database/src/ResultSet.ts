@@ -1,10 +1,11 @@
+import { isDotNotation, lens } from '@recative/lens';
+
 import { Operators } from './Operations';
 // eslint-disable-next-line import/no-cycle
 import { Collection } from './Collection';
 import { CompareFunction } from './DynamicView';
 import { hasOwn, isKey } from './utils/hasOwn';
 import { compoundEval, sortHelper } from './utils/helpers';
-import { isDotNotation, lens } from './utils/lens';
 import { resolveTransformParameters } from './utils/resolveTransform';
 
 import type { IQuery } from './typings';
@@ -1482,7 +1483,7 @@ export class ResultSet<T extends object> {
     // get the right data
     if (joinData instanceof Collection) {
       rightData = joinData.chain().data(dataOptions);
-    } else if (joinData instanceof Resultset) {
+    } else if (joinData instanceof ResultSet) {
       rightData = joinData.data(dataOptions);
     } else if (Array.isArray(joinData)) {
       rightData = joinData as unknown as R[];

@@ -6716,6 +6716,7 @@ __metadata:
   resolution: "@recative/database@workspace:packages/database"
   dependencies:
     "@faker-js/faker": ^7.5.0
+    "@recative/lens": "workspace:^"
     "@recative/open-promise": "workspace:^"
     "@types/tmp": ^0.2.3
     "@ungap/event-target": ^0.2.3
@@ -6752,7 +6753,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/lens@workspace:packages/lens":
+"@recative/lens@workspace:^, @recative/lens@workspace:packages/lens":
   version: 0.0.0-use.local
   resolution: "@recative/lens@workspace:packages/lens"
   languageName: unknown

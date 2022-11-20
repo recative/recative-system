@@ -3,7 +3,7 @@
   "sourceRoot": "packages/database/src",
   "projectType": "library",
   "targets": {
-    "build:experimental": {
+    "build-experimental": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
         "command": "yarn build",
