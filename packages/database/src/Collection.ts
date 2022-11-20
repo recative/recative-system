@@ -5,7 +5,8 @@ import {
   LensResult,
   isDotNotation,
   ValidLensField,
-  ValidDotNotation
+  ValidDotNotation,
+  ValidSimpleLensField
 } from '@recative/lens';
 
 import * as Comparators from './Comparators';
@@ -145,8 +146,8 @@ export interface ITtlStatus {
   daemon: NodeJS.Timer | number | null;
 }
 
-export interface IBinaryIndex<T, P> {
-  name: keyof T;
+export interface IBinaryIndex<P> {
+  name: ValidSimpleLensField;
   dirty: boolean;
   values: P[];
 }
@@ -222,9 +223,9 @@ export class Collection<T extends object> extends EventTarget {
   idIndex: number[] | null = null;
 
   /**
-   * user defined indexes
+   * user defined indexes, this field supports dot notation
    */
-  binaryIndices = {} as Record<keyof T, IBinaryIndex<T, number>>;
+  binaryIndices = {} as Record<ValidSimpleLensField, IBinaryIndex<number>>;
 
   constraints = {
     // @ts-ignore: Let's fix this later
@@ -243,7 +244,7 @@ export class Collection<T extends object> extends EventTarget {
    * we will keep track of properties which have unique constraint applied
    * here, and regenerate lazily.
    */
-  uniqueNames: (keyof T)[] = [];
+  uniqueNames: ValidSimpleLensField[] = [];
 
   /**
    * transforms will be used to store frequently used query chains as a series
@@ -271,7 +272,7 @@ export class Collection<T extends object> extends EventTarget {
    */
   private cachedIndex: number[] | null = null;
 
-  private cachedBinaryIndex: Record<keyof T, IBinaryIndex<T, number>> | null =
+  private cachedBinaryIndex: Record<keyof T, IBinaryIndex<number>> | null =
     null;
 
   private cachedData: (T & ICollectionDocument)[] | null = null;
@@ -784,7 +785,7 @@ export class Collection<T extends object> extends EventTarget {
    * @param force - (Optional) flag indicating whether to construct index
    *        immediately
    */
-  ensureIndex = (property: keyof T, force?: boolean) => {
+  ensureIndex = (property: ValidSimpleLensField, force?: boolean) => {
     if (property === null || property === undefined) {
       throw new Error('Attempting to set index without an associated property');
     }
@@ -803,14 +804,14 @@ export class Collection<T extends object> extends EventTarget {
       return;
     }
 
-    const index: IBinaryIndex<T, number> = {
+    const index: IBinaryIndex<number> = {
       name: property,
       dirty: true,
       values: this.prepareFullDocIndex()
     };
     this.binaryIndices[property] = index;
 
-    const wrappedComparer = ((key: keyof T, data: T[]) => {
+    const wrappedComparer = ((key: ValidSimpleLensField, data: T[]) => {
       const propPath =
         typeof key === 'string' && isDotNotation(key) ? key.split('.') : false;
 
@@ -906,7 +907,11 @@ export class Collection<T extends object> extends EventTarget {
    * valid = coll.checkIndex('name', { repair: true, randomSampling: true });
    */
 
-  checkIndex = (property: keyof T, options?: Partial<ICheckCollectionIndexOptions>) => {
+  checkIndex = (
+    property: keyof T,
+    options?: Partial<ICheckCollectionIndexOptions>,  
+    usingDotNotation?: boolean
+  ) => {
     const internalOptions = { ...options };
     // if 'randomSamplingFactor' specified but not 'randomSampling', assume true
     if (
@@ -952,9 +957,6 @@ export class Collection<T extends object> extends EventTarget {
     if (binaryIndicesCount === 0) {
       return true;
     }
-
-    const usingDotNotation =
-      typeof property === 'string' && isDotNotation(property);
 
     let valid = true;
 
@@ -1059,14 +1061,20 @@ export class Collection<T extends object> extends EventTarget {
     return valid;
   };
 
-  getBinaryIndexValues = <P extends keyof T>(
+  getBinaryIndexValues = <P extends ValidSimpleLensField>(
     property: P
-  ): T[P][] => {
+  ): LensResult<T, P, true>[] => {
     const indexValues = this.binaryIndices[property].values;
-    const result: T[P][] = [];
+    const result: LensResult<T, P, true>[] = [];
 
     for (let i = 0; i < indexValues.length; i += 1) {
-      result.push(lens(this.data[indexValues[i]], property, false) as T[P]);
+      result.push(
+        lens(
+          this.data[indexValues[i]],
+          property,
+          true
+        ) as LensResult<T, P, true>
+      );
     }
 
     return result;
@@ -1079,7 +1087,7 @@ export class Collection<T extends object> extends EventTarget {
    * @param force - if `true`, will rebuild index; otherwise, function may
    *        return null
    */
-  getUniqueIndex = (field: keyof T, force?: boolean) => {
+  getUniqueIndex = (field: ValidSimpleLensField, force?: boolean) => {
     const index = this.constraints.unique[field];
     if (!index && force) {
       return this.ensureUniqueIndex(field);
@@ -1087,7 +1095,7 @@ export class Collection<T extends object> extends EventTarget {
     return index;
   };
 
-  ensureUniqueIndex = (field: keyof T) => {
+  ensureUniqueIndex = <P extends ValidSimpleLensField>(field: P) => {
     const index = this.constraints.unique[field];
     if (!index) {
       // keep track of new unique index for regenerate after database (re)load.
@@ -1097,7 +1105,7 @@ export class Collection<T extends object> extends EventTarget {
     }
 
     // if index already existed, (re)loading it will likely cause collisions, rebuild always
-    const newIndex = new UniqueIndex<T, keyof T>(field);
+    const newIndex = new UniqueIndex<T, P>(field);
     this.constraints.unique[field] = newIndex;
 
     for (let i = 0; i < this.data.length; i += 1) {
@@ -1129,15 +1137,6 @@ export class Collection<T extends object> extends EventTarget {
     for (let i = 0; i < binaryIndexKeys.length; i += 1) {
       const key = binaryIndexKeys[i];
       this.binaryIndices[key].dirty = true;
-    }
-  };
-
-  /**
-   * Internal method used to flag a lazy index as dirty
-   */
-  private flagBinaryIndexDirty = (index: keyof T) => {
-    if (this.binaryIndices[index]) {
-      this.binaryIndices[index].dirty = true;
     }
   };
 
@@ -1449,7 +1448,7 @@ export class Collection<T extends object> extends EventTarget {
 
     // if removing indices entirely
     if (internalOptions.removeIndices === true) {
-      this.binaryIndices = {} as Record<keyof T, IBinaryIndex<T, number>>;
+      this.binaryIndices = {} as Record<keyof T, IBinaryIndex<number>>;
       this.uniqueNames = [];
     } else {
       // clear indices but leave definitions in place
@@ -1810,8 +1809,9 @@ export class Collection<T extends object> extends EventTarget {
             if (index) {
               for (let i = 0; i < positions.length; i += 1) {
                 const document = this.data[positions[i]];
-                if (document[key] !== null && document[key] !== undefined) {
-                  index.remove(document[key]);
+                const value = lens(document, key, true);
+                if (value !== null && value !== undefined) {
+                  index.remove(value);
                 }
               }
             }
@@ -1951,14 +1951,12 @@ export class Collection<T extends object> extends EventTarget {
 
       for (let i = 0; i < this.uniqueNames.length; i += 1) {
         const key = this.uniqueNames[i];
+        const value = lens(internalDocument, key, true);
 
-        if (
-          internalDocument[key] !== null &&
-          typeof internalDocument[key] !== 'undefined'
-        ) {
+        if (value !== null && value !== undefined) {
           const index = this.getUniqueIndex(key);
           if (index) {
-            index.remove(internalDocument[key]);
+            index.remove(value);
           }
         }
       }
@@ -2082,16 +2080,25 @@ export class Collection<T extends object> extends EventTarget {
    * @param dataPosition - coll.data array index/position
    * @param binaryIndexName - index to search for dataPosition in
    */
-  getBinaryIndexPosition = <K extends keyof T>(
+  getBinaryIndexPosition = <K extends keyof T, D extends boolean>(
     dataPosition: number,
-    binaryIndexName: K
+    binaryIndexName: K,
+    usingDotNotation?: D
   ) => {
-    const value = lens(this.data[dataPosition], binaryIndexName, true);
+    const value = lens(this.data[dataPosition], binaryIndexName, usingDotNotation);
     const index = this.binaryIndices[binaryIndexName].values;
+
+    if (value === undefined || value === null) {
+      return null;
+    }
 
     // i think calculateRange can probably be moved to collection
     // as it doesn't seem to need resultset.  need to verify
-    const range = this.calculateRange('$eq', binaryIndexName, value as T[K]);
+    const range = this.calculateRange(
+      '$eq', binaryIndexName,
+      value as LensResult<T, K, D>,
+      usingDotNotation
+    );
 
     if (range[0] === 0 && range[1] === -1) {
       // didn't find range
@@ -2117,37 +2124,34 @@ export class Collection<T extends object> extends EventTarget {
    * @param dataPosition : coll.data array index/position
    * @param binaryIndexName : index to search for dataPosition in
    */
-  adaptiveBinaryIndexInsert = <K extends keyof T>(
+  adaptiveBinaryIndexInsert = <K extends ValidSimpleLensField, D extends boolean>(
     dataPosition: number,
-    binaryIndexName: K
+    binaryIndexName: K,
+    usingDotNotation?: D,
   ) => {
-    const usingDotNotation =
-      typeof binaryIndexName === 'string' && isDotNotation(binaryIndexName);
-
-    const internalBinaryIndexName = binaryIndexName;
-
-    const index = this.binaryIndices[internalBinaryIndexName].values;
+    const index = this.binaryIndices[binaryIndexName].values;
     let value = lens(
       this.data[dataPosition],
-      internalBinaryIndexName,
+      binaryIndexName,
       usingDotNotation
     );
 
     // If you are inserting a javascript Date value into a binary index, convert
     // to epoch time
     if (this.serializableIndices === true && value instanceof Date) {
-      // This could be any
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this.data[dataPosition][internalBinaryIndexName] = value.getTime() as any;
-      value = lens(this.data[dataPosition], internalBinaryIndexName);
+      value = lens(
+        this.data[dataPosition],
+        binaryIndexName,
+        usingDotNotation
+      );
     }
 
     const indexPosition =
-      index.length === 0
+      index.length === 0 || value === undefined || value === null
         ? 0
         : this.calculateRangeStart(
           binaryIndexName,
-          value as T[K],
+          value as LensResult<T, K, D>,
           true,
           usingDotNotation
         );
@@ -2156,7 +2160,7 @@ export class Collection<T extends object> extends EventTarget {
     // for relevant property calculated by `indexPosition`.
     // doing this after adjusting dataPositions so no clash with previous item
     // at that position.
-    this.binaryIndices[internalBinaryIndexName].values.splice(
+    this.binaryIndices[binaryIndexName].values.splice(
       indexPosition,
       0,
       dataPosition
@@ -2171,7 +2175,7 @@ export class Collection<T extends object> extends EventTarget {
    */
   adaptiveBinaryIndexUpdate = (
     dataPosition: number,
-    binaryIndexName: keyof T
+    binaryIndexName: ValidSimpleLensField
   ) => {
     // linear scan needed to find old position within index unless we optimize
     // for clone scenarios later within (my) node 5.6.0, the following for()
@@ -2305,9 +2309,9 @@ export class Collection<T extends object> extends EventTarget {
    * @param value - value to find within index
    * @param adaptive - if true, we will return insert position
    */
-  calculateRangeStart = <K extends keyof T>(
-    property: K,
-    value: T[K],
+  calculateRangeStart = <P extends ValidSimpleLensField, D extends boolean>(
+    property: ValidSimpleLensField,
+    value: LensResult<T, P, D>,
     adaptive?: boolean,
     usingDotNotation?: boolean
   ) => {
@@ -2370,10 +2374,10 @@ export class Collection<T extends object> extends EventTarget {
    * a value (which may or may not yet exist) this will find the final position
    * of that upper range value.
    */
-  private calculateRangeEnd = <K extends keyof T>(
+  private calculateRangeEnd = <K extends ValidSimpleLensField, D extends boolean>(
     property: K,
-    value: T[K],
-    usingDotNotation?: boolean
+    value: LensResult<T, K, D>,
+    usingDotNotation?: D
   ) => {
     const { data } = this;
     const index = this.binaryIndices[property].values;
@@ -2451,10 +2455,11 @@ export class Collection<T extends object> extends EventTarget {
    * @param value - value to use for range calculation.
    * @returns [start, end] index array positions
    */
-  calculateRange = <K extends keyof T>(
+  calculateRange = <P extends ValidSimpleLensField, D extends boolean>(
     operation: Operator,
-    property: K,
-    value: T[K]
+    property: P,
+    value: LensResult<T, P, D>,
+    usingDotNotation?: D
   ): [number, number] => {
     const { data } = this;
     const index = this.binaryIndices[property].values;
@@ -2465,9 +2470,6 @@ export class Collection<T extends object> extends EventTarget {
     if (data.length === 0) {
       return [0, -1];
     }
-
-    const usingDotNotation =
-      typeof property === 'string' && isDotNotation(property);
 
     const minValue = lens(data[index[min]], property, usingDotNotation);
     const maxValue = lens(data[index[max]], property, usingDotNotation);
@@ -2866,7 +2868,7 @@ export class Collection<T extends object> extends EventTarget {
         this.idIndex = this.cachedIndex;
         this.binaryIndices =
           this.cachedBinaryIndex ??
-          ({} as Record<keyof T, IBinaryIndex<T, number>>);
+          ({} as Record<keyof T, IBinaryIndex<number>>);
         this.dirtyIds = this.cachedDirtyIds ?? [];
       }
 
