@@ -1,4 +1,4 @@
-import { isDotNotation, lens } from './lens';
+import { isDotNotation, lens } from '@recative/lens';
 
 /** Helper function for determining 'less-than' conditions for ops, sorting,
  *  and binary indices.

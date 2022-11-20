@@ -24,6 +24,7 @@
     "ugly-json": "packages/ugly-json",
     "web-shell": "packages/web-shell",
     "capacitor-geckoview": "packages/capacitor-geckoview",
-    "desktop-shell": "packages/desktop-shell"
+    "desktop-shell": "packages/desktop-shell",
+    "lens": "packages/lens"
   }
 }

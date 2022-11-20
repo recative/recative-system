@@ -6752,6 +6752,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@recative/lens@workspace:packages/lens":
+  version: 0.0.0-use.local
+  resolution: "@recative/lens@workspace:packages/lens"
+  languageName: unknown
+  linkType: soft
+
 "@recative/mobile-shell@workspace:packages/mobile-shell":
   version: 0.0.0-use.local
   resolution: "@recative/mobile-shell@workspace:packages/mobile-shell"

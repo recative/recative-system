@@ -155,7 +155,6 @@ export const lens = <T, P extends ValidLensField, U extends boolean>(
   let lastItem: any = object;
   while (object != null && index < internalPath.length) {
     lastItem = lastItem[internalPath[index]];
-
     index += 1;
   }
   return index && index === internalPath.length ? lastItem : undefined;

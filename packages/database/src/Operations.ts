@@ -1,8 +1,9 @@
+import { isDotNotation } from '@recative/lens';
+
 import * as Comparators from './Comparators';
 
 import { hasOwn } from './utils/hasOwn';
 import { IQuery } from './typings';
-import { isDotNotation } from './utils/lens';
 // eslint-disable-next-line import/no-cycle
 import { doQueryOperation } from './utils/doQueryOperation';
 

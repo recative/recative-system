@@ -1,5 +1,13 @@
 import EventTarget from '@ungap/event-target';
 
+import {
+  lens,
+  LensResult,
+  isDotNotation,
+  ValidLensField,
+  ValidDotNotation
+} from '@recative/lens';
+
 import * as Comparators from './Comparators';
 
 // eslint-disable-next-line import/no-cycle
@@ -16,13 +24,6 @@ import { clone, CloneMethod } from './utils/clone';
 import { freeze, deepFreeze, unFreeze } from './utils/freeze';
 import { ensureMetadata, IDocumentMetadata } from './utils/ensureMetadata';
 import { isObservable, observe, suspenseObserve } from './utils/observe';
-import {
-  lens,
-  LensResult,
-  isDotNotation,
-  ValidLensField,
-  ValidDotNotation
-} from './utils/lens';
 
 import type { TransformRequest } from './ResultSet';
 import type { IDynamicViewOptions } from './DynamicView';
