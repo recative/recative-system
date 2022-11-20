@@ -1059,12 +1059,14 @@ export class Collection<T extends object> extends EventTarget {
     return valid;
   };
 
-  getBinaryIndexValues = (property: keyof T) => {
+  getBinaryIndexValues = <P extends keyof T>(
+    property: P
+  ): T[P][] => {
     const indexValues = this.binaryIndices[property].values;
-    const result = [];
+    const result: T[P][] = [];
 
     for (let i = 0; i < indexValues.length; i += 1) {
-      result.push(lens(this.data[indexValues[i]], property, true));
+      result.push(lens(this.data[indexValues[i]], property, false) as T[P]);
     }
 
     return result;
