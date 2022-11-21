@@ -9,7 +9,7 @@
   "scripts": {
     "clean": "rimraf ./dist",
     "watch": "rollup -c -w",
-    "build": "yarn clean && rollup -c",
+    "build-experimental": "yarn clean && rollup -c",
     "test": "jest"
   },
   "dependencies": {

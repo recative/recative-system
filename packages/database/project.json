@@ -6,7 +6,7 @@
     "build-experimental": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
-        "command": "yarn build",
+        "command": "yarn build-experimental",
         "cwd": "packages/database"
       }
     },
