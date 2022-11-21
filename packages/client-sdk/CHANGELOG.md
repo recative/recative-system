@@ -1,5 +1,19 @@
 # Changelog
 
+## 11.0.5
+
+### Patch Changes
+
+- Updated dependencies [0bb62a7]
+- Updated dependencies [4ec4c11]
+- Updated dependencies [42d78c1]
+- Updated dependencies [7662e86]
+- Updated dependencies [d0ab403]
+- Updated dependencies [6ba2e72]
+- Updated dependencies [e95d8bb]
+  - @recative/act-player@0.5.4
+  - @recative/core-manager@0.11.4
+
 ## 11.0.4
 
 ### Patch Changes

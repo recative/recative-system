@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.11.4
+
+### Patch Changes
+
+- d0ab403: fix: Audio track discard buffer when url is the same
+- e95d8bb: fix: More relax audio/video sync
+
 ## 0.11.3
 
 ### Patch Changes

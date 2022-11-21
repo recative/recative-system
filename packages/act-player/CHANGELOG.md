@@ -1,5 +1,18 @@
 # @recative/act-player
 
+## 0.5.4
+
+### Patch Changes
+
+- 0bb62a7: fix: Video report progress immediately after pause and play
+- 4ec4c11: fix: Log multiple video stuck reasons
+- 42d78c1: fix: Video should be internal not ready right after video element load
+- 7662e86: fix: Video report ready after first unstuck
+- 6ba2e72: fix: Attempt to recover from iOS 16 broken video element
+- Updated dependencies [d0ab403]
+- Updated dependencies [e95d8bb]
+  - @recative/core-manager@0.11.4
+
 ## 0.5.3
 
 ### Patch Changes
