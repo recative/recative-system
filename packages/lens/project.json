@@ -1,20 +1,20 @@
 {
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/database/src",
+  "sourceRoot": "packages/lens/src",
   "projectType": "library",
   "targets": {
-    "build-experimental": {
+    "build": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
         "command": "yarn build",
-        "cwd": "packages/database"
+        "cwd": "packages/lens"
       }
     },
     "publish": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
         "command": "yarn npm publish --tolerate-republish",
-        "cwd": "packages/database"
+        "cwd": "packages/lens"
       },
       "dependsOn": [
         {
@@ -25,22 +25,16 @@
     },
     "lint": {
       "executor": "@nrwl/linter:eslint",
-      "outputs": [
-        "{options.outputFile}"
-      ],
+      "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": [
-          "packages/database/**/*.ts"
-        ]
+        "lintFilePatterns": ["packages/lens/**/*.ts"]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": [
-        "coverage/packages/database"
-      ],
+      "outputs": ["coverage/packages/lens"],
       "options": {
-        "jestConfig": "packages/database/jest.config.ts",
+        "jestConfig": "packages/lens/jest.config.ts",
         "passWithNoTests": true
       }
     }

@@ -1,10 +1,25 @@
+import { isDotNotation } from '@recative/lens';
+
 import * as Comparators from './Comparators';
 
 import { hasOwn } from './utils/hasOwn';
 import { IQuery } from './typings';
-import { isDotNotation } from './utils/lens';
-// eslint-disable-next-line import/no-cycle
-import { doQueryOperation } from './utils/doQueryOperation';
+
+export const doQueryOperation = (
+  type: unknown,
+  operations: IQuery<unknown>,
+  record: unknown
+): boolean => {
+  const operationKeys = Object.keys(operations);
+  const operation = operationKeys[0];
+
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+  return Reflect.get(Operators, operation)?.(
+    type,
+    Reflect.get(operations, operation),
+    record
+  ) ?? false;
+};
 
 type ContainsQuery<DocumentEntry> = DocumentEntry extends string
   ? string
@@ -97,9 +112,9 @@ export const Operators = {
   /**
    * If two values are qual.
    */
-  $eq: <T extends object, K extends keyof T>(
-    documentEntry: T[K],
-    queryEntry: T[K]
+  $eq: <T>(
+    documentEntry: T,
+    queryEntry: T
   ) => {
     return documentEntry === queryEntry;
   },
@@ -107,9 +122,9 @@ export const Operators = {
   /**
    * abstract/loose equality
    */
-  $aeq: <T extends object, K extends keyof T>(
-    documentEntry: T[K],
-    queryEntry: T[K]
+  $aeq: <T>(
+    documentEntry: T,
+    queryEntry: T
   ) => {
     // eslint-disable-next-line eqeqeq
     return documentEntry == queryEntry;
@@ -279,7 +294,11 @@ export const Operators = {
             );
           }
 
-          return doQueryOperation<T>(Reflect.get(item, property), filter, item);
+          return doQueryOperation(
+            Reflect.get(item, property),
+            filter,
+            item
+          );
         });
       });
     }
@@ -321,7 +340,7 @@ export const Operators = {
     if (typeof documentEntry === 'string') {
       return typeof queryEntry !== 'object'
         ? documentEntry.length === queryEntry
-        : doQueryOperation<any, any>(documentEntry.length, queryEntry, record);
+        : doQueryOperation(documentEntry.length, queryEntry, record);
     }
     return false;
   },

@@ -1,16 +1,22 @@
+import { lens } from '@recative/lens';
+import type { LensResult, ValidSimpleLensField } from '@recative/lens';
+
 import { IntMap } from './utils/IntMap';
 
 import type { ICollectionDocument } from './Collection';
 
-export class UniqueIndex<T extends object, K extends keyof T> {
-  keyMap = new Map<(T & ICollectionDocument)[K], T & ICollectionDocument>();
+export class UniqueIndex<T extends object, K extends ValidSimpleLensField> {
+  keyMap = new Map<
+    LensResult<(T & ICollectionDocument), K, true>,
+    T & ICollectionDocument
+  >();
 
-  lokiMap = new IntMap<(T & ICollectionDocument)[K]>();
+  lokiMap = new IntMap<LensResult<(T & ICollectionDocument), K, true>>();
 
   constructor(public readonly field: K) {}
 
   set = (object: T & ICollectionDocument) => {
-    const fieldValue = object[this.field];
+    const fieldValue = lens(object, this.field, true);
     if (fieldValue !== null && typeof fieldValue !== 'undefined') {
       if (this.keyMap.get(fieldValue)) {
         throw new Error(
@@ -23,7 +29,7 @@ export class UniqueIndex<T extends object, K extends keyof T> {
     }
   };
 
-  get = (key: (T & ICollectionDocument)[K]) => {
+  get = (key: LensResult<(T & ICollectionDocument), K, true>) => {
     return this.keyMap.get(key);
   };
 
@@ -43,7 +49,7 @@ export class UniqueIndex<T extends object, K extends keyof T> {
     originalDocument: T & ICollectionDocument,
     newDocument: T & ICollectionDocument
   ) => {
-    if (this.lokiMap.get(originalDocument.$loki) !== newDocument[this.field]) {
+    if (this.lokiMap.get(originalDocument.$loki) !== lens(newDocument, this.field, true)) {
       const oldField = this.lokiMap.get(originalDocument.$loki);
       this.set(newDocument);
       // make the old key fail bool test, while avoiding the use of delete (mem-leak prone)
@@ -51,11 +57,15 @@ export class UniqueIndex<T extends object, K extends keyof T> {
         this.keyMap.delete(oldField);
       }
     } else {
-      this.keyMap.set(originalDocument[this.field], newDocument);
+      const lensValue = lens(originalDocument, this.field, true);
+
+      if (lensValue) {
+        this.keyMap.set(lensValue, newDocument);
+      }
     }
   };
 
-  remove = (key: (T & ICollectionDocument)[K]) => {
+  remove = (key: LensResult<(T & ICollectionDocument), K, true>) => {
     const document = this.keyMap.get(key);
     if (document !== null && typeof document !== 'undefined') {
       // avoid using `delete`

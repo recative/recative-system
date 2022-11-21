@@ -34,7 +34,8 @@
       "@recative/time-schedule": ["packages/time-schedule/src/index.ts"],
       "@recative/database": ["packages/database/src/index.ts"],
       "@recative/ugly-json": ["packages/ugly-json/src/index.ts"],
-      "@recative/desktop-shell": ["packages/desktop-shell/src/index.ts"]
+      "@recative/desktop-shell": ["packages/desktop-shell/src/index.ts"],
+      "@recative/lens": ["packages/lens/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
