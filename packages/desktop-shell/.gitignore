@@ -42,3 +42,6 @@ yarn-error.log*
 public/bundle/*
 public/constants.json
 !public/bundle/.gitkeep
+
+# Electron Forge
+out

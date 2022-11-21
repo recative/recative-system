@@ -1,5 +1,5 @@
 interface Window {
-  electron :{
+  electron? :{
     ipcRenderer: Electron.IpcRenderer;
   }
 }

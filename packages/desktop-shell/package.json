@@ -3,17 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "main": "build/electron.js",
+  "homepage": "./",
   "scripts": {
-    "prepare": "tsc -p ./tsconfig-electron.json",
-    "start-web": "react-scripts start",
-    "start-electron": "npm-run-all -l prepare electron",
-    "electron": "electron-forge start",
+    "prepare-electron": "tsc -p ./tsconfig-electron.json",
+    "electron": "yarn run prepare-electron && electron-forge start",
     "start": "npm-run-all -l -p start-web start-electron",
+    "start-web": "react-scripts start",
+    "start-electron": "npm-run-all -l prepare-electron electron",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "package": "electron-forge package",
-    "make": "electron-forge make"
+    "prepare-package": "yarn run build && yarn run prepare-electron",
+    "package": "yarn run prepare-package && electron-forge package",
+    "make": "electron-forge make",
+    "clean": "rm -rf out && rm -rf build"
   },
   "dependencies": {
     "async-call-rpc": "^6.1.5",
@@ -23,14 +26,9 @@
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.0.3",
-    "@electron-forge/maker-deb": "^6.0.0-beta.70",
-    "@electron-forge/maker-rpm": "^6.0.0-beta.70",
-    "@electron-forge/maker-squirrel": "^6.0.0-beta.70",
-    "@electron-forge/maker-zip": "^6.0.0-beta.70",
-    "@electron-forge/plugin-webpack": "^6.0.1",
+    "@electron-forge/maker-zip": "^6.0.3",
     "electron": "^21.2.0",
-    "npm-run-all": "^4.1.5",
-    "wait-on": "5.1.0"
+    "npm-run-all": "^4.1.5"
   },
   "eslintConfig": {
     "extends": [
