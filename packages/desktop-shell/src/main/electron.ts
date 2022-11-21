@@ -24,12 +24,6 @@ function createWindow() {
       : `file://${path.join(__dirname, './index.html')}`
   );
 
-  ipcMain.on('ping', (event, arg) => {
-    console.log(arg); // prints "ping"
-    event.reply('asynchronous-reply', 'pong');
-    win.close();
-  });
-
   // Open the DevTools.
   if (isDev) {
     win.webContents.openDevTools({ mode: 'detach' });
@@ -72,9 +66,3 @@ app.on('activate', () => {
     createWindow();
   }
 });
-
-// app.on('close', () => {
-//   // On macOS it's common to re-create a window in the app when the
-//   // dock icon is clicked and there are no other windows open.
-//   app.quit();
-// });

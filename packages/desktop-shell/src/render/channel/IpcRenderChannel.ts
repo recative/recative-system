@@ -1,7 +1,5 @@
 /* eslint-disable class-methods-use-this */
 
-// import { ipcRenderer } from 'electron';
-
 import type { CallbackBasedChannel } from 'async-call-rpc';
 
 let ipcRenderer: Electron.IpcRenderer | undefined
