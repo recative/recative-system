@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "main": "build/electron.js",
+  "homepage": "./",
   "scripts": {
     "prepare": "tsc -p ./tsconfig-electron.json",
     "start-web": "react-scripts start",

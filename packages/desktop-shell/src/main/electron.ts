@@ -1,18 +1,11 @@
-import path from 'path';
+import path, { resolve } from 'path';
 import isDev from 'electron-is-dev';
-import { app, BrowserWindow, ipcMain } from 'electron';
-import {initializeServer} from './rpc'
+import { app, BrowserWindow, ipcMain, protocol } from 'electron';
+import { initializeServer } from './rpc';
+import url, { fileURLToPath } from 'url';
+import { existsSync } from 'fs';
 
-// import path from 'path';
-// import { app, BrowserWindow } from 'electron';
-// import isDev from 'electron-is-dev';
-
-// @ts-ignore
-// global.ipcRenderer = ipcRenderer;
-
-console.error(__dirname);
-
-initializeServer()
+initializeServer();
 
 function createWindow() {
   // Create the browser window.
@@ -25,8 +18,6 @@ function createWindow() {
     },
   });
 
-  // and load the index.html of the app.
-  // win.loadFile("index.html");
   win.loadURL(
     isDev
       ? 'http://localhost:3000'
@@ -48,7 +39,22 @@ function createWindow() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  protocol.interceptFileProtocol('file', (request, callback) => {
+    let urlPath = request.url.slice('file://'.length).split('?')[0];
+    if (existsSync(urlPath)) {
+      callback(urlPath);
+      return
+    }
+    urlPath = path.resolve(__dirname, urlPath.slice(1));
+    if (existsSync(urlPath)) {
+      callback(url.fileURLToPath('file://' + urlPath));
+      return
+    }
+  });
+
+  createWindow();
+});
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
@@ -67,10 +73,6 @@ app.on('activate', () => {
   }
 });
 
-export function test() {
-  console.log('test1221');
-  app.quit()
-}
 // app.on('close', () => {
 //   // On macOS it's common to re-create a window in the app when the
 //   // dock icon is clicked and there are no other windows open.
