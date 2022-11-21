@@ -6642,7 +6642,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/client-sdk@^11.0.0, @recative/client-sdk@workspace:^, @recative/client-sdk@workspace:packages/client-sdk":
+"@recative/client-sdk@^11.0.0, @recative/client-sdk@workspace:packages/client-sdk":
   version: 0.0.0-use.local
   resolution: "@recative/client-sdk@workspace:packages/client-sdk"
   dependencies:
@@ -6688,7 +6688,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/core-manager@^0.11.0, @recative/core-manager@^0.11.3, @recative/core-manager@workspace:^, @recative/core-manager@workspace:packages/core-manager":
+"@recative/core-manager@^0.11.0, @recative/core-manager@^0.11.3, @recative/core-manager@workspace:packages/core-manager":
   version: 0.0.0-use.local
   resolution: "@recative/core-manager@workspace:packages/core-manager"
   dependencies:
@@ -13466,15 +13466,11 @@ __metadata:
     "@electron-forge/maker-squirrel": ^6.0.0-beta.70
     "@electron-forge/maker-zip": ^6.0.0-beta.70
     "@electron-forge/plugin-webpack": ^6.0.1
-    "@recative/client-sdk": "workspace:^"
-    "@recative/core-manager": "workspace:^"
     async-call-rpc: ^6.1.5
     electron: ^21.2.0
     electron-is-dev: ^2.0.0
     electron-squirrel-startup: ^1.0.0
     npm-run-all: ^4.1.5
-    react: ^18.2.0
-    react-dom: ^18.2.0
     react-scripts: 5.0.1
     wait-on: 5.1.0
   languageName: unknown

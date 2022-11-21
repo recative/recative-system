@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "main": "build/electron.js",
+  "homepage": "./",
   "scripts": {
     "prepare": "tsc -p ./tsconfig-electron.json",
     "start-web": "react-scripts start",
@@ -19,8 +20,6 @@
     "async-call-rpc": "^6.1.5",
     "electron-is-dev": "^2.0.0",
     "electron-squirrel-startup": "^1.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
     "react-scripts": "5.0.1"
   },
   "devDependencies": {

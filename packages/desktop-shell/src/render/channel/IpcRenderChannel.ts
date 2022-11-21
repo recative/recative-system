@@ -4,7 +4,10 @@
 
 import type { CallbackBasedChannel } from 'async-call-rpc';
 
-const ipcRenderer = window.electron.ipcRenderer as Electron.IpcRenderer
+let ipcRenderer: Electron.IpcRenderer | undefined
+if (window.electron) {
+  ipcRenderer = window.electron.ipcRenderer 
+}
 
 type JSONRPCHandlerCallback = (data: unknown) => Promise<unknown>;
 
@@ -15,7 +18,9 @@ export class IpcRendererChannel implements CallbackBasedChannel {
         .then((x) => {
           if (x === undefined) return false;
 
-          ipcRenderer.send('rpc-message', x);
+          if (ipcRenderer) {
+            ipcRenderer.send('rpc-message', x);
+          }
 
           return true;
         })
@@ -24,13 +29,16 @@ export class IpcRendererChannel implements CallbackBasedChannel {
         });
     };
 
-    ipcRenderer.on('rpc-message', handleMessage);
-    return () => ipcRenderer.off('rpc-message', handleMessage);
+    if (ipcRenderer) {
+      ipcRenderer.on('rpc-message', handleMessage);
+      return () => ipcRenderer!.off('rpc-message', handleMessage);
+    }
   }
 
   send(x: unknown): void {
     if (x === undefined) return;
-
-    ipcRenderer.send('rpc-message', x);
+    if (ipcRenderer) {
+        ipcRenderer.send('rpc-message', x);
+    }
   }
 }
