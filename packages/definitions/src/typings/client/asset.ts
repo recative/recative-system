@@ -1,4 +1,4 @@
-import { ManagerCoreStateTrigger } from "./managedCoreState";
+import { ManagerCoreStateTrigger } from './managedCoreState';
 
 export interface IAssetForClient {
   id: string;
