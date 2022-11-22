@@ -37,7 +37,6 @@ public class MockCordovaGeckoviewImpl implements CordovaWebView {
     private CordovaInterface cordova;
     private CapacitorCordovaGeckoViewCookieManager cookieManager;
     private GeckoView webView;
-    private final static String BUILD_INSTALL = "resource://android/assets/";
     private boolean hasPausedEver;
     private NanoHTTPD httpd;
     private WebExtensionPortProxy proxy;
@@ -81,7 +80,6 @@ public class MockCordovaGeckoviewImpl implements CordovaWebView {
         public CapacitorEvalBridgeMode(GeckoView webView, CordovaInterface cordova) {
             this.webView = webView;
             this.cordova = cordova;
-//            this.mPort=mPort;
         }
         public void setProxy(WebExtensionPortProxy proxy){
             this.proxy = proxy;
@@ -95,11 +93,7 @@ public class MockCordovaGeckoviewImpl implements CordovaWebView {
                                 String js = queue.popAndEncodeAsJs();
                                 if (js != null) {
 //                                    webView.evaluateJavascript(js, null);
-                                    try {
-                                        proxy.postMessage(new JSONObject().put("evalJson",js));
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
+                                        proxy.eval(js);
                                 }
                             }
                     );
@@ -224,7 +218,7 @@ public class MockCordovaGeckoviewImpl implements CordovaWebView {
         Handler mainHandler = new Handler(context.getMainLooper());
 //        mainHandler.post(() -> webView.evaluateJavascript(js, callback));
         try {
-            proxy.postMessage(new JSONObject().put("evalJson",js));
+            proxy.eval(js);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -308,11 +302,11 @@ public class MockCordovaGeckoviewImpl implements CordovaWebView {
 
     public void setPaused(boolean value) {
         if (value) {
-            webView.getSession().stop();
+//            webView.getSession().stop();
 //            webView.pauseTimers();
 
         } else {
-            webView.getSession().reload();
+//            webView.getSession().reload();
 //            webView.resumeTimers();
         }
     }

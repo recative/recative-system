@@ -2,6 +2,8 @@
 /*! Capacitor: https://capacitorjs.com/ - MIT License */
 /* Generated File. Do not edit. */
 
+window.readyList = [];
+
 const nativeBridge = (function (exports) {
     'use strict';
 
@@ -150,7 +152,9 @@ const nativeBridge = (function (exports) {
                     const eventName = args[0];
                     const handler = args[1];
                     if (eventName === 'deviceready' && handler) {
-                        Promise.resolve().then(handler);
+                        window.readyList.push(() => {
+                          Promise.resolve().then(handler);
+                        });
                     }
                     else if (eventName === 'backbutton' && cap.Plugins.App) {
                         // Add a dummy listener so Capacitor doesn't do the default
@@ -618,36 +622,49 @@ const nativeBridge = (function (exports) {
             cap.getPlatform = getPlatform;
             cap.isPluginAvailable = name => Object.prototype.hasOwnProperty.call(cap.Plugins, name);
             cap.isNativePlatform = isNativePlatform;
+           postToNative = data => {
+                              var _a;
+                              try {
+                                  // win.androidBridge.postMessage(JSON.stringify(data));
+                                  window.postMessage({
+                                    direction: 'page',
+                                    message: JSON.stringify(data),
+                                  }, '*');
+                              }
+                              catch (e) {
+                                  (_a = win === null || win === void 0 ? void 0 : win.console) === null || _a === void 0 ? void 0 : _a.error(e);
+                              }
+                          };
             // create the postToNative() fn if needed
-            if (getPlatformId(win) === 'android') {
-                // android platform
-                postToNative = data => {
-                    var _a;
-                    try {
-                        // win.androidBridge.postMessage(JSON.stringify(data));
-                        window.postMessage({
-                          direction: 'page',
-                          message: JSON.stringify(data),
-                        }, '*');
-                    }
-                    catch (e) {
-                        (_a = win === null || win === void 0 ? void 0 : win.console) === null || _a === void 0 ? void 0 : _a.error(e);
-                    }
-                };
-            }
-            else if (getPlatformId(win) === 'ios') {
-                // ios platform
-                postToNative = data => {
-                    var _a;
-                    try {
-                        data.type = data.type ? data.type : 'message';
-                        win.webkit.messageHandlers.bridge.postMessage(data);
-                    }
-                    catch (e) {
-                        (_a = win === null || win === void 0 ? void 0 : win.console) === null || _a === void 0 ? void 0 : _a.error(e);
-                    }
-                };
-            }
+//            if (getPlatformId(win) === 'android') {
+//                // android platform
+//                postToNative = data => {
+//                    var _a;
+//                    try {
+//                        // win.androidBridge.postMessage(JSON.stringify(data));
+//                        window.postMessage({
+//                          direction: 'page',
+//                          message: JSON.stringify(data),
+//                        }, '*');
+//                    }
+//                    catch (e) {
+//                        (_a = win === null || win === void 0 ? void 0 : win.console) === null || _a === void 0 ? void 0 : _a.error(e);
+//                    }
+//                };
+//            }
+//            else if (getPlatformId(win) === 'ios') {
+//                // ios platform
+//                postToNative = data => {
+//                    var _a;
+//                    try {
+//                        data.type = data.type ? data.type : 'message';
+//                        win.webkit.messageHandlers.bridge.postMessage(data);
+//                    }
+//                    catch (e) {
+//                        (_a = win === null || win === void 0 ? void 0 : win.console) === null || _a === void 0 ? void 0 : _a.error(e);
+//                    }
+//                };
+//            }
             cap.handleWindowError = (msg, url, lineNo, columnNo, err) => {
                 const str = msg.toLowerCase();
                 if (str.indexOf('script error') > -1) ;
@@ -711,9 +728,28 @@ const nativeBridge = (function (exports) {
                 return null;
             };
             if (win === null || win === void 0 ? void 0 : win.androidBridge) {
-                win.androidBridge.onmessage = function (event) {
-                    returnResult(JSON.parse(event.data));
-                };
+                // win.androidBridge.onmessage = function (event) {
+               //     returnResult(JSON.parse(event.data));
+               // };
+                 window.addEventListener('message', (event) => {
+                   if (
+                     event.source === window
+                     && event.data.direction
+                     && event.data.direction === 'messaging'
+                     && event.data.message.type !== 'eval'
+                   ) {
+                     try {
+                       if (event.data.message.payload) {
+                         returnResult(JSON.parse(event.data.message.payload));
+                         console.log('[MESSAGEING]', 'cap done', event);
+                       } else {
+                         throw new Error('payload is empty');
+                       }
+                     } catch (error) {
+                       console.error('[MESSAGEING]', 'cap error', error, event);
+                     }
+                   }
+                 });
             }
             /**
              * Process a response from the native layer.

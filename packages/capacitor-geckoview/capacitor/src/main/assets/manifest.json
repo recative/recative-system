@@ -19,7 +19,8 @@
     }
   ],
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["background.js"],
+    "persistent": true
   },
   "permissions": [
     "nativeMessaging",

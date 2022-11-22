@@ -7,6 +7,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.mozilla.geckoview.WebExtension;
 
+/**
+ * Proxy for WebExtension.Port and IPostMessage
+ * First bind port
+ * Second postMessage or eval
+ * Finally unbind
+ */
 public class WebExtensionPortProxy {
     WebExtension.Port mPort;
     IPostMessage proxy;
@@ -14,10 +20,8 @@ public class WebExtensionPortProxy {
         this.proxy = proxy;
     }
     public void bindPort(WebExtension.Port port, WebExtension.PortDelegate delegate) {
-        if (mPort != null) {
-            mPort = port;
-            mPort.setDelegate(delegate);
-        }
+        mPort = port;
+        mPort.setDelegate(delegate);
     }
 
     public void unBind() {
@@ -31,8 +35,9 @@ public class WebExtensionPortProxy {
     public void eval(String js){
         if(mPort!=null){
             try {
-                mPort.postMessage(new JSONObject().put("evalJson",js));
-                Log.i(WebExtensionPortProxy.class.getSimpleName(),"eval:"+js);
+                JSONObject json = new JSONObject().put("type","pageScript").put("payload",js);
+                mPort.postMessage(json);
+                Log.i(WebExtensionPortProxy.class.getSimpleName(),json.toString());
             } catch (JSONException e) {
                 e.printStackTrace();
             }

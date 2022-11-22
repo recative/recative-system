@@ -39,6 +39,7 @@ window.addEventListener('message', (event) => {
 runScript(`
   // page <== content
   window.addEventListener('message', (event) => {
+  console.log('[MESSAGEING]', 'Run script done');
     if (
       event.source === window
       && event.data.direction
@@ -63,6 +64,12 @@ runScript(`
       message: message,
     }, '*');
   }
+  window.androidBridge = {
+    postMessage: window.callNative,
+  }
+  window.readyList.forEach((fn) => {
+    fn();
+  });
 `);
 
 const bridgeSource = browser.runtime.getURL('native-bridge.js');
