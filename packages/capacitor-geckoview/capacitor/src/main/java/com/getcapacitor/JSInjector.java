@@ -70,7 +70,7 @@ class JSInjector {
      */
     public InputStream getInjectedStream(InputStream responseStream) {
         String js = "<script type=\"text/javascript\">" + getScriptString() + "</script>";
-        String html = this.readAssetStream(responseStream);//html的流
+        String html = this.readAssetStream(responseStream);
         if (html.contains("<head>")) {
             html = html.replace("<head>", "<head>\n" + js + "\n");
         } else if (html.contains("</head>")) {

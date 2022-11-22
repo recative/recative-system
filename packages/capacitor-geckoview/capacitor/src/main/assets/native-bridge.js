@@ -635,36 +635,6 @@ const nativeBridge = (function (exports) {
                                   (_a = win === null || win === void 0 ? void 0 : win.console) === null || _a === void 0 ? void 0 : _a.error(e);
                               }
                           };
-            // create the postToNative() fn if needed
-//            if (getPlatformId(win) === 'android') {
-//                // android platform
-//                postToNative = data => {
-//                    var _a;
-//                    try {
-//                        // win.androidBridge.postMessage(JSON.stringify(data));
-//                        window.postMessage({
-//                          direction: 'page',
-//                          message: JSON.stringify(data),
-//                        }, '*');
-//                    }
-//                    catch (e) {
-//                        (_a = win === null || win === void 0 ? void 0 : win.console) === null || _a === void 0 ? void 0 : _a.error(e);
-//                    }
-//                };
-//            }
-//            else if (getPlatformId(win) === 'ios') {
-//                // ios platform
-//                postToNative = data => {
-//                    var _a;
-//                    try {
-//                        data.type = data.type ? data.type : 'message';
-//                        win.webkit.messageHandlers.bridge.postMessage(data);
-//                    }
-//                    catch (e) {
-//                        (_a = win === null || win === void 0 ? void 0 : win.console) === null || _a === void 0 ? void 0 : _a.error(e);
-//                    }
-//                };
-//            }
             cap.handleWindowError = (msg, url, lineNo, columnNo, err) => {
                 const str = msg.toLowerCase();
                 if (str.indexOf('script error') > -1) ;

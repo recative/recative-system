@@ -18,8 +18,6 @@ import org.apache.cordova.NativeToJsMessageQueue;
 import org.apache.cordova.PluginEntry;
 import org.apache.cordova.PluginManager;
 import org.apache.cordova.PluginResult;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.mozilla.geckoview.GeckoView;
 
 import java.util.List;
@@ -92,7 +90,6 @@ public class MockCordovaGeckoviewImpl implements CordovaWebView {
                             () -> {
                                 String js = queue.popAndEncodeAsJs();
                                 if (js != null) {
-//                                    webView.evaluateJavascript(js, null);
                                         proxy.eval(js);
                                 }
                             }
@@ -301,13 +298,6 @@ public class MockCordovaGeckoviewImpl implements CordovaWebView {
     }
 
     public void setPaused(boolean value) {
-        if (value) {
-//            webView.getSession().stop();
-//            webView.pauseTimers();
-
-        } else {
-//            webView.getSession().reload();
-//            webView.resumeTimers();
-        }
+//        empty implementation
     }
 }
