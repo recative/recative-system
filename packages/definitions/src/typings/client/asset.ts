@@ -11,4 +11,5 @@ export interface IAssetForClient {
 
 export type ContentSpec<T extends {} = Record<string, unknown>> = {
   contentExtensionId: string;
+  extensionConfiguration: Record<string, string>;
 } & T;

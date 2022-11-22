@@ -2,25 +2,39 @@ import * as React from 'react';
 import cn from 'classnames';
 import debug from 'debug';
 import useConstant from 'use-constant';
-
 import { useStore } from '@nanostores/react';
 import { useInterval } from 'react-use';
 import { useStyletron } from 'baseui';
 
 import { Block } from 'baseui/block';
 
-import {
-  AudioElementInit, convertSRTToStates, PostProcessCallback, selectUrlAudioElementInitPostProcess,
-} from '@recative/core-manager';
 import { getMatchedResource } from '@recative/smart-resource';
+import {
+  convertSRTToStates,
+  selectUrlAudioElementInitPostProcess
+} from '@recative/core-manager';
 
+import type {
+  AudioElementInit,
+  PostProcessCallback,
+} from '@recative/core-manager';
 import { IResourceFileForClient } from '@recative/definitions';
+
 import { isSafari } from '../../variables/safari';
 import { ModuleContainer } from '../Layout/ModuleContainer';
 
 import type { AssetExtensionComponent } from '../../types/ExtensionCore';
 
 import { getController } from './videoControllers';
+
+
+type ObjectFit =
+  | 'inherit'
+  | 'contain'
+  | 'cover'
+  | 'fill'
+  | 'none'
+  | 'scale-down';
 
 const log = debug('player:video');
 
@@ -52,11 +66,12 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
   > | null>(null);
   const videoComponentInitialized = React.useRef(false);
 
-  const fullSizeStyle = css({
+  const fullSizeStyle = React.useMemo(() => css({
     width: '100%',
     height: '100%',
+    objectFit: props.spec.extensionConfiguration.OBJECT_FIT as ObjectFit ?? 'inherit',
     backgroundColor: 'black',
-  });
+  }), [css, props.spec.extensionConfiguration.OBJECT_FIT]);
 
   const core = useConstant(() => {
     const controller = getController(props.id);
@@ -190,7 +205,7 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
           videoSourceRef.current!.src = selectedVideo;
           videoSourceRef.current!.type = mime;
           core.controller.reloadVideo();
-          if (videoRef.current!.currentSrc === "") {
+          if (videoRef.current!.currentSrc === '') {
             // Firefox may not load the source immediately after setting the source element
             setTimeout(() => {
               core.controller.reloadVideo();
