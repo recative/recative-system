@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.2
+
+### Patch Changes
+
+- be81e87: feat: Add extension field to `IAsset`
+
 ## 0.5.1
 
 ### Patch Changes
