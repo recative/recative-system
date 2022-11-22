@@ -622,19 +622,6 @@ const nativeBridge = (function (exports) {
             cap.getPlatform = getPlatform;
             cap.isPluginAvailable = name => Object.prototype.hasOwnProperty.call(cap.Plugins, name);
             cap.isNativePlatform = isNativePlatform;
-           postToNative = data => {
-                              var _a;
-                              try {
-                                  // win.androidBridge.postMessage(JSON.stringify(data));
-                                  window.postMessage({
-                                    direction: 'page',
-                                    message: JSON.stringify(data),
-                                  }, '*');
-                              }
-                              catch (e) {
-                                  (_a = win === null || win === void 0 ? void 0 : win.console) === null || _a === void 0 ? void 0 : _a.error(e);
-                              }
-                          };
             cap.handleWindowError = (msg, url, lineNo, columnNo, err) => {
                 const str = msg.toLowerCase();
                 if (str.indexOf('script error') > -1) ;

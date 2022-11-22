@@ -9,9 +9,6 @@ import org.mozilla.geckoview.WebExtension;
 
 /**
  * Proxy for WebExtension.Port and IPostMessage
- * First bind port
- * Second postMessage or eval
- * Finally unbind
  */
 public class WebExtensionPortProxy {
     WebExtension.Port mPort;
@@ -20,7 +17,7 @@ public class WebExtensionPortProxy {
     WebExtensionPortProxy(IPostMessage proxy) {
         this.proxy = proxy;
     }
-
+   
     public void bindPort(WebExtension.Port port, WebExtension.PortDelegate delegate) {
         mPort = port;
         mPort.setDelegate(delegate);
@@ -29,13 +26,17 @@ public class WebExtensionPortProxy {
     public void unBind() {
         mPort = null;
     }
-
+    /**
+     * post message to Native
+     */
     public void postMessage(Object message) {
         Log.i(WebExtensionPortProxy.class.getSimpleName(), message.toString());
         if (proxy != null)
             proxy.postMessage(message);
     }
-
+    /**
+     * eval js
+     */
     public void eval(String js) {
         if (mPort != null) {
             try {
