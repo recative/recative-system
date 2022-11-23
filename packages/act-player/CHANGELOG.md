@@ -1,5 +1,14 @@
 # @recative/act-player
 
+## 0.5.5
+
+### Patch Changes
+
+- cc4afe9: feat: Supports extension configurations for assets
+- 84db3a1: feat: Pause the act point while gotoEpisode triggered
+- Updated dependencies [cc4afe9]
+  - @recative/definitions@0.5.3
+
 ## 0.5.4
 
 ### Patch Changes
