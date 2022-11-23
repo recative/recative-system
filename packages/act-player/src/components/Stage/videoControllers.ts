@@ -85,7 +85,7 @@ export const getController = (id: string) => {
     if (IS_SAFARI) {
       if ($video.readyState >= $video.HAVE_ENOUGH_DATA && $video.networkState === $video.NETWORK_IDLE) {
         if (lastSyncTime !== null && trackPlaying && !trackSuspended) {
-          if (time > lastSyncTime && progress - lastProgress < Math.min(time - lastSyncTime, 1)) {
+          if (time - lastSyncTime >= 0 && progress - lastProgress < Math.min(time - lastSyncTime, 1)) {
             coreFunctions?.log(`The video element is broken, reload video`);
             reloadVideo();
             return
@@ -94,8 +94,14 @@ export const getController = (id: string) => {
       }
     }
     coreFunctions.reportProgress(progress);
+    if (isVideoPlaying($video)) {
+      if (progress > lastProgress || lastSyncTime == null) {
+        lastSyncTime = time;
+      }
+    }else{
+      lastSyncTime = null
+    }
     lastProgress = progress;
-    lastSyncTime = time;
   }
 
   const checkVideoPlayingState = () => {
@@ -111,11 +117,12 @@ export const getController = (id: string) => {
       coreFunctions?.log(`Unmatched playing state: should be ${isPlaying} instead of ${!$video.paused}`);
       if (isPlaying) {
         playVideo();
+        reportProgress();
       } else {
-        lastSyncTime = null;
         $video.pause();
+        reportProgress();
+        lastSyncTime = null;
       }
-      reportProgress();
     }
   };
 
@@ -160,8 +167,8 @@ export const getController = (id: string) => {
     if (trackPlaying && !trackSuspended) {
       playVideo();
     } else {
-      lastSyncTime = null;
       $video?.pause();
+      lastSyncTime = null;
     }
     if ($video !== null) {
       $video.currentTime = cachedTime / 1000;
