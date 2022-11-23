@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.4
+
+### Patch Changes
+
+- feb76e9: fix: Incorrect asset data field
+
 ## 0.5.3
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @recative/act-player
 
+## 0.5.7
+
+### Patch Changes
+
+- feb76e9: fix: Incorrect asset data field
+- Updated dependencies [feb76e9]
+  - @recative/definitions@0.5.4
+
 ## 0.5.6
 
 ### Patch Changes
