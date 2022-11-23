@@ -1,6 +1,6 @@
 {
   "name": "@recative/act-player",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",

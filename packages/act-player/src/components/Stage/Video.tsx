@@ -69,9 +69,9 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
   const fullSizeStyle = React.useMemo(() => css({
     width: '100%',
     height: '100%',
-    objectFit: props.spec.extensionConfiguration.OBJECT_FIT as ObjectFit ?? 'inherit',
+    objectFit: props.spec.extensionConfiguration?.OBJECT_FIT as ObjectFit ?? 'inherit',
     backgroundColor: 'black',
-  }), [css, props.spec.extensionConfiguration.OBJECT_FIT]);
+  }), [css, props.spec.extensionConfiguration?.OBJECT_FIT]);
 
   const core = useConstant(() => {
     const controller = getController(props.id);

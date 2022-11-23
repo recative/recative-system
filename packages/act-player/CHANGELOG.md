@@ -1,5 +1,11 @@
 # @recative/act-player
 
+## 0.5.6
+
+### Patch Changes
+
+- fix: `extensionConfiguration` is undefined
+
 ## 0.5.5
 
 ### Patch Changes
