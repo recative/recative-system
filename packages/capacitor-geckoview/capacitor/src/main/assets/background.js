@@ -21,12 +21,23 @@
 //           window.onmessage    window.postMessage
 //
 
+const portRegex = /http\:\/\/localhost\:(\d+)(.*)&/i;
+const sourceString = 'http://localhost/';
 
 const logURL = (requestDetails) => {
+  const url = requestDetails.url;
+  console.log(requestDetails)
+  if (url && url.slice(0, sourceString.length) === sourceString) {
+    const documentUrl = new URL(requestDetails.documentUrl);
+    console.log(documentUrl)
+    if (documentUrl.port) {
+      const redirectUrl = documentUrl.origin + '/' + url.slice(sourceString.length, url.length)
+      console.log(`redirect: ${requestDetails.url} to ${redirectUrl}`);
+      return { redirectUrl };
+    }
+  }
   console.log(`Loading: ${requestDetails.url}`);
-  // return {
-  //   redirectUrl: "https://38.media.tumblr.com/tumblr_ldbj01lZiP1qe0eclo1_500.gif"
-  // };
+  return;
 };
 
 browser.webRequest.onBeforeRequest.addListener(
@@ -36,7 +47,7 @@ browser.webRequest.onBeforeRequest.addListener(
       "*://localhost/*"
     ]
   },
-  // ['blocking']
+  ['blocking']
 );
 
 // background <=> native
