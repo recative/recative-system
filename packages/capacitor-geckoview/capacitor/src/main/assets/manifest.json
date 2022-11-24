@@ -9,9 +9,6 @@
       "id": "messaging@example.com"
     }
   },
-  "web_accessible_resources": [
-    "native-bridge.js"
-  ],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
