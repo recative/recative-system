@@ -1,5 +1,11 @@
 # @recative/act-player
 
+## 0.5.9
+
+### Patch Changes
+
+- 4ce5fb0: fix: Rollback the broken optimization
+
 ## 0.5.8
 
 ### Patch Changes
