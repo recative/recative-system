@@ -227,10 +227,6 @@ export const getController = (id: string) => {
               return;
             }
 
-            // For performance consideration, while gotoEpisode triggered, pause
-            // the ticker instantly to prevent the act point from rendering.
-            connector?.connector.pause();
-
             externalGotoEpisode(
               coreFunctions!.core.seek,
               episode,
