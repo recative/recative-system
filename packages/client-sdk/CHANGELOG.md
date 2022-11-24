@@ -1,5 +1,12 @@
 # Changelog
 
+## 11.0.9
+
+### Patch Changes
+
+- Updated dependencies [834fa9e]
+  - @recative/act-player@0.5.8
+
 ## 11.0.8
 
 ### Patch Changes

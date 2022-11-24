@@ -1,5 +1,11 @@
 # @recative/act-player
 
+## 0.5.8
+
+### Patch Changes
+
+- 834fa9e: fix: Reduce false positive in broken video element detection for Safari
+
 ## 0.5.7
 
 ### Patch Changes
