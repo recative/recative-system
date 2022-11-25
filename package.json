@@ -2,7 +2,7 @@
   "name": "@recative/recative-system",
   "version": "0.0.0",
   "license": "GPL-3.0-or-later",
-  "private": true,
+  "private": false,
   "scripts": {
     "build": "nx run-many --target=build",
     "run:in": "nx run",
