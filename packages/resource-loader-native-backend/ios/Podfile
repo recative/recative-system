@@ -1,0 +1,21 @@
+platform :ios, '12.0'
+
+def capacitor_pods
+  # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
+  use_frameworks!
+  pod 'Capacitor', :path => '../node_modules/@capacitor/ios'
+  pod 'CapacitorCordova', :path => '../node_modules/@capacitor/ios'
+  pod "ActiveSQLite"
+
+  pod "SwiftState", :git => "https://github.com/ReactKit/SwiftState.git"
+  pod "GCDWebServer/WebDAV", "~> 3.0"
+  pod 'SSZipArchive'
+end
+
+target 'Plugin' do
+  capacitor_pods
+end
+
+target 'PluginTests' do
+  capacitor_pods
+end

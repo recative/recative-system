@@ -1,0 +1,12 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.jbcz.videorenderer">
+    <application>
+        <provider
+            android:authorities='${applicationId}.fileprovider'
+            android:name="androidx.core.content.FileProvider"
+            tools:node="merge">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_path" />
+        </provider>
+    </application>
+</manifest>
