@@ -71,9 +71,3 @@ runScript(`
     fn();
   });
 `);
-
-const bridgeSource = browser.runtime.getURL('native-bridge.js');
-
-var bridgeTag = document.createElement('script');
-bridgeTag.src = bridgeSource;
-document.head.appendChild(bridgeTag);
