@@ -1184,7 +1184,10 @@ export class Collection<T extends object> extends EventTarget {
    *
    * const results = progenyView.data();
    */
-  addDynamicView = (name: string, options?: Partial<IDynamicViewOptions>) => {
+  addDynamicView = (
+    name: string = '',
+    options?: Partial<IDynamicViewOptions>
+  ) => {
     const dynamicView = new DynamicView(this, name, options);
     this.dynamicViews.push(dynamicView);
 

@@ -3,18 +3,18 @@ import EventTarget from '@ungap/event-target';
 import type {
   Collection,
   FilterFunction,
-  ICollectionDocument
+  ICollectionDocument,
 } from './Collection';
 import {
   DynamicViewSortEvent,
   DynamicViewFilterEvent,
-  DynamicViewRebuildEvent
+  DynamicViewRebuildEvent,
 } from './Events';
 import { delay } from './utils/delay';
 import { CloneMethod } from './utils/clone';
 import { deepFreeze, freeze } from './utils/freeze';
 import type { IQuery } from './typings';
-import type { TransformRequest, ResultSet } from './ResultSet';
+import type { TransformRequest, ResultSet, TransformResult } from './ResultSet';
 
 /**
  * options to configure dynamic view with
@@ -33,7 +33,7 @@ export enum SortPriority {
   /**
    * 'active' will sort async whenever next idle. (prioritizes read speeds)
    */
-  Active = 'active'
+  Active = 'active',
 }
 
 export interface IDynamicViewOptions {
@@ -45,7 +45,7 @@ export interface IDynamicViewOptions {
 export const DEFAULT_DYNAMIC_VIEW_OPTIONS = {
   persistent: false,
   sortPriority: SortPriority.Passive,
-  minRebuildInterval: 1
+  minRebuildInterval: 1,
 };
 
 export interface IRematerializeOptions {
@@ -54,7 +54,7 @@ export interface IRematerializeOptions {
 
 export enum FilterType {
   Where = 'where',
-  Find = 'find'
+  Find = 'find',
 }
 
 export interface IFilter<T> {
@@ -88,12 +88,12 @@ export interface IApplySimpleSortOptions {
   desc: boolean;
   disableIndexIntersect: boolean;
   forceIndexIntersect: boolean;
-  useJavascriptSorting: boolean;
+  useJavaScriptSorting: boolean;
 }
 
 export interface ISortCriteriaSimple<T> {
   property: keyof T;
-  options?: IApplySimpleSortOptions;
+  options?: Partial<IApplySimpleSortOptions>;
 }
 
 export class CollectionNotReadyError extends Error {
@@ -190,7 +190,7 @@ export class DynamicView<T extends object> extends EventTarget {
 
     this.options = {
       ...DEFAULT_DYNAMIC_VIEW_OPTIONS,
-      ...options
+      ...options,
     };
 
     // @ts-ignore: Let's refactor it later
@@ -199,6 +199,8 @@ export class DynamicView<T extends object> extends EventTarget {
     if (!this.collection?.disableFreeze) {
       Object.freeze(this.filterPipeline);
     }
+
+    this.branchResultset = this.branchResultset.bind(this);
   }
 
   /**
@@ -310,22 +312,29 @@ export class DynamicView<T extends object> extends EventTarget {
    * ).data();
    */
 
-  branchResultset = (
+  branchResultset(): ResultSet<T>;
+  branchResultset<
+    Transform extends TransformRequest<T> | TransformRequest<T>[]
+  >(
     transform: TransformRequest<T> | TransformRequest<T>[],
-    parameters: Record<string, unknown>
-  ) => {
+    parameters?: Record<string, unknown>
+  ): ResultSet<TransformResult<Transform>>;
+  branchResultset(
+    transform?: TransformRequest<T> | TransformRequest<T>[] | undefined,
+    parameters?: Record<string, unknown>
+  ) {
     if (!this.resultSet) {
       throw new ResultSetNotReadyError('branch the result set');
     }
 
     const resultSet = this.resultSet.branch();
 
-    if (typeof transform === 'undefined') {
+    if (!transform) {
       return resultSet;
     }
 
     return resultSet.transform(transform, parameters);
-  };
+  }
 
   /**
    * toJSON() - Override of toJSON to avoid circular references
@@ -421,7 +430,10 @@ export class DynamicView<T extends object> extends EventTarget {
    * @example
    * dynamicView.applySimpleSort("name");
    */
-  applySimpleSort = (property: keyof T, options?: IApplySimpleSortOptions) => {
+  applySimpleSort = (
+    property: keyof T,
+    options?: Partial<IApplySimpleSortOptions>
+  ) => {
     if (!this.collection) {
       throw new CollectionNotReadyError('apply the sort');
     }
@@ -666,7 +678,7 @@ export class DynamicView<T extends object> extends EventTarget {
     this.applyFilter({
       type: FilterType.Find,
       val: query,
-      uid
+      uid,
     });
     return this;
   };
@@ -684,7 +696,7 @@ export class DynamicView<T extends object> extends EventTarget {
     this.applyFilter({
       type: FilterType.Where,
       val: filterFn,
-      uid
+      uid,
     });
     return this;
   };
@@ -756,7 +768,7 @@ export class DynamicView<T extends object> extends EventTarget {
     // full rebuild
     if (this.sortDirty || this.resultsdirty) {
       this.performSortPhase({
-        suppressRebuildEvent: true
+        suppressRebuildEvent: true,
       });
     }
     return this.options.persistent
