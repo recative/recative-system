@@ -1156,7 +1156,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
    * @returns  array of changes
    * @see private method createChange() in Collection
    */
-  generateChangesNotification = (collectionNamesArray: string[]) => {
+  generateChangesNotification = (collectionNamesArray?: string[]) => {
     // This could be any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const getCollName = (collection: Collection<any>) => {
@@ -1164,7 +1164,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
     };
 
     const selectedCollections =
-      collectionNamesArray || this.collections.map(getCollName);
+      collectionNamesArray ?? this.collections.map(getCollName);
 
     // This could be any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

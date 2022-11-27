@@ -1274,9 +1274,15 @@ export class Collection<T extends object> extends EventTarget {
    * // alternatively, insert array of documents
    * users.insert([{ name: 'Thor', age: 35}, { name: 'Loki', age: 30}]);
    */
-  insert(documents: T, overrideAdaptiveIndices?: boolean): T;
-  insert(documents: T[], overrideAdaptiveIndices?: boolean): T[];
-  insert(documents: T | T[], overrideAdaptiveIndices?: boolean) {
+  insert(
+    documents: T,
+    overrideAdaptiveIndices?: boolean
+  ): T & ICollectionDocument;
+  insert(
+    documents: T[],
+    overrideAdaptiveIndices?: boolean
+  ): (T & ICollectionDocument)[];
+  insert(documents: any, overrideAdaptiveIndices?: boolean) {
     if (!Array.isArray(documents)) {
       return this.insertOne(documents);
     }
@@ -1457,7 +1463,9 @@ export class Collection<T extends object> extends EventTarget {
    *
    * @param {object} document - document to update within the collection
    */
-  update = (document: T & ICollectionDocument) => {
+  update = (
+    document: (T & ICollectionDocument) | (T & ICollectionDocument)[]
+  ) => {
     if (Array.isArray(document)) {
       // if not cloning, disable adaptive binary indices for the duration of the
       // batch update, followed by lazy rebuild and re-enabling adaptive indices
@@ -2306,7 +2314,7 @@ export class Collection<T extends object> extends EventTarget {
     property: ValidSimpleLensField,
     value: LensResult<T, P, D>,
     adaptive?: boolean,
-    usingDotNotation?: boolean
+    usingDotNotation?: D
   ) => {
     const { data } = this;
     const index = this.binaryIndices[property].values;
@@ -2800,7 +2808,7 @@ export class Collection<T extends object> extends EventTarget {
    * @param query - 'mongo-like' query object
    * @returns Array of matching documents
    * */
-  find = (query?: IQuery<T>) => {
+  find = (query?: IQuery<T>): (T & ICollectionDocument)[] => {
     return this.chain().find(query).data();
   };
 

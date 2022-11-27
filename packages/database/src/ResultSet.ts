@@ -1,4 +1,9 @@
-import { isDotNotation, lens, LensResult, ValidSimpleLensField } from '@recative/lens';
+import {
+  isDotNotation,
+  lens,
+  LensResult,
+  ValidSimpleLensField,
+} from '@recative/lens';
 
 import { Operators } from './Operations';
 // eslint-disable-next-line import/no-cycle
@@ -27,7 +32,7 @@ export enum TransformType {
   EqJoin = 'eqJoin',
   MapReduce = 'mapReduce',
   Update = 'update',
-  Remove = 'remove'
+  Remove = 'remove',
 }
 
 export interface IFindTransformRequest<T> {
@@ -523,13 +528,13 @@ export class ResultSet<T extends object> {
     const internalOptions =
       typeof options === 'boolean'
         ? {
-            desc: options
+            desc: options,
           }
         : {
             desc: false,
             disableIndexIntersect: false,
             forceIndexIntersect: false,
-            useJavascriptSorting: false
+            useJavascriptSorting: false,
           };
 
     let eff;
@@ -894,7 +899,7 @@ export class ResultSet<T extends object> {
     propertyOrOperation: O | P,
     queryEntry: unknown,
     firstOnly: boolean = false,
-    usingDotNotation?: D,
+    usingDotNotation?: D
   ): ResultSet<T> => {
     const result: number[] = [];
 
@@ -1045,7 +1050,9 @@ export class ResultSet<T extends object> {
           const secondPhaseFilter = Reflect.get(
             secondPassIndexedOps,
             propertyOrOperation
-          ) as (typeof secondPassIndexedOps)[keyof typeof secondPassIndexedOps] | undefined;
+          ) as
+            | typeof secondPassIndexedOps[keyof typeof secondPassIndexedOps]
+            | undefined;
 
           if (secondPhaseFilter) {
             // must be a function, implying 2nd phase filtering of results from
@@ -1057,8 +1064,11 @@ export class ResultSet<T extends object> {
             );
 
             if (
-              lensValue !== undefined
-              && secondPhaseFilter(lensValue as unknown as LensResult<T, P, D>, value)
+              lensValue !== undefined &&
+              secondPhaseFilter(
+                lensValue as unknown as LensResult<T, P, D>,
+                value
+              )
             ) {
               result.push(index.values[i]);
               if (firstOnly) {
@@ -1176,7 +1186,7 @@ export class ResultSet<T extends object> {
    */
   data = (options?: Partial<IResultSetDataOptions>) => {
     const internalOptions = {
-      ...options
+      ...options,
     };
 
     const result = [];
@@ -1262,7 +1272,9 @@ export class ResultSet<T extends object> {
   * });
   */
   update = (
-    updateFunction: (x: T & ICollectionDocument) => T & ICollectionDocument
+    updateFunction: (
+      x: T & ICollectionDocument
+    ) => (T & ICollectionDocument) | void
   ) => {
     if (typeof updateFunction !== 'function') {
       throw new TypeError('Argument is not a function');
@@ -1477,7 +1489,7 @@ export class ResultSet<T extends object> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mapFunction: any = (left: any, right: any) => ({
       left,
-      right
+      right,
     }),
     dataOptions?: IResultSetDataOptions
   ) {

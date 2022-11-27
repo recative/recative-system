@@ -6,10 +6,7 @@ export type ValidLensField =
   | string[]
   | Readonly<string[]>;
 
-export type ValidSimpleLensField = 
-  | string
-  | number
-  | symbol;
+export type ValidSimpleLensField = string | number | symbol;
 
 export type ValidDotNotation<T> = T extends `${string}.${string}`
   ? true
