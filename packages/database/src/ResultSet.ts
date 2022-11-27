@@ -175,15 +175,16 @@ export type TransformRequestChainResult<
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyTransformRequest = TransformRequest<any, any, any>;
 
-type TransformResult<T extends AnyTransformRequest | AnyTransformRequest[]> =
-  T extends ReadonlyOrNot<
-    infer U extends TransformRequest<infer D, infer R0, infer R1>
-  >
-    ? TransformResultImplementation<D, U['type'], R0, R1>
-    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    T extends [ReadonlyOrNot<TransformRequest<infer D, any, any>>, ...any[]]
-    ? TransformRequestChainResult<D, T>
-    : never;
+export type TransformResult<
+  T extends AnyTransformRequest | AnyTransformRequest[] | undefined
+> = T extends ReadonlyOrNot<
+  infer U extends TransformRequest<infer D, infer R0, infer R1>
+>
+  ? TransformResultImplementation<D, U['type'], R0, R1>
+  : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  T extends [ReadonlyOrNot<TransformRequest<infer D, any, any>>, ...any[]]
+  ? TransformRequestChainResult<D, T>
+  : never;
 
 /**
  * if an op is registered in this object, our 'calculateRange' can use it with
@@ -396,10 +397,13 @@ export class ResultSet<T extends object> {
       | TransformInstance
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       | TransformInstance[]
+      | undefined
   >(
-    transform: Transform,
+    transform?: Transform,
     parameters?: Record<string, unknown>
-  ): ResultSet<TransformResult<Transform>> => {
+  ): ResultSet<
+    Transform extends undefined ? T : TransformResult<Transform>
+  > => {
     // if transform is name, then do lookup first
     let internalTransform: TransformInstance[] = Array.isArray(transform)
       ? transform

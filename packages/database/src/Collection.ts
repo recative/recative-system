@@ -12,7 +12,7 @@ import {
 import * as Comparators from './Comparators';
 
 // eslint-disable-next-line import/no-cycle
-import { ResultSet } from './ResultSet';
+import { ResultSet, TransformResult } from './ResultSet';
 import { Operators } from './Operations';
 import { DynamicView } from './DynamicView';
 import { UniqueIndex } from './UniqueIndex';
@@ -374,7 +374,10 @@ export class Collection<T extends object> extends EventTarget {
 
   isIncremental = false;
 
-  constructor(public name: string, options?: Partial<ICollectionOptions<T>>) {
+  constructor(
+    public name: string = 'Collection',
+    options?: Partial<ICollectionOptions<T>>
+  ) {
     super();
 
     this.options = {
@@ -416,6 +419,8 @@ export class Collection<T extends object> extends EventTarget {
     this.serializableIndices = this.options.serializableIndices;
 
     this.disableFreeze = this.options.disableFreeze;
+
+    this.chain = this.chain.bind(this);
 
     if (this.disableChangesApi) {
       this.disableDeltaChangesApi = true;
@@ -1225,7 +1230,9 @@ export class Collection<T extends object> extends EventTarget {
    */
   findAndUpdate = (
     filterObject: IQuery<T> | FilterFunction<T>,
-    updateFunction: (x: T & ICollectionDocument) => T & ICollectionDocument
+    updateFunction: (
+      x: T & ICollectionDocument
+    ) => (T & ICollectionDocument) | void
   ) => {
     if (typeof filterObject === 'function') {
       return this.updateWhere(
@@ -1282,6 +1289,7 @@ export class Collection<T extends object> extends EventTarget {
     documents: T[],
     overrideAdaptiveIndices?: boolean
   ): (T & ICollectionDocument)[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   insert(documents: any, overrideAdaptiveIndices?: boolean) {
     if (!Array.isArray(documents)) {
       return this.insertOne(documents);
@@ -1708,14 +1716,18 @@ export class Collection<T extends object> extends EventTarget {
    */
   updateWhere = (
     filterFunction: FilterFunction<T>,
-    updateFunction: (x: T & ICollectionDocument) => T & ICollectionDocument
+    updateFunction: (
+      x: T & ICollectionDocument
+    ) => (T & ICollectionDocument) | void
   ) => {
     const results = this.where(filterFunction);
 
     try {
       for (let i = 0; i < results.length; i += 1) {
         const document = updateFunction(results[i]);
-        this.update(document);
+        if (document) {
+          this.update(document);
+        }
       }
     } catch (error) {
       this.rollback();
@@ -2788,18 +2800,23 @@ export class Collection<T extends object> extends EventTarget {
    * @returns (this) resultset, or data array if any map or join-functions where
    *          called
    * */
-  chain = (
-    transform?: TransformRequest<T> | TransformRequest<T>[],
+  chain(): ResultSet<T>;
+  chain<Transform extends TransformRequest<T> | TransformRequest<T>[]>(
+    transform: TransformRequest<T> | TransformRequest<T>[],
     parameters?: Record<string, unknown>
-  ) => {
-    const resultSet = new ResultSet(this);
+  ): ResultSet<TransformResult<Transform>>;
+  chain(
+    transform?: TransformRequest<T> | TransformRequest<T>[] | undefined,
+    parameters?: Record<string, unknown>
+  ) {
+    const resultSet = new ResultSet<T>(this);
 
-    if (typeof transform === 'undefined') {
+    if (!transform) {
       return resultSet;
     }
 
     return resultSet.transform(transform, parameters);
-  };
+  }
 
   /**
    * Find method, api is similar to mongodb.
@@ -2897,14 +2914,14 @@ export class Collection<T extends object> extends EventTarget {
    *   return document.legs === 8;
    * });
    */
-  where = (filter: FilterFunction<T>) => {
+  where = (filter: FilterFunction<T>): (T & ICollectionDocument)[] => {
     // This is because chain could return any types of data, but it's not the
     // case here
     return (
       this.chain()
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .where(filter as any)
-        .data()
+        .data() as (T & ICollectionDocument)[]
     );
   };
 

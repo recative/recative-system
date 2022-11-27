@@ -401,7 +401,9 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
    * Retrieves reference to a collection by name.
    * @param collectionName - name of collection to look up
    */
-  getCollection = (collectionName: string) => {
+  getCollection = <U extends object>(
+    collectionName: string
+  ): Collection<U> | null => {
     const collectionCount = this.collections.length;
 
     for (let i = 0; i < collectionCount; i += 1) {
