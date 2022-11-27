@@ -6,7 +6,7 @@ import {
   isDotNotation,
   ValidLensField,
   ValidDotNotation,
-  ValidSimpleLensField
+  ValidSimpleLensField,
 } from '@recative/lens';
 
 import * as Comparators from './Comparators';
@@ -15,9 +15,14 @@ import * as Comparators from './Comparators';
 import { ResultSet } from './ResultSet';
 import { Operators } from './Operations';
 import { DynamicView } from './DynamicView';
+import { UniqueIndex } from './UniqueIndex';
+import { CollectionDocumentDeleteEvent, ErrorEvent } from './Events';
+import { sub, mean, parseBase10, standardDeviation } from './utils/math';
 
 import type { IQuery } from './typings';
 import type { Operator } from './Operations';
+import type { TransformRequest } from './ResultSet';
+import type { IDynamicViewOptions } from './DynamicView';
 
 import { delay } from './utils/delay';
 import { hasOwn } from './utils/hasOwn';
@@ -25,13 +30,6 @@ import { clone, CloneMethod } from './utils/clone';
 import { freeze, deepFreeze, unFreeze } from './utils/freeze';
 import { ensureMetadata, IDocumentMetadata } from './utils/ensureMetadata';
 import { isObservable, observe, suspenseObserve } from './utils/observe';
-
-import type { TransformRequest } from './ResultSet';
-import type { IDynamicViewOptions } from './DynamicView';
-// eslint-disable-next-line import/no-cycle
-import { CollectionDocumentDeleteEvent, ErrorEvent } from './Events';
-import { sub, mean, parseBase10, standardDeviation } from './utils/math';
-import { UniqueIndex } from './UniqueIndex';
 
 export interface ICollectionChange<T extends object> {
   name: string;
@@ -113,7 +111,7 @@ export const DEFAULT_COLLECTION_OPTIONS = {
   clone: false,
   cloneMethod: CloneMethod.ParseStringify,
   serializableIndices: true,
-  disableFreeze: true
+  disableFreeze: true,
 };
 
 export interface ICollectionSummary {
@@ -137,7 +135,7 @@ export interface IConfigureCollectionOptions {
 export enum CollectionOperation {
   Update = 'U',
   Remove = 'R',
-  Insert = 'I'
+  Insert = 'I',
 }
 
 export interface ITtlStatus {
@@ -231,7 +229,7 @@ export class Collection<T extends object> extends EventTarget {
     // @ts-ignore: Let's fix this later
     unique: {} as Record<UniqueIndex<string>>,
     // @ts-ignore: Let's fix this later
-    exact: {} as Record<string, ExactIndex<string>>
+    exact: {} as Record<string, ExactIndex<string>>,
   };
 
   createTime = Date.now();
@@ -348,7 +346,7 @@ export class Collection<T extends object> extends EventTarget {
   readonly ttl: ITtlStatus = {
     age: null,
     ttlInterval: null,
-    daemon: null
+    daemon: null,
   };
 
   /**
@@ -371,7 +369,7 @@ export class Collection<T extends object> extends EventTarget {
   protected consoleWrapper = {
     log: NO_OP,
     warn: NO_OP,
-    error: NO_OP
+    error: NO_OP,
   };
 
   isIncremental = false;
@@ -381,7 +379,7 @@ export class Collection<T extends object> extends EventTarget {
 
     this.options = {
       ...DEFAULT_COLLECTION_OPTIONS,
-      ...options
+      ...options,
     };
 
     this.objType = name;
@@ -555,7 +553,7 @@ export class Collection<T extends object> extends EventTarget {
       object:
         operation === 'U' && !this.disableDeltaChangesApi
           ? this.getChangeDelta(newObject, oldObject)
-          : JSON.parse(JSON.stringify(newObject))
+          : JSON.parse(JSON.stringify(newObject)),
     });
   };
 
@@ -697,7 +695,7 @@ export class Collection<T extends object> extends EventTarget {
       query.push(object);
     }
     return {
-      $and: query
+      $and: query,
     } as IQuery<T>;
   };
 
@@ -807,7 +805,7 @@ export class Collection<T extends object> extends EventTarget {
     const index: IBinaryIndex<number> = {
       name: property,
       dirty: true,
-      values: this.prepareFullDocIndex()
+      values: this.prepareFullDocIndex(),
     };
     this.binaryIndices[property] = index;
 
@@ -864,7 +862,7 @@ export class Collection<T extends object> extends EventTarget {
       randomSampling: false,
       randomSamplingFactor: 0.1,
       repair: false,
-      ...options
+      ...options,
     };
 
     const results = [];
@@ -909,7 +907,7 @@ export class Collection<T extends object> extends EventTarget {
 
   checkIndex = (
     property: keyof T,
-    options?: Partial<ICheckCollectionIndexOptions>,  
+    options?: Partial<ICheckCollectionIndexOptions>,
     usingDotNotation?: boolean
   ) => {
     const internalOptions = { ...options };
@@ -1061,20 +1059,12 @@ export class Collection<T extends object> extends EventTarget {
     return valid;
   };
 
-  getBinaryIndexValues = <P extends ValidSimpleLensField>(
-    property: P
-  ): LensResult<T, P, true>[] => {
+  getBinaryIndexValues = (property: ValidSimpleLensField): unknown[] => {
     const indexValues = this.binaryIndices[property].values;
-    const result: LensResult<T, P, true>[] = [];
+    const result: unknown[] = [];
 
     for (let i = 0; i < indexValues.length; i += 1) {
-      result.push(
-        lens(
-          this.data[indexValues[i]],
-          property,
-          true
-        ) as LensResult<T, P, true>
-      );
+      result.push(lens(this.data[indexValues[i]], property, true) as unknown);
     }
 
     return result;
@@ -1105,7 +1095,7 @@ export class Collection<T extends object> extends EventTarget {
     }
 
     // if index already existed, (re)loading it will likely cause collisions, rebuild always
-    const newIndex = new UniqueIndex<T, P>(field);
+    const newIndex = new UniqueIndex<T>(field);
     this.constraints.unique[field] = newIndex;
 
     for (let i = 0; i < this.data.length; i += 1) {
@@ -1374,7 +1364,7 @@ export class Collection<T extends object> extends EventTarget {
       if (typeof clonedDocument.meta === 'undefined') {
         clonedDocument.meta = {
           revision: 0,
-          created: 0
+          created: 0,
         };
       } else if (!this.disableFreeze) {
         clonedDocument.meta = unFreeze(clonedDocument.meta);
@@ -1443,7 +1433,7 @@ export class Collection<T extends object> extends EventTarget {
     this.dirty = true;
     this.constraints = {
       unique: {},
-      exact: {}
+      exact: {},
     };
 
     // if removing indices entirely
@@ -1517,7 +1507,7 @@ export class Collection<T extends object> extends EventTarget {
       // reference
       let newInternal =
         this.cloneObjects ||
-          (!this.disableDeltaChangesApi && this.disableFreeze)
+        (!this.disableDeltaChangesApi && this.disableFreeze)
           ? clone(document, this.cloneMethod)
           : document;
 
@@ -1595,8 +1585,8 @@ export class Collection<T extends object> extends EventTarget {
         new CustomEvent('update', {
           detail: {
             newDocument,
-            oldDocument
-          }
+            oldDocument,
+          },
         })
       );
       return newDocument;
@@ -1633,15 +1623,13 @@ export class Collection<T extends object> extends EventTarget {
       this.startTransaction();
 
       if (
-        typeof this.maxId !== 'number'
-        || Number.isNaN(this.maxId)
-        || !Number.isFinite(this.maxId)
+        typeof this.maxId !== 'number' ||
+        Number.isNaN(this.maxId) ||
+        !Number.isFinite(this.maxId)
       ) {
-        this.maxId = (
-          this.data?.length
-            ? Math.max(...this.data.map((x) => x.$loki))
-            : 0
-        ) + 1;
+        this.maxId =
+          (this.data?.length ? Math.max(...this.data.map((x) => x.$loki)) : 0) +
+          1;
       } else {
         this.maxId += 1;
       }
@@ -2085,7 +2073,11 @@ export class Collection<T extends object> extends EventTarget {
     binaryIndexName: K,
     usingDotNotation?: D
   ) => {
-    const value = lens(this.data[dataPosition], binaryIndexName, usingDotNotation);
+    const value = lens(
+      this.data[dataPosition],
+      binaryIndexName,
+      usingDotNotation
+    );
     const index = this.binaryIndices[binaryIndexName].values;
 
     if (value === undefined || value === null) {
@@ -2095,7 +2087,8 @@ export class Collection<T extends object> extends EventTarget {
     // i think calculateRange can probably be moved to collection
     // as it doesn't seem to need resultset.  need to verify
     const range = this.calculateRange(
-      '$eq', binaryIndexName,
+      '$eq',
+      binaryIndexName,
       value as LensResult<T, K, D>,
       usingDotNotation
     );
@@ -2124,10 +2117,13 @@ export class Collection<T extends object> extends EventTarget {
    * @param dataPosition : coll.data array index/position
    * @param binaryIndexName : index to search for dataPosition in
    */
-  adaptiveBinaryIndexInsert = <K extends ValidSimpleLensField, D extends boolean>(
+  adaptiveBinaryIndexInsert = <
+    K extends ValidSimpleLensField,
+    D extends boolean
+  >(
     dataPosition: number,
     binaryIndexName: K,
-    usingDotNotation?: D,
+    usingDotNotation?: D
   ) => {
     const index = this.binaryIndices[binaryIndexName].values;
     let value = lens(
@@ -2139,22 +2135,18 @@ export class Collection<T extends object> extends EventTarget {
     // If you are inserting a javascript Date value into a binary index, convert
     // to epoch time
     if (this.serializableIndices === true && value instanceof Date) {
-      value = lens(
-        this.data[dataPosition],
-        binaryIndexName,
-        usingDotNotation
-      );
+      value = lens(this.data[dataPosition], binaryIndexName, usingDotNotation);
     }
 
     const indexPosition =
       index.length === 0 || value === undefined || value === null
         ? 0
         : this.calculateRangeStart(
-          binaryIndexName,
-          value as LensResult<T, K, D>,
-          true,
-          usingDotNotation
-        );
+            binaryIndexName,
+            value as LensResult<T, K, D>,
+            true,
+            usingDotNotation
+          );
 
     // insert new data index into our binary index at the proper sorted location
     // for relevant property calculated by `indexPosition`.
@@ -2374,7 +2366,10 @@ export class Collection<T extends object> extends EventTarget {
    * a value (which may or may not yet exist) this will find the final position
    * of that upper range value.
    */
-  private calculateRangeEnd = <K extends ValidSimpleLensField, D extends boolean>(
+  private calculateRangeEnd = <
+    K extends ValidSimpleLensField,
+    D extends boolean
+  >(
     property: K,
     value: LensResult<T, K, D>,
     usingDotNotation?: D
@@ -2997,7 +2992,7 @@ export class Collection<T extends object> extends EventTarget {
       this.commitLog.push({
         timestamp,
         message,
-        data: JSON.parse(JSON.stringify(stage[key]))
+        data: JSON.parse(JSON.stringify(stage[key])),
       });
     }
     this.stages[stageName] = {};
@@ -3034,7 +3029,7 @@ export class Collection<T extends object> extends EventTarget {
 
     const result = {
       index: null as number | null,
-      value: undefined as number | undefined
+      value: undefined as number | undefined,
     };
 
     let max: number | undefined;
@@ -3066,7 +3061,7 @@ export class Collection<T extends object> extends EventTarget {
 
     const result = {
       index: null as number | null,
-      value: undefined as number | undefined
+      value: undefined as number | undefined,
     };
 
     let min: number | undefined;

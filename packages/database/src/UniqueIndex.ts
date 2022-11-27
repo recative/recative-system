@@ -1,19 +1,16 @@
 import { lens } from '@recative/lens';
-import type { LensResult, ValidSimpleLensField } from '@recative/lens';
+import type { ValidSimpleLensField } from '@recative/lens';
 
 import { IntMap } from './utils/IntMap';
 
 import type { ICollectionDocument } from './Collection';
 
-export class UniqueIndex<T extends object, K extends ValidSimpleLensField> {
-  keyMap = new Map<
-    LensResult<(T & ICollectionDocument), K, true>,
-    T & ICollectionDocument
-  >();
+export class UniqueIndex<T extends object> {
+  keyMap = new Map<unknown, T>();
 
-  lokiMap = new IntMap<LensResult<(T & ICollectionDocument), K, true>>();
+  lokiMap = new IntMap<unknown>();
 
-  constructor(public readonly field: K) {}
+  constructor(public readonly field: ValidSimpleLensField) {}
 
   set = (object: T & ICollectionDocument) => {
     const fieldValue = lens(object, this.field, true);
@@ -29,7 +26,7 @@ export class UniqueIndex<T extends object, K extends ValidSimpleLensField> {
     }
   };
 
-  get = (key: LensResult<(T & ICollectionDocument), K, true>) => {
+  get = (key: unknown) => {
     return this.keyMap.get(key);
   };
 
@@ -49,7 +46,10 @@ export class UniqueIndex<T extends object, K extends ValidSimpleLensField> {
     originalDocument: T & ICollectionDocument,
     newDocument: T & ICollectionDocument
   ) => {
-    if (this.lokiMap.get(originalDocument.$loki) !== lens(newDocument, this.field, true)) {
+    if (
+      this.lokiMap.get(originalDocument.$loki) !==
+      lens(newDocument, this.field, true)
+    ) {
       const oldField = this.lokiMap.get(originalDocument.$loki);
       this.set(newDocument);
       // make the old key fail bool test, while avoiding the use of delete (mem-leak prone)
@@ -57,7 +57,7 @@ export class UniqueIndex<T extends object, K extends ValidSimpleLensField> {
         this.keyMap.delete(oldField);
       }
     } else {
-      const lensValue = lens(originalDocument, this.field, true);
+      const lensValue = lens(originalDocument as T, this.field, true);
 
       if (lensValue) {
         this.keyMap.set(lensValue, newDocument);
@@ -65,12 +65,12 @@ export class UniqueIndex<T extends object, K extends ValidSimpleLensField> {
     }
   };
 
-  remove = (key: LensResult<(T & ICollectionDocument), K, true>) => {
+  remove = (key: unknown) => {
     const document = this.keyMap.get(key);
     if (document !== null && typeof document !== 'undefined') {
       // avoid using `delete`
       this.keyMap.delete(key);
-      this.lokiMap.delete(document.$loki);
+      this.lokiMap.delete((document as ICollectionDocument).$loki);
     } else {
       throw new Error(`Key is not in unique index: ${String(this.field)}`);
     }
