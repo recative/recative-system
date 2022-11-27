@@ -27,14 +27,7 @@
   },
   "homepage": "https://gitlab.com/Rich-Harris/phonograph#README",
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^13.3.0",
-    "@rollup/plugin-sucrase": "^4.0.3",
-    "eslint": "^5.10.0",
-    "rollup": "^2.72.1",
-    "rollup-plugin-dts": "^4.2.1",
-    "rollup-plugin-peer-deps-external": "^2.2.4",
-    "serve": "^10.1.1",
-    "typescript": "=4.4.4"
+    "serve": "^10.1.1"
   },
   "scripts": {
     "build": "rollup -c",
@@ -44,7 +37,6 @@
     "pretest": "yarn build"
   },
   "dependencies": {
-    "@rollup/plugin-commonjs": "^22.0.2",
     "standardized-audio-context": "^25.3.29"
   }
 }
