@@ -16,3 +16,8 @@ export interface IIndexTestRecord {
   sequence?: number;
   desc?: string;
 }
+
+export interface IFooBarTestRecord {
+  foo: string;
+  bar?: string;
+}

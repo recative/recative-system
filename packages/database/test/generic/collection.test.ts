@@ -111,7 +111,7 @@ describe('collection', () => {
     expect(document[1].b).toEqual(3);
     expect(document[2].b).toEqual(8);
 
-    // now repeat but send $Database id array to remove()
+    // now repeat but send $loki id array to remove()
     collection.clear();
     collection.insert(AB_DATA);
     document = collection.find({ a: 6 });
@@ -189,7 +189,7 @@ describe('collection', () => {
         default:
       }
 
-      expect(hasOwn(event.detail, '$Database')).toEqual(true);
+      expect(hasOwn(event.detail, '$loki')).toEqual(true);
       expect(hasOwn(event.detail, 'meta')).toEqual(true);
       expect(hasOwn(event.detail.meta, 'revision')).toEqual(true);
       expect(hasOwn(event.detail.meta, 'created')).toEqual(true);
@@ -234,7 +234,7 @@ describe('collection', () => {
         default:
       }
 
-      expect(hasOwn(event.detail, '$Database')).toEqual(true);
+      expect(hasOwn(event.detail, '$loki')).toEqual(true);
       expect(hasOwn(event.detail, 'meta')).toEqual(true);
       expect(hasOwn(event.detail.meta, 'revision')).toEqual(true);
       expect(hasOwn(event.detail.meta, 'created')).toEqual(true);
