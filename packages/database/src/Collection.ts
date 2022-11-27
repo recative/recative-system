@@ -1895,6 +1895,7 @@ export class Collection<T extends object> extends EventTarget {
       | (T & ICollectionDocument)
       | number
       | ((T & ICollectionDocument) | number)[]
+      | null
   ) => {
     if (!this.idIndex) {
       throw new TypeError(
@@ -2752,16 +2753,20 @@ export class Collection<T extends object> extends EventTarget {
    * @returns First matching document, or null if none
    * @memberof Collection
    */
-  findOne = (query: Partial<IQuery<T>> = {}) => {
+  findOne = (
+    query: Partial<IQuery<T>> = {}
+  ): (T & ICollectionDocument) | null => {
     // Instantiate ResultSet and exec find op passing firstOnly = true param
     const result = this.chain().find(query, true).data();
 
     if (Array.isArray(result) && result.length === 0) {
       return null;
     }
+
     if (!this.cloneObjects) {
       return result[0];
     }
+
     return clone(result[0], this.cloneMethod);
   };
 
@@ -2795,7 +2800,7 @@ export class Collection<T extends object> extends EventTarget {
    * @param query - 'mongo-like' query object
    * @returns Array of matching documents
    * */
-  find = (query: IQuery<T>) => {
+  find = (query?: IQuery<T>) => {
     return this.chain().find(query).data();
   };
 
