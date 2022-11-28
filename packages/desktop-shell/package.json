@@ -1,11 +1,9 @@
 {
   "name": "desktop-shell",
   "version": "0.1.0",
-  "private": true,
-  "main": "build/electron.js",
-  "homepage": "./",
+  "main": "build/main.js",
   "scripts": {
-    "prepare-electron": "tsc -p ./tsconfig-electron.json",
+    "prepare-electron": "rollup -c",
     "electron": "yarn run prepare-electron && electron-forge start",
     "start": "npm-run-all -l -p start-web start-electron",
     "start-web": "react-scripts start",
@@ -16,7 +14,7 @@
     "prepare-package": "yarn run build && yarn run prepare-electron",
     "package": "yarn run prepare-package && electron-forge package",
     "make": "electron-forge make",
-    "clean": "rm -rf out && rm -rf build"
+    "clean": "rimraf build"
   },
   "dependencies": {
     "async-call-rpc": "^6.1.5",
@@ -47,11 +45,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "config": {
-    "forge": {}
-  },
-  "installConfig": {
-    "hoistingLimits": "workspaces"
   }
 }
