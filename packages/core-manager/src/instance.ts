@@ -1,3 +1,5 @@
+import { WritableAtom } from 'nanostores';
+
 import {
   Remote,
   Timeline,
@@ -11,16 +13,17 @@ import {
   ManagerCoreStateTrigger,
   UpdateReason,
 } from '@recative/definitions';
-import { AudioStation } from '@recative/audio-station';
-
 import { OpenPromise, TimeSlicingQueue } from '@recative/open-promise';
-import { WritableAtom } from 'nanostores';
-// eslint-disable-next-line import/no-cycle
-import { SubsequenceManager } from './manager/subsequence/subsequence';
+
+import type { AudioStation } from '@recative/audio-station';
+
 import { AudioHost } from './audio/audioHost';
 import { AudioTrack } from './audio/audioTrack';
 import { TaskQueueManager } from './manager/taskQueue/TaskQueueManager';
+// eslint-disable-next-line import/no-cycle
+import { SubsequenceManager } from './manager/subsequence/subsequence';
 import { Logger, WithLogger } from './LogCollector';
+
 import type { ComponentFunctions, ContentState } from './types';
 
 export interface ProgressReporter {
@@ -39,8 +42,10 @@ export interface InstanceOption {
   managedCoreStateManager: ManagedCoreStateManager;
   contentInstances: Map<string, ContentInstance>;
   showingContentCount: WritableAtom<number>;
-  forEachComponent: (func: (component: Partial<ComponentFunctions>, name: string) => void) => void;
-  getComponent: (name: string) => Partial<ComponentFunctions> | undefined
+  forEachComponent: (
+    func: (component: Partial<ComponentFunctions>, name: string) => void
+  ) => void;
+  getComponent: (name: string) => Partial<ComponentFunctions> | undefined;
   onUpdate: (time: number, progress: number) => void;
   onStuckChange: (stuck: boolean) => void;
   handleStateChange: (state: ContentState) => void;
@@ -71,7 +76,7 @@ export class ContentInstance extends WithLogger {
   /**
    * Is the ContentInstance actual showing, when it is showing itself and parent is also showing
    */
-  showing = false
+  showing = false;
 
   /**
    * Timeline, for scheduling and synchronization
@@ -118,9 +123,9 @@ export class ContentInstance extends WithLogger {
   constructor(public id: string, private option: InstanceOption) {
     super();
 
-    this.parentShowing = option.parentShowing
+    this.parentShowing = option.parentShowing;
     this.logger = option.logger;
-    this.managedCoreStateList.updateTriggers(option.triggers ?? [])
+    this.managedCoreStateList.updateTriggers(option.triggers ?? []);
     this.timeline = new Timeline();
     this.taskQueueManager = new TaskQueueManager(this, option);
     const remote = {
@@ -128,8 +133,10 @@ export class ContentInstance extends WithLogger {
       updateTime: performance.now(),
       stuck: false,
       sync: (time: number, progress: number) => {
-        const diff = (progress - time + remote.updateTime) - remote.progress;
-        this.log(`Video not sync! Sync to ${progress}(at${time}) from ${remote.progress}(at${remote.updateTime}), diff=${diff}`);
+        const diff = progress - time + remote.updateTime - remote.progress;
+        this.log(
+          `Video not sync! Sync to ${progress}(at${time}) from ${remote.progress}(at${remote.updateTime}), diff=${diff}`
+        );
         remote.updateTime = time;
         remote.progress = progress;
         option.getComponent(id)?.sync?.(progress, time);
@@ -151,7 +158,10 @@ export class ContentInstance extends WithLogger {
     this.remote = remote;
     // Since the RemoteTrack initialization requires the component,
     // we delay addition of remote track at component preload
-    this.timeline.addTrack(new MonitorTrack(option.onUpdate, option.onStuckChange), -Infinity);
+    this.timeline.addTrack(
+      new MonitorTrack(option.onUpdate, option.onStuckChange),
+      -Infinity
+    );
     this.audioTrack = new AudioTrack(option.audioStation, id);
     this.audioTrack.logger = this.logger?.extend(`audioTrack(${id})`) || null;
     this.audioTrack.setVolume(option.volume);
@@ -180,7 +190,7 @@ export class ContentInstance extends WithLogger {
     this.audioHost = new AudioHost(
       option.audioStation,
       this.id,
-      this.option.managedCoreStateManager,
+      this.option.managedCoreStateManager
     );
     this.audioHost.setVolume(option.volume);
     this.audioHost.logger = this.logger.extend('audioHost');
@@ -201,7 +211,7 @@ export class ContentInstance extends WithLogger {
    */
   private static validateContentStateChange(
     oldState: ContentState,
-    newState: ContentState,
+    newState: ContentState
   ): boolean {
     if (oldState === newState) {
       return true;
@@ -218,7 +228,11 @@ export class ContentInstance extends WithLogger {
     if (oldState === 'preloading' && newState !== 'ready') {
       return false;
     }
-    if (oldState === 'ready' && newState !== 'destroying' && newState !== 'destroyed') {
+    if (
+      oldState === 'ready' &&
+      newState !== 'destroying' &&
+      newState !== 'destroyed'
+    ) {
       return false;
     }
     if (oldState === 'destroying' && newState !== 'destroyed') {
@@ -240,12 +254,10 @@ export class ContentInstance extends WithLogger {
     }
     if (!ContentInstance.validateContentStateChange(this.state, state)) {
       throw new Error(
-        `Invalid content state transition from ${this.state} to ${state}`,
+        `Invalid content state transition from ${this.state} to ${state}`
       );
     }
-    this.log(
-      `Content instance transit from ${this.state} to ${state}`,
-    );
+    this.log(`Content instance transit from ${this.state} to ${state}`);
     this.state = state;
     if (state === 'preloading') {
       this.timeline.addTrack(new RemoteTrack(this.remote, 200), -1);
@@ -281,11 +293,11 @@ export class ContentInstance extends WithLogger {
   }
 
   updateShowing() {
-    const showing = this.selfShowing && this.parentShowing
+    const showing = this.selfShowing && this.parentShowing;
     if (this.showing === showing) {
-      return
+      return;
     }
-    this.setManagedStateEnabled(showing)
+    this.setManagedStateEnabled(showing);
     this.managedCoreStateDirty = true;
     if (showing) {
       this.option.getComponent(this.id)!.showItself?.();
@@ -294,9 +306,11 @@ export class ContentInstance extends WithLogger {
       });
       this.subsequenceManager.show();
       this.option.showingContentCount.set(
-        this.option.showingContentCount.get() + 1,
+        this.option.showingContentCount.get() + 1
       );
-      this.log(`\`showingContentCount\` increase to ${this.option.showingContentCount.get()}`);
+      this.log(
+        `\`showingContentCount\` increase to ${this.option.showingContentCount.get()}`
+      );
     } else {
       this.option.getComponent(this.id)!.hideItself?.();
       this.option.forEachComponent((component) => {
@@ -304,39 +318,47 @@ export class ContentInstance extends WithLogger {
       });
       this.subsequenceManager.hide();
       this.option.showingContentCount.set(
-        this.option.showingContentCount.get() - 1,
+        this.option.showingContentCount.get() - 1
       );
-      this.log(`\`showingContentCount\` decease to ${this.option.showingContentCount.get()}`);
+      this.log(
+        `\`showingContentCount\` decease to ${this.option.showingContentCount.get()}`
+      );
     }
     this.showing = showing;
   }
 
   show() {
-    this.selfShowing = true
-    this.updateShowing()
+    this.selfShowing = true;
+    this.updateShowing();
   }
 
   hide() {
-    this.selfShowing = false
-    this.updateShowing()
+    this.selfShowing = false;
+    this.updateShowing();
   }
 
   parentShow() {
-    this.parentShowing = true
-    this.updateShowing()
+    this.parentShowing = true;
+    this.updateShowing();
   }
 
   parentHide() {
-    this.parentShowing = false
-    this.updateShowing()
+    this.parentShowing = false;
+    this.updateShowing();
   }
 
   updateManagedCoreState() {
-    let dirty = this.managedCoreStateList.seek(this.timeline.time, UpdateReason.Tick);
-    dirty ||= this.additionalManagedCoreStateList.seek(this.timeline.time, UpdateReason.Tick);
+    let dirty = this.managedCoreStateList.seek(
+      this.timeline.time,
+      UpdateReason.Tick
+    );
+    dirty ||= this.additionalManagedCoreStateList.seek(
+      this.timeline.time,
+      UpdateReason.Tick
+    );
     dirty ||= this.audioHost.updateManagedState();
     dirty ||= this.subsequenceManager.updateManagedState();
-    dirty ||= this.managedCoreStateDirty
+    dirty ||= this.managedCoreStateDirty;
     this.managedCoreStateDirty = false;
     return dirty;
   }
@@ -347,11 +369,19 @@ export class ContentInstance extends WithLogger {
     }
     this.managedStateEnabled = enabled;
     if (!this.managedStateEnabled) {
-      this.option.managedCoreStateManager.removeStateList(this.managedCoreStateList);
-      this.option.managedCoreStateManager.removeStateList(this.additionalManagedCoreStateList);
+      this.option.managedCoreStateManager.removeStateList(
+        this.managedCoreStateList
+      );
+      this.option.managedCoreStateManager.removeStateList(
+        this.additionalManagedCoreStateList
+      );
     } else {
-      this.option.managedCoreStateManager.addStateList(this.managedCoreStateList);
-      this.option.managedCoreStateManager.addStateList(this.additionalManagedCoreStateList);
+      this.option.managedCoreStateManager.addStateList(
+        this.managedCoreStateList
+      );
+      this.option.managedCoreStateManager.addStateList(
+        this.additionalManagedCoreStateList
+      );
     }
     this.audioHost.setManagedStateEnabled(enabled);
   }
@@ -370,24 +400,29 @@ export class ContentInstance extends WithLogger {
   }
 
   setTime(time: number) {
-    this.timeline.time = time
-    this.managedCoreStateDirty ||= this.managedCoreStateList.seek(time, UpdateReason.Manually)
-    this.managedCoreStateDirty ||= this.additionalManagedCoreStateList.seek(time, UpdateReason.Manually)
+    this.timeline.time = time;
+    this.managedCoreStateDirty ||= this.managedCoreStateList.seek(
+      time,
+      UpdateReason.Manually
+    );
+    this.managedCoreStateDirty ||= this.additionalManagedCoreStateList.seek(
+      time,
+      UpdateReason.Manually
+    );
   }
 
   private async internalDestroy() {
-    this.log(
-      'Content instance start to destroy',
-    );
-    await this.option.getComponent(this.id)!.destroyItself?.()?.finally(() => { });
+    this.log('Content instance start to destroy');
+    await this.option
+      .getComponent(this.id)!
+      .destroyItself?.()
+      ?.finally(() => {});
     this.option.forEachComponent((component) => {
       component.destroyContent?.(this.id);
     });
     await this.enterDestroyedState;
     await this.releaseResource();
-    this.log(
-      'Content instance fully destroyed',
-    );
+    this.log('Content instance fully destroyed');
   }
 
   destroy() {

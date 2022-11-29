@@ -5,6 +5,7 @@ import {
   AudioSource,
   AudioStation,
 } from '@recative/audio-station';
+
 import type { RawAudioClipResponse } from '../utils/selectUrlAudioTypePostProcess';
 
 import { WithLogger } from '../LogCollector';
@@ -27,7 +28,7 @@ export class BGM extends WithLogger {
   constructor(
     private mixer: AudioMixer,
     private id: string,
-    audioClipResponsePromise: Promise<RawAudioClipResponse | null>,
+    audioClipResponsePromise: Promise<RawAudioClipResponse | null>
   ) {
     super();
 
@@ -37,7 +38,9 @@ export class BGM extends WithLogger {
     this.loadBGM(audioClipResponsePromise);
   }
 
-  private async loadBGM(audioClipResponsePromise: Promise<RawAudioClipResponse | null>) {
+  private async loadBGM(
+    audioClipResponsePromise: Promise<RawAudioClipResponse | null>
+  ) {
     if (!this.working) {
       return;
     }
@@ -93,7 +96,11 @@ export class BGMManager extends WithLogger {
         newBGMs.set(spec.id, this.currentBGMs.get(spec.id)!);
         this.currentBGMs.delete(spec.id);
       } else {
-        const bgmInstance = new BGM(this.mixer!, spec.id, spec.audioClipResponse);
+        const bgmInstance = new BGM(
+          this.mixer!,
+          spec.id,
+          spec.audioClipResponse
+        );
         bgmInstance.logger = this.logger.extend(`bgm(${spec.id})`);
         newBGMs.set(spec.id, bgmInstance);
       }
