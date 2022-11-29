@@ -202,6 +202,7 @@ export class AudioTrack extends WithLogger implements Track {
         this.url = newUrl;
         this.audioElement?.destroy();
         this.audioElement = createAudioElement(this.mixer!, audioElementInit);
+        this.log(`Audio track ${this.id} loaded, url: ${newUrl}`);
         this.audioElement.volume = this.volume;
         let targetTime = this.cachedProgress / 1000;
         if (this.playing && !this.mixer?.isSuspended()) {
