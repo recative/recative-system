@@ -61,7 +61,7 @@ export const deepUnFreeze = <T extends object>(object: T): T => {
   return object;
 };
 
-export const isFrozen = <T extends object>(object: T) => {
+export const isFrozen = <T>(object: T) => {
   if (Array.isArray(object)) {
     if (!Object.isFrozen(object)) {
       return false;

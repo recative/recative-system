@@ -1,10 +1,10 @@
-import { shell } from 'electron'
+import { shell } from 'electron';
 
 const convertInAppBrowserOption = (
   options?: string | Record<string, string>
-) => {
+): string | undefined => {
   if (!options || typeof options === 'string') {
-    return options;
+    return (options as string) ?? undefined;
   }
   return Object.entries(options)
     .map(([key, value]) => `${key}=${value}`)
@@ -16,22 +16,19 @@ export const InAppBrowserCreate = (
   target?: string,
   options?: string | Record<string, string>
 ) => {
-  // return shell.openExternal(url)
   return window.open(url, target, convertInAppBrowserOption(options));
-}
+};
 
-export const BrowserOpen =  async (option: { url: string; windowName?: string }) => {
-  console.error('BrowserOpen', option)
-  shell.openExternal(option.url)
-}
+export const BrowserOpen = async (option: {
+  url: string;
+  windowName?: string;
+}) => {
+  console.error('BrowserOpen', option);
+  shell.openExternal(option.url);
+};
 
-export const BrowserClose = async () => {
+export const BrowserClose = async () => {};
 
-}
+export const BrowserAddListener = (type: string, listener: () => void) => {};
 
-export const BrowserAddListener = (type: string, listener: () => void) => {
-
-} 
-
-export const BrowserRemoveAllListeners = () => {
-}
+export const BrowserRemoveAllListeners = () => {};

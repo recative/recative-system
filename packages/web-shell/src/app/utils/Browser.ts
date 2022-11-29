@@ -1,8 +1,8 @@
 const convertInAppBrowserOption = (
   options?: string | Record<string, string>
-) => {
+): string | undefined => {
   if (!options || typeof options === 'string') {
-    return options;
+    return options as string;
   }
   return Object.entries(options)
     .map(([key, value]) => `${key}=${value}`)

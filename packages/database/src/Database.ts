@@ -12,8 +12,9 @@ import type {
   ICollectionChange,
 } from './Collection';
 import { delay } from './utils/delay';
-import { PersistenceAdapter, PersistenceAdapterMode } from './adapter/typings';
+import { CloneMethod } from './utils/clone';
 import { MemoryAdapter } from './adapter/memory';
+import { PersistenceAdapter, PersistenceAdapterMode } from './adapter/typings';
 
 export enum SerializationMethod {
   Normal = 'normal',
@@ -1008,7 +1009,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
       copiedCollection.asyncListeners = collection.asyncListeners;
       copiedCollection.cloneObjects = collection.cloneObjects;
       copiedCollection.cloneMethod =
-        collection.cloneMethod || 'parse-stringify';
+        collection.cloneMethod || CloneMethod.ParseStringify;
       copiedCollection.autoupdate = collection.autoupdate;
       copiedCollection.changes = collection.changes;
       // @ts-ignore Let refactor this later

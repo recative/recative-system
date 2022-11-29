@@ -1,8 +1,8 @@
 import type { PluginListenerHandle } from '@capacitor/core';
-export interface MemoryInfoModel{
+export interface MemoryInfoModel {
   platform: string;
   /**
-   * Just usage memory 
+   * Just usage memory
    * unit:byte
    */
   usage: number;
@@ -27,8 +27,8 @@ export interface MemoryPressurePlugin {
   memoryInfo(): Promise<MemoryInfoModel>;
   /**
    * for receive memory warning
-   * @param event 
-   * @param func 
+   * @param event
+   * @param func
    */
   addListener(
     event: 'lowMemoryWarning',
@@ -38,12 +38,5 @@ export interface MemoryPressurePlugin {
   /**
    * Remove all event listeners.
    */
-   removeAllListeners(): Promise<void>;
-}
-declare global {
-  const Capacitor: {
-    Plugins: {
-      MemoryPressure: MemoryPressurePlugin;
-    };
-  };
+  removeAllListeners(): Promise<void>;
 }

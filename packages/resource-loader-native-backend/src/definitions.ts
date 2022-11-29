@@ -1,6 +1,5 @@
 import type { PluginListenerHandle } from '@capacitor/core';
 
-
 /**
  * A download task.
  */
@@ -78,9 +77,9 @@ export interface ITaskStatus {
   message?: string;
 
   /**
-  * Total size of the download in bytes.
-  * If no fetch the size of file this value is -1
-  */
+   * Total size of the download in bytes.
+   * If no fetch the size of file this value is -1
+   */
   total: number;
 
   /**
@@ -89,7 +88,6 @@ export interface ITaskStatus {
    */
   current: number;
 }
-
 
 export interface IFetchFileOption {
   /**
@@ -105,8 +103,8 @@ export interface IQueryFileResponse {
 }
 export interface IFetchFileResponse {
   /**
- * Tasks that valid.
- */
+   * Tasks that valid.
+   */
   data: FetchResultUnit[];
   /**
    * Invalid tasks.
@@ -118,9 +116,8 @@ export interface IDeleteFileOption {
   /**
    * AbsolutePath for delete files
    */
-  files: string[]
+  files: string[];
 }
-
 
 /**
  * A remove file task.
@@ -131,7 +128,6 @@ interface IDeleteFileByIdOption {
    */
   ids: string[];
 }
-
 
 export type FetchResultUnit = IFileDownloadResult;
 
@@ -186,7 +182,7 @@ export interface IUnZipResponse {
 }
 /**
  * list files of speacial directory
- * path support 
+ * path support
  * /:list all files in root directory
  * /folder:list all files in '/folder' directory
  */
@@ -197,9 +193,8 @@ export interface ILSOption {
  * response for LS request
  */
 export interface ILSResponse {
-  files: IFileDescriptionModel[]
+  files: IFileDescriptionModel[];
 }
-
 
 export type FileDownloadListener = (response: IFileDownloadResult) => void;
 export type ErrorListener = (response: IErrorResponse) => void;
@@ -216,7 +211,7 @@ export interface IPluginListenerHandle {
 export interface ResourceLoaderPlugin {
   /**
    * query file state
-   * @param options 
+   * @param options
    */
   queryFile(options: IFetchFileOption): Promise<IFetchFileResponse>;
   /**
@@ -230,9 +225,7 @@ export interface ResourceLoaderPlugin {
   /**
    * Remove a file, or a directory.
    */
-  deleteFile(
-    options: IDeleteFileOption,
-  ): Promise<void>;
+  deleteFile(options: IDeleteFileOption): Promise<void>;
   /**
    * Remove a file, by providing the id of this file.
    */
@@ -257,8 +250,10 @@ export interface ResourceLoaderPlugin {
   /**
    * A listener for tasks that failed.
    */
-  addListener(event: 'onError', func: ErrorListener): Promise<PluginListenerHandle> &
-    PluginListenerHandle;
+  addListener(
+    event: 'onError',
+    func: ErrorListener,
+  ): Promise<PluginListenerHandle> & PluginListenerHandle;
   /**
    * Remove all event listeners.
    */
@@ -275,12 +270,4 @@ export interface ResourceLoaderPlugin {
    * The root directory equals root directory of unzip
    */
   ls(directory: ILSOption): Promise<ILSResponse>;
-}
-
-declare global {
-  const Capacitor: {
-    Plugins: {
-      ResourceLoader: ResourceLoaderPlugin;
-    };
-  };
 }

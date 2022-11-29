@@ -132,7 +132,7 @@ export const lens = <T, P extends ValidLensField, U extends boolean>(
         'The path should be a string if not using not notation option'
       );
     }
-    return Reflect.get(object, path) as LensResult<T, P, U>;
+    return Reflect.get(object as object, path) as LensResult<T, P, U>;
   }
 
   if (
@@ -145,7 +145,7 @@ export const lens = <T, P extends ValidLensField, U extends boolean>(
   }
 
   if (typeof path === 'number' || typeof path === 'symbol') {
-    return Reflect.get(object, path) as LensResult<T, P, U>;
+    return Reflect.get(object as object, path) as LensResult<T, P, U>;
   }
 
   const internalPath =
