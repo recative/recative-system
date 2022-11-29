@@ -178,6 +178,14 @@ ul.menu__list ul.menu__list a.menu__link--sublist::after,
   display: none;
 }
 
+aside.theme-doc-sidebar-container {
+  width: 406px;
+}
+
+aside.theme-doc-sidebar-container > div {
+  width: 406px;
+}
+
 aside.theme-doc-sidebar-container > div > nav.menu > ul.theme-doc-sidebar-menu > li > div.menu__list-item-collapsible > a[href^='#'] {
   padding-left: 54px;
 }
@@ -552,7 +560,7 @@ footer.footer .container.container-fluid {
 }
 
 .blog-wrapper .main-wrapper > .container > .row > aside {
-  max-width: var(--doc-sidebar-width);
+  max-width: 406px;
   min-height: calc(100vh - var(--ifm-footer-height));
   margin-top: calc(-1 * var(--ifm-navbar-height));
   padding: 0 12px;
@@ -564,12 +572,17 @@ footer.footer .container.container-fluid {
 
 .blog-wrapper .main-wrapper > .container > .row > main {
   width: 100%;
-  max-width: calc(100% - var(--doc-sidebar-width));
+  max-width: calc(100% - 406px);
   margin: 0 auto;
   padding-top: 2rem;
   padding-left: calc(var(--ifm-menu-link-padding-horizontal) + 12px);
   flex-grow: 1;
   --ifm-col-width: 100%;
+}
+
+.blog-wrapper .main-wrapper > .container > .row > main > * {
+  max-width: 1320px;
+  margin: 0 auto;
 }
 
 @media (max-width: 996px) {
