@@ -71,11 +71,13 @@
   "packageManager": "yarn@3.3.0",
   "dependencies": {
     "baseui": "12.1.2",
+    "cross-env": "^7.0.3",
     "styletron-engine-monolithic": "1.0.0",
     "styletron-react": "6.1.0"
   },
   "resolutions": {
     "@rollup/plugin-node-resolve": "15.0.1",
+    "@typescript-eslint/typescript-estree": "5.45.0",
     "baseui": "12.1.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",

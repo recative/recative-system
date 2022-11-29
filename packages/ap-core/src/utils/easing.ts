@@ -64,16 +64,16 @@ export const easingFunctions = {
     return (-c / 2) * (Math.cos((Math.PI * t) / d) - 1) + b;
   },
   easeInExpo(t: number, b = 0, c = 1, d = 1) {
-    return t === 0 ? b : c * Math.pow(2, 10 * (t / d - 1)) + b;
+    return t === 0 ? b : c * 2 ** (10 * (t / d - 1)) + b;
   },
   easeOutExpo(t: number, b = 0, c = 1, d = 1) {
-    return t === d ? b + c : c * (-Math.pow(2, (-10 * t) / d) + 1) + b;
+    return t === d ? b + c : c * (-(2 ** ((-10 * t) / d)) + 1) + b;
   },
   easeInOutExpo(t: number, b = 0, c = 1, d = 1) {
     if (t === 0) return b;
     if (t === d) return b + c;
-    if ((t /= d / 2) < 1) return (c / 2) * Math.pow(2, 10 * (t - 1)) + b;
-    return (c / 2) * (-Math.pow(2, -10 * --t) + 2) + b;
+    if ((t /= d / 2) < 1) return (c / 2) * 2 ** (10 * (t - 1)) + b;
+    return (c / 2) * (-(2 ** (-10 * --t)) + 2) + b;
   },
   easeInCirc(t: number, b = 0, c = 1, d = 1) {
     return -c * (Math.sqrt(1 - (t /= d) * t) - 1) + b;
@@ -98,9 +98,9 @@ export const easingFunctions = {
     } else s = (p / (2 * Math.PI)) * Math.asin(c / a);
     return (
       -(
-        a
-        * Math.pow(2, 10 * (t -= 1))
-        * Math.sin(((t * d - s) * (2 * Math.PI)) / p)
+        a *
+        2 ** (10 * (t -= 1)) *
+        Math.sin(((t * d - s) * (2 * Math.PI)) / p)
       ) + b
     );
   },
@@ -116,9 +116,7 @@ export const easingFunctions = {
       s = p / 4;
     } else s = (p / (2 * Math.PI)) * Math.asin(c / a);
     return (
-      a * Math.pow(2, -10 * t) * Math.sin(((t * d - s) * (2 * Math.PI)) / p)
-      + c
-      + b
+      a * 2 ** (-10 * t) * Math.sin(((t * d - s) * (2 * Math.PI)) / p) + c + b
     );
   },
   easeInOutElastic(t: number, b = 0, c = 1, d = 1) {
@@ -134,20 +132,20 @@ export const easingFunctions = {
     } else s = (p / (2 * Math.PI)) * Math.asin(c / a);
     if (t < 1) {
       return (
-        -0.5
-          * (a
-            * Math.pow(2, 10 * (t -= 1))
-            * Math.sin(((t * d - s) * (2 * Math.PI)) / p))
-        + b
+        -0.5 *
+          (a *
+            2 ** (10 * (t -= 1)) *
+            Math.sin(((t * d - s) * (2 * Math.PI)) / p)) +
+        b
       );
     }
     return (
-      a
-        * Math.pow(2, -10 * (t -= 1))
-        * Math.sin(((t * d - s) * (2 * Math.PI)) / p)
-        * 0.5
-      + c
-      + b
+      a *
+        2 ** (-10 * (t -= 1)) *
+        Math.sin(((t * d - s) * (2 * Math.PI)) / p) *
+        0.5 +
+      c +
+      b
     );
   },
   easeOutBounce(t: number, b = 0, c = 1, d = 1) {

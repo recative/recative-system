@@ -27,7 +27,7 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/resource-bridge/**/*.ts"]
+        "lintFilePatterns": ["packages/resource-bridge/src/**/*.ts"]
       }
     },
     "test": {

@@ -111,11 +111,11 @@ export type LensResult<T, P, U> = U extends true
  * may know that a path is *not* nested. In which case, this
  * function avoids a costly string.split('.')
  *
- * examples:
- * getIn({a: 1}, "a") => 1
- * getIn({a: 1}, "a", true) => 1
- * getIn({a: {b: 1}}, ["a", "b"], true) => 1
- * getIn({a: {b: 1}}, "a.b", true) => 1
+ * @examples
+ * getIn({a: 1}, "a")
+ * getIn({a: 1}, "a", true)
+ * getIn({a: {b: 1}}, ["a", "b"], true)
+ * getIn({a: {b: 1}}, "a.b", true)
  */
 export const lens = <T, P extends ValidLensField, U extends boolean>(
   object: T,

@@ -27,7 +27,9 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/video-renderer-native-backend/**/*.ts"]
+        "lintFilePatterns": [
+          "packages/video-renderer-native-backend/src/**/*.ts"
+        ]
       }
     },
     "test": {

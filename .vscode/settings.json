@@ -40,6 +40,7 @@
     "resultdata",
     "resultsdirty",
     "resultset",
+    "Styletron",
     "sublist",
     "textureupdate",
     "Transferables",
@@ -72,6 +73,9 @@
     "editor.defaultFormatter": "vscode.typescript-language-features"
   },
   "[plaintext]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }

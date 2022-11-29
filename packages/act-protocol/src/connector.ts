@@ -1,19 +1,22 @@
 import { AsyncCall } from 'async-call-rpc';
 
 import { logClient, logConnector, logHost } from './log';
-import { IFramePortHostChannel, IFramePortClientChannel } from './messagePortChannel';
+import {
+  IFramePortHostChannel,
+  IFramePortClientChannel,
+} from './messagePortChannel';
 import type { HostFunctions, ContentFunctions } from './protocol';
 
 export const createHostConnector = (
   functions: HostFunctions,
-  $iFrame: HTMLIFrameElement,
+  $iFrame: HTMLIFrameElement
 ) => {
   let destroyed = false;
 
   const destroy = () => {
     destroyed = true;
     logConnector('Destroying connector');
-  }
+  };
 
   logConnector('Creating host connector');
   const channel = new IFramePortHostChannel($iFrame);
@@ -23,7 +26,14 @@ export const createHostConnector = (
     log: { sendLocalStack: true, type: 'pretty' },
   });
 
-  return { connector, channel, destroy };
+  return {
+    connector,
+    channel,
+    destroy,
+    get destroyed() {
+      return destroyed;
+    },
+  };
 };
 
 export const createClientConnector = (functions: ContentFunctions) => {
@@ -32,7 +42,7 @@ export const createClientConnector = (functions: ContentFunctions) => {
   const destroy = () => {
     destroyed = true;
     logConnector('Destroying connector');
-  }
+  };
 
   logConnector('Creating client connector');
   const channel = new IFramePortClientChannel();
@@ -42,5 +52,12 @@ export const createClientConnector = (functions: ContentFunctions) => {
     log: { sendLocalStack: true, type: 'pretty' },
   });
 
-  return { connector, channel, destroy };
+  return {
+    connector,
+    channel,
+    destroy,
+    get destroyed() {
+      return destroyed;
+    },
+  };
 };

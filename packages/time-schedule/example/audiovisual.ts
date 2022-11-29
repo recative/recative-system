@@ -1,8 +1,10 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { AudioMixer, AudioSource, getGlobalAudioStation } from '@recative/audio-station';
 import {
-  Remote, RemoteTrack, Timeline, MonitorTrack,
-} from '../src';
+  AudioMixer,
+  AudioSource,
+  getGlobalAudioStation,
+} from '@recative/audio-station';
+
+import { Remote, RemoteTrack, Timeline, MonitorTrack } from '../src';
 
 const video = document.getElementById('video')! as HTMLVideoElement;
 const progressElement = document.getElementById('progress')!;
@@ -12,10 +14,15 @@ const seek8000 = document.getElementById('seek8000')!;
 
 const timeline = new Timeline();
 
-timeline.addTrack(new MonitorTrack((progress, time) => {
-  progressElement.innerHTML = `${time}`;
-  return false;
-}, () => {}));
+timeline.addTrack(
+  new MonitorTrack(
+    (progress, time) => {
+      progressElement.innerHTML = `${time}`;
+      return false;
+    },
+    () => {}
+  )
+);
 
 let videoSuspended = false;
 let videoPlaying = false;
@@ -71,7 +78,8 @@ activate!.addEventListener('click', () => {
   station.activate();
 });
 Promise.all([
-  station.load(new URL('./tmpMo4GJT.mp3', import.meta.url).toString()), station.activate(),
+  station.load(new URL('./tmpMo4GJT.mp3', import.meta.url).toString()),
+  station.activate(),
 ]).then(([clip]) => {
   activate.style.display = 'none';
   const mixer = new AudioMixer(station);
@@ -81,7 +89,10 @@ Promise.all([
   const updateTime = (force: boolean = false) => {
     const time = performance.now();
     if (source.isPlaying() && !mixer.isSuspended()) {
-      if (force || source.time * 1000 - lastProgress > (time - lastUpdateTime) * 0.01) {
+      if (
+        force ||
+        source.time * 1000 - lastProgress > (time - lastUpdateTime) * 0.01
+      ) {
         lastProgress = source.time * 1000;
         lastUpdateTime = time;
       }
@@ -90,54 +101,58 @@ Promise.all([
       lastUpdateTime = time;
     }
   };
-  timeline.addTrack({
-    play: () => {
-      console.log('audio play');
-      updateTime(false);
-      source.play();
-    },
-    pause: () => {
-      console.log('audio pause');
-      updateTime(false);
-      source.pause();
-    },
-    suspend: () => {
-      updateTime(false);
-      mixer.suspend();
-    },
-    resume: () => {
-      updateTime(false);
-      mixer.resume();
-    },
-    seek: (time: number, progress: number) => {
-      console.log('audio seek');
-      const target = progress + performance.now() - time;
-      console.log(progress, performance.now(), time);
-      console.log(target);
-      source.time = target / 1000;
-      updateTime(true);
-    },
-    check() {
-      updateTime(false);
-      return {
-        time: lastUpdateTime, progress: lastProgress,
-      };
-    },
-    update: (time: number, progress: number) => {
-      updateTime(false);
-      const now = performance.now();
-      const target = progress + now - time;
-      const current = lastProgress + now - lastUpdateTime;
-      if (Math.abs(target - current) > 33) {
-        console.log(progress, now, time);
-        console.log(lastProgress, now, lastUpdateTime);
-        console.log(target, current);
-        source.time = (target) / 1000;
+  timeline.addTrack(
+    {
+      play: () => {
+        console.log('audio play');
+        updateTime(false);
+        source.play();
+      },
+      pause: () => {
+        console.log('audio pause');
+        updateTime(false);
+        source.pause();
+      },
+      suspend: () => {
+        updateTime(false);
+        mixer.suspend();
+      },
+      resume: () => {
+        updateTime(false);
+        mixer.resume();
+      },
+      seek: (time: number, progress: number) => {
+        console.log('audio seek');
+        const target = progress + performance.now() - time;
+        console.log(progress, performance.now(), time);
+        console.log(target);
+        source.time = target / 1000;
         updateTime(true);
-      }
-      return false;
+      },
+      check() {
+        updateTime(false);
+        return {
+          time: lastUpdateTime,
+          progress: lastProgress,
+        };
+      },
+      update: (time: number, progress: number) => {
+        updateTime(false);
+        const now = performance.now();
+        const target = progress + now - time;
+        const current = lastProgress + now - lastUpdateTime;
+        if (Math.abs(target - current) > 33) {
+          console.log(progress, now, time);
+          console.log(lastProgress, now, lastUpdateTime);
+          console.log(target, current);
+          source.time = target / 1000;
+          updateTime(true);
+        }
+        return false;
+      },
     },
-  }, 1);
+    1
+  );
   timeline.play();
 });
 

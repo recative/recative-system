@@ -27,7 +27,7 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/smart-resource/**/*.ts"]
+        "lintFilePatterns": ["packages/smart-resource/src/**/*.ts"]
       }
     },
     "test": {

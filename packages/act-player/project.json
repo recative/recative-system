@@ -27,7 +27,7 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/act-player/**/*.ts"]
+        "lintFilePatterns": ["packages/act-player/src/**/*.ts"]
       }
     },
     "test": {

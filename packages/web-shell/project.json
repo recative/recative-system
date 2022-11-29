@@ -18,10 +18,10 @@
       }
     },
     "lint": {
-      "executor": "@nrwl/workspace:run-commands",
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
       "options": {
-        "command": "yarn lint",
-        "cwd": "packages/web-shell"
+        "lintFilePatterns": ["packages/web-shell/src/**/*.ts"]
       }
     },
     "test": {

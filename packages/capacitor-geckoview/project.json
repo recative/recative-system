@@ -15,17 +15,6 @@
           "target": "build"
         }
       ]
-    },
-    "lint": {
-      "executor": "@nrwl/linter:eslint",
-      "outputs": [
-        "{options.outputFile}"
-      ],
-      "options": {
-        "lintFilePatterns": [
-          "packages/capacitor-geckoview/**/*.ts"
-        ]
-      }
     }
   },
   "tags": []

@@ -27,7 +27,7 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/time-schedule/**/*.ts"]
+        "lintFilePatterns": ["packages/time-schedule/src/**/*.ts"]
       }
     },
     "test": {

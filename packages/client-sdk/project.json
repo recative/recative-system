@@ -27,7 +27,7 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/client-sdk/**/*.ts"]
+        "lintFilePatterns": ["packages/client-sdk/src/**/*.ts"]
       }
     },
     "test": {

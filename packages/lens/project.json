@@ -27,7 +27,7 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/lens/**/*.ts"]
+        "lintFilePatterns": ["packages/lens/src/**/*.ts"]
       }
     },
     "test": {

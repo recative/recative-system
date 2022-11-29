@@ -27,7 +27,7 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/ugly-json/**/*.ts"]
+        "lintFilePatterns": ["packages/ugly-json/src/**/*.ts"]
       }
     },
     "test": {
