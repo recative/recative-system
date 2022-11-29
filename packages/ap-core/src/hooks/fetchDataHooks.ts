@@ -22,13 +22,19 @@ export const useRemoteJsonDataSource = <T>(url: string, init?: RequestInit) => {
   return [fetchData, subscribeDataUpdate] as const;
 };
 
-export type QueryResult<V> = {
+export interface ISuccessResponse<V> {
   success: true,
   data: V,
-} | {
+}
+
+export interface IFailedResponse {
   success: false,
   error: unknown,
-};
+}
+
+export type QueryResult<V> =
+ | ISuccessResponse<V>
+ | IFailedResponse;
 
 export const defaultQueryFn = async<K, V>(url: K | null) => {
   if (url === null) {
@@ -49,7 +55,7 @@ export const useQuery = <Key, Value>(
   subscribeQueryKey: Subscribable<Key>,
   queryFn: (key: Key | null) => Promise<Value> = defaultQueryFn,
 ) => {
-  const keyDataSource = useDataSource<Key | null>(null);
+  const keyDataSource = useDataSource<Key | null>(null, false);
   const queryKeyController = subscribeQueryKey((key) => {
     keyDataSource.data = key;
   });

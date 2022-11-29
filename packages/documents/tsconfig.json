@@ -1,16 +1,16 @@
 {
-  "extends": "@tsconfig/docusaurus/tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "forceConsistentCasingInFileNames": true,
+    "target": "esnext",
     "strict": true,
-    "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
     "jsx": "react-jsx",
+    "types": ["react/next", "react-dom/next"]
   },
-  "include": [
-    "../**/*"
-  ]
+  "include": ["../**/*"],
+  "exclude": ["**/example/**/*"]
 }

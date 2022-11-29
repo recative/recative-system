@@ -1,9 +1,9 @@
-import dts from "rollup-plugin-dts";
-import resolve from "@rollup/plugin-node-resolve";
+import dts from 'rollup-plugin-dts';
+import resolve from '@rollup/plugin-node-resolve';
 import sucrase from '@rollup/plugin-sucrase';
-import external from "rollup-plugin-peer-deps-external";
+import external from 'rollup-plugin-peer-deps-external';
 
-const packageJson = require("./package.json");
+const packageJson = require('./package.json');
 
 export default [
   {
@@ -11,34 +11,34 @@ export default [
     output: [
       {
         file: packageJson.main,
-        format: "cjs",
+        format: 'cjs',
         sourcemap: true,
       },
       {
         file: packageJson.module,
-        format: "esm",
+        format: 'esm',
         sourcemap: true,
       },
     ],
     plugins: [
       external({
-        includeDependencies: true
+        includeDependencies: true,
       }),
       resolve({
-        extensions: ['.js', '.ts', '.tsx']
+        extensions: ['.js', '.ts', '.tsx'],
       }),
       sucrase({
         exclude: ['node_modules/**'],
-        transforms: ['jsx', 'typescript']
+        transforms: ['jsx', 'typescript'],
       }),
-    ]
+    ],
   },
   {
-    input: "src/index.ts",
+    input: 'src/index.ts',
     output: [
       {
         file: packageJson.types,
-        format: "es",
+        format: 'es',
         sourcemap: true,
       },
     ],

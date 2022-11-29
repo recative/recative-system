@@ -13,11 +13,22 @@
     "core-manager": "packages/core-manager",
     "definitions": "packages/definitions",
     "documents": "packages/documents",
+    "mobile-shell": "packages/mobile-shell",
     "open-promise": "packages/open-promise",
+    "phonograph": "packages/phonograph",
     "resource-bridge": "packages/resource-bridge",
     "resource-loader": "packages/resource-loader",
     "smart-resource": "packages/smart-resource",
     "time-schedule": "packages/time-schedule",
-    "ugly-json": "packages/ugly-json"
+    "database": "packages/database",
+    "ugly-json": "packages/ugly-json",
+    "web-shell": "packages/web-shell",
+    "capacitor-geckoview": "packages/capacitor-geckoview",
+    "desktop-shell": "packages/desktop-shell",
+    "lens": "packages/lens",
+    "video-renderer-native-backend": "packages/video-renderer-native-backend",
+    "think-data-native-backend": "packages/think-data-native-backend",
+    "device-pressure-measurement-native-backend": "packages/device-pressure-measurement-native-backend",
+    "resource-loader-native-backend": "packages/resource-loader-native-backend"
   }
 }

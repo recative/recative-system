@@ -6,6 +6,14 @@ export type GoToEpisode = (
   assetTime?: number
 ) => void;
 
+export type RawGoToEpisode = (
+  seek: (assetOrder: number, assetTime: number) => void,
+  episode: string,
+  forceReload?: boolean,
+  assetOrder?: number,
+  assetTime?: number,
+) => void;
+
 export interface ShowVideoModalUrlRequest {
   title?: string;
   url: string;
@@ -35,7 +43,7 @@ export interface PaymentRequest {
   type: string;
 }
 
-export interface UserImplementedFunctions{
+export interface RawUserImplementedFunctions {
   /**
    * Finish the current episode
    */
@@ -93,5 +101,9 @@ export interface UserImplementedFunctions{
    * Customized action for third party extension
    */
   customizedActionRequest(request: CustomizedActionRequest): unknown;
-  gotoEpisode: GoToEpisode;
+  gotoEpisode: RawGoToEpisode;
 }
+
+export type UserImplementedFunctions = Omit<RawUserImplementedFunctions, 'gotoEpisode'> & {
+  gotoEpisode: GoToEpisode;
+};

@@ -3,7 +3,7 @@ import cn from 'classnames';
 import { useStore } from '@nanostores/react';
 import { useStyletron } from 'baseui';
 
-import type { Core } from '@recative/core-manager';
+import type { EpisodeCore } from '@recative/core-manager';
 
 import { Block } from 'baseui/block';
 
@@ -63,7 +63,7 @@ const useStyles = () => {
         },
       } as unknown as string,
     }),
-    [],
+    [css, theme.animation.timing300],
   );
 
   const timeStyles = React.useMemo(
@@ -84,7 +84,12 @@ const useStyles = () => {
         display: 'none',
       },
     }),
-    [theme.colors.white, theme.typography.DisplaySmall.fontFamily],
+    [
+      css,
+      theme.colors.white,
+      theme.typography.LabelSmall.fontFamily,
+      theme.typography.LabelSmall.fontSize,
+    ],
   );
 
   return {
@@ -95,7 +100,7 @@ const useStyles = () => {
   };
 };
 interface IControllerProps {
-  core: Core;
+  core: EpisodeCore;
   loadingComponent?: React.FC;
 }
 interface IControllerConfig {

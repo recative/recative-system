@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Recative Mobile Shell</string>
+    <string name="title_activity_main">Recative Mobile Shell</string>
+    <string name="package_name">io.github.recative.mobile_shell</string>
+    <string name="custom_url_scheme">io.github.recative.mobile_shell</string>
+</resources>

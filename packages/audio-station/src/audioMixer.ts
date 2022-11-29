@@ -1,7 +1,16 @@
 import type { AudioContext, GainNode } from 'standardized-audio-context';
 
+import EventTarget from '@ungap/event-target';
 import type { AudioSource } from './audioSource';
 import type { AudioStation } from './audioStation';
+
+export type CustomEventHandler<T> = (event:CustomEvent<T>)=>void;
+export type AudioMixerEventTarget = EventTarget & {
+  addEventListener(type: 'resume', callback:CustomEventHandler<undefined>):void,
+  addEventListener(type: 'suspend', callback:CustomEventHandler<undefined>):void,
+  addEventListener(type: 'destroy', callback:CustomEventHandler<undefined>):void,
+};
+
 /**
  * The audio mixer
  */
@@ -11,6 +20,8 @@ export class AudioMixer {
   node: GainNode<AudioContext> | null;
 
   sources: Set<AudioSource>;
+
+  readonly eventTarget = new EventTarget() as AudioMixerEventTarget;
 
   private suspended = false;
 
@@ -34,6 +45,7 @@ export class AudioMixer {
     Array.from(this.sources).forEach((source) => {
       source.destroy();
     });
+    this.eventTarget.dispatchEvent(new CustomEvent('destroy'));
     this.node?.disconnect();
     this.node = null;
   }
@@ -53,6 +65,7 @@ export class AudioMixer {
     this.sources.forEach((source) => {
       source.suspend();
     });
+    this.eventTarget.dispatchEvent(new CustomEvent('suspend'));
   }
 
   /**
@@ -63,6 +76,7 @@ export class AudioMixer {
     this.sources.forEach((source) => {
       source.resume();
     });
+    this.eventTarget.dispatchEvent(new CustomEvent('resume'));
   }
 
   /**

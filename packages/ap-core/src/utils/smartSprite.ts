@@ -3,7 +3,8 @@ import * as PIXI from 'pixi.js-legacy';
 import { IResourceFileForClient } from '@recative/definitions';
 import { getMatchedResource, ResourceEntry } from '@recative/smart-resource';
 
-import { useQuery } from '../hooks/fetchDataHooks';
+import { OpenPromise, OpenPromiseState } from '@recative/open-promise';
+import { IFailedResponse, useQuery } from '../hooks/fetchDataHooks';
 import { DataSource, useCombinator, useSelector } from '../core/DataSource';
 import {
   DefaultTagDataSource,
@@ -19,6 +20,7 @@ import {
 import type { DataSourceNode, DataSourceNodeController, Subscribable } from '../types/dataSource';
 import { useEventTarget } from '../hooks/baseHooks';
 import { CHECK_SMART_TEXTURE_RELEASE } from './smartTextureReleaseChecker';
+import { NEW_INITIALIZE_TASK } from '../core/actPointManager';
 
 const useSmartTextureInfo = (
   labelDataSource: Subscribable<string>,
@@ -45,7 +47,10 @@ const useSmartTextureInfo = (
         return null;
       }
       if (!metadataResponse?.success) {
-        console.warn('Failed to get metadata:', metadataResponse.error);
+        console.warn(
+          'Failed to get metadata:',
+          (metadataResponse as IFailedResponse).error,
+        );
         return null;
       }
       const metadata = metadataResponse.data;
@@ -95,7 +100,10 @@ const useSmartTextureInfo = (
         return null;
       }
       if (!textureInfoResponse?.success) {
-        console.warn('Failed to generate SmartTextureInfo:', textureInfoResponse.error);
+        console.warn(
+          'Failed to generate SmartTextureInfo:',
+          (textureInfoResponse as IFailedResponse).error,
+        );
         return {};
       }
       return textureInfoResponse.data;
@@ -135,6 +143,10 @@ export class SmartSprite extends PIXI.Sprite {
 
   private eventTarget: ReturnType<typeof useEventTarget>;
 
+  private pendingTexture: PIXI.Texture | null = null;
+
+  private firstTextureUpdated = new OpenPromise<void>
+
   constructor(option: SmartSpriteOption) {
     super(PIXI.Texture.EMPTY);
     this.autoReleaseTexture = option.autoReleaseTexture ?? false;
@@ -150,6 +162,7 @@ export class SmartSprite extends PIXI.Sprite {
     this.smartTextureInfoController = this.smartTextureInfoDataSource(this.updateTexture);
     this.updateTexture(this.smartTextureInfoController.getter());
     this.eventTarget = useEventTarget();
+    this.eventTarget.fire(NEW_INITIALIZE_TASK, this.firstTextureUpdated)
     if (this.autoReleaseTexture) {
       this.eventTarget.on(CHECK_SMART_TEXTURE_RELEASE, this.checkTextureRelease);
     }
@@ -165,32 +178,55 @@ export class SmartSprite extends PIXI.Sprite {
 
     return new PIXI.Texture(
       baseTexture,
-      smartTextureInfo.frame, smartTextureInfo.orig, smartTextureInfo.trim, smartTextureInfo.rotate,
+      smartTextureInfo.frame,
+      smartTextureInfo.orig,
+      smartTextureInfo.trim,
+      smartTextureInfo.rotate,
     );
   }
-
-  private onTextureUpdate = () => {
-    this.emit('textureupdate', {});
-  };
 
   private updateTexture = (smartTextureInfo: SmartTextureInfo | null) => {
     if (smartTextureInfo === null) {
       return;
     }
-    const oldTexture = super.texture;
-    const oldUrl = oldTexture.baseTexture.cacheId;
+    if (this.pendingTexture !== null) {
+      const oldTexture = this.pendingTexture;
+      const oldUrl = oldTexture.baseTexture.cacheId;
+      oldTexture.destroy();
+      this.smartTextureRc.release(oldUrl);
+    }
     const texture = this.createTextureFromSmartTextureInfo(smartTextureInfo);
-    super.texture = texture;
-    oldTexture.destroy();
-    this.smartTextureRc.release(oldUrl);
+    this.pendingTexture = texture;
 
     // wait for the texture to load
     if (texture.baseTexture.valid) {
-      this.onTextureUpdate();
+      this.applyPendingTexture();
     } else {
-      texture.once('update', this.onTextureUpdate, this);
+      texture.once('update', () => {
+        if (texture === this.pendingTexture) {
+          this.applyPendingTexture();
+        }
+      }, this);
     }
   };
+
+  private applyPendingTexture() {
+    if (this.pendingTexture !== null) {
+      const oldTexture = super.texture;
+      const oldUrl = oldTexture.baseTexture?.cacheId;
+      super.texture = this.pendingTexture;
+      this.pendingTexture = null;
+      if (oldTexture !== null) {
+        oldTexture.destroy();
+        this.smartTextureRc.release(oldUrl);
+      }
+      this.emit('textureupdate', {});
+      if (this.firstTextureUpdated.state === OpenPromiseState.Idle
+        || this.firstTextureUpdated.state === OpenPromiseState.Pending) {
+        this.firstTextureUpdated.resolve()
+      }
+    }
+  }
 
   private checkTextureRelease = () => {
     this.textureReleasedDataSource.data = !this.worldVisible;

@@ -27,11 +27,27 @@
       "@recative/definitions": ["packages/definitions/src/index.ts"],
       "@recative/documents": ["packages/documents/src/index.ts"],
       "@recative/open-promise": ["packages/open-promise/src/index.ts"],
+      "@recative/phonograph": ["packages/phonograph/src/index.ts"],
       "@recative/resource-bridge": ["packages/resource-bridge/src/index.ts"],
       "@recative/resource-loader": ["packages/resource-loader/src/index.ts"],
       "@recative/smart-resource": ["packages/smart-resource/src/index.ts"],
       "@recative/time-schedule": ["packages/time-schedule/src/index.ts"],
-      "@recative/ugly-json": ["packages/ugly-json/src/index.ts"]
+      "@recative/database": ["packages/database/src/index.ts"],
+      "@recative/ugly-json": ["packages/ugly-json/src/index.ts"],
+      "@recative/desktop-shell": ["packages/desktop-shell/src/index.ts"],
+      "@recative/lens": ["packages/lens/src/index.ts"],
+      "@recative/device-pressure-measurement-native-backend": [
+        "packages/device-pressure-measurement-native-backend/src/index.ts"
+      ],
+      "@recative/think-data-native-backend": [
+        "packages/think-data-native-backend/src/index.ts"
+      ],
+      "@recative/video-renderer-native-backend": [
+        "packages/video-renderer-native-backend/src/index.ts"
+      ],
+      "@recative/resource-loader-native-backend": [
+        "packages/resource-loader-native-backend/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]

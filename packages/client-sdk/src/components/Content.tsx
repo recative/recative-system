@@ -1,13 +1,30 @@
-/* eslint-disable @typescript-eslint/comma-dangle */
 import * as React from 'react';
 import debug from 'debug';
+import { atom } from 'nanostores';
+import { useStore } from '@nanostores/react';
 
-import { ActPlayer } from '@recative/act-player';
-import type { IActPointProps } from '@recative/act-player';
-import type { UserImplementedFunctions } from '@recative/definitions';
-import type { Core, IInitialAssetStatus } from '@recative/core-manager';
+import { ActPlayer, InterfaceExtensionComponent } from '@recative/act-player';
+import {
+  SeriesCore,
+  EndEventDetail,
+  SegmentEndEventDetail,
+  InitializedEventDetail,
+  SegmentStartEventDetail,
+  IUserRelatedEnvVariable,
+} from '@recative/core-manager';
 
-import { fetch } from '../utils/fetch';
+import type { RawUserImplementedFunctions } from '@recative/definitions';
+import type {
+  IEpisodeMetadata,
+  ISeriesCoreConfig,
+} from '@recative/core-manager';
+
+import { useInjector } from './hooks/useInjector';
+import { useSeriesCore } from './hooks/useSeriesCore';
+import { useCustomEventWrapper } from './hooks/useCustomEventWrapper';
+
+import type { PlayerPropsInjectorHook } from './hooks/useInjector';
+
 import { loadCustomizedModule } from '../utils/loadCustomizedModule';
 
 import { useSdkConfig } from '../hooks/useSdkConfig';
@@ -15,246 +32,293 @@ import { useEpisodeDetail } from '../hooks/useEpisodeDetail';
 import { useMemoryLeakFixer } from '../hooks/useMemoryLeakFixer';
 import { useResetAssetStatusCallback } from '../hooks/useResetAssetStatusCallback';
 
+import { useDataFetcher } from './hooks/useDataFetcher';
 import { CONTAINER_COMPONENT } from '../constant/storageKeys';
+import { useEpisodeIdNormalizer } from './hooks/useEpisodeIdNormalizer';
+import { useDiagnosisInformation } from '../hooks/useDiagnosisInformation';
 
-const log = debug('client:content-sdk');
+const error = debug('sdk:content:error');
+// This is on purpose
+// eslint-disable-next-line no-console
+error.log = console.error.bind(console);
 
-const ON_END = () => log('[DEFAULT] All content ended');
-const ON_SEGMENT_END = (segment: number) => log(`[DEFAULT] Segment ${segment} ended`);
-const ON_SEGMENT_START = (segment: number) => log(`[DEFAULT] Segment ${segment} started`);
+const VOID_ATOM = atom('void' as const);
 
-const usePlayerPropsDefaultHook = () => ({
-  injectToPlayer: {
-    onEnd: ON_END,
-    onSegmentEnd: ON_SEGMENT_END,
-    onSegmentStart: ON_SEGMENT_START,
-  },
-  injectToContainer: undefined,
-});
+export interface IContentProps<
+  PlayerPropsInjectedDependencies,
+  EnvVariable extends Record<string, unknown>,
+> {
+  episodeId: string | undefined;
+  userImplementedFunctions?: Partial<RawUserImplementedFunctions>;
+  preferredUploaders: string[];
+  trustedUploaders: string[];
+  envVariable: EnvVariable | undefined;
+  userData: IUserRelatedEnvVariable | undefined;
+  LoadingComponent?: React.FC;
+  attemptAutoplay?: IEpisodeMetadata['attemptAutoplay'];
+  defaultContentLanguage?: IEpisodeMetadata['defaultContentLanguage'];
+  defaultSubtitleLanguage?: IEpisodeMetadata['defaultSubtitleLanguage'];
+  playerPropsHookDependencies: PlayerPropsInjectedDependencies;
+  onEpisodeIdUpdate: ISeriesCoreConfig['navigate'],
+  onEnd?: (x: EndEventDetail) => void;
+  onSegmentEnd?: (x: SegmentEndEventDetail) => void;
+  onSegmentStart?: (x: SegmentStartEventDetail) => void;
+  onInitialized?: (x: InitializedEventDetail) => void;
+}
 
-const DefaultContainerComponent: React.FC = ({ children }) => (
+const FULL_WIDTH_STYLE = { width: '100%', height: '100%' };
+
+const DefaultContainerComponent: React.FC<React.PropsWithChildren<{}>> = ({ children }) => (
   // eslint-disable-next-line react/forbid-dom-props
-  <div className="demoContainer" style={{ width: '100%', height: '100%' }}>
+  <div className="demoContainer" style={FULL_WIDTH_STYLE}>
     {children}
   </div>
 );
 
+const hostSearchParameters: Record<string, string> = {};
+
+if (typeof window !== 'undefined') {
+  new URLSearchParams(window.location.search).forEach((value, key) => {
+    hostSearchParameters[key] = value;
+  });
+}
+
 const DefaultContainerModule = {
   Container: DefaultContainerComponent,
 };
-
-interface IContentModule<PlayerPropsInjectedDependencies> {
-  Container?: React.FC<any>;
-  interfaceComponents?: React.FC<any>[];
-  usePlayerProps?: (props: {
-    episodeId?: string;
-    dependencies: PlayerPropsInjectedDependencies;
-    coreRef: React.RefObject<Core>;
-    userImplementedFunctions: Partial<UserImplementedFunctions> | undefined;
-  }) => {
-    injectToPlayer?: Partial<IActPointProps>;
-    injectToContainer?: Record<string, unknown>;
-  };
-}
-
-export interface IContentProps<EnvVariable> {
-  episodeId: string | undefined;
-  initialAsset: IInitialAssetStatus | undefined;
-  userImplementedFunctions: Partial<UserImplementedFunctions> | undefined;
-  preferredUploaders: string[];
-  trustedUploaders: string[];
-  envVariable: EnvVariable | undefined;
-  loadingComponent?: React.FC<{}>;
-  playerPropsHookDependencies?: any;
-  onEnd?: () => void;
-  onSegmentEnd?: (segment: number) => void;
-  onSegmentStart?: (segment: number) => void;
-  onInitialized?: () => void;
+export interface IContentModule<
+  PlayerPropsInjectedDependencies,
+  EnvVariable extends Record<string, unknown>,
+> {
+  Container?: React.FC<React.PropsWithChildren>;
+  interfaceComponents?: InterfaceExtensionComponent[];
+  usePlayerProps?: PlayerPropsInjectorHook<PlayerPropsInjectedDependencies, EnvVariable>;
 }
 
 export const ContentModuleFactory = <
+  PlayerPropsInjectedDependencies,
   EnvVariable extends Record<string, unknown>,
-  ContentModule
 >(
-    pathPattern: string,
-    dataType: string,
-    baseUrl = '',
-  ) => React.lazy(async () => {
-    const debugContainerComponents = localStorage.getItem(CONTAINER_COMPONENT);
+  pathPattern: string,
+  dataType: string,
+  baseUrl = '',
+) => React.lazy(async () => {
+  const debugContainerComponents = localStorage.getItem(CONTAINER_COMPONENT);
 
-    const containerModule = await (async () => {
-      try {
-        return (await loadCustomizedModule(
-          debugContainerComponents || 'containerComponents.js',
-          pathPattern,
-          dataType,
-          debugContainerComponents ? null : baseUrl,
-        )) as IContentModule<ContentModule>;
-      } catch (e) {
-        console.warn('Failed to load customized module!');
-        console.error(e);
-        return DefaultContainerModule as IContentModule<ContentModule>;
-      }
-    })();
+  const containerModule = await (async () => {
+    try {
+      return (await loadCustomizedModule(
+        debugContainerComponents || 'containerComponents.js',
+        pathPattern,
+        dataType,
+        debugContainerComponents ? null : baseUrl,
+      )) as IContentModule<PlayerPropsInjectedDependencies, EnvVariable>;
+    } catch (e) {
+      error('Failed to load customized module!', e);
+      return DefaultContainerModule as IContentModule<
+        PlayerPropsInjectedDependencies, EnvVariable
+      >;
+    }
+  })();
+
+  const {
+    usePlayerProps: internalUsePlayerPropsHook,
+    Container,
+    interfaceComponents,
+  } = containerModule;
+
+  const ContainerComponent: React.FC<
+    React.PropsWithChildren<Record<string, unknown>>
+  > = Container || DefaultContainerComponent;
+
+  type ContentProps = IContentProps<PlayerPropsInjectedDependencies, EnvVariable>;
+
+  const Content = ({
+    children,
+    episodeId: rawEpisodeId,
+    envVariable,
+    userData,
+    LoadingComponent,
+    preferredUploaders,
+    trustedUploaders,
+    userImplementedFunctions,
+    playerPropsHookDependencies,
+    onEpisodeIdUpdate,
+    attemptAutoplay,
+    defaultContentLanguage,
+    defaultSubtitleLanguage,
+    onEnd: playerOnEnd,
+    onSegmentEnd: playerOnSegmentEnd,
+    onSegmentStart: playerOnSegmentStart,
+    onInitialized: playerOnInitialized,
+    ...props
+  }: React.PropsWithChildren<ContentProps>) => {
+    useMemoryLeakFixer();
+
+    const config = useSdkConfig();
+    const seriesCoreRef = React.useRef<SeriesCore<EnvVariable>>();
+    const normalizeEpisodeId = useEpisodeIdNormalizer();
+
+    const episodeId = React.useMemo(
+      () => {
+        try {
+          return normalizeEpisodeId(rawEpisodeId);
+        } catch (e) {
+          return undefined;
+        }
+      },
+      [normalizeEpisodeId, rawEpisodeId],
+    );
+
+    const episodeDetail = useEpisodeDetail(episodeId ?? null);
+
+    const dataFetcher = useDataFetcher();
+
+    const diagnosisInformation = useDiagnosisInformation();
+
+    const injectedEnvVariable = React.useMemo(() => ({
+      episodeId,
+      assets: episodeDetail?.assets,
+      episode: episodeDetail?.episode,
+      hostSearchParameters,
+      diagnosisInformation,
+      ...envVariable,
+    } as unknown as EnvVariable), [
+      episodeId,
+      episodeDetail?.assets,
+      episodeDetail?.episode,
+      diagnosisInformation,
+      envVariable
+    ]);
+
+    const injectedUserImplementedFunctions = React.useMemo<
+      Partial<RawUserImplementedFunctions>
+    >(() => ({
+      ...userImplementedFunctions,
+      dataFetcher,
+      gotoEpisode: (_, nextEpisodeId, forceReload, assetOrder, assetTime) => {
+        if (!seriesCoreRef.current) {
+          throw new TypeError('Series core is not initialized, this is not allowed');
+        }
+
+        const normalizedEpisodeId = normalizeEpisodeId(nextEpisodeId);
+
+        if (normalizeEpisodeId === undefined) {
+          throw new TypeError(`Unable to normalize the episode id ${nextEpisodeId}`);
+        }
+
+        seriesCoreRef.current.setEpisode(
+          normalizedEpisodeId || '',
+          forceReload,
+          assetOrder,
+          assetTime,
+        );
+      },
+    }), [dataFetcher, normalizeEpisodeId, userImplementedFunctions]);
 
     const {
-      usePlayerProps: internalUsePlayerProps,
-      Container,
-      interfaceComponents,
-    } = containerModule;
-    const ContainerComponent: React.FC<any> = Container || DefaultContainerComponent;
-    const usePlayerProps = internalUsePlayerProps ?? usePlayerPropsDefaultHook;
-
-    const Content = ({
-      children,
-      episodeId,
-      envVariable,
-      initialAsset,
-      loadingComponent,
+      hookOnEnd,
+      hookOnSegmentEnd,
+      hookOnSegmentStart,
+      hookUserImplementedFunctions,
+      hookEnvVariable,
+      hookUserData,
+      injectToSdk,
+      injectToContainer,
+      injectToPlayer,
+      getEpisodeMetadata: getInjectedEpisodeMetadata,
+    } = useInjector<PlayerPropsInjectedDependencies, EnvVariable>(
+      episodeId ?? null,
       preferredUploaders,
       trustedUploaders,
-      userImplementedFunctions,
+      injectedEnvVariable,
+      userData,
+      episodeDetail,
+      internalUsePlayerPropsHook,
       playerPropsHookDependencies,
-      onEnd: playerOnEnd,
-      onSegmentEnd: playerOnSegmentEnd,
-      onSegmentStart: playerOnSegmentStart,
-      onInitialized: playerOnInitialized,
-      ...props
-    }: React.PropsWithChildren<IContentProps<EnvVariable>>) => {
-      const config = useSdkConfig();
-      const coreRef = React.useRef<Core<EnvVariable>>(null);
+      injectedUserImplementedFunctions,
+      onEpisodeIdUpdate,
+      seriesCoreRef,
+    );
 
-      useMemoryLeakFixer();
+    const injectedEpisodeMetadata = React.useMemo(() => ({
+      attemptAutoplay: injectToSdk?.attemptAutoplay ?? attemptAutoplay,
+      defaultContentLanguage: injectToSdk?.defaultContentLanguage ?? defaultContentLanguage,
+      defaultSubtitleLanguage: injectToSdk?.defaultSubtitleLanguage ?? defaultSubtitleLanguage,
+    }), [
+      attemptAutoplay,
+      defaultContentLanguage,
+      defaultSubtitleLanguage,
+      injectToSdk?.attemptAutoplay,
+      injectToSdk?.defaultContentLanguage,
+      injectToSdk?.defaultSubtitleLanguage,
+    ]);
 
-      const episodeDetail = useEpisodeDetail(episodeId ?? null);
+    const { episodeCore, seriesCore } = useSeriesCore<EnvVariable>(
+      episodeId,
+      episodeDetail,
+      injectToSdk?.preferredUploaders ?? preferredUploaders,
+      injectToSdk?.trustedUploaders ?? trustedUploaders,
+      injectedEpisodeMetadata,
+      hookUserImplementedFunctions ?? injectedUserImplementedFunctions,
+      hookEnvVariable ?? injectedEnvVariable,
+      hookUserData ?? userData,
+      getInjectedEpisodeMetadata,
+      onEpisodeIdUpdate,
+    );
+    React.useImperativeHandle(seriesCoreRef, () => seriesCore, [seriesCore]);
 
-      // eslint-disable-next-line @typescript-eslint/no-shadow
-      const { pathPattern, dataType, setClientSdkConfig } = useSdkConfig();
+    const resetInitialAsset = useResetAssetStatusCallback();
 
-      const fetchData = React.useCallback(
-        (fileName: string) => fetch(fileName, dataType, pathPattern, setClientSdkConfig),
-        [dataType, pathPattern, setClientSdkConfig]
-      );
+    useCustomEventWrapper(playerOnEnd, hookOnEnd, 'end', seriesCore);
+    useCustomEventWrapper(playerOnSegmentEnd, hookOnSegmentEnd, 'segmentEnd', seriesCore);
+    useCustomEventWrapper(playerOnSegmentStart, hookOnSegmentStart, 'segmentStart', seriesCore);
+    useCustomEventWrapper(resetInitialAsset, playerOnInitialized, 'initialized', seriesCore);
 
-      const playerPropsHookProps = React.useMemo(
-        () => ({
-          dependencies: { ...playerPropsHookDependencies, fetchData },
-          coreRef,
-          userImplementedFunctions,
-          episodeId,
-          envVariable,
-          assets: episodeDetail?.assets,
-        }),
-        [
-          playerPropsHookDependencies,
-          userImplementedFunctions,
-          episodeId,
-          envVariable,
-          episodeDetail,
-          fetchData,
-        ]
-      );
+    const coreState = useStore(episodeCore?.coreState ?? VOID_ATOM);
+    const playerReady = episodeDetail
+      && episodeCore
+      && episodeDetail.assets
+      && episodeId;
 
-      const { injectToPlayer, injectToContainer } = usePlayerProps(playerPropsHookProps);
+    const loadingElement = LoadingComponent
+      ? <div id="recative-client-sdk--early-return"><LoadingComponent /></div>
+      : <div />;
 
-      const {
-        hookOnEnd, hookOnSegmentEnd, hookOnSegmentStart, playerProps
-      } = React.useMemo(() => {
-        const {
-          onEnd: hookOnEnd0,
-          onSegmentEnd: hookOnSegmentEnd0,
-          onSegmentStart: hookOnSegmentStart0,
-          ...playerProps0
-        } = injectToPlayer ?? {};
+    return (
+      <ContainerComponent
+        episodeCore={episodeCore}
+        seriesCore={seriesCore}
+        episodeListRequestStatus={config.requestStatus.episodes}
+        episodeDetailRequestStatus={
+          episodeId && config.requestStatus[episodeId]
+        }
+        // We must use episode id from episodeCore but not from the router or
+        // the episodeDetail, this is a problem of lifecycle, only id in
+        // episode id changed means the episode core ready, and we can
+        // initialize the episode safely.
+        episodeId={episodeCore?.episodeId || ''}
+        episodes={config.episodesMap}
+        {...props}
+        {...injectToContainer}
+      >
+        {
+          playerReady && coreState !== 'destroyed'
+            ? (
+              <ActPlayer<true, EnvVariable>
+                core={episodeCore}
+                interfaceComponents={interfaceComponents}
+                loadingComponent={LoadingComponent}
+                {...injectToPlayer}
+              />
+            )
+            : loadingElement
+        }
+      </ContainerComponent>
+    );
+  };
 
-        return {
-          hookOnEnd: hookOnEnd0,
-          hookOnSegmentEnd: hookOnSegmentEnd0,
-          hookOnSegmentStart: hookOnSegmentStart0,
-          playerProps: playerProps0,
-        };
-      }, [injectToPlayer]);
-
-      React.useEffect(() => {
-        log('Episode #', episodeId);
-        log('Episode Detail', episodeDetail);
-        log('Props for hook', playerPropsHookProps);
-        log('Injected player props', playerProps);
-      }, [playerProps]);
-
-      const onEnd = React.useCallback(() => {
-        playerOnEnd?.();
-        hookOnEnd?.();
-      }, [hookOnEnd, playerOnEnd]);
-
-      const onSegmentEnd = React.useCallback(
-        (segment: number) => {
-          playerOnSegmentEnd?.(segment);
-          hookOnSegmentEnd?.(segment);
-        },
-        [hookOnSegmentEnd, playerOnSegmentEnd]
-      );
-
-      const onSegmentStart = React.useCallback(
-        (segment: number) => {
-          playerOnSegmentStart?.(segment);
-          hookOnSegmentStart?.(segment);
-        },
-        [hookOnSegmentStart, playerOnSegmentStart]
-      );
-
-      const resetInitialAsset = useResetAssetStatusCallback();
-      const onInitialized = React.useCallback(() => {
-        resetInitialAsset();
-        playerOnInitialized?.();
-      }, [playerOnInitialized, resetInitialAsset]);
-
-      return (
-        <ContainerComponent
-          episodeListRequestStatus={config.requestStatus.episodes}
-          episodeDetailRequestStatus={
-            episodeId && config.requestStatus[episodeId]
-          }
-          episodeId={episodeDetail?.episode.id || ''}
-          episodes={config.episodesMap}
-          {...props}
-          {...injectToContainer}
-        >
-          {
-            episodeDetail
-            && episodeDetail.assets
-            && userImplementedFunctions
-            && episodeId
-              ? (
-                <ActPlayer<EnvVariable>
-                  coreRef={coreRef as any}
-                  episodeId={episodeDetail.episode.id || ''}
-                  assets={episodeDetail.assets}
-                  resources={episodeDetail.resources}
-                  preferredUploaders={preferredUploaders}
-                  trustedUploaders={trustedUploaders}
-                  initialAsset={initialAsset || config.initialAssetStatus}
-                  userImplementedFunctions={userImplementedFunctions}
-                  interfaceComponents={interfaceComponents}
-                  userData={undefined}
-                  envVariable={envVariable as any}
-                  onEnd={onEnd}
-                  onSegmentEnd={onSegmentEnd}
-                  onSegmentStart={onSegmentStart}
-                  onInitialized={onInitialized}
-                  loadingComponent={loadingComponent}
-                  {...playerProps}
-                />
-              )
-              : (
-                loadingComponent ?? <div />
-              )
-          }
-        </ContainerComponent>
-      );
-    };
-
-    return {
-      default: Content as React.FC<IContentProps<EnvVariable>>,
-    };
-  });
+  return {
+    default: Content as React.FC<ContentProps>,
+  };
+});

@@ -10,10 +10,10 @@
         "cwd": "packages/documents"
       }
     },
-    "build": {
+    "build-docs": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
-        "command": "yarn build",
+        "command": "yarn build:docs",
         "cwd": "packages/documents"
       }
     },

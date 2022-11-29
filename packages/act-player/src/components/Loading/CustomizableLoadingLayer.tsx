@@ -9,20 +9,20 @@ import type { InterfaceExtensionComponent } from '../../types/ExtensionCore';
 import { ModuleContainer } from '../Layout/ModuleContainer';
 
 const useStyles = () => {
-  const [css] = useStyletron();
+  const [css, theme] = useStyletron();
 
   const stageContainerStyles = React.useMemo(() => css({
     height: '100%',
-  }), []);
+  }), [css]);
 
   const elementContainerStyles = React.useMemo(() => css({
-    backgroundColor: 'black',
+    backgroundColor: theme.colors.backgroundAlwaysDark,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     overflowX: 'hidden',
     overflowY: 'hidden',
     pointerEvents: 'auto',
-  }), []);
+  }), [css, theme.colors.backgroundAlwaysDark]);
 
   return { stageContainerStyles, elementContainerStyles };
 };
@@ -54,7 +54,7 @@ export const CustomizableLoadingLayer: InterfaceExtensionComponent = React.memo(
           category: 1e4,
           lang: 1,
         },
-      ).then((url) => {
+      )?.then((url) => {
         if (!url) {
           throw new TypeError('Loading video URL not found!');
         }
@@ -71,7 +71,7 @@ export const CustomizableLoadingLayer: InterfaceExtensionComponent = React.memo(
           category: 1e4,
           lang: 1,
         },
-      ).then((url) => {
+      )?.then((url) => {
         if (!url) {
           throw new TypeError('Loading image URL not found!');
         }

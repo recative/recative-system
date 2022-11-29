@@ -1,9 +1,14 @@
-import { AssetForClient } from '@recative/definitions';
+import { IAssetForClient } from '@recative/definitions';
+import { allSettled } from '@recative/open-promise';
 import type { InstanceOption } from '../../instance';
 import { WithLogger } from '../../LogCollector';
 // eslint-disable-next-line import/no-cycle
 import { ContentSequence } from '../../sequence';
 
+/**
+ * Collection of Sequences that that can be directly controlled from component
+ * TODO: Add more methods to control Subsequence (when we need)
+ */
 export class SubsequenceManager extends WithLogger {
   subsequences = new Map<string, ContentSequence>();
 
@@ -11,11 +16,15 @@ export class SubsequenceManager extends WithLogger {
 
   playing = false;
 
+  showing = false;
+
   private destroyed = false;
 
   managedCoreStateDirty = true;
 
   managedStateEnabled = false;
+
+  private destroyPromise: Promise<void> | null = null;
 
   constructor(private instanceId: string, private option: InstanceOption) {
     super();
@@ -37,16 +46,41 @@ export class SubsequenceManager extends WithLogger {
     });
   }
 
-  destroy() {
+
+  show() {
+    this.showing = true;
+    this.subsequences.forEach((subsequence) => {
+      subsequence.parentShow();
+    });
+  }
+
+  hide() {
+    this.showing = false;
+    this.subsequences.forEach((subsequence) => {
+      subsequence.parentHide();
+    });
+  }
+
+  private async internalDestroy() {
     this.destroyed = true;
     this.pause();
-    this.subsequences.forEach((subsequence) => {
-      subsequence.destroy();
-    });
+    await allSettled(
+      Array.from(this.subsequences.values()).map((subsequence) => subsequence.destroy()),
+    );
     this.subsequences.clear();
   }
 
-  async createSequence(id: string, assets: AssetForClient[]) {
+  destroy() {
+    if (this.destroyPromise === null) {
+      this.destroyPromise = this.internalDestroy();
+    }
+    return this.destroyPromise;
+  }
+
+  /**
+   * Create a subsequence from list of assets
+   */
+  async createSequence(id: string, assets: IAssetForClient[]) {
     if (this.destroyed) {
       return;
     }
@@ -59,7 +93,7 @@ export class SubsequenceManager extends WithLogger {
     const subsequence = new ContentSequence({
       id: `${this.instanceId}-subsequence|${id}`,
       logger: this.logger.extend(`subsequence|${id}`),
-      showing: false,
+      parentShowing: false,
       parentPlaying: this.playing,
       audioStation: this.option.audioStation,
       managedCoreStateManager: this.option.managedCoreStateManager,
@@ -75,15 +109,15 @@ export class SubsequenceManager extends WithLogger {
     subsequence.eventTarget.addEventListener('end', () => {
       this.option.getComponent(this.instanceId)?.sequenceEnded?.(id);
     });
-    if (this.managedStateEnabled) {
-      subsequence.setManagedStateEnabled(true);
-    }
     subsequence.switchToFirstContent();
     this.subsequences.set(id, subsequence);
     this.managedCoreStateDirty = true;
     await subsequence.firstAssetInstanceReady;
   }
 
+  /**
+   * Start playing a subsequence
+   */
   startSequence(id: string) {
     const subsequence = this.subsequences.get(id);
     if (subsequence === undefined) {
@@ -122,12 +156,5 @@ export class SubsequenceManager extends WithLogger {
       dirty ||= subsequence.updateManagedCoreState();
     });
     return dirty;
-  }
-
-  setManagedStateEnabled(enabled: boolean) {
-    this.managedStateEnabled = enabled;
-    this.subsequences.forEach((subsequence) => {
-      subsequence.setManagedStateEnabled(enabled);
-    });
   }
 }

@@ -1,3 +1,11 @@
+const cleanupBangSuffix = (x: string) => {
+  if (x[x.length - 1] === '!') {
+    return x.substring(0, x.length - 1)
+  }
+
+  return x;
+}
+
 /**
  * Give a selector and environment variable, return the score of the selector.
  * @param selector Selector of this resource.
@@ -20,13 +28,19 @@
  * ```
  */
 export const calculateResourceScore = (
-  selector: Map<string, string>,
+  selector: Map<string, string | string[]>,
   envConfig: Record<string, string>,
   weights: Record<string, number>,
 ) => {
-  const assetScore = Array.from(selector.entries())
-    .map(([key, value]) => (envConfig[key] === value ? weights[key] || 0 : 0))
-    .reduce((a, b) => a + b, 0);
+  const rawAssetScore = Array.from(selector.entries())
+    .flatMap(([key, value]) => (
+      Array.isArray(value)
+        ? value.map((v) => [key, cleanupBangSuffix(v)])
+        : [[key, cleanupBangSuffix(value)]]
+    ))
+    .map(([key, value]) => (envConfig[key] === value ? weights[key] || 0 : 0));
+
+  const assetScore = rawAssetScore.reduce((a, b) => a + b, 0);
 
   return '*' in selector ? assetScore + 0.1 : assetScore;
 };

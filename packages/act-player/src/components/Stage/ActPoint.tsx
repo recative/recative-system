@@ -2,6 +2,7 @@
 /* eslint-disable no-constant-condition */
 import * as React from 'react';
 import cn from 'classnames';
+import debug from 'debug';
 
 import useConstant from 'use-constant';
 import { useStore } from '@nanostores/react';
@@ -17,6 +18,11 @@ import { ModuleContainer } from '../Layout/ModuleContainer';
 import type { AssetExtensionComponent } from '../../types/ExtensionCore';
 
 import { getController } from './actPointControllers';
+import { Error } from '../Panic/Error';
+
+const logError = debug('player:ap-component');
+// eslint-disable-next-line no-console
+logError.log = console.error.bind(console);
 
 const FULL_SIZE_STYLES = {
   width: '100%',
@@ -36,24 +42,63 @@ const IFRAME_STYLES = {
   borderWidth: 0,
 } as const;
 
+const SIZE_LIMIT_MAP = new Map<number, [number, number]>();
+
+SIZE_LIMIT_MAP.set(1, [1280, 720]);
+SIZE_LIMIT_MAP.set(2, [1920, 1080]);
+SIZE_LIMIT_MAP.set(3, [Infinity, Infinity]);
+
+const computedLimitedActPointRatio = (
+  tier: unknown,
+  element: HTMLDivElement | null
+) => {
+  if (!element) {
+    return 1;
+  }
+
+  const tierLimit = SIZE_LIMIT_MAP.get(tier as number);
+
+  if (!tierLimit) {
+    return 1;
+  }
+
+  const { clientWidth, clientHeight } = element;
+  const clientBox = [
+    clientWidth * window.devicePixelRatio,
+    clientHeight * window.devicePixelRatio
+  ] as const;
+
+  return Math.min(
+    1,
+    Math.max(...tierLimit) / Math.max(...clientBox),
+    Math.min(...tierLimit) / Math.min(...clientBox),
+  )
+};
+
 export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
   const [css] = useStyletron();
   const [scale, setScale] = React.useState(1);
+  const [iFrameWidth, setIFrameWidth] = React.useState(-1);
+  const [iFrameHeight, setIFrameHeight] = React.useState(-1);
   const iFrameRef = React.useRef<HTMLIFrameElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const videoComponentInitialized = React.useRef(false);
   const resolution = useStore(props.core.resolution);
   const width: number | undefined = resolution?.width;
   const height: number | undefined = resolution?.height;
+  const envVariable = useStore(props.core.envVariableManager.envVariableAtom);
 
   const getEntryPointUrl = React.useCallback(async () => {
     const episodeData = props.core.getEpisodeData()!;
     const entryPoints = props.spec.entryPoints as Record<string, string>;
 
     return episodeData.resources.getResourceByUrlMap(entryPoints);
-  }, [props.spec.entryPoints]);
+  }, [props.core, props.spec.entryPoints]);
 
-  const [{ result: entryPoint }, entryPointAction] = useAsync(getEntryPointUrl);
+  const [{
+    result: entryPoint,
+    error,
+  }, entryPointAction] = useAsync(getEntryPointUrl);
 
   const injectedEntryPoint = React.useMemo(() => {
     if (!entryPoint) return null;
@@ -61,8 +106,8 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
     const formattedEntryPoint = new URL(entryPoint, window.location.href);
     const currentPage = new URL(window.location.href);
 
-    formattedEntryPoint.searchParams.forEach((value, key) => {
-      return currentPage.searchParams.set(key, value);
+    currentPage.searchParams.forEach((value, key) => {
+      return formattedEntryPoint.searchParams.set(key, value);
     });
 
     return formattedEntryPoint.toString();
@@ -70,29 +115,7 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
 
   React.useEffect(() => {
     entryPointAction.execute();
-  }, []);
-
-  const { iFrameWidth, iFrameHeight } = React.useMemo(() => {
-    const specResolution = props.spec.resolutionMode as ResolutionMode;
-    const resolutionMode = specResolution ?? ResolutionMode.FollowPlayerSetting;
-
-    if (resolutionMode === ResolutionMode.FixedSize) {
-      return {
-        iFrameWidth: props.spec.width as number,
-        iFrameHeight: props.spec.height as number,
-      };
-    }
-    if (resolutionMode === ResolutionMode.FollowWindowSize) {
-      return {
-        iFrameWidth: -1,
-        iFrameHeight: -1,
-      };
-    }
-    return {
-      iFrameWidth: width === undefined ? -1 : width,
-      iFrameHeight: height === undefined ? -1 : height,
-    };
-  }, []);
+  }, [entryPointAction]);
 
   const updateActPointScale = useThrottledCallback(
     () => {
@@ -102,14 +125,49 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
       }
 
       const $container = containerRef.current;
-      const actPointRatio = iFrameWidth / iFrameHeight;
-      const containerRatio = $container.clientWidth / $container.clientHeight;
+      const specResolution = props.spec.resolutionMode as ResolutionMode;
+      const resolutionMode = specResolution ?? ResolutionMode.FollowPlayerSetting;
 
-      const nextScale = actPointRatio < containerRatio
-        ? $container.clientHeight / iFrameHeight
-        : $container.clientWidth / iFrameWidth;
+      if (resolutionMode === ResolutionMode.FixedSize) {
+        setIFrameWidth(props.spec.width as number);
+        setIFrameHeight(props.spec.height as number);
+      } else if (resolutionMode === ResolutionMode.FollowWindowSize) {
+        setIFrameWidth(-1);
+        setIFrameHeight(-1);
+      } else {
+        setIFrameWidth(width === undefined ? -1 : width);
+        setIFrameHeight(height === undefined ? -1 : height);
+      }
 
-      setScale(nextScale);
+      if (
+        resolutionMode === ResolutionMode.FixedSize
+        || resolutionMode === ResolutionMode.FollowPlayerSetting
+        || (
+          resolutionMode === ResolutionMode.FollowWindowSize
+          && (envVariable?.tier === 3 || !envVariable?.tier)
+        )
+      ) {
+        const actPointRatio = iFrameWidth / iFrameHeight;
+
+        const containerRatio = $container.clientWidth / $container.clientHeight;
+
+        const nextScale = actPointRatio < containerRatio
+          ? $container.clientHeight / iFrameHeight
+          : $container.clientWidth / iFrameWidth;
+
+        setScale(nextScale);
+      } else {
+        const actPointRatio = computedLimitedActPointRatio(
+          envVariable.tier,
+          containerRef.current,
+        );
+
+        const { clientWidth, clientHeight } = $container;
+
+        setScale(1 / actPointRatio);
+        setIFrameWidth(actPointRatio * clientWidth);
+        setIFrameHeight(actPointRatio * clientHeight);
+      };
     },
     [iFrameWidth, iFrameHeight, containerRef.current],
     100,
@@ -136,7 +194,7 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
       position: 'absolute' as const,
       transform: `scale(${scale})`,
     };
-  }, [scale]);
+  }, [iFrameHeight, iFrameWidth, scale]);
 
   React.useEffect(() => {
     window.addEventListener('resize', updateActPointScale);
@@ -146,7 +204,7 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
 
   React.useEffect(() => {
     setTimeout(updateActPointScale, 0);
-  }, [width, height, props.show]);
+  }, [width, height, props.show, updateActPointScale]);
 
   const fullSizeStyles = css(FULL_SIZE_STYLES);
   const visibleStyles = css(VISIBLE_STYLES);
@@ -181,13 +239,13 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
     if (event.data === 'ap-script-load-error') {
       props.core.panicCode.set('Unable to Load the Script');
     }
-  }, []);
+  }, [core.coreFunctions, props.core.panicCode]);
 
   React.useEffect(() => {
     return () => {
       core.destroyConnector();
     };
-  }, []);
+  }, [core]);
 
   React.useLayoutEffect(() => {
     if (videoComponentInitialized.current) return;
@@ -215,13 +273,13 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
       );
       messageChannel.port1.close();
     };
-  }, [entryPoint]);
+  }, [core.controller, entryPoint, handleEmergencyMessage]);
 
   React.useEffect(() => {
     core.coreFunctions.updateContentState('preloading');
 
     return () => props.core.unregisterComponent(props.id);
-  }, [props.id]);
+  }, [core.coreFunctions, props.core, props.id]);
 
   const LoadingComponent = props.loadingComponent ?? Loading;
 
@@ -230,6 +288,28 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
   const blockStyle = props.show
     ? cn(fullSizeStyles, resetPositionStyles, visibleStyles)
     : cn(fullSizeStyles, resetPositionStyles);
+
+  if (error) {
+    logError(
+      '\r\nUnable to render this asset',
+      '\r\n============================',
+      '\r\nUnable to get the entry point',
+
+      { error },
+      '\r\nSpec of this asset is',
+
+      props.spec,
+
+      '\r\nPreferred Uploaders are',
+      core.coreFunctions.core.getEpisodeData()?.preferredUploaders,
+    );
+
+    return (
+      <ModuleContainer>
+        <Error>{error.message}</Error>
+      </ModuleContainer>
+    );
+  }
 
   return (
     <ModuleContainer>

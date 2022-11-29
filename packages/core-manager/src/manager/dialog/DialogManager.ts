@@ -22,7 +22,7 @@ import type { IEnvVariable } from '../envVariable/EnvVariableManager';
 
 import { isNotNullable } from '../../utils/isNullable';
 import { selectUrl } from '../../utils/resource';
-import {
+import type {
   ComponentFunctions,
   SavedDialogMessageContent,
   InternalEpisodeData,

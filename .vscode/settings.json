@@ -1,26 +1,77 @@
 {
-    "cSpell.words": [
-        "baseui",
-        "bson",
-        "clsx",
-        "hookz",
-        "nanostore",
-        "nanostores",
-        "nrwl",
-        "paciolan",
-        "PIXI",
-        "playsinline",
-        "polyv",
-        "recative",
-        "sublist",
-        "Transferables",
-        "ungap",
-        "unplugin",
-        "UPLOADERS",
-        "Uson"
-    ],
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "[typescriptreact]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features"
-    }
+  "cSpell.words": [
+    "autoupdate",
+    "Azeret",
+    "baseui",
+    "bson",
+    "cacheable",
+    "clabel",
+    "clsx",
+    "codicon",
+    "commitlint",
+    "craco",
+    "definedin",
+    "dteq",
+    "filteredrows",
+    "geckoview",
+    "gradlew",
+    "hookz",
+    "iife",
+    "jbetween",
+    "jgte",
+    "jlte",
+    "keyin",
+    "lktxp",
+    "msgpack",
+    "nanostore",
+    "nanostores",
+    "NDAA",
+    "nkeyin",
+    "nrwl",
+    "overriden",
+    "paciolan",
+    "PIXI",
+    "playsinline",
+    "polyv",
+    "precaching",
+    "proxied",
+    "recative",
+    "rematerialize",
+    "resultdata",
+    "resultsdirty",
+    "resultset",
+    "sublist",
+    "textureupdate",
+    "Transferables",
+    "tsdb",
+    "undefinedin",
+    "ungap",
+    "unplugin",
+    "UPLOADERS",
+    "Uson",
+    "vconsole",
+    "wdyr",
+    "welldone"
+  ],
+  "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "editor.rulers": [80, 120],
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": false,
+  "editor.tabSize": 2,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[plaintext]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }

@@ -19,15 +19,16 @@ const useStyles = () => {
     transform: 'translate(-50%, -50%)',
     position: 'absolute',
     display: 'inline-block',
-  }), []);
+  }), [css]);
   return { loaderStyles };
 };
 
 export const Loading: React.FC = () => {
+  const [, theme] = useStyletron();
   const { loaderStyles } = useStyles();
 
   return (
-    <Block width="100%" height="100%" position="relative" backgroundColor="black">
+    <Block width="100%" height="100%" position="relative" backgroundColor={theme.colors.backgroundAlwaysDark}>
         <NoisyBackground />
         <ClearLottie className={loaderStyles} animationData={loadingAnimation} loop={true} />
     </Block>

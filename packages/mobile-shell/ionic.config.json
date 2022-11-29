@@ -1,0 +1,7 @@
+{
+  "name": "Recative",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}

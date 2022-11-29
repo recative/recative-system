@@ -2,12 +2,16 @@
 /* eslint-disable no-await-in-loop */
 import { debug } from 'debug';
 
-import { UserImplementedFunctions } from '@recative/definitions';
+import { RawUserImplementedFunctions } from '@recative/definitions';
 import { createHostConnector, HostFunctions } from '@recative/act-protocol';
 import type { ResourceLoaderCacheLevel } from '@recative/definitions';
 import type { ComponentFunctions, CoreFunctions } from '@recative/core-manager';
 
 const log = debug('player:ap-control');
+
+const logWarn = debug('player:ap-control');
+// eslint-disable-next-line no-console
+logWarn.log = console.warn.bind(console);
 
 export const getController = (id: string) => {
   let $actPoint: HTMLIFrameElement | null = null;
@@ -26,37 +30,41 @@ export const getController = (id: string) => {
     connector.connector.show();
   };
 
-  const forwardToCoreFunctions = <
+  const forwardToCoreFunctions =
+    <
       T extends keyof CoreFunctions,
       F extends Extract<CoreFunctions[T], (...args: never[]) => unknown>,
-      P extends Parameters<F>,
+      P extends Parameters<F>
     >(
-      key: T,
-    ) => (...args: P) => {
+      key: T
+    ) =>
+    (...args: P) => {
       if (!coreFunctions) {
         throw new Error('Core functions not set');
       }
 
-      return (coreFunctions[key] as any)?.(...args);
+      return (coreFunctions[key] as Function)?.(...args);
     };
 
-  const forwardToUserImplementedFunctions = <
-      T extends keyof UserImplementedFunctions,
+  const forwardToUserImplementedFunctions =
+    <
+      T extends keyof RawUserImplementedFunctions,
       F extends Extract<
-      UserImplementedFunctions[T],
-      (...args: never[]) => unknown
+        RawUserImplementedFunctions[T],
+        (...args: never[]) => unknown
       >,
-      P extends Parameters<F>,
+      P extends Parameters<F>
     >(
-      key: T,
-    ) => (...args: P) => {
+      key: T
+    ) =>
+    (...args: P) => {
       if (!coreFunctions) {
         throw new Error('Core functions not set');
       }
 
-      return (coreFunctions.core.getUserImplementedFunctions()[key] as any)?.(
-        ...args,
-      );
+      return (
+        coreFunctions.core.getUserImplementedFunctions()[key] as Function
+      )?.(...args);
     };
 
   const setActPointTag = (actPointTag: HTMLIFrameElement) => {
@@ -101,7 +109,8 @@ export const getController = (id: string) => {
               throw new TypeError('Connector not available');
             }
 
-            const envVariable = coreFunctions?.core.envVariableManager.envVariableAtom.get();
+            const envVariable =
+              coreFunctions?.core.envVariableManager.envVariableAtom.get();
 
             if (!envVariable) {
               throw new TypeError('Environment variable not available');
@@ -109,10 +118,7 @@ export const getController = (id: string) => {
 
             connector.connector.updateEnvironment(envVariable);
           },
-          getResourceMetadata: (
-            resourceId: string,
-            type: 'label' | 'id',
-          ) => {
+          getResourceMetadata: (resourceId: string, type: 'label' | 'id') => {
             const { resources } = coreFunctions!.core.getEpisodeData()!;
 
             const resource = getResourceMetadata(resourceId, type);
@@ -128,25 +134,26 @@ export const getController = (id: string) => {
             return resource;
           },
           getResourceUrl: async (
-            resourceId: string,
+            resourceQuery: string,
             searchBy: 'label' | 'id',
             resourceType?: 'group' | 'file',
-            envConfig: Record<string, string> | null = null,
+            envConfig: Record<string, string> | null = null
           ) => {
-            const resourceList = coreFunctions!.core.getEpisodeData()!.resources;
+            const resourceList =
+              coreFunctions!.core.getEpisodeData()!.resources;
 
-            if (searchBy === 'label') {
-              return resourceList.getResourceByLabel(
-                resourceId, envConfig, undefined, undefined, resourceType,
-              );
-            }
-            return resourceList.getResourceById(
-              resourceId, envConfig, undefined, undefined, resourceType,
+            return resourceList.getResourceByQuery(
+              resourceQuery,
+              searchBy,
+              envConfig,
+              undefined,
+              undefined,
+              resourceType
             );
           },
           fetchResource: async (
             resourceId: string,
-            cacheLevel: ResourceLoaderCacheLevel,
+            cacheLevel: ResourceLoaderCacheLevel
           ) => {
             const { resources } = coreFunctions!.core.getEpisodeData()!;
 
@@ -161,11 +168,12 @@ export const getController = (id: string) => {
             if (!url) return null;
 
             try {
-              const result = await coreFunctions!.core.resourceLoader.fetchResource({
-                id: resourceDetail.id,
-                cacheLevel,
-                url,
-              });
+              const result =
+                await coreFunctions!.core.resourceLoader.fetchResource({
+                  id: resourceDetail.id,
+                  cacheLevel,
+                  url,
+                });
 
               return result;
             } catch (e) {
@@ -173,10 +181,10 @@ export const getController = (id: string) => {
             }
           },
           lockMouse: () => {
-            // This should do nothing when since the interaction can lock mouse itself
+            // This should do nothing since the interaction can lock mouse itself
           },
           unlockMouse: () => {
-            // This should do nothing when since the interaction can lock mouse itself
+            // This should do nothing since the interaction can lock mouse itself
           },
           getResourceList: () => {
             const { resources } = coreFunctions!.core.getEpisodeData()!;
@@ -184,7 +192,7 @@ export const getController = (id: string) => {
             return [...resources.rawResourceList];
           },
           requestTextFieldInput: () => {
-            // This should do nothing when since the interaction can create textField itself
+            // This should do nothing since the interaction can create textField itself
           },
           showDialogArea: () => {
             coreFunctions!.core.dialogManager.dialogVisible.set(true);
@@ -211,12 +219,11 @@ export const getController = (id: string) => {
           updateAudioLoop: forwardToCoreFunctions('updateAudioLoop'),
           addSubtitleToAudio: forwardToCoreFunctions('addSubtitleToAudio'),
           gotoEpisode: (episode, forceReload, assetOrder, assetTime) => {
-            const externalGotoEpisode = coreFunctions?.core
-              .getUserImplementedFunctions()
-              .gotoEpisode;
+            const externalGotoEpisode =
+              coreFunctions?.core.getUserImplementedFunctions().gotoEpisode;
 
             if (!externalGotoEpisode) {
-              console.warn('gotoEpisode not implemented');
+              logWarn('gotoEpisode not implemented');
               return;
             }
 
@@ -225,7 +232,7 @@ export const getController = (id: string) => {
               episode,
               forceReload,
               assetOrder,
-              assetTime,
+              assetTime
             );
           },
           finishEpisode: forwardToUserImplementedFunctions('finishEpisode'),
@@ -236,13 +243,13 @@ export const getController = (id: string) => {
           setSavedData: forwardToUserImplementedFunctions('setSavedData'),
           getPlayerData: (slotId) => {
             return window.localStorage.getItem(
-              `@recative/act-player/player-data/${slotId}`,
+              `@recative/act-player/player-data/${slotId}`
             );
           },
           setPlayerData: (slotId, data) => {
             window.localStorage.setItem(
               `@recative/act-player/player-data/${slotId}`,
-              data,
+              data
             );
           },
           requestPayment: forwardToUserImplementedFunctions('requestPayment'),
@@ -251,10 +258,12 @@ export const getController = (id: string) => {
           getManagedCoreState: forwardToCoreFunctions('getManagedCoreState'),
           addManagedCoreState: forwardToCoreFunctions('addManagedCoreState'),
           deleteManagedCoreState: forwardToCoreFunctions(
-            'deleteManagedCoreState',
+            'deleteManagedCoreState'
           ),
           clearCoreState: forwardToCoreFunctions('clearCoreState'),
-          customizedActionRequest: forwardToUserImplementedFunctions('customizedActionRequest'),
+          customizedActionRequest: forwardToUserImplementedFunctions(
+            'customizedActionRequest'
+          ),
           requireQueuedTask: (taskId: string) => {
             if (!coreFunctions) {
               throw new TypeError('Core functions are not ready');
@@ -273,9 +282,9 @@ export const getController = (id: string) => {
             }
             throw new Error(`Not implemented host function:${prop.toString()}`);
           },
-        },
+        }
       ) as HostFunctions,
-      actPointTag,
+      actPointTag
     );
     startActPoint();
   };
@@ -314,7 +323,7 @@ export const getController = (id: string) => {
     handleDialogActionTrigger(action) {
       connector?.connector.dialogActionTriggered(action);
     },
-    destroyItself() {
+    async destroyItself() {
       connector?.channel.destroy();
       connector = null;
       $actPoint!.src = 'about:blank';
@@ -327,7 +336,7 @@ export const getController = (id: string) => {
 
       return connector.connector.runQueuedTask(taskId);
     },
-    sequenceEnded(sequenceId:string) {
+    sequenceEnded(sequenceId: string) {
       return connector?.connector.sequenceEnded(sequenceId);
     },
   };

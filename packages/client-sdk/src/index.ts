@@ -1,9 +1,15 @@
 export * from './hooks/useRemoteData';
-export * from './hooks/useEnvVariable';
 export * from './hooks/useEpisodeDetail';
 export * from './hooks/useCustomizedModule';
 export * from './hooks/useUserImplementedFunctions';
 export { useSdkConfig, useEpisodes } from './hooks/useSdkConfig';
+
+export type {
+  PlayerPropsInjectorHook,
+  InjectedProps,
+} from './components/hooks/useInjector';
+export * from './components/hooks/useDataFetcher';
+export * from './components/hooks/useEpisodeIdNormalizer';
 
 export * from './types/IEpisodeSave';
 export * from './types/IRpcFunction';

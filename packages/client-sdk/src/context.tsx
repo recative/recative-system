@@ -29,6 +29,7 @@ export const PlayerSdkProvider: React.FC<IPlayerSdkProviderProps> = ({
   const [clientSdkConfig, setClientSdkConfig] = React.useState<IClientSdkConfig>({
     pathPattern,
     episodesMap: new Map(),
+    episodeOrderToEpisodeIdMap: new Map(),
     initialAssetStatus: undefined,
     videoModalUrls: [],
     dataType,
@@ -36,7 +37,11 @@ export const PlayerSdkProvider: React.FC<IPlayerSdkProviderProps> = ({
   });
 
   React.useEffect(() => {
-    setClientSdkConfig({ ...clientSdkConfig, pathPattern, dataType });
+    setClientSdkConfig((previousClientSdkConfig) => ({
+      ...previousClientSdkConfig,
+      pathPattern,
+      dataType,
+    }));
   }, [pathPattern, dataType]);
 
   const fetchEpisodes = React.useCallback(async () => {
@@ -61,19 +66,27 @@ export const PlayerSdkProvider: React.FC<IPlayerSdkProviderProps> = ({
 
   React.useEffect(() => {
     episodesController.execute();
-  }, [fetchEpisodes]);
+  }, [episodesController, fetchEpisodes]);
 
   React.useEffect(() => {
     log('Episode list updated: ', episodes.result);
 
     if (episodes.result) {
-      const result = new Map();
+      const episodesMap = new Map();
 
-      episodes.result.forEach(({ episode }) => {
-        result.set(episode.id, episode);
+      (episodes.result as IEpisodeAbstraction[]).forEach(({ episode }) => {
+        episodesMap.set(episode.id, episode);
       });
 
-      setClientSdkConfig({ ...clientSdkConfig, episodesMap: result });
+      const episodeOrderToEpisodeIdMap = new Map<number, string>();
+
+      episodesMap.forEach((episode) => episodeOrderToEpisodeIdMap.set(episode.order, episode.id));
+
+      setClientSdkConfig((previousClientSdkConfig) => ({
+        ...previousClientSdkConfig,
+        episodesMap,
+        episodeOrderToEpisodeIdMap,
+      }));
     }
   }, [episodes.result]);
 

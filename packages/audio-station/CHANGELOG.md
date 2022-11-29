@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0
+
+### Minor Changes
+
+- 15109d5: feat: Add optional phonograph audio backend for audio track of video
+
 ## 0.2.0
 
 ### Minor Changes

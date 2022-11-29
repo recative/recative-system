@@ -116,9 +116,13 @@ export class Timeline {
     track.seek(time, progress);
     if (this.nextRafId !== null) {
       track.play();
+    } else {
+      track.pause();
     }
     if (this.stuck) {
       track.suspend();
+    } else {
+      track.resume();
     }
   }
 

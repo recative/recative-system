@@ -10,5 +10,5 @@ export const useResetAssetStatusCallback = () => {
       delete x.initialAssetStatus;
       return x;
     });
-  }, [sdkConfig.setClientSdkConfig]);
+  }, [sdkConfig]);
 };

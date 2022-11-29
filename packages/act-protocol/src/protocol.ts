@@ -3,11 +3,11 @@ import type {
   ResourceLoaderCacheLevel,
   IResourceItemForClient,
   IDetailedResourceItemForClient,
-  UserImplementedFunctions,
+  RawUserImplementedFunctions,
   ShowVideoModalUrlRequest,
   ShowVideoModalIdRequest,
   ShowVideoModalLabelRequest,
-  AssetForClient,
+  IAssetForClient,
 } from '@recative/definitions';
 
 export interface BGM {
@@ -100,7 +100,7 @@ export interface AddAudioByIdRequest {
 
 export type AddAudioRequest = AddAudioByLabelRequest | AddAudioByIdRequest;
 
-export type HostFunctions = Omit<UserImplementedFunctions, 'gotoEpisode'> & {
+export type HostFunctions = Omit<RawUserImplementedFunctions, 'gotoEpisode'> & {
   // lifecycle
   /**
    * Should be called when the content was ready
@@ -297,7 +297,7 @@ export type HostFunctions = Omit<UserImplementedFunctions, 'gotoEpisode'> & {
    */
   requireQueuedTask(taskId: string): void;
   // Subsequence control
-  createSequence(id: string, assets: AssetForClient[]): void;
+  createSequence(id: string, assets: IAssetForClient[]): void;
   startSequence(id: string): void;
   showSequence(id: string): void;
   hideSequence(id: string): void;

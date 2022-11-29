@@ -98,7 +98,6 @@ export class ResourceLoader {
       if (this.fetchPromiseMap[id]) {
         const progress: IProgress = { id, resolved: false, progress: 0 };
         switch (this.fetchPromiseMap[id].promise.state) {
-          default:
           case OpenPromiseState.Pending:
             break;
           case OpenPromiseState.Fulfilled:
@@ -107,6 +106,8 @@ export class ResourceLoader {
             break;
           case OpenPromiseState.Rejected:
             progress.resolved = false;
+            break;
+          default:
             break;
         }
         progressList.push(progress);
@@ -164,6 +165,7 @@ export class ResourceLoader {
                 await set(resource.id, blob);
               // eslint-disable-next-line no-empty
               } catch (error) {}
+              break;
             // eslint-disable-next-line no-fallthrough
             case ResourceLoaderCacheLevel.Memory:
               this.resourceMemoryMap[resource.id] = blob;

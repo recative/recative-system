@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1
+
+### Patch Changes
+
+- be5bc59: fix: Pause or resume new track when adding it
+
 ## 0.2.0
 
 ### Minor Changes

@@ -20,7 +20,7 @@ export const HomeButton: React.FC<IHomeButtonProps> = React.memo((props) => {
         display: 'none',
       },
     }),
-    [],
+    [css],
   );
 
   return (

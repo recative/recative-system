@@ -5,12 +5,15 @@ import {
   MonitorTrack,
 } from '@recative/time-schedule';
 import {
+  ContentSpec,
   ManagedCoreStateList,
   ManagedCoreStateManager,
+  ManagerCoreStateTrigger,
+  UpdateReason,
 } from '@recative/definitions';
 import { AudioStation } from '@recative/audio-station';
 
-import { TimeSlicingQueue } from '@recative/open-promise';
+import { OpenPromise, TimeSlicingQueue } from '@recative/open-promise';
 import { WritableAtom } from 'nanostores';
 // eslint-disable-next-line import/no-cycle
 import { SubsequenceManager } from './manager/subsequence/subsequence';
@@ -18,7 +21,7 @@ import { AudioHost } from './audio/audioHost';
 import { AudioTrack } from './audio/audioTrack';
 import { TaskQueueManager } from './manager/taskQueue/TaskQueueManager';
 import { Logger, WithLogger } from './LogCollector';
-import { ComponentFunctions, ContentState } from './types';
+import type { ComponentFunctions, ContentState } from './types';
 
 export interface ProgressReporter {
   reportProgress(progress: number, time?: number): void;
@@ -27,8 +30,11 @@ export interface ProgressReporter {
 }
 
 export interface InstanceOption {
+  spec: ContentSpec;
+  triggers?: ManagerCoreStateTrigger[];
   audioStation: AudioStation;
   volume: number;
+  parentShowing: boolean;
   taskQueue: TimeSlicingQueue;
   managedCoreStateManager: ManagedCoreStateManager;
   contentInstances: Map<string, ContentInstance>;
@@ -43,40 +49,78 @@ export interface InstanceOption {
 }
 
 /**
+ * An Instance of the Content
  * This should only be used in this package
  */
 export class ContentInstance extends WithLogger {
-  // states
+  /**
+   * Lifecycle state of ContentInstance
+   */
   state: ContentState = 'idle';
 
-  showing: boolean = false;
+  /**
+   * Is the ContentInstance itself showing
+   */
+  selfShowing = false;
 
-  // timeline & video related
+  /**
+   * Is the parent of the ContentInstance showing
+   */
+  parentShowing = false;
+
+  /**
+   * Is the ContentInstance actual showing, when it is showing itself and parent is also showing
+   */
+  showing = false
+
+  /**
+   * Timeline, for scheduling and synchronization
+   */
   timeline: Timeline;
 
+  /**
+   * A handle of the timeline related function of component
+   */
   remote: Remote;
 
+  /**
+   * A channel for the component to report progress
+   */
   progressReporter: ProgressReporter;
 
   // state on the main timeline
   managedCoreStateList = new ManagedCoreStateList();
 
+  additionalManagedCoreStateList = new ManagedCoreStateList();
+
+  managedCoreStateDirty = true;
+
   audioTrack: AudioTrack;
-
-  // interaction related
-  audioHost: AudioHost;
-
-  taskQueueManager: TaskQueueManager;
 
   managedStateEnabled = false;
 
+  /**
+   * Collection of audio sources that can be directly controlled from component
+   */
+  audioHost: AudioHost;
+
+  /**
+   * Collection of Sequences that that can be directly controlled from component
+   */
   subsequenceManager: SubsequenceManager;
+
+  taskQueueManager: TaskQueueManager;
+
+  private destroyPromise: Promise<void> | null = null;
+
+  private enterDestroyedState = new OpenPromise<void>();
 
   constructor(public id: string, private option: InstanceOption) {
     super();
 
+    this.parentShowing = option.parentShowing
     this.logger = option.logger;
-    this.option.managedCoreStateManager.addStateList(this.managedCoreStateList);
+    this.managedCoreStateList.updateTriggers(option.triggers ?? [])
     this.timeline = new Timeline();
     this.taskQueueManager = new TaskQueueManager(this, option);
     const remote = {
@@ -107,9 +151,7 @@ export class ContentInstance extends WithLogger {
     this.remote = remote;
     // Since the RemoteTrack initialization requires the component,
     // we delay addition of remote track at component preload
-    this.timeline.addTrack(
-      new MonitorTrack(option.onUpdate, option.onStuckChange), -Infinity,
-    );
+    this.timeline.addTrack(new MonitorTrack(option.onUpdate, option.onStuckChange), -Infinity);
     this.audioTrack = new AudioTrack(option.audioStation, id);
     this.audioTrack.logger = this.logger?.extend(`audioTrack(${id})`) || null;
     this.audioTrack.setVolume(option.volume);
@@ -144,8 +186,19 @@ export class ContentInstance extends WithLogger {
     this.audioHost.logger = this.logger.extend('audioHost');
     this.subsequenceManager = new SubsequenceManager(this.id, option);
     this.subsequenceManager.setVolume(option.volume);
+    this.option.contentInstances.set(this.id, this);
+    this.option.forEachComponent((component) => {
+      component.createContent?.(this.id, option.spec);
+    });
   }
 
+  /**
+   * Check state transition
+   * Validate state changes are:
+   * - idle -> preloading -> ready
+   * - any state above to destroying
+   * - any state above to destroyed
+   */
   private static validateContentStateChange(
     oldState: ContentState,
     newState: ContentState,
@@ -165,7 +218,10 @@ export class ContentInstance extends WithLogger {
     if (oldState === 'preloading' && newState !== 'ready') {
       return false;
     }
-    if (oldState === 'ready' && newState !== 'destroyed') {
+    if (oldState === 'ready' && newState !== 'destroying' && newState !== 'destroyed') {
+      return false;
+    }
+    if (oldState === 'destroying' && newState !== 'destroyed') {
       return false;
     }
     if (oldState === 'destroyed') {
@@ -174,6 +230,10 @@ export class ContentInstance extends WithLogger {
     return true;
   }
 
+  /**
+   * Update State
+   * TODO: cleanup state transition method
+   */
   updateState(state: ContentState) {
     if (this.state === state) {
       return;
@@ -184,25 +244,100 @@ export class ContentInstance extends WithLogger {
       );
     }
     this.log(
-      `Content instance ${this.id} transit from ${this.state} to ${state}`,
+      `Content instance transit from ${this.state} to ${state}`,
     );
     this.state = state;
     if (state === 'preloading') {
-      this.timeline.addTrack(new RemoteTrack(this.remote, 100), -1);
+      this.timeline.addTrack(new RemoteTrack(this.remote, 200), -1);
+    } else if (state === 'destroying') {
+      this.destroy();
     } else if (state === 'destroyed') {
       this.destroy();
+      this.option.contentInstances.delete(this.id);
+      this.enterDestroyedState.resolve();
     }
     this.option.handleStateChange(state);
   }
 
+  /**
+   * Finish the ContentInstance
+   */
   finishItself() {
     this.option.handleFinish();
   }
 
+  playIfReady() {
+    if (this.state === 'ready') {
+      this.timeline.play();
+      this.subsequenceManager.play();
+    }
+  }
+
+  pauseIfReady() {
+    if (this.state === 'ready') {
+      this.timeline.pause();
+      this.subsequenceManager.pause();
+    }
+  }
+
+  updateShowing() {
+    const showing = this.selfShowing && this.parentShowing
+    if (this.showing === showing) {
+      return
+    }
+    this.setManagedStateEnabled(showing)
+    this.managedCoreStateDirty = true;
+    if (showing) {
+      this.option.getComponent(this.id)!.showItself?.();
+      this.option.forEachComponent((component) => {
+        component.showContent?.(this.id);
+      });
+      this.subsequenceManager.show();
+      this.option.showingContentCount.set(
+        this.option.showingContentCount.get() + 1,
+      );
+      this.log(`\`showingContentCount\` increase to ${this.option.showingContentCount.get()}`);
+    } else {
+      this.option.getComponent(this.id)!.hideItself?.();
+      this.option.forEachComponent((component) => {
+        component.hideContent?.(this.id);
+      });
+      this.subsequenceManager.hide();
+      this.option.showingContentCount.set(
+        this.option.showingContentCount.get() - 1,
+      );
+      this.log(`\`showingContentCount\` decease to ${this.option.showingContentCount.get()}`);
+    }
+    this.showing = showing;
+  }
+
+  show() {
+    this.selfShowing = true
+    this.updateShowing()
+  }
+
+  hide() {
+    this.selfShowing = false
+    this.updateShowing()
+  }
+
+  parentShow() {
+    this.parentShowing = true
+    this.updateShowing()
+  }
+
+  parentHide() {
+    this.parentShowing = false
+    this.updateShowing()
+  }
+
   updateManagedCoreState() {
-    let dirty = this.managedCoreStateList.seek(this.timeline.time);
+    let dirty = this.managedCoreStateList.seek(this.timeline.time, UpdateReason.Tick);
+    dirty ||= this.additionalManagedCoreStateList.seek(this.timeline.time, UpdateReason.Tick);
     dirty ||= this.audioHost.updateManagedState();
     dirty ||= this.subsequenceManager.updateManagedState();
+    dirty ||= this.managedCoreStateDirty
+    this.managedCoreStateDirty = false;
     return dirty;
   }
 
@@ -213,11 +348,12 @@ export class ContentInstance extends WithLogger {
     this.managedStateEnabled = enabled;
     if (!this.managedStateEnabled) {
       this.option.managedCoreStateManager.removeStateList(this.managedCoreStateList);
+      this.option.managedCoreStateManager.removeStateList(this.additionalManagedCoreStateList);
     } else {
       this.option.managedCoreStateManager.addStateList(this.managedCoreStateList);
+      this.option.managedCoreStateManager.addStateList(this.additionalManagedCoreStateList);
     }
     this.audioHost.setManagedStateEnabled(enabled);
-    this.subsequenceManager.setManagedStateEnabled(enabled);
   }
 
   setVolume(volume: number) {
@@ -226,10 +362,38 @@ export class ContentInstance extends WithLogger {
     this.subsequenceManager.setVolume(volume);
   }
 
-  destroy() {
+  async releaseResource() {
     this.timeline.pause();
     this.audioTrack.destroy();
     this.audioHost.destroy();
-    this.subsequenceManager.destroy();
+    await this.subsequenceManager.destroy();
+  }
+
+  setTime(time: number) {
+    this.timeline.time = time
+    this.managedCoreStateDirty ||= this.managedCoreStateList.seek(time, UpdateReason.Manually)
+    this.managedCoreStateDirty ||= this.additionalManagedCoreStateList.seek(time, UpdateReason.Manually)
+  }
+
+  private async internalDestroy() {
+    this.log(
+      'Content instance start to destroy',
+    );
+    await this.option.getComponent(this.id)!.destroyItself?.()?.finally(() => { });
+    this.option.forEachComponent((component) => {
+      component.destroyContent?.(this.id);
+    });
+    await this.enterDestroyedState;
+    await this.releaseResource();
+    this.log(
+      'Content instance fully destroyed',
+    );
+  }
+
+  destroy() {
+    if (this.destroyPromise === null) {
+      this.destroyPromise = this.internalDestroy();
+    }
+    return this.destroyPromise;
   }
 }

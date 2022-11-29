@@ -31,7 +31,7 @@ export const ClearLottie: React.FC<LottieComponentProps> = ({
         }
       },
     }),
-    [],
+    [lottieRef],
   );
 
   React.useEffect(() => {

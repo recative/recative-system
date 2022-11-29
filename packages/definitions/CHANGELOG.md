@@ -1,5 +1,51 @@
 # Changelog
 
+## 0.5.4
+
+### Patch Changes
+
+- feb76e9: fix: Incorrect asset data field
+
+## 0.5.3
+
+### Patch Changes
+
+- cc4afe9: feat: Supports extension configurations for assets
+
+## 0.5.2
+
+### Patch Changes
+
+- be81e87: feat: Add extension field to `IAsset`
+
+## 0.5.1
+
+### Patch Changes
+
+- 52ccfd1: fix: Do not repeatedly trigger event when time do not change
+
+## 0.5.0
+
+### Minor Changes
+
+- 94ada38: feat: Support ManagerCoreStateTrigger in IAssetForClient
+
+### Patch Changes
+
+- c0142d7: fix: Event of ManagedCoreStateList not fired
+
+## 0.4.3
+
+### Patch Changes
+
+- c1cadd8: fix: Update baseUI color definition
+
+## 0.4.2
+
+### Patch Changes
+
+- bda3138: refactor: Rename `AssetForClient` to `IAssetForClient` for better API consistency
+
 ## 0.4.1
 
 ### Patch Changes

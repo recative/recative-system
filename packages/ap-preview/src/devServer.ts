@@ -35,7 +35,7 @@ const bundler = new Parcel({
 bundler.watch((err, event) => {
   if (err) {
     // fatal error
-    console.log(`💀 Failed to start bundler`);
+    console.log('💀 Failed to start bundler');
     console.log(err);
     throw err;
   }

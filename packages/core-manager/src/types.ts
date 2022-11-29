@@ -8,28 +8,31 @@ import type {
 } from '@recative/act-protocol';
 import type {
   ContentSpec,
-  AssetForClient,
+  IAssetForClient,
   ManagedCoreState,
   IResourceItemForClient,
   ManagerCoreStateTrigger,
 } from '@recative/definitions';
 import { ResourceEntry } from '@recative/smart-resource';
+import { AudioElementInit } from './audio/audioElement';
 
-import { Core } from './core';
+import type { EpisodeCore } from './episodeCore';
 
 import type { PreloadManager } from './manager/preload/PreloadManager';
 import type { ResourceListForClient } from './manager/resource/ResourceListForClient';
 
+export type CustomEventHandler<T> = (event: CustomEvent<T>) => void;
+
 export interface EpisodeData {
   resources: IResourceItemForClient[];
-  assets: AssetForClient[];
+  assets: IAssetForClient[];
   preferredUploaders: string[];
   trustedUploaders: string[];
 }
 
 export interface InternalEpisodeData {
   resources: ResourceListForClient;
-  assets: AssetForClient[];
+  assets: IAssetForClient[];
   preferredUploaders: string[];
   preloader: PreloadManager;
 }
@@ -58,7 +61,7 @@ export interface VideoOverlaySpec {
 
 export interface CoreFunctions {
   // for component independent functions
-  core: Core;
+  core: EpisodeCore;
   // switching blocker
   /** Unblock creating and loading of the new asset instance,
    * aka setup of next content or the preload */
@@ -67,7 +70,7 @@ export interface CoreFunctions {
    * aka the content switch or the showing */
   unblockContentSwitch(): void;
   // timeline audio
-  setAudioTrack(url: string | null): void;
+  setAudioTrack(init: Promise<AudioElementInit | null> | null): void;
   // interaction audio
   addAudios(specs: AddAudioRequest[]): Promise<void>;
   playAudio(id: string, resetProgress?: boolean): void;
@@ -99,7 +102,7 @@ export interface CoreFunctions {
   // Queued tasks
   requireQueuedTask(id: string, instanceId: string): void;
   // Subsequence control
-  createSequence(id: string, assets: AssetForClient[]): Promise<void>;
+  createSequence(id: string, assets: IAssetForClient[]): Promise<void>;
   startSequence(id: string): void;
   showSequence(id: string): void;
   hideSequence(id: string): void;
@@ -107,7 +110,7 @@ export interface CoreFunctions {
   log(...x: unknown[]): void;
 }
 
-export type ContentState = 'idle' | 'preloading' | 'ready' | 'destroyed';
+export type ContentState = 'idle' | 'preloading' | 'ready' | 'destroying' | 'destroyed';
 
 export type CoreState =
   | 'waitingForCriticalComponent'
@@ -115,6 +118,7 @@ export type CoreState =
   | 'waitingForResource'
   | 'working'
   | 'panic'
+  | 'destroying'
   | 'destroyed';
 
 export interface ComponentFunctions {
@@ -132,7 +136,7 @@ export interface ComponentFunctions {
   // content lifecycle, for content
   showItself(): void;
   hideItself(): void;
-  destroyItself(): void;
+  destroyItself(): Promise<void>;
   // switching blocker
   /** will blocks both preload and showing of next asset instance when it returns true
    * see unblockNextContentSetup and unblockContentSwitch on CoreFunctions */

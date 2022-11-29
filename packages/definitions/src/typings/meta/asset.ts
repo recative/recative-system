@@ -13,4 +13,5 @@ export interface IAsset {
   createTime: number;
   updateTime: number;
   triggers?: ManagerCoreStateTrigger[];
+  extensionConfigurations: Record<string, string>;
 }

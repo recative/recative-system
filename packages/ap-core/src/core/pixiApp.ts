@@ -11,6 +11,7 @@ import { FrameOrderLevel, DEFAULT_FRAME_RATE_LEVEL } from './TimeMagic';
 import type { IComponentContext } from './componentContext';
 
 import { getCanvasSize } from '../utils/getCanvasSize';
+import { computeResolution } from '../utils/computeResolution';
 
 const [CANVAS_WIDTH, CANVAS_HEIGHT] = getCanvasSize();
 export const PIXI_APP_INSTANCE_TYPE = 'PIXI_APP' as const;
@@ -48,14 +49,16 @@ export interface IPixiAppOptions {
 
 export const DESTROYED_APP = EventDefinition();
 export const RAW_PIXI_APP_STORE = AtomDefinition<PIXI.Application | null>(null);
+export const PIXI_OPTIONS_STORE = AtomDefinition<IPixiAppOptions | null>(null);
 export const STAGE_STORE = AtomDefinition<PIXI.Container | null>(null);
 
-export const createPixiApp = ({
-  context = createComponentContext(),
-  pixiOptions = {},
-  resolutionMode = 'player',
-}: IPixiAppOptions) => {
-  // const isSafari = navigator.vendor.indexOf('Apple') > -1;
+export const createPixiApp = (options: IPixiAppOptions) => {
+  const {
+    context = createComponentContext(),
+    pixiOptions = {},
+    resolutionMode = 'player',
+  } = options;
+
   const app = new PIXI.Application({
     // iOS 15.4 WebGL on Metal bug
     antialias: false,
@@ -69,29 +72,7 @@ export const createPixiApp = ({
         height: CANVAS_HEIGHT,
       }
       : {
-        // iOS performance
-        resolution:
-        window.devicePixelRatio,
-        // Math.floor(
-        //       Math.min(
-        //         2,
-        //         window.devicePixelRatio,
-        //         isSafari
-        //           ? 1080
-        //               / Math.min(
-        //                 window.screen.availHeight,
-        //                 window.screen.availWidth,
-        //               )
-        //           : Infinity,
-        //         isSafari
-        //           ? 1920
-        //               / Math.max(
-        //                 window.screen.availHeight,
-        //                 window.screen.availWidth,
-        //               )
-        //           : Infinity,
-        //       ) * 2,
-        //     ) / 2,
+        resolution: computeResolution(),
         width: window.innerWidth,
         height: window.innerHeight,
         autoDensity: true,
@@ -163,6 +144,9 @@ export const createPixiApp = ({
 
   context.store.register(STAGE_STORE);
   context.store.setValue(STAGE_STORE, stage);
+
+  context.store.register(PIXI_OPTIONS_STORE);
+  context.store.setValue(PIXI_OPTIONS_STORE, options);
 
   let paused = false;
 

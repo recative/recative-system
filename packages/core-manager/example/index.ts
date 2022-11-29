@@ -1,6 +1,6 @@
-import { ComponentFunctions, Core, CoreFunctions } from '../src';
+import { ComponentFunctions, EpisodeCore, CoreFunctions } from '../src';
 
-const core = new Core({ initialEnvVariable: {} });
+const core = new EpisodeCore({ episodeId: '', initialEnvVariable: {} });
 
 const contents = new Map<string, CoreFunctions>();
 const progressElement = document.getElementById('progress')!;
@@ -8,21 +8,26 @@ const stateElement = document.getElementById('state')!;
 
 const stageFunctions: Partial<ComponentFunctions> = {
   createContent: (id) => {
-    contents.set(id, core.registerComponent(id, {
-      showItself: () => {
-        setTimeout(() => {
-          contents.get(id)!.finishItself();
-        }, 2000);
-      },
-      hideItself: () => {
-      },
-      destroyItself: () => {
-        setTimeout(() => {
-          contents.get(id)!.updateContentState('destroyed');
-          core.unregisterComponent(id);
-        }, 2000);
-      },
-    }));
+    contents.set(
+      id,
+      core.registerComponent(id, {
+        showItself: () => {
+          setTimeout(() => {
+            contents.get(id)!.finishItself();
+          }, 2000);
+        },
+        hideItself: () => {},
+        destroyItself: () => {
+          return new Promise((res) => {
+            setTimeout(() => {
+              contents.get(id)!.updateContentState('destroyed');
+              core.unregisterComponent(id);
+              res();
+            }, 2000);
+          });
+        },
+      })
+    );
     contents.get(id)!.updateContentState('preloading');
     setTimeout(() => {
       contents.get(id)!.updateContentState('ready');
@@ -40,25 +45,30 @@ core.managedCoreState.subscribe((states) => {
 setTimeout(() => {
   core.initializeEpisode({
     resources: [],
-    assets: [{
-      id: 'demo1',
-      duration: Infinity,
-      spec: {
-        contentExtensionId: 'interaction',
-        src: 'placeholder',
+    assets: [
+      {
+        id: 'demo1',
+        duration: Infinity,
+        spec: {
+          contentExtensionId: 'interaction',
+          src: 'placeholder',
+          extensionConfigurations: {},
+        },
+        preloadDisabled: true,
+        earlyDestroyOnSwitch: false,
       },
-      preloadDisabled: true,
-      earlyDestroyOnSwitch: false,
-    }, {
-      id: 'demo2',
-      duration: Infinity,
-      spec: {
-        contentExtensionId: 'interaction',
-        src: 'placeholder',
+      {
+        id: 'demo2',
+        duration: Infinity,
+        spec: {
+          contentExtensionId: 'interaction',
+          src: 'placeholder',
+          extensionConfigurations: {},
+        },
+        preloadDisabled: true,
+        earlyDestroyOnSwitch: false,
       },
-      preloadDisabled: true,
-      earlyDestroyOnSwitch: false,
-    }],
+    ],
     preferredUploaders: [],
     trustedUploaders: [],
   });

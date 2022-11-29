@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.9
+
+### Patch Changes
+
+- Updated dependencies [94ada38]
+- Updated dependencies [c0142d7]
+  - @recative/definitions@0.5.0
+
+## 0.2.8
+
+### Patch Changes
+
+- 148013b: fix: Reduce delay in BatchedMessagePortChannel
+
 ## 0.2.7
 
 ### Patch Changes

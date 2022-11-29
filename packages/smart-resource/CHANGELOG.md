@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1
+
+### Patch Changes
+
+- 685ef92: fix: Bang selector not selected correctly
+
 ## 0.2.0
 
 ### Minor Changes

@@ -8,7 +8,6 @@ export const Color = {
   positive: 'positive' as const,
   warning: 'warning' as const,
   negative: 'negative' as const,
-  white: 'white' as const,
   black: 'black' as const,
   blue: 'blue' as const,
   red: 'red' as const,

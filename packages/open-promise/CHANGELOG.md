@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.2.4
+
+### Patch Changes
+
+- chore: Add a CustomEvent polyfill for node side
+
+## 0.2.3
+
+### Patch Changes
+
+- 9ced044: feat: Implemented a detailed task list log
+
+## 0.2.2
+
+### Patch Changes
+
+- f920c38: feat: Send a event when queue was updated
+
+## 0.2.1
+
+### Patch Changes
+
+- f1e3e64: feat: Add force execute time limit to `TimeSlicingQueue`
+
 ## 0.2.0
 
 ### Minor Changes

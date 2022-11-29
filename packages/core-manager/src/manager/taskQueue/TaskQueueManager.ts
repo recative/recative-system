@@ -62,7 +62,7 @@ export class TaskQueueManager {
       });
     }, true);
 
-    this.instanceOptions.taskQueue.add(task);
+    this.instanceOptions.taskQueue.add(task, `queued-task:${taskId}`);
     task.promise.finally(() => {
       this.tasks.delete(taskId);
     });

@@ -1,0 +1,74 @@
+{
+  "name": "@recative/device-pressure-measurement-native-backend",
+  "version": "0.0.11",
+  "description": "Measure the pressure of memory",
+  "source": "src/index.ts",
+  "main": "dist/main.js",
+  "module": "dist/module.js",
+  "types": "dist/types.d.ts",
+  "unpkg": "dist/plugin.js",
+  "namespace": "capacitorMemoryPressure",
+  "files": [
+    "android/src/main/**/*",
+    "android/build.gradle",
+    "dist/",
+    "ios/Plugin/**/*",
+    "RecativeDevicePressureMeasuremetNativeBackend.podspec"
+  ],
+  "author": "SunZheng",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/recative/recative-system.git"
+  },
+  "bugs": {
+    "url": "https://github.com/recative/recative-system/issues"
+  },
+  "keywords": [
+    "capacitor",
+    "plugin",
+    "native"
+  ],
+  "scripts": {
+    "verify": "run-s verify:ios verify:android verify:web",
+    "verify:ios": "cd ios && pod install && xcodebuild -workspace Plugin.xcworkspace -scheme Plugin && cd ..",
+    "verify:android": "cd android && ./gradlew clean build test && cd ..",
+    "verify:web": "run-s build",
+    "lint": "yarn eslint && yarn prettier -- --check && yarn swiftlint -- lint",
+    "fmt": "yarn eslint -- --fix && yarn prettier -- --write && yarn swiftlint -- --fix --format",
+    "eslint": "eslint . --ext ts",
+    "prettier": "prettier \"**/*.{css,html,ts,js,java}\"",
+    "swiftlint": "node-swiftlint",
+    "build:js": "rollup -c rollup.config.js",
+    "build": "run-s clean build:js",
+    "clean": "rimraf ./dist",
+    "watch": "rollup -c -w",
+    "prepublishOnly": "run-s build"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^3.0.0",
+    "@capacitor/core": "^3.0.0",
+    "@capacitor/ios": "^3.0.0",
+    "@ionic/eslint-config": "^0.3.0",
+    "@ionic/prettier-config": "^1.0.1",
+    "@ionic/swiftlint-config": "^1.1.2",
+    "prettier-plugin-java": "~1.0.0",
+    "swiftlint": "^1.0.1"
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^3.0.0"
+  },
+  "prettier": "@ionic/prettier-config",
+  "swiftlint": "@ionic/swiftlint-config",
+  "eslintConfig": {
+    "extends": "@ionic/eslint-config/recommended"
+  },
+  "capacitor": {
+    "ios": {
+      "src": "ios"
+    },
+    "android": {
+      "src": "android"
+    }
+  }
+}

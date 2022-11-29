@@ -1,11 +1,6 @@
 /* eslint-disable no-alert */
 import * as React from 'react';
 import { createRoot } from 'react-dom/client';
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import type { StandardEngine } from 'styletron-react';
-
 import { persistentAtom } from '@nanostores/persistent';
 
 import { useStore } from '@nanostores/react';
@@ -28,6 +23,7 @@ import {
   PlayerSdkProvider,
   ContentModuleFactory,
 } from '@recative/client-sdk';
+import { Error, Loading } from '@recative/act-player';
 
 import { Block } from 'baseui/block';
 import { Drawer, SIZE as DRAWER_SIZE } from 'baseui/drawer';
@@ -35,15 +31,6 @@ import { Button, KIND, SIZE as BUTTON_SIZE } from 'baseui/button';
 import type { ButtonOverrides } from 'baseui/button';
 
 import { useEnvVariable } from './utils/useEnvVariable';
-import {
-  useUserImplementedFunctions,
-  INITIAL_ASSET_STATUS_ATOM,
-} from './utils/useUserImplementedFunctions';
-
-import { Error } from '@recative/act-player';
-import { Loading } from '@recative/act-player';
-
-window.React = React;
 
 const PREFERRED_UPLOADERS = [
   '@recative/uploader-extension-studio/ResourceManager',
@@ -52,7 +39,7 @@ const PREFERRED_UPLOADERS = [
 
 const TRUSTED_UPLOADERS = [
   '@recative/uploader-extension-studio/ResourceManager',
-]
+];
 
 if (window.localStorage.getItem('@recative/act-player/error-request')) {
   PREFERRED_UPLOADERS.push('@recative/uploader-extension-error/not-exists');
@@ -92,12 +79,24 @@ const Player: React.FC = () => {
   const navigate = useNavigate();
   const { episodeId } = useParams<{ episodeId: string }>();
 
-  const initialAsset = useStore(INITIAL_ASSET_STATUS_ATOM);
-  const userImplementedFunctions = useUserImplementedFunctions(episodeId);
+  const handleEpisodeIdUpdate = React.useCallback(async (id: string, forceReload?: boolean) => {
+    const url = `/episode/${id}`;
+    if (forceReload) {
+      window.location.href = url;
+    } else {
+      navigate(url);
+    }
+  }, [navigate]);
+
   const envVariable = useEnvVariable();
   const dependencies = React.useMemo(() => ({ navigate }), [navigate]);
 
   const config = useSdkConfig();
+
+  const Content = React.useMemo(
+    () => ContentModuleFactory(config.pathPattern, config.dataType),
+    [config.pathPattern, config.dataType],
+  );
 
   if (
     window.location.protocol !== 'https:'
@@ -107,21 +106,16 @@ const Player: React.FC = () => {
     return <Error>HTTPS Protocol Required</Error>;
   }
 
-  const Content = React.useMemo(
-    () => ContentModuleFactory(config.pathPattern, config.dataType),
-    [config.pathPattern, config.dataType],
-  );
-
   return (
     <React.Suspense fallback={<Loading />}>
       <Content
         episodeId={episodeId}
-        initialAsset={initialAsset}
-        userImplementedFunctions={userImplementedFunctions}
+        onEpisodeIdUpdate={handleEpisodeIdUpdate}
         envVariable={envVariable}
+        userData={undefined}
         trustedUploaders={TRUSTED_UPLOADERS}
         preferredUploaders={PREFERRED_UPLOADERS}
-        loadingComponent={Loading}
+        LoadingComponent={Loading}
         playerPropsHookDependencies={dependencies}
       />
     </React.Suspense>
@@ -146,7 +140,7 @@ const App: React.FC = () => {
         },
       }))
       : [];
-  }, [episodes]);
+  }, [episodes, navigate]);
 
   const initialEpisode = React.useMemo(() => {
     return [...episodes.values()].find(
@@ -186,9 +180,9 @@ const App: React.FC = () => {
           </Button>
         )}
       </Block>
+      {/** @ts-ignore */}
       <Drawer
         isOpen={drawerOpen}
-        autoFocus
         size={DRAWER_SIZE.auto}
         onClose={() => setDrawerOpen(false)}
       >
@@ -211,12 +205,6 @@ const App: React.FC = () => {
   );
 };
 
-type FixedStyletronProviderType = React.Provider<StandardEngine> & {
-  children: React.ReactNode;
-};
-
-const FixedStyletronProvider = StyletronProvider as FixedStyletronProviderType;
-
 export const renderPlayer = (selector = '#app', resourceServerPort = 9999) => {
   const app = document.querySelector(selector);
   if (!app) {
@@ -224,21 +212,35 @@ export const renderPlayer = (selector = '#app', resourceServerPort = 9999) => {
   }
   const root = createRoot(app);
 
-  root.render(
-    <FixedStyletronProvider value={engine}>
-      <BaseProvider theme={DarkTheme}>
-        <PlayerSdkProvider
-          pathPattern={
-            temporaryPath
-            ?? `${window.location.protocol}//${window.location.hostname}:${resourceServerPort}/preview/$fileName`
-          }
-          dataType={dataType ?? 'json'}
-        >
-          <HashRouter>
-            <App />
-          </HashRouter>
-        </PlayerSdkProvider>
-      </BaseProvider>
-    </FixedStyletronProvider>,
-  );
+  const pathBase = `${window.location.protocol}//${window.location.hostname}:${resourceServerPort}/preview`;
+
+  fetch(`${pathBase}/constants.json`)
+    .then((response) => response.json())
+    .then((data) => {
+      Reflect.set(window, 'constant', data);
+
+      if (typeof data === 'object' && data !== null) {
+        if (typeof data.localStorage === 'object' && data.localStorage !== null) {
+          Object.keys(data.localStorage).forEach((key) => {
+            localStorage.setItem(key, data.localStorage[key]);
+          });
+        }
+      }
+    })
+    .finally(() => {
+      root.render(
+      <StyletronProvider value={engine}>
+        <BaseProvider theme={DarkTheme}>
+          <PlayerSdkProvider
+            pathPattern={temporaryPath ?? `${pathBase}/$fileName`}
+            dataType={dataType ?? 'json'}
+          >
+            <HashRouter>
+              <App />
+            </HashRouter>
+          </PlayerSdkProvider>
+        </BaseProvider>
+      </StyletronProvider>,
+      );
+    });
 };

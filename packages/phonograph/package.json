@@ -1,0 +1,42 @@
+{
+  "name": "@recative/phonograph",
+  "description": "Play audio files without the dreaded 'DOMException: play() can only be initiated by a user gesture' error.",
+  "version": "2.1.1",
+  "source": "src/index.ts",
+  "main": "dist/main.js",
+  "module": "dist/module.js",
+  "browser": "dist/browser.js",
+  "types": "dist/types.d.ts",
+  "repository": "https://github.com/recative/recative-system",
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "keywords": [
+    "audio",
+    "web",
+    "audio",
+    "mp3",
+    "wav"
+  ],
+  "author": "Rich Harris",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://gitlab.com/Rich-Harris/phonograph/issues"
+  },
+  "homepage": "https://gitlab.com/Rich-Harris/phonograph#README",
+  "devDependencies": {
+    "serve": "^10.1.1"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -cw",
+    "prepublish": "yarn build",
+    "test": "serve . & open http://localhost:5000/demo.html",
+    "pretest": "yarn build"
+  },
+  "dependencies": {
+    "standardized-audio-context": "^25.3.29"
+  }
+}

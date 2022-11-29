@@ -1,5 +1,35 @@
+export class SearchableMap {
+  private index = 0;
+
+  private value = new Map<string, number>();
+
+  push = (x: string) => {
+    this.value.set(x, this.index);
+
+    this.index = this.index + 1;
+  }
+
+  get length() {
+    return this.index;
+  }
+
+  indexOf = (x: string) => {
+    const result = this.value.get(x);
+
+    if (result === undefined) {
+      return -1;
+    }
+
+    return result;
+  }
+
+  dump = () => {
+    return [...this.value.keys()]
+  }
+}
+
 export const stringify = (x: unknown) => {
-  const head: string[] = [];
+  const head = new SearchableMap();
 
   const getIndex = (x: string) => {
     const index = head.indexOf(x);
@@ -32,7 +62,7 @@ export const stringify = (x: unknown) => {
     return getIndex(value);
   });
 
-  const sHead = JSON.stringify(head);
+  const sHead = JSON.stringify(head.dump());
 
   return `${sBody}\n${sHead}`;
 }

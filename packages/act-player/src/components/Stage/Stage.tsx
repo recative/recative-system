@@ -22,20 +22,20 @@ const CONTENT_EXTENSIONS: Record<string, AssetExtensionComponent> = {
 };
 
 const useStyles = () => {
-  const [css] = useStyletron();
+  const [css, theme] = useStyletron();
 
   const stageContainerStyles = React.useMemo(() => css({
     height: '100%',
-  }), []);
+  }), [css]);
 
   const elementContainerStyles = React.useMemo(() => css({
-    backgroundColor: 'black',
+    backgroundColor: theme.colors.backgroundAlwaysDark,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     overflowX: 'hidden',
     overflowY: 'hidden',
     pointerEvents: 'auto',
-  }), []);
+  }), [css, theme.colors.backgroundAlwaysDark]);
 
   const bufferingStyles = React.useMemo(() => css({
     position: 'absolute',
@@ -43,7 +43,7 @@ const useStyles = () => {
     height: '100%',
     top: '0',
     left: '0',
-  }), []);
+  }), [css]);
 
   return { stageContainerStyles, elementContainerStyles, bufferingStyles };
 };

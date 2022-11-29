@@ -2,15 +2,23 @@ import * as React from 'react';
 import cn from 'classnames';
 import debug from 'debug';
 import useConstant from 'use-constant';
-
 import { useStore } from '@nanostores/react';
 import { useInterval } from 'react-use';
 import { useStyletron } from 'baseui';
 
 import { Block } from 'baseui/block';
 
-import { convertSRTToStates } from '@recative/core-manager';
 import { getMatchedResource } from '@recative/smart-resource';
+import {
+  convertSRTToStates,
+  selectUrlAudioElementInitPostProcess
+} from '@recative/core-manager';
+
+import type {
+  AudioElementInit,
+  PostProcessCallback,
+} from '@recative/core-manager';
+import { IResourceFileForClient } from '@recative/definitions';
 
 import { isSafari } from '../../variables/safari';
 import { ModuleContainer } from '../Layout/ModuleContainer';
@@ -19,14 +27,19 @@ import type { AssetExtensionComponent } from '../../types/ExtensionCore';
 
 import { getController } from './videoControllers';
 
+
+type ObjectFit =
+  | 'inherit'
+  | 'contain'
+  | 'cover'
+  | 'fill'
+  | 'none'
+  | 'scale-down';
+
 const log = debug('player:video');
 
 // milliseconds
 const UNSTUCK_CHECK_INTERVAL = 500;
-
-// seconds
-const BUFFER_SIZE_TARGET = 5;
-const BUFFER_SIZE_DELTA = 1;
 
 // data url for one pixel black png
 const BLANK_POSTER = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAWJQAAFiUBSVIk8AAAABNJREFUCB1jZGBg+A/EDEwgAgQADigBA//q6GsAAAAASUVORK5CYII%3D';
@@ -42,43 +55,10 @@ const RESOURCE_QUERY_WEIGHTS = {
 
 const IS_SAFARI = isSafari();
 
-const isVideoWaiting = (video: HTMLVideoElement) => {
-  let buffering = true;
-  const { buffered, currentTime } = video;
-  for (let i = 0; i < buffered.length; i += 1) {
-    if (buffered.start(i) <= currentTime && currentTime < buffered.end(i)) {
-      buffering = false;
-    }
-  }
-  return video.seeking || buffering;
-};
-
-const hasEnoughBuffer = (video: HTMLVideoElement) => {
-  // Note: sometime the browser do not update buffered
-  // when it actually has enough data (like chrome)
-  // However you can always trust readyState
-  if (video.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
-    return true;
-  }
-  const { buffered, duration, currentTime } = video;
-  for (let i = 0; i < buffered.length; i += 1) {
-    if (buffered.start(i) <= currentTime && currentTime < buffered.end(i)) {
-      if (
-        buffered.end(i)
-        >= Math.min(duration - BUFFER_SIZE_DELTA, currentTime + BUFFER_SIZE_TARGET)
-      ) {
-        return true;
-      }
-    }
-  }
-  return false;
-};
-
 export const InternalVideo: AssetExtensionComponent = (props) => {
   const [css] = useStyletron();
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const videoSourceRef = React.useRef<HTMLSourceElement>(null);
-  const audioRef = React.useRef<string>('');
   const subtitleRef = React.useRef<string | null>('');
   const containerRef = React.useRef<HTMLDivElement>(null);
   const unstuckCheckInterval = React.useRef<ReturnType<
@@ -86,11 +66,12 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
   > | null>(null);
   const videoComponentInitialized = React.useRef(false);
 
-  const fullSizeStyle = css({
+  const fullSizeStyle = React.useMemo(() => css({
     width: '100%',
     height: '100%',
+    objectFit: props.spec.extensionConfigurations?.OBJECT_FIT as ObjectFit ?? 'contain',
     backgroundColor: 'black',
-  });
+  }), [css, props.spec.extensionConfigurations?.OBJECT_FIT]);
 
   const core = useConstant(() => {
     const controller = getController(props.id);
@@ -114,11 +95,10 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
       clearInterval(unstuckCheckInterval.current);
       unstuckCheckInterval.current = null;
     }
-  }, [core]);
+  }, []);
 
   const unstuckCheck = React.useCallback(() => {
-    if (hasEnoughBuffer(videoRef.current!)) {
-      core.coreFunctions.reportUnstuck();
+    if (core.controller.unstuckCheck()) {
       clearUnstuckCheckInterval();
     }
   }, [core, clearUnstuckCheckInterval]);
@@ -131,33 +111,16 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
       );
       unstuckCheck();
     }
-  }, [core, unstuckCheck]);
+  }, [unstuckCheck]);
 
   const stuck = React.useCallback(() => {
-    if (!isVideoWaiting(videoRef.current!)) {
-      // Chrome somehow gives false positive here
-      // maybe it is just seeking but it seeks so fast that
-      // we already complete seeking here
-      return;
-    }
-    if (videoRef.current!.readyState <= HTMLMediaElement.HAVE_CURRENT_DATA) {
-      core.coreFunctions.log('Stuck reason: do not have data');
-    } else if (videoRef.current!.seeking) {
-      core.coreFunctions.log('Stuck reason: seeking');
-    } else {
-      core.coreFunctions.log('Stuck reason: unknown');
-    }
-    // As a workaround to force the browser to update the readyState
-    if (!videoRef.current!.seeking) {
-      videoRef.current!.currentTime = videoRef.current!.currentTime;
-    }
-    core.coreFunctions.reportStuck();
+    core.controller.stuck();
     clearUnstuckCheckInterval();
   }, [core, clearUnstuckCheckInterval]);
 
   React.useEffect(() => {
     return () => clearUnstuckCheckInterval();
-  }, [core]);
+  }, [clearUnstuckCheckInterval, core]);
 
   React.useLayoutEffect(() => {
     if (videoComponentInitialized.current) return;
@@ -181,15 +144,11 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
     return () => {
       core.controller.removeVideoTag();
     };
-  }, []);
+  }, [core.controller, fullSizeStyle]);
 
   const episodeData = props.core.getEpisodeData()!;
 
   const queryMethod = 'resourceLabel' in props.spec ? 'label' : 'id';
-
-  const queryUrlFn = 'resourceLabel' in props.spec
-    ? episodeData.resources.getResourceByLabel
-    : episodeData.resources.getResourceById;
 
   const resourceMap = 'resourceLabel' in props.spec
     ? episodeData.resources.itemsByLabel
@@ -208,8 +167,9 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
       throw new TypeError(`Resource with ${queryMethod} query "${query}" was not found`);
     }
 
-    const matchedResourceUrl = queryUrlFn(
+    const matchedResourceUrl = episodeData.resources.getResourceByQuery(
       query,
+      queryMethod,
       VIDEO_QUERY_CONFIG,
       RESOURCE_QUERY_WEIGHTS,
     );
@@ -244,38 +204,56 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
         if (selectedVideo !== videoSourceRef.current!.src) {
           videoSourceRef.current!.src = selectedVideo;
           videoSourceRef.current!.type = mime;
-          videoRef.current!.load();
+          core.controller.reloadVideo();
+          if (videoRef.current!.currentSrc === '') {
+            // Firefox may not load the source immediately after setting the source element
+            setTimeout(() => {
+              core.controller.reloadVideo();
+            }, 0)
+          }
           clearUnstuckCheckInterval();
         }
       });
-  }, [query, queryUrlFn, resourceMap, resolution, contentLanguage]);
+  }, [
+    query,
+    resourceMap,
+    resolution,
+    contentLanguage,
+    queryMethod,
+    clearUnstuckCheckInterval,
+    episodeData.resources,
+    core.controller,
+  ]);
 
   React.useLayoutEffect(() => {
-    const matchedResource = queryUrlFn(
+    const matchedResource = episodeData.resources.getResourceByQuery<
+      AudioElementInit, PostProcessCallback<
+        AudioElementInit, IResourceFileForClient
+      >
+    >(
       query,
+      queryMethod,
       {
         category: 'audio',
       },
       RESOURCE_QUERY_WEIGHTS,
+      selectUrlAudioElementInitPostProcess,
     );
-
-    Promise.resolve(matchedResource)
-      .then((selectedAudio) => {
-        if (!selectedAudio) {
-          throw new Error('Invalid audio URL');
-        }
-
-        if (selectedAudio !== audioRef.current) {
-          core.coreFunctions.setAudioTrack(selectedAudio);
-          audioRef.current = selectedAudio;
-        }
-      });
-  }, [props.spec, contentLanguage]);
+    core.coreFunctions.setAudioTrack(matchedResource);
+  }, [
+    props.spec,
+    contentLanguage,
+    query,
+    core.coreFunctions,
+    episodeData.resources,
+    queryMethod,
+  ]);
 
   React.useLayoutEffect(() => {
     if (subtitleLanguage !== 'null') {
-      const matchedResource = queryUrlFn(
+      const matchedResource = episodeData.resources.getResourceByQuery(
         query,
+        queryMethod,
         {
           category: 'subtitle',
           lang: subtitleLanguage,
@@ -309,13 +287,22 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
             });
         });
     }
-  }, [props.spec, props.core, subtitleLanguage]);
+  }, [
+    props.spec,
+    props.core,
+    subtitleLanguage,
+    query,
+    core.coreFunctions,
+    props.id,
+    episodeData.resources,
+    queryMethod,
+  ]);
 
   React.useEffect(() => {
     core.coreFunctions.updateContentState('preloading');
 
     return () => props.core.unregisterComponent(props.id);
-  }, [props.id]);
+  }, [core.coreFunctions, props.core, props.id]);
 
   /**
    * This is a dirty fix for a bug in the Safari browser (iOS 14.4), it
@@ -326,9 +313,7 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
 
   const handleCanPlay = React.useCallback(() => {
     scheduleUnstuckCheck();
-    core.coreFunctions.updateContentState('ready');
-    core.controller.setVideoReady();
-  }, []);
+  }, [scheduleUnstuckCheck]);
 
   const handleLoadedMetadata = React.useCallback(() => {
     // For iOS Safari: the browser won't load the data until the video start to play
@@ -339,16 +324,13 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
   }, []);
 
   const handleTimeUpdate = React.useCallback(() => {
-    core.controller.updateSyncTime();
-    core.coreFunctions.reportProgress(
-      videoRef.current!.currentTime * 1000,
-    );
     core.controller.checkVideoPlayingState();
-  }, []);
+    core.controller.reportProgress();
+  }, [core.controller]);
 
   const handleWaiting = React.useCallback(() => {
     stuck();
-  }, []);
+  }, [stuck]);
 
   return (
     <ModuleContainer hidden={!props.show}>

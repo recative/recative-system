@@ -2,13 +2,19 @@
 /* eslint-disable no-constant-condition */
 // @ts-ignore
 import objectEntries from 'object.entries';
+import debug from 'debug';
 
 import { NoMoreURLAvailableError } from './NoMoreURLAvailableError';
 
+const logError = debug('core:try-url');
+// eslint-disable-next-line no-console
+logError.log = console.error.bind(console);
+
 const OK = { ok: true };
 
-export type PostProcessCallback<Result = string> = (
-  url: string
+export type PostProcessCallback<Result = string, AdditionalData = null> = (
+  url: string,
+  additionalData?: AdditionalData,
 ) => Promise<Result | null> | (Result | null);
 /**
  * Find the valid resource URL via the fetch method.
@@ -16,11 +22,13 @@ export type PostProcessCallback<Result = string> = (
  * @returns The valid resource URL or null.
  */
 export const tryValidResourceUrl = async <
-  PostProcess extends PostProcessCallback<Result> | undefined,
+  PostProcess extends PostProcessCallback<Result, AdditionalData> | undefined,
   Result = string,
+  AdditionalData = undefined,
 >(
   x: Generator<readonly [string, string], void, unknown>,
   postProcess?: PostProcess,
+  additionalData?: AdditionalData,
   trustedUploaders: string[] = [],
   taskId = Math.random().toString(36),
   logObject: Record<string, string> | undefined = undefined,
@@ -56,7 +64,7 @@ export const tryValidResourceUrl = async <
           return url as any;
         }
 
-        const postProcessed = postProcess(url);
+        const postProcessed = postProcess(url, additionalData);
 
         if (postProcessed !== null) {
           return postProcessed as any;
@@ -68,7 +76,7 @@ export const tryValidResourceUrl = async <
       }
 
       if (e instanceof NoMoreURLAvailableError) {
-        console.error('No more URL available!');
+        logError(e);
         return null;
       }
     }

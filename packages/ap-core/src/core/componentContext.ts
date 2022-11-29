@@ -45,9 +45,14 @@ export const createComponentContext = (
     remoteStoreRegistry: new RemoteStoreRegistry(),
     taskQueue: new TimeSlicingQueue(),
     wrap: <T extends unknown[], U>(x: (...args: T) => U) => (...args: T) => {
+      const oldContext = getContext();
       setContext(result);
       const fnResult = x(...args);
-      removeContext();
+      if (oldContext !== null) {
+        setContext(oldContext);
+      } else {
+        removeContext();
+      }
 
       return fnResult;
     },

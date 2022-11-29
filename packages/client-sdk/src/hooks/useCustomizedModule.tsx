@@ -29,19 +29,21 @@ export const DEFAULT_INTERFACE_COMPONENTS_MODULE = {
   ] as InterfaceExtensionComponent[],
 };
 
-export interface ICustomizedModule<T = any> {
+export interface ICustomizedModule<T> {
   default: T;
 }
 
-export const DEFAULT_COMPONENTS: React.FC = ({ children }) => (
+export const DEFAULT_COMPONENTS: React.FC<React.PropsWithChildren<{}>> = ({ children }) => (
   <div>{children}</div>
 );
 
-export const DEFAULT_MODULE: ICustomizedModule = {
+// This is acceptable here
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const DEFAULT_MODULE: ICustomizedModule<any> = {
   default: DEFAULT_COMPONENTS,
 };
 
-export const useCustomizedModule = <T extends ICustomizedModule<P>, P = any>(
+export const useCustomizedModule = <T extends ICustomizedModule<P>, P>(
   scriptName: string,
   baseUrl: string | null,
   defaultModule = DEFAULT_MODULE as unknown as T,
@@ -75,7 +77,7 @@ export const useCustomizedModule = <T extends ICustomizedModule<P>, P = any>(
       log('something wrong happens, would not use imported components', e);
       return defaultModule;
     }
-  }, [baseUrl]);
+  }, [baseUrl, dataType, defaultModule, pathPattern, scriptName]);
 
   const [components, componentActions] = useAsync(loadComponents, null);
 

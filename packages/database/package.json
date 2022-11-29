@@ -1,0 +1,25 @@
+{
+  "name": "@recative/database",
+  "version": "0.0.2",
+  "source": "src/index.ts",
+  "main": "dist/main.js",
+  "module": "dist/module.js",
+  "types": "dist/types.d.ts",
+  "repository": "https://github.com/recative/recative-system",
+  "scripts": {
+    "clean": "rimraf ./dist",
+    "watch": "rollup -c -w",
+    "build-experimental": "yarn clean && rollup -c",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@recative/lens": "workspace:^",
+    "@recative/open-promise": "workspace:^",
+    "@ungap/event-target": "^0.2.3"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^7.5.0",
+    "@types/tmp": "^0.2.3",
+    "tmp": "^0.2.1"
+  }
+}

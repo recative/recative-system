@@ -1,5 +1,83 @@
 # @recative/ap-core
 
+## 0.7.0
+
+### Minor Changes
+
+- 1891485: feat: Add a new asyncDataSource hook
+
+## 0.6.0
+
+### Minor Changes
+
+- 4b0efc9: feat: SmartSprite as initialize task
+
+### Patch Changes
+
+- Updated dependencies [94ada38]
+- Updated dependencies [c0142d7]
+  - @recative/definitions@0.5.0
+  - @recative/act-protocol@0.2.9
+  - @recative/resource-bridge@0.2.5
+
+## 0.5.1
+
+### Patch Changes
+
+- e5e87d5: fix: DataSource in useQuery should always update
+- 6f80779: fix: Show after pause should not play actPoint
+
+## 0.5.0
+
+### Minor Changes
+
+- dd76191: feat: SmartSprite won't update texture until texture is ready
+
+### Patch Changes
+
+- Updated dependencies [148013b]
+  - @recative/act-protocol@0.2.8
+
+## 0.4.2
+
+### Patch Changes
+
+- 297df61: fix: Emit textureupdate only when the texture is actual ready
+- Updated dependencies [9ced044]
+  - @recative/open-promise@0.2.3
+
+## 0.4.1
+
+### Patch Changes
+
+- 7554f7f: fix: Recover old context after context.wrap
+
+## 0.4.0
+
+### Minor Changes
+
+- e38a3a9: feat: Add useEnvVariableGetter
+
+## 0.3.1
+
+### Patch Changes
+
+- db60c3b: fix: remove frameRateLevel when animation was paused
+- Updated dependencies [bda3138]
+  - @recative/definitions@0.4.2
+
+## 0.3.1-beta.0
+
+### Patch Changes
+
+- db60c3b: fix: remove frameRateLevel when animation was paused
+
+## 0.3.0
+
+### Minor Changes
+
+- BREAKING: Change default framerate level to ~30fps for all animations
+
 ## 0.2.3
 
 ### Patch Changes

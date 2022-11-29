@@ -1,7 +1,8 @@
+/* eslint-disable no-console */
+/* eslint-disable no-restricted-globals */
+
 /// <reference lib="es2020" />
 /// <reference lib="WebWorker" />
-
-/* eslint-disable no-restricted-globals */
 
 import { OpenPromise } from '@recative/open-promise';
 import { ResourceLoaderCacheLevel } from '@recative/definitions';

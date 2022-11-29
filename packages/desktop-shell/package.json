@@ -1,0 +1,49 @@
+{
+  "name": "desktop-shell",
+  "version": "0.1.0",
+  "main": "build/main.js",
+  "scripts": {
+    "prepare-electron": "rollup -c",
+    "electron": "yarn run prepare-electron && electron-forge start",
+    "start": "npm-run-all -l -p start-web start-electron",
+    "start-web": "react-scripts start",
+    "start-electron": "npm-run-all -l prepare-electron electron",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "prepare-package": "yarn run build && yarn run prepare-electron",
+    "package": "yarn run prepare-package && electron-forge package",
+    "make": "electron-forge make",
+    "clean": "rimraf build"
+  },
+  "dependencies": {
+    "async-call-rpc": "^6.1.5",
+    "electron-is-dev": "^2.0.0",
+    "electron-squirrel-startup": "^1.0.0",
+    "react-scripts": "5.0.1"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^6.0.3",
+    "@electron-forge/maker-zip": "^6.0.3",
+    "electron": "^21.2.0",
+    "npm-run-all": "^4.1.5"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

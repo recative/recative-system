@@ -1,0 +1,13 @@
+diff --git a/lib/utils/npm.js b/lib/utils/npm.js
+index 640e88d400afdeef85b3859e02eaad97f5c29b9f..4443315d2fbfeeca941ca9cb1cf8b7a474b8170c 100644
+--- a/lib/utils/npm.js
++++ b/lib/utils/npm.js
+@@ -42,7 +42,7 @@ async function pkgManagerArgs(npmClient, options) {
+             vocab = { run: 'run', install: 'i', bareInstall: 'i', uninstall: 'uninstall', dedupe: 'dedupe', rebuild: 'rebuild', global: '-g', save: '--save', saveDev: '-D', saveExact: '-E', nonInteractive: '', lockFileOnly: '--package-lock-only' };
+             break;
+         case 'yarn':
+-            vocab = { run: 'run', install: 'add', bareInstall: 'install', uninstall: 'remove', dedupe: '', rebuild: 'install', global: '', save: '', saveDev: '--dev', saveExact: '--exact', nonInteractive: '--non-interactive', lockFileOnly: '' };
++            vocab = { run: 'run', install: 'add', bareInstall: 'install', uninstall: 'remove', dedupe: '', rebuild: 'install', global: '', save: '', saveDev: '--dev', saveExact: '--exact', nonInteractive: '', lockFileOnly: '' };
+             if (options.global) { // yarn installs packages globally under the 'global' prefix, instead of having a flag
+                 installerArgs.push('global');
+             }

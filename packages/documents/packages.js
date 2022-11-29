@@ -3,12 +3,19 @@ const config = (id, label) => ({
 });
 
 module.exports = [
-  config('core-manager', 'Core Manager'),
-  config('audio-station', 'Audio Station'),
+  config('act-player', 'Act Player'),
   config('act-protocol', 'Act Protocol'),
-  config('client-sdk', 'Client SDK'),
-  config('open-promise', 'Open Promise'),
-  config('smart-resource', 'Smart Resource'),
+  config('ap-core', 'Act Point Core'),
   config('atlas', 'Atlas'),
+  config('audio-station', 'Audio Station'),
+  config('client-sdk', 'Client SDK'),
+  config('core-manager', 'Core Manager'),
+  config('database', 'Database'),
+  config('Definitions', 'Definitions'),
+  config('open-promise', 'Open Promise'),
+  config('phonograph', 'Phonograph'),
+  config('lens', 'Lens'),
+  config('smart-resource', 'Smart Resource'),
+  config('time-schedule', 'Time Schedule'),
   config('ugly-json', 'Ugly JSON'),
 ];

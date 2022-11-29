@@ -1,5 +1,100 @@
 # @recative/ap-preview
 
+## 0.4.8
+
+### Patch Changes
+
+- Updated dependencies [68448ee]
+- Updated dependencies [94ada38]
+- Updated dependencies [c0142d7]
+- Updated dependencies [cffb93b]
+  - @recative/core-manager@0.11.0
+  - @recative/definitions@0.5.0
+  - @recative/act-player@0.5.3
+  - @recative/act-protocol@0.2.9
+
+## 0.4.7
+
+### Patch Changes
+
+- Updated dependencies [fc982ac]
+  - @recative/core-manager@0.10.0
+  - @recative/act-player@0.5.1
+
+## 0.4.6
+
+### Patch Changes
+
+- Updated dependencies [f1c3093]
+- Updated dependencies [b252f5f]
+- Updated dependencies [9fdeb4b]
+  - @recative/core-manager@0.9.0
+  - @recative/act-player@0.5.0
+
+## 0.4.5
+
+### Patch Changes
+
+- Updated dependencies [148013b]
+- Updated dependencies [7b07837]
+  - @recative/act-protocol@0.2.8
+  - @recative/core-manager@0.8.0
+  - @recative/act-player@0.4.2
+
+## 0.4.4
+
+### Patch Changes
+
+- Updated dependencies [25eecc8]
+  - @recative/core-manager@0.7.0
+  - @recative/act-player@0.4.1
+
+## 0.4.3
+
+### Patch Changes
+
+- Updated dependencies [c1bca16]
+- Updated dependencies [2439a78]
+- Updated dependencies [33d4903]
+- Updated dependencies [2a2aa9c]
+- Updated dependencies [15109d5]
+  - @recative/core-manager@0.6.0
+  - @recative/act-player@0.4.0
+
+## 0.4.2
+
+### Patch Changes
+
+- 2d4f614: chore: Make `act-player` as dependency of `ap-preview`
+
+## 0.4.1
+
+### Patch Changes
+
+- 2c792e0: fix: Remove episodeId overwritter
+
+## 0.4.0
+
+### Minor Changes
+
+- a98f797: BREAKING: Handle legacy episode ID properly
+
+### Patch Changes
+
+- Updated dependencies [ceb427b]
+- Updated dependencies [bda3138]
+- Updated dependencies [775f617]
+- Updated dependencies [a98f797]
+  - @recative/core-manager@0.5.0
+  - @recative/definitions@0.4.2
+
+## 0.3.2-beta.0
+
+### Patch Changes
+
+- Updated dependencies [775f617]
+  - @recative/core-manager@0.5.0-beta.0
+
 ## 0.3.1
 
 ### Patch Changes

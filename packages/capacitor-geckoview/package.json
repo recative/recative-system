@@ -1,0 +1,20 @@
+{
+  "name": "@recative/capacitor-geckoview",
+  "version": "1.0.1",
+  "repository": "https://github.com/recative/recative-system",
+  "scripts": {
+    "verify": "./gradlew clean lint build test -b capacitor/build.gradle"
+  },
+  "files": [
+    "capacitor/build.gradle",
+    "capacitor/lint-baseline.xml",
+    "capacitor/lint.xml",
+    "capacitor/src/main/**/*"
+  ],
+  "peerDependencies": {
+    "@capacitor/core": "^3.6.0"
+  },
+  "browserslist": [
+    "last 1 Chrome versions"
+  ]
+}

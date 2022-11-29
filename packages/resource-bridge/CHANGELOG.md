@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.5
+
+### Patch Changes
+
+- Updated dependencies [94ada38]
+- Updated dependencies [c0142d7]
+  - @recative/definitions@0.5.0
+  - @recative/act-protocol@0.2.9
+
+## 0.2.4
+
+### Patch Changes
+
+- 50f35e5: chore: Migrate to rollup
+
 ## 0.2.3
 
 ### Patch Changes

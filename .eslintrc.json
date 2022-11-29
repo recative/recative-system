@@ -1,33 +1,16 @@
 {
   "root": true,
-  "ignorePatterns": [
-    "**/*"
-  ],
-  "plugins": [
-    "@nrwl/nx",
-    "react",
-    "jsx-a11y",
-    "react-hooks"
-  ],
-  "extends": [
-    "airbnb-base",
-    "airbnb-typescript/base"
-  ],
+  "ignorePatterns": ["**/*"],
+  "plugins": ["@nrwl/nx", "react", "jsx-a11y", "react-hooks"],
+  "extends": ["airbnb-base", "airbnb-typescript/base"],
   "parserOptions": {
-    "project": [
-      "packages/*/tsconfig(.*)?json"
-    ],
+    "project": ["packages/*/tsconfig(.*)?json"],
     "sourceType": "module",
     "ecmaVersion": 12
   },
   "overrides": [
     {
-      "files": [
-        "*.ts",
-        "*.tsx",
-        "*.js",
-        "*.jsx"
-      ],
+      "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
       "rules": {
         "@nrwl/nx/enforce-module-boundaries": [
           "error",
@@ -37,9 +20,7 @@
             "depConstraints": [
               {
                 "sourceTag": "*",
-                "onlyDependOnLibsWithTags": [
-                  "*"
-                ]
+                "onlyDependOnLibsWithTags": ["*"]
               }
             ]
           }
@@ -47,10 +28,7 @@
       }
     },
     {
-      "files": [
-        "*.ts",
-        "*.tsx"
-      ],
+      "files": ["*.ts", "*.tsx"],
       "extends": [
         "plugin:@nrwl/nx/typescript",
         "airbnb-base",
@@ -58,36 +36,33 @@
         "plugin:react/recommended",
         "plugin:react/jsx-runtime",
         "plugin:jsx-a11y/recommended",
-        "plugin:react-hooks/recommended"
+        "plugin:react-hooks/recommended",
+        "prettier"
       ],
       "rules": {
         "arrow-body-style": "off",
         "consistent-return": "off",
+        "function-paren-newline": "off",
         "global-require": "off",
-        "linebreak-style": [
-          "off",
-          "windows"
-        ],
-        "no-bitwise": "off",
-        "no-continue": "off",
+        "linebreak-style": ["off", "windows"],
+        "max-classes-per-file": "off",
         "no-param-reassign": [
           "error",
           {
             "props": false
           }
         ],
-        "max-classes-per-file": "off",
+        "no-bitwise": "off",
+        "no-continue": "off",
         "no-await-in-loop": "off",
-        "operator-assignment": "off",
         "no-underscore-dangle": "off",
+        "operator-assignment": "off",
         "import/extensions": "off",
         "import/no-unresolved": "off",
+        "import/no-extraneous-dependencies": "off",
         "import/prefer-default-export": "off",
         "import/no-dynamic-require": "off",
         "import/no-cycle": "warn",
-        "@typescript-eslint/naming-convention": "off",
-        "@typescript-eslint/ban-ts-comment": "off",
-        "@typescript-eslint/no-empty-interface":"off",
         "@typescript-eslint/ban-types": [
           "error",
           {
@@ -98,23 +73,23 @@
             "extendDefaults": true
           }
         ],
-        "@typescript-eslint/no-non-null-assertion":"off",
-        "@typescript-eslint/no-inferrable-types":"off",
+        "@typescript-eslint/ban-ts-comment": "off",
+        "@typescript-eslint/indent": "off",
+        "@typescript-eslint/naming-convention": "off",
+        "@typescript-eslint/no-empty-interface": "off",
+        "@typescript-eslint/no-non-null-assertion": "off",
+        "@typescript-eslint/no-inferrable-types": "off",
         "react/no-typos": "error",
         "react/prop-types": "off",
         "react/display-name": "off",
         "react/forbid-dom-props": [2, { "forbid": ["style"] }],
-        "react-hooks/exhaustive-deps": "off",
         "jsx-a11y/iframe-has-title": "warn",
         "jsx-a11y/media-has-caption": "warn",
         "jsx-a11y/alt-text": "warn"
       }
     },
     {
-      "files": [
-        "*.js",
-        "*.jsx"
-      ],
+      "files": ["*.js", "*.jsx"],
       "extends": [
         "plugin:@nrwl/nx/javascript",
         "airbnb-base",
