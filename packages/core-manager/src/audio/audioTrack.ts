@@ -159,13 +159,19 @@ export class AudioTrack extends WithLogger implements Track {
   }
 
   pause(): void {
+    const lastPlaying =
+      this.audioElement?.isPlaying() &&
+      !this.mixer?.isSuspended() &&
+      this.station.audioContext?.state === 'running';
     this.playing = false;
     this.audioElement?.pause();
     if (this.audioElement) {
-      // make sure the time do not rewind after pause
-      const time = performance.now();
-      this.audioElement.time =
-        (time - this.lastUpdateTime + this.lastProgress) / 1000;
+      if (lastPlaying) {
+        // make sure the time do not rewind after pause
+        const time = performance.now();
+        this.audioElement.time =
+          (time - this.lastUpdateTime + this.lastProgress) / 1000;
+      }
     }
     this.updateTime();
   }
