@@ -70,5 +70,8 @@
   },
   "[javascript]": {
     "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[plaintext]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }

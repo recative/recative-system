@@ -1,0 +1,160 @@
+---
+sidebar_position: 9002
+---
+
+import SequenceStructure from './images/sequence-structure.svg';
+
+# TN9002: Episode Core: Episode Level Content Management
+
+## Abstract
+
+**Act Player** and **Episode Core** are the core component to manage multiple
+contents that creator made. In this article, we'll introduce the anatomy of
+these parts and give a brief guide about how customizing your player for both
+visual experience and functions which can fit your very own requirement.
+
+## Episode Core
+
+Episode Core is the fundenmental part which can manage all content segments
+provided by creators, it will handle the following tasks:
+
+- **Lifecycle Management:** To ensure contents loads smoothly and does not crash
+  due to memory spikes, we need a well-established lifecycle mechanism to schedule
+  the preloading, loading and destroy task of each part of your content, we will
+  how lifecycle works later.
+
+- **Time synchronize and schedule:**
+  [Synchronizing multiple media source](https://github.com/recative/recative-system/blob/05a199e188eecf9b10cbb0225a478463d0a878d7/packages/time-schedule/src/timeline.ts) like
+  video channel and audio channel;
+  [triggering events](https://github.com/recative/recative-system/blob/05a199e188eecf9b10cbb0225a478463d0a878d7/packages/definitions/src/utils/managedCoreState.ts#L183)
+  for various purpose like displaying subtitles, showing additional tips at
+  specific time point of the video, switching BGM at different time, etc.
+
+- **Audio playback management:** To make sure autoplay related functions can
+  work correctly, we built a time system which can handle all tasks related to
+  audio playback with the
+  [Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API).
+  This can help us play any audio files after users triggered their first
+  interaction with the page on any browser.
+
+:::info
+For video files, we split the file into two different parts: a video file and
+an audio file. There's an extension can handle this task in _Recative Studio_,
+after the file is imported, channel splitting, compatibility fixing and many
+other tasks can be finished automatically.
+:::
+
+- **Resource management:** Core Manager will manage all files imported to
+  _Recative Studio_ (like audio, video, subtitle files or texture files). It will
+  preload necessary resources, automatically select different resource for
+  different language and platform, select resource from multiple CDN and storage
+  source (which make offline storage possible).
+
+- **Task queue:** Since JavaScript is a single-threaded language, we must design
+  a scheduling mechanism to ensure that a large number of background tasks will
+  not affect the rendering performance. _Core Manager_ provides priority queues:
+  the fast queue and the slow queue. You can arrange tasks into different queues
+  according to the priority of the tasks. _Core Manager_ will arrange the tasks
+  without affecting rendering performance.
+
+### `Content` and `ContentInstance`
+
+`Content` is the specification (or definition, configuration) of an
+[asset](/docs/technotes/tn9001-project-model#asset), and `ContentInstance` is
+the class did the actual content management related work, like resources, and
+lifecycle:
+
+- `Timeline`: which manage the time of different tracks, when the timing of
+  different tracks is out of sync, the `Timeline` coordinates the different
+  tracks according to priority configuration.
+- `AudioTrack`: Plays the audio track of a video.
+- `AudioHost`: Plays sound effects of the assets.
+- `SubsequenceManager`: Allows the assset to create and control
+  [subsequences](#subsequence).
+- `managedCoreStateList`: Manages subtitles and other states of the content.
+
+The `ContentInstance` also keeps references to some global resources, like the
+`TaskQueue`, which schedules async tasks.
+
+### Lifecycle
+
+The `ContentInstance` has 5 different states:
+
+- `idle`: The `ContentInstance` is created, but the user interface is not loaded
+  yet.
+- `preloading`: The `ContentInstance` is created but the required resources are
+  still loading.
+- `ready`: The `ContentInstance` is ready to be shown on the stage.
+- `destroying`: The `ContentInstance` is destroying itself.
+- `destroyed`: The `ContentInstance` is completely destroyed, allthe resources
+  it used are released.
+
+`ContentInstance` also can be manually set to `shown` or `hidden`. However,
+the loading indicator but not the `ContentInstance` should not be shown to the
+user when its state is not ready.
+
+### `Sequence` and <span id="subsequence">Subsequence</span>
+
+The `Sequence`(segments, assets) is a series of Content. It controls the creation,
+destruction, showing and hiding of each asset, switching between different
+assets, time calculation and Synchronition.
+
+### Time calculation
+
+Each asset in the Sequence has a duration. The value could be infinite if
+necessary (like interact point).
+
+To calculate current time of the sequence, we add up all the finite duration of
+played asset, and add the time from the `Timeline` of the current segment if
+the duration is finite.
+
+To seek a specific time in the sequence, we find the segment that the time falls
+in, and calculate the time in that asset.
+
+### Switching between assets
+
+To start the internal process of asset switching, we:
+
+1. set the `nextSegment` to the order of the next asset;
+2. set the nextSegmentStartTime to the start time of next Content after switching;
+3. then call the internal `switchToNextContent` method.
+
+The `switchToNextContent` method will get the blocker of this asset switching.
+and wait for the blocker to unblock new asset setup.
+
+When there are nothing blocking the loading process, it will destroy the old
+asset if the old asset has the `earlyDestroyOnSwitch` property, and create
+the new asset.
+
+After new asset created, we will wait for:
+
+- The ready state of the new asset;
+- The blocker to unblock final Switching;
+- Dependencies of the asset to complete.
+
+Then, we will show the new asset, destroy the old asset if it's not destroyed,
+then set the time and playing state on the new asset.
+
+If the next asset does not have a `preloadDisabled` property, it will be
+preloaded now.
+
+It is possible to switch from or switch to `undefined` content. When the
+sequence switches to `undefined` content, it will fire an `end` event.
+
+### Subsequence
+
+<SequenceStructure
+  style={{
+    maxWidth: '200px',
+    padding: '0 16px',
+    float: 'right',
+  }}
+  alt="The three level model of the Recative System"
+/>
+
+Assets can create their own subsequences. `subsequence`s are similar to the main
+sequence, but some behavior are managed by the parent sequence:
+
+- The subsequence will be hidden if its parent content is hidden.
+- The subsequence won't play if its parent content is not playing.
+- The subsequence should also be destroyed when its parent content is destroyed.

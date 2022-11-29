@@ -8,7 +8,7 @@
 :root {
   font-family: 'Raleway', sans-serif;
   font-weight: 500;
-  line-height: 1.6em;
+  line-height: 1.7em;
   --ifm-global-radius: 0;
   --ifm-heading-font-family: 'Raleway';
   --ifm-mono-font-family: 'Azeret Mono';
@@ -24,6 +24,7 @@
   --ifm-font-size-small: 14px;
   --ifm-font-weight-semibold: 550;
   --ifm-code-padding-horizontal: 0.2em;
+  --ifm-list-item-margin: 0.25em;
   --ifm-breadcrumb-border-radius: 0;
   --ifm-footer-height: 60px;
   --ifm-footer-padding-vertical: 1rem;
@@ -90,6 +91,10 @@ nav.menu {
 
 .dropdown__link:hover {
   text-decoration: underline;
+}
+
+.menu__list {
+  font-size: var(--ifm-font-size-small);
 }
 
 .menu__link {
@@ -172,6 +177,16 @@ ul.menu__list ul.menu__list a.menu__link--sublist::after,
 
 .tsd-panel-header {
   background-color: transparent !important;
+}
+
+.tsd-signatures,
+.tsd-signature {
+  font-family: var(--ifm-mono-font-family);
+  font-size: 0.9em;
+}
+
+.tsd-returns-title {
+  line-height: 1.5em;
 }
 
 .tsd-footer {
@@ -568,6 +583,10 @@ footer.footer .container.container-fluid {
   will-change: width;
   transition: width var(--ifm-transition-fast) ease;
   clip-path: inset(0);
+}
+
+.blog-wrapper .main-wrapper > .container > .row > aside a {
+  font-size: var(--ifm-font-size-small);
 }
 
 .blog-wrapper .main-wrapper > .container > .row > main {
