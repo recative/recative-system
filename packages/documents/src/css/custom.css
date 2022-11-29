@@ -7,6 +7,8 @@
 /* You can override the default Infima variables here. */
 :root {
   font-family: 'Raleway', sans-serif;
+  font-weight: 500;
+  line-height: 1.6em;
   --ifm-global-radius: 0;
   --ifm-heading-font-family: 'Raleway';
   --ifm-mono-font-family: 'Azeret Mono';
@@ -18,8 +20,8 @@
   --ifm-color-primary-lighter: #90A4AE;
   --ifm-color-primary-lightest: #B0BEC5;
   --ifm-code-font-size: 95%;
-  --ifm-font-size-base: 14px;
-  --ifm-font-size-small: 13px;
+  --ifm-font-size-base: 16px;
+  --ifm-font-size-small: 14px;
   --ifm-font-weight-semibold: 550;
   --ifm-code-padding-horizontal: 0.2em;
   --ifm-breadcrumb-border-radius: 0;
