@@ -1,0 +1,61 @@
+---
+sidebar_position: 7001
+---
+
+# TN7001: Audio Management
+
+## Introduction
+
+Media playback, especially playing media with sound is a pretty hard-core task
+since different browsers have different media playback strategy:
+
+- Chromium requires user interact (click or touch) with the page at least once,
+  all audio could be played automatically;
+- Safari requires user manually trigger the audio playback;
+- Firefox have a site-by-site configuration panel for their user;
+- Chromium or Safari based WebView, or GeckoView have their own API to decide
+  if the browser should allow auto play or not.
+
+To handle these complex problem Recative System created a consistence audio
+experience across all major browser platforms. These feature is enabled by
+[`@recative/audio-station`](https://recative.github.io/api/audio-station) and
+[`@recative/phonograph`](https://recative.github.io/api/phonograph),
+which created a global AudioContext, and manually manage the media playback
+related work instead of using
+[HTMLMediaElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement).
+
+:::info
+However, this architecture have it's own limitation: user still have to interact
+with the page at once to enable the global audio context, so we can take over
+the job of audio playback management.
+:::
+
+This tech note will give a brief introduction about the architecture design of
+the audio management system.
+
+# Initialization
+
+`AudioStation` maintain a singleton of audio context and the audio station
+manager, user need to call the
+[`getGlobalAudioStation`](http://localhost:3000/api/audio-station/function/getGlobalAudioStation)
+method to
+[interact with the manager](https://github.com/recative/recative-system/blob/bbc22e46471e4516333525819a24b111c167b9ed/packages/core-manager/src/episodeCore.ts#L105).
+
+```TypeScript
+const audioStation = getGlobalAudioStation();
+```
+
+Then, user need to call the `activate` method in the synchronous call stack
+callback of any click and touch event, the audio station will work after the
+returned promise resolved.
+
+```TypeScript
+audioStation.activate().then(() => {
+  console.log('You can make some noise here now!');
+});
+```
+
+You can find
+[related source code from here](https://github.com/recative/recative-system/blob/bbc22e46471e4516333525819a24b111c167b9ed/packages/core-manager/src/episodeCore.ts#L343-L346).
+
+# Audio Host
