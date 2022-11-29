@@ -3,6 +3,7 @@ export interface IPersonTestRecord {
   owner?: string;
   maker?: string | { name: string; count: number };
   count?: number;
+  meta?: {};
 }
 
 export interface IABTestRecord {
