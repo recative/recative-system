@@ -11,7 +11,7 @@ module.exports = [
   config('client-sdk', 'Client SDK'),
   config('core-manager', 'Core Manager'),
   config('database', 'Database'),
-  config('Definitions', 'Definitions'),
+  config('definitions', 'Definitions'),
   config('open-promise', 'Open Promise'),
   config('phonograph', 'Phonograph'),
   config('lens', 'Lens'),
