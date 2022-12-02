@@ -39,6 +39,25 @@
   --recative-page-width: 1600px;
 }
 
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #9caeba #ffffff;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #ffffff;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #9caeba;
+  border-radius: 0px;
+  border: 2px solid #ffffff;
+}
+
 code {
   border: 0;
   margin: 0;
