@@ -1,6 +1,6 @@
 {
   "name": "@recative/act-player",
-  "version": "0.5.9",
+  "version": "0.5.10",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
@@ -33,7 +33,7 @@
     "@nanostores/react": "0.2.0",
     "@react-hookz/web": "^15.1.0",
     "@recative/act-protocol": "^0.2.9",
-    "@recative/core-manager": "^0.11.4",
+    "@recative/core-manager": "^0.11.5",
     "@recative/definitions": "^0.5.4",
     "@recative/smart-resource": "^0.2.0",
     "classnames": "^2.3.1",

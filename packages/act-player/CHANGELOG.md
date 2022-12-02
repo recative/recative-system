@@ -1,5 +1,14 @@
 # @recative/act-player
 
+## 0.5.10
+
+### Patch Changes
+
+- 5d560ae: fix: Use an alternate way to detect broken video element
+- Updated dependencies [79e1738]
+- Updated dependencies [dbbd9e2]
+  - @recative/core-manager@0.11.5
+
 ## 0.5.9
 
 ### Patch Changes
