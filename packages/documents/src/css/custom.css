@@ -125,6 +125,7 @@ nav.menu {
 
 .menu__list {
   font-size: var(--ifm-font-size-small);
+  transition: none !important;
 }
 
 .menu__link {
