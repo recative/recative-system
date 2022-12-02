@@ -590,6 +590,14 @@ footer.footer .container.container-fluid {
   padding: 0;
 }
 
+.navbar-sidebar__backdrop {
+  height: 100vh;
+}
+
+.navbar-sidebar {
+  height: 100vh;
+}
+
 .navbar__toggle {
   margin-right: 12px;
 }
