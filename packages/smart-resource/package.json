@@ -1,6 +1,6 @@
 {
   "name": "@recative/smart-resource",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",

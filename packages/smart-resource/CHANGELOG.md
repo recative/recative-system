@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2
+
+### Patch Changes
+
+- 22bf16d: fix: Unable to trim string
+
 ## 0.2.1
 
 ### Patch Changes
