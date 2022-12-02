@@ -35,7 +35,8 @@
   --ifm-global-shadow-lw: none;
   --ifm-menu-link-sublist-icon: url('/img/icons/arrow-right.svg');
   --ifm-font-family-base: 'Raleway', sans-serif;
-  --recative-sidebar-size: 406px;
+  --recative-sidebar-width: 406px;
+  --recative-page-width: 1600px;
 }
 
 code {
@@ -70,7 +71,7 @@ nav.menu {
 }
 
 .navbar__inner {
-  max-width: calc(1600px - 32px);
+  width: calc(var(--recative-page-width) - 32px);
   margin: 0 auto;
 }
 
@@ -219,12 +220,12 @@ ul.menu__list ul.menu__list a.menu__link--sublist::after,
 }
 
 aside.theme-doc-sidebar-container {
-  width: var(--recative-sidebar-size);
+  width: var(--recative-sidebar-width);
   min-height: calc(100vh - var(--ifm-footer-height));
 }
 
 aside.theme-doc-sidebar-container > div {
-  width: var(--recative-sidebar-size);
+  width: var(--recative-sidebar-width);
 }
 
 aside.theme-doc-sidebar-container
@@ -481,7 +482,7 @@ main > .container > .row > div.col.col--3 {
 }
 
 div.main-wrapper > div {
-  max-width: 1600px;
+  width: var(--recative-page-width);
   margin: 0 auto;
 }
 
@@ -548,7 +549,7 @@ footer.footer {
 }
 
 footer.footer .container {
-  max-width: calc(1600px - 32px) !important;
+  width: calc(var(--recative-page-width) - 32px) !important;
   margin: 0 auto;
 }
 
@@ -658,7 +659,7 @@ footer.footer .container.container-fluid {
 }
 
 .blog-wrapper .main-wrapper > .container > .row > aside {
-  min-width: var(--recative-sidebar-size);
+  min-width: var(--recative-sidebar-width);
   min-height: calc(100vh - var(--ifm-footer-height));
   margin-top: calc(-1 * var(--ifm-navbar-height));
   padding: 0 12px;
@@ -674,7 +675,7 @@ footer.footer .container.container-fluid {
 
 .blog-wrapper .main-wrapper > .container > .row > main {
   width: 100%;
-  max-width: calc(100% - var(--recative-sidebar-size));
+  max-width: calc(100% - var(--recative-sidebar-width));
   margin: 0 auto;
   padding-top: 2rem;
   padding-left: calc(var(--ifm-menu-link-padding-horizontal) + 12px);
@@ -685,6 +686,12 @@ footer.footer .container.container-fluid {
 .blog-wrapper .main-wrapper > .container > .row > main > * {
   max-width: 1320px;
   margin: 0 auto;
+}
+
+@media (max-width: 1400px) {
+  :root {
+    --recative-page-width: 100%;
+  }
 }
 
 @media (max-width: 1400px) {
@@ -703,7 +710,7 @@ footer.footer .container.container-fluid {
 
 @media (max-width: 1200px) {
   :root {
-    --recative-sidebar-size: 300px;
+    --recative-sidebar-width: 300px;
   }
 }
 
