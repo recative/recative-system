@@ -503,6 +503,7 @@ main > .container > .row > div.col.col--3 {
 
 div.main-wrapper > div {
   width: var(--recative-page-width);
+  min-width: var(--recative-page-width);
   margin: 0 auto;
 }
 
