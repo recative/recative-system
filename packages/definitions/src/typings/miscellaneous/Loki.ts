@@ -69,7 +69,6 @@ export interface Events2 {
   'pre-insert': unknown[];
   'pre-update': unknown[];
   close: unknown[];
-  flushbuffer: unknown[];
   error: unknown[];
   delete: unknown[];
   warning: unknown[];

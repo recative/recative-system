@@ -1,7 +1,7 @@
 import EventTarget from '@ungap/event-target';
 import { OpenPromise } from '@recative/open-promise';
 
-import { Collection } from './Collection';
+import { Collection, ICollectionDocument } from './Collection';
 import { deepFreeze } from './utils/freeze';
 import { copyProperties } from './utils/copyProperties';
 import { serializeReplacer } from './utils/serializeReplacer';
@@ -131,20 +131,28 @@ export interface IDeserializeCollectionOptions {
   collectionIndex?: number;
 }
 
-export interface ILoadJSONCollectionConfiguration {
-  inflate: <T>(source: T, destination?: T) => T;
-  Proto: typeof Collection;
+export interface Proto<T> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  new (...args: any[]): T;
+}
+
+export interface ILoadJSONCollectionConfiguration<T> {
+  inflate: (
+    source: T & ICollectionDocument,
+    destination: T & ICollectionDocument
+  ) => (T & ICollectionDocument) | void;
+  Proto: Proto<T>;
 }
 
 /**
  * apply or override collection level settings
  * @field retainDirtyFlags - whether collection dirty flags will be preserved
  */
-export interface ILoadJSONOptions {
+export interface ILoadJSONOptions<T = any> {
   throttledSaves: boolean;
   retainDirtyFlags: boolean;
   [collectionName: string]:
-    | ILoadJSONCollectionConfiguration
+    | Partial<ILoadJSONCollectionConfiguration<T>>
     | boolean
     | string
     | number
@@ -872,7 +880,10 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
    * @param serializedDb - a serialized database database string
    * @param options - apply or override collection level settings
    */
-  loadJSON = (serializedDb: string, options?: Partial<ILoadJSONOptions>) => {
+  loadJSON = <P extends object>(
+    serializedDb: string,
+    options?: Partial<ILoadJSONOptions<P>>
+  ) => {
     let dbObject: unknown;
     if (serializedDb.length === 0) {
       dbObject = {};
@@ -892,7 +903,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
       }
     }
 
-    this.loadJSONObject(dbObject, options);
+    this.loadJSONObject<P>(dbObject, options);
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -918,7 +929,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
    */
   loadJSONObject = <P extends object>(
     databaseObject: unknown,
-    options?: Partial<ILoadJSONOptions>
+    options?: Partial<ILoadJSONOptions<P>>
   ) => {
     if (!Database.isDatabaseObject(databaseObject)) {
       throw new TypeError(
@@ -939,7 +950,10 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
 
     const makeLoader = (
       collection: Collection<P>
-    ): (<U extends object>(x: U, y?: U) => U) => {
+    ): ((
+      x: P & ICollectionDocument,
+      y?: P & ICollectionDocument
+    ) => P & ICollectionDocument) => {
       const collectionOptions = internalOptions[collection.name];
 
       if (!collectionOptions) {
@@ -964,12 +978,12 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
           throw new TypeError('Inflater must be a function if proto provided');
         }
 
-        return <U extends object>(data: U): U => {
-          const collectionInstance = new collectionOptions.Proto(
+        return (data: P & ICollectionDocument): P & ICollectionDocument => {
+          const collectionInstance = new collectionOptions.Proto!(
             collection.name
-          ) as unknown as Collection<U>;
-          inflater(data, collectionInstance as U);
-          return collectionInstance as U;
+          ) as unknown as P & ICollectionDocument;
+
+          return inflater(data, collectionInstance) ?? collectionInstance;
         };
       }
 
@@ -979,7 +993,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
         );
       }
 
-      return collectionOptions.inflate;
+      return inflater;
     };
 
     const collectionCount = databaseObject.collections

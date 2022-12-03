@@ -1,5 +1,3 @@
-import EventTarget from '@ungap/event-target';
-
 import {
   lens,
   LensResult,
@@ -8,6 +6,7 @@ import {
   ValidDotNotation,
   ValidSimpleLensField,
 } from '@recative/lens';
+import { Target } from '@recative/event-target';
 
 import * as Comparators from './Comparators';
 
@@ -16,7 +15,27 @@ import { ResultSet, TransformResult } from './ResultSet';
 import { Operators } from './Operations';
 import { DynamicView } from './DynamicView';
 import { UniqueIndex } from './UniqueIndex';
-import { CollectionDocumentDeleteEvent, ErrorEvent } from './Events';
+import {
+  CollectionDocumentDeleteEvent,
+  CollectionDocumentDeleteEventName,
+  CollectionDocumentInsertEvent,
+  CollectionDocumentInsertEventName,
+  CollectionDocumentPreInsertEvent,
+  CollectionDocumentPreInsertEventName,
+  CollectionDocumentPreUpdateEvent,
+  CollectionDocumentPreUpdateEventName,
+  CollectionDocumentUpdateEvent,
+  CollectionDocumentUpdateEventName,
+  ErrorEvent,
+  ErrorEventName,
+  ICollectionDocumentDeleteEventDetail,
+  ICollectionDocumentInsertEventDetail,
+  ICollectionDocumentPreInsertEventDetail,
+  ICollectionDocumentPreUpdateEventDetail,
+  ICollectionDocumentUpdateEventDetail,
+  IErrorEventDetail,
+  WarnEventName,
+} from './Events';
 import { sub, mean, parseBase10, standardDeviation } from './utils/math';
 
 import type { IQuery } from './typings';
@@ -120,10 +139,6 @@ export interface ICollectionSummary {
   count: number;
 }
 
-export interface IDeleteEventDetail<T> {
-  target: T;
-}
-
 export interface IWarningEventDetail {
   message: string;
 }
@@ -199,6 +214,16 @@ export interface ICollectionCommitLog<T> {
   data: T;
 }
 
+export interface ICollectionEvents<T> {
+  'pre-insert': ICollectionDocumentPreInsertEventDetail<T>;
+  insert: ICollectionDocumentInsertEventDetail<T>;
+  'pre-update': ICollectionDocumentPreUpdateEventDetail<T>;
+  update: ICollectionDocumentUpdateEventDetail<T>;
+  error: IErrorEventDetail;
+  delete: ICollectionDocumentDeleteEventDetail<T>;
+  warn: IWarningEventDetail;
+}
+
 /**
  * Collection class that handles documents of same type
  *
@@ -207,7 +232,17 @@ export interface ICollectionCommitLog<T> {
  *        configuration object
  * @see {@link Database#addCollection} for normal creation of collections
  */
-export class Collection<T extends object> extends EventTarget {
+export class Collection<T extends object> extends Target<
+  [
+    typeof CollectionDocumentPreInsertEventName,
+    typeof CollectionDocumentInsertEventName,
+    typeof CollectionDocumentPreUpdateEventName,
+    typeof CollectionDocumentUpdateEventName,
+    typeof CollectionDocumentDeleteEventName,
+    typeof ErrorEventName,
+    typeof WarnEventName
+  ]
+> {
   options: ICollectionOptions<T>;
 
   /**
@@ -433,12 +468,14 @@ export class Collection<T extends object> extends EventTarget {
       this.ensureIndex(this.options.indices[i]);
     }
 
-    const handleDeleteEvent = ((event: CustomEvent<IDeleteEventDetail<T>>) => {
+    const handleDeleteEvent = ((
+      event: CustomEvent<ICollectionDocumentDeleteEventDetail<T>>
+    ) => {
       if (!this.disableChangesApi) {
         this.createChange(
           this.name,
           CollectionOperation.Remove,
-          event.detail.target
+          event.detail.document
         );
       }
     }) as unknown as EventListener;
@@ -1316,9 +1353,7 @@ export class Collection<T extends object> extends EventTarget {
 
     let results: (T & ICollectionDocument)[] = [];
     try {
-      this.dispatchEvent(
-        new CustomEvent('pre-insert', { detail: { document: documents } })
-      );
+      this.dispatchEvent(new CollectionDocumentPreInsertEvent(documents));
 
       for (let i = 0; i < documents.length; i += 1) {
         const document = this.insertOne(documents[i], true);
@@ -1336,9 +1371,7 @@ export class Collection<T extends object> extends EventTarget {
 
     // at the 'batch' level, if clone option is true then emitted docs are
     // clones
-    this.dispatchEvent(
-      new CustomEvent('insert', { detail: { documents: results } })
-    );
+    this.dispatchEvent(new CollectionDocumentInsertEvent(results));
 
     // if clone option is set, clone return values
     results = this.cloneObjects ? clone(results, this.cloneMethod) : results;
@@ -1393,7 +1426,7 @@ export class Collection<T extends object> extends EventTarget {
     // database itself listens to add meta
     if (!bulkInsert) {
       this.dispatchEvent(
-        new CustomEvent('pre-insert', { detail: { document } })
+        new CustomEvent('pre-insert', { detail: { documents: [document] } })
       );
     }
 
@@ -1423,7 +1456,7 @@ export class Collection<T extends object> extends EventTarget {
 
     if (!bulkInsert) {
       this.dispatchEvent(
-        new CustomEvent('insert', { detail: { document: result } })
+        new CustomEvent('insert', { detail: { documents: [result] } })
       );
     }
 
@@ -1530,9 +1563,7 @@ export class Collection<T extends object> extends EventTarget {
           ? clone(document, this.cloneMethod)
           : document;
 
-      this.dispatchEvent(
-        new CustomEvent('pre-update', { detail: { document } })
-      );
+      this.dispatchEvent(new CollectionDocumentPreUpdateEvent(document));
 
       this.uniqueNames.forEach((key) => {
         this.getUniqueIndex(key, true).update(oldDocument, newInternal);
@@ -1601,12 +1632,7 @@ export class Collection<T extends object> extends EventTarget {
       }
 
       this.dispatchEvent(
-        new CustomEvent('update', {
-          detail: {
-            newDocument,
-            oldDocument,
-          },
-        })
+        new CollectionDocumentUpdateEvent(newDocument, oldDocument)
       );
       return newDocument;
     } catch (error) {
@@ -1943,7 +1969,7 @@ export class Collection<T extends object> extends EventTarget {
 
     if (Array.isArray(internalDocument)) {
       this.removeBatch(internalDocument);
-      return;
+      return null;
     }
 
     if (!hasOwn(internalDocument, '$loki')) {
