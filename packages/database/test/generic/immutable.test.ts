@@ -1,4 +1,15 @@
-import { Database } from '../../src';
+import {
+  Database,
+  Collection,
+  ICollectionChange,
+  DynamicViewSortEventName,
+  DynamicViewFilterEventName,
+  CollectionDocumentInsertEventName,
+  CollectionDocumentUpdateEventName,
+  CollectionDocumentDeleteEventName,
+} from '../../src';
+import { MemoryAdapter } from '../../src/adapter/memory';
+import { Operators } from '../../src/Operations';
 import {
   deepFreeze,
   deepUnFreeze,
@@ -6,12 +17,38 @@ import {
   isFrozen,
   unFreeze,
 } from '../../src/utils/freeze';
-import { IPersonTestRecord } from './definition';
+import { IABTestRecord, IPersonTestRecord } from './definition';
+
+const PERSON_TEST_RECORDS = [
+  { name: 'mjolnir', owner: 'thor', maker: 'dwarves' },
+  { name: 'gungnir', owner: 'odin', maker: 'elves' },
+  { name: 'tyrfing', owner: 'Svafrlami', maker: 'dwarves' },
+  { name: 'draupnir', owner: 'odin', maker: 'elves' },
+];
+
+const AB_TEST_RECORDS = [
+  { a: 0, b: 1 },
+  { a: 1, b: 2 },
+  { a: 0, b: 3 },
+  { a: 1, b: 4 },
+  { a: 0, b: 5 },
+  { a: 1, b: 6 },
+  { a: 1, b: 7 },
+  { a: 1, b: 8 },
+  { a: 0, b: 9 },
+];
 
 describe('immutable', () => {
-  const removeMeta = <T extends object>(
+  const removeMeta = <T extends object | null>(
     x: T
-  ): T extends ArrayLike<infer U> ? Omit<U, 'meta'>[] : Omit<T, 'meta'>[] => {
+  ): T extends null
+    ? null
+    : T extends ArrayLike<infer U>
+    ? Omit<U, 'meta'>[]
+    : Omit<T, 'meta'>[] => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (x === null) return null as any;
+
     if (Array.isArray(x)) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return x.map(removeMeta) as any;
@@ -19,6 +56,7 @@ describe('immutable', () => {
 
     const result = JSON.parse(JSON.stringify(x));
     delete result.meta;
+
     return result;
   };
 
@@ -58,7 +96,7 @@ describe('immutable', () => {
     });
   });
 
-  describe('deepUnfreeze', () => {
+  describe('deepUnFreeze', () => {
     it('should deep unFreeze', () => {
       const object = { a: [{ b: 'b' }, 10, false], c: 10, d: false };
       const unFrozen = deepUnFreeze(deepFreeze(object));
@@ -91,17 +129,25 @@ describe('immutable', () => {
   });
 
   it('should deep freeze inserted object', () => {
-    const db = new loki('test.db');
-    const collection = db.addCollection('items', { disableFreeze: false });
-    collection.on('insert', function (obj) {
-      expect(isFrozen(obj)).toBe(true);
+    const database = new Database('test.database');
+    const collection = database.addCollection<IPersonTestRecord>('documents', {
+      disableFreeze: false,
     });
+
+    collection.addEventListener(
+      CollectionDocumentInsertEventName,
+      ({ detail }) => {
+        expect(isFrozen(detail.documents[0])).toBe(true);
+      }
+    );
+
     const inserted = collection.insert({ name: 'n1' });
     expect(removeMeta(inserted)).toEqual({ $loki: 1, name: 'n1' });
     expect(isFrozen(inserted)).toBe(true);
-    const docs = collection.find();
-    expect(removeMeta(docs)).toEqual([{ $loki: 1, name: 'n1' }]);
-    expect(isFrozen(docs[0]) && isFrozen(docs[1])).toBe(true);
+
+    const documents = collection.find();
+    expect(removeMeta(documents)).toEqual([{ $loki: 1, name: 'n1' }]);
+    expect(isFrozen(documents[0]) && isFrozen(documents[1])).toBe(true);
     expect(removeMeta(collection.findOne({ name: 'n1' }))).toEqual({
       $loki: 1,
       name: 'n1',
@@ -110,8 +156,8 @@ describe('immutable', () => {
   });
 
   it('should deep freeze inserted object with meta object', () => {
-    const database = new Database('test.db');
-    const collection = database.addCollection<IPersonTestRecord>('items', {
+    const database = new Database('test.database');
+    const collection = database.addCollection<IPersonTestRecord>('documents', {
       disableFreeze: false,
     });
     collection.addEventListener('insert', (object) => {
@@ -136,11 +182,16 @@ describe('immutable', () => {
   });
 
   it('should deep freeze all inserted objects', () => {
-    const db = new loki('test.db');
-    const collection = db.addCollection('items', { disableFreeze: false });
-    collection.on('insert', function (obj) {
-      expect(isFrozen(obj[0]) && isFrozen(obj[1])).toBe(true);
+    const database = new Database('test.database');
+    const collection = database.addCollection('documents', {
+      disableFreeze: false,
     });
+    collection.on(
+      CollectionDocumentInsertEventName,
+      ({ detail: { documents } }) => {
+        expect(isFrozen(documents[0]) && isFrozen(documents[1])).toBe(true);
+      }
+    );
     const inserted = collection.insert([
       { name: 'n1' },
       deepFreeze({ name: 'n2' }),
@@ -169,13 +220,18 @@ describe('immutable', () => {
   });
 
   it('should deep freeze updated object', () => {
-    const db = new loki('test.db');
-    const collection = db.addCollection('items', { disableFreeze: false });
-    collection.on('update', function (obj) {
-      expect(isFrozen(obj)).toBe(true);
+    const database = new Database('test.database');
+    const collection = database.addCollection<IPersonTestRecord>('documents', {
+      disableFreeze: false,
     });
+    collection.on(
+      CollectionDocumentUpdateEventName,
+      ({ detail: { newDocument } }) => {
+        expect(isFrozen(newDocument)).toBe(true);
+      }
+    );
     const inserted = collection.insert({ name: 'n1' });
-    const draft = deepUnfreeze(inserted);
+    const draft = deepUnFreeze(inserted);
     draft.name = 'n2';
     const updated = collection.update(draft);
     expect(removeMeta(updated)).toEqual({ $loki: 1, name: 'n2' });
@@ -191,16 +247,21 @@ describe('immutable', () => {
   });
 
   it('should deep freeze all updated objects', () => {
-    const db = new loki('test.db');
-    const collection = db.addCollection('items', { disableFreeze: false });
-    collection.on('update', function (obj) {
-      expect(isFrozen(obj)).toBe(true);
+    const database = new Database('test.database');
+    const collection = database.addCollection<IPersonTestRecord>('documents', {
+      disableFreeze: false,
     });
+    collection.on(
+      CollectionDocumentUpdateEventName,
+      ({ detail: { newDocument } }) => {
+        expect(isFrozen(newDocument)).toBe(true);
+      }
+    );
     const inserted = collection.insert([
       { name: 'n1' },
       deepFreeze({ name: 'n2' }),
     ]);
-    const drafts = deepUnfreeze(inserted);
+    const drafts = deepUnFreeze(inserted);
     drafts[0].name = 'n3';
     drafts[1].name = 'n4';
     deepFreeze(drafts[1]);
@@ -224,13 +285,18 @@ describe('immutable', () => {
   });
 
   it('should work with chain().update()', () => {
-    const db = new loki('test.db');
-    const collection = db.addCollection('items', { disableFreeze: false });
-    collection.on('update', function (obj) {
-      expect(isFrozen(obj)).toBe(true);
+    const database = new Database('test.database');
+    const collection = database.addCollection<IPersonTestRecord>('documents', {
+      disableFreeze: false,
     });
-    const inserted = collection.insert([{ name: 'n1' }, { name: 'n2' }]);
-    collection.chain().update(function (obj) {
+    collection.on(
+      CollectionDocumentUpdateEventName,
+      ({ detail: { newDocument } }) => {
+        expect(isFrozen(newDocument)).toBe(true);
+      }
+    );
+    collection.insert([{ name: 'n1' }, { name: 'n2' }]);
+    collection.chain().update((obj) => {
       obj.name += 'u';
     });
     const docs = collection.find();
@@ -242,36 +308,46 @@ describe('immutable', () => {
   });
 
   it('should work with updateWhere', () => {
-    const db = new loki('test.db');
-    const collection = db.addCollection('items', { disableFreeze: false });
-    collection.on('update', function (obj) {
-      expect(isFrozen(obj)).toBe(true);
+    const database = new Database('test.database');
+    const collection = database.addCollection<IPersonTestRecord>('documents', {
+      disableFreeze: false,
     });
-    const inserted = collection.insert([{ name: 'n1' }, { name: 'n2' }]);
-    collection.updateWhere(
-      function (obj) {
-        return true;
-      },
-      function (obj) {
-        obj = deepUnfreeze(obj);
-        obj.name += 'u';
-        return obj;
+    collection.on(
+      CollectionDocumentUpdateEventName,
+      ({ detail: { newDocument } }) => {
+        expect(isFrozen(newDocument)).toBe(true);
       }
     );
-    const docs = collection.find();
-    expect(removeMeta(docs)).toEqual([
+    collection.insert([{ name: 'n1' }, { name: 'n2' }]);
+    collection.updateWhere(
+      () => {
+        return true;
+      },
+      (document) => {
+        const result = deepUnFreeze(document);
+        result.name += 'u';
+        return result;
+      }
+    );
+    const documents = collection.find();
+    expect(removeMeta(documents)).toEqual([
       { $loki: 1, name: 'n1u' },
       { $loki: 2, name: 'n2u' },
     ]);
-    expect(isFrozen(docs[1]) && isFrozen(docs[2])).toBe(true);
+    expect(isFrozen(documents[1]) && isFrozen(documents[2])).toBe(true);
   });
 
   it('should work with the staging api', () => {
-    const db = new loki('test.db');
-    const collection = db.addCollection('items', { disableFreeze: false });
-    collection.on('update', function (obj) {
-      expect(isFrozen(obj)).toBe(true);
+    const database = new Database('test.database');
+    const collection = database.addCollection('documents', {
+      disableFreeze: false,
     });
+    collection.on(
+      CollectionDocumentUpdateEventName,
+      ({ detail: { newDocument } }) => {
+        expect(isFrozen(newDocument)).toBe(true);
+      }
+    );
     const inserted = collection.insert([{ name: 'n1' }, { name: 'n2' }]);
     const draft1 = collection.stage('draft', inserted[0]);
     draft1.name = 'n1u';
@@ -282,7 +358,8 @@ describe('immutable', () => {
       { $loki: 1, name: 'n1' },
       { $loki: 2, name: 'n2' },
     ]);
-    expect(isFrozen(docs[0] && isFrozen(docs[1]))).toBe(true);
+    expect(isFrozen(docs[0])).toBe(true);
+    expect(isFrozen(docs[1])).toBe(true);
     const commitMessage = 'draft commit';
     collection.commitStage('draft', commitMessage);
     const committedDocs = collection.find();
@@ -290,20 +367,26 @@ describe('immutable', () => {
       { $loki: 1, name: 'n1u' },
       { $loki: 2, name: 'n2u' },
     ]);
-    expect(isFrozen(committedDocs[0] && isFrozen(committedDocs[1]))).toBe(true);
+    expect(isFrozen(committedDocs[0])).toBe(true);
+    expect(isFrozen(committedDocs[1])).toBe(true);
     expect(
-      collection.commitLog.filter(function (entry) {
+      collection.commitLog.filter((entry) => {
         return entry.message === commitMessage;
       }).length
     ).toBe(2);
   });
 
   it('should remove frozen object', () => {
-    const db = new loki('test.db');
-    const collection = db.addCollection('items', { disableFreeze: false });
-    collection.on('delete', function (obj) {
-      expect(isFrozen(obj)).toBe(true);
+    const database = new Database('test.database');
+    const collection = database.addCollection('documents', {
+      disableFreeze: false,
     });
+    collection.on(
+      CollectionDocumentDeleteEventName,
+      ({ detail: { document } }) => {
+        expect(isFrozen(document)).toBe(true);
+      }
+    );
     const inserted = collection.insert(
       deepFreeze([{ name: 'n1' }, { name: 'n2' }])
     );
@@ -316,11 +399,16 @@ describe('immutable', () => {
   });
 
   it('should remove all frozen objects', () => {
-    const db = new loki('test.db');
-    const collection = db.addCollection('items', { disableFreeze: false });
-    collection.on('delete', function (obj) {
-      expect(isFrozen(obj)).toBe(true);
+    const database = new Database('test.database');
+    const collection = database.addCollection<IPersonTestRecord>('documents', {
+      disableFreeze: false,
     });
+    collection.on(
+      CollectionDocumentDeleteEventName,
+      ({ detail: { document } }) => {
+        expect(isFrozen(document)).toBe(true);
+      }
+    );
     const inserted = collection.insert([
       { name: 'n1' },
       deepFreeze({ name: 'n2' }),
@@ -333,11 +421,16 @@ describe('immutable', () => {
   });
 
   it('should work with chain().find(fn).remove()', () => {
-    const db = new loki('test.db');
-    const collection = db.addCollection('items', { disableFreeze: false });
-    collection.on('delete', function (obj) {
-      expect(isFrozen(obj)).toBe(true);
+    const database = new Database('test.database');
+    const collection = database.addCollection('documents', {
+      disableFreeze: false,
     });
+    collection.on(
+      CollectionDocumentDeleteEventName,
+      ({ detail: { document } }) => {
+        expect(isFrozen(document)).toBe(true);
+      }
+    );
     collection.insert([
       { name: 'n1' },
       { name: 'n2' },
@@ -357,18 +450,23 @@ describe('immutable', () => {
   });
 
   it('should work with removeWhere', () => {
-    const db = new loki('test.db');
-    const collection = db.addCollection('items', { disableFreeze: false });
-    collection.on('delete', function (obj) {
-      expect(isFrozen(obj)).toBe(true);
+    const database = new Database('test.database');
+    const collection = database.addCollection<IPersonTestRecord>('documents', {
+      disableFreeze: false,
     });
+    collection.on(
+      CollectionDocumentDeleteEventName,
+      ({ detail: { document } }) => {
+        expect(isFrozen(document)).toBe(true);
+      }
+    );
     collection.insert([
       { name: 'n1' },
       { name: 'n2' },
       { name: 'n3' },
       { name: 'n4' },
     ]);
-    collection.removeWhere(function (obj) {
+    collection.removeWhere((obj) => {
       return obj.name === 'n3' || obj.name === 'n4';
     });
     const docs = collection.find();
@@ -379,32 +477,38 @@ describe('immutable', () => {
     expect(isFrozen(docs[0]) && isFrozen(docs[1])).toBe(true);
   });
 
-  it('loadDatabase should freeze object', function (cb) {
-    const db = new loki('test.db');
-    const adapter = new loki.LokiMemoryAdapter();
-    const collection = db.addCollection('items', {
-      adapter: adapter,
+  it('loadDatabase should freeze object', (callback) => {
+    const adapter = new MemoryAdapter();
+    const database = new Database('test.database', { adapter });
+    const collection = database.addCollection('documents', {
       disableFreeze: false,
     });
     collection.insert([{ name: 'n1' }, { name: 'n2' }]);
-    db.saveDatabase(() => {
+
+    database.saveDatabase().then(() => {
       collection.clear();
-      db.loadDatabase({}, () => {
-        const collection = db.getCollection('items');
-        const docs = collection.find();
-        expect(removeMeta(docs)).toEqual([
+      database.loadDatabase().then(() => {
+        const internalCollection = database.getCollection('documents');
+        const documents = internalCollection?.find();
+
+        if (!documents) {
+          throw new TypeError('Documents not found');
+        }
+
+        expect(removeMeta(documents)).toEqual([
           { $loki: 1, name: 'n1' },
           { $loki: 2, name: 'n2' },
         ]);
-        expect(isFrozen(docs[0]) && isFrozen(docs[1])).toBe(true);
-        cb();
+
+        expect(isFrozen(documents[0]) && isFrozen(documents[1])).toBe(true);
+        callback();
       });
     });
   });
 
   it('should update unique index', () => {
-    const db = new loki('test.db');
-    const collection = db.addCollection('items', {
+    const database = new Database('test.database');
+    const collection = database.addCollection('documents', {
       disableFreeze: false,
       unique: ['id'],
     });
@@ -416,14 +520,14 @@ describe('immutable', () => {
     expect(collection.by('id', 'id2')).toBe(inserted23[0]);
     expect(collection.by('id', 'id3')).toBe(inserted23[1]);
     // update one
-    const draft1 = deepUnfreeze(inserted);
+    const draft1 = deepUnFreeze(inserted);
     draft1.id = 'id11';
     const updated = collection.update(draft1);
     expect(collection.by('id', 'id1')).toBe(undefined);
     expect(collection.by('id', 'id11')).toBe(updated);
     expect(collection.by('id', 'id11')).toBe(collection.get(1));
     // update array
-    const draft2 = deepUnfreeze(inserted23);
+    const draft2 = deepUnFreeze(inserted23);
     draft2[0].id = 'id22';
     draft2[1].id = 'id33';
     deepFreeze(draft2[1]);
@@ -443,74 +547,63 @@ describe('immutable', () => {
     expect(collection.by('id', 'id13')).toBe(undefined);
   });
 
-  describe('dynamicviews work and disableFreeze', () => {
-    const testRecords;
-
-    beforeEach(() => {
-      testRecords = [
-        { name: 'mjolnir', owner: 'thor', maker: 'dwarves' },
-        { name: 'gungnir', owner: 'odin', maker: 'elves' },
-        { name: 'tyrfing', owner: 'Svafrlami', maker: 'dwarves' },
-        { name: 'draupnir', owner: 'odin', maker: 'elves' },
-      ];
-    });
-
+  describe('dynamic views work and disableFreeze', () => {
     describe('test empty filter across changes', () => {
       it('works', () => {
-        const db = new loki('dvtest');
-        const items = db.addCollection('users', { disableFreeze: false });
-        items.insert(testRecords);
-        const dv = items.addDynamicView();
+        const database = new Database('dynamicViewTest');
+        const documents = database.addCollection<IPersonTestRecord>('users', {
+          disableFreeze: false,
+        });
+        documents.insert(PERSON_TEST_RECORDS);
+        const dynamicView = documents.addDynamicView();
 
-        expect(isFrozen(dv.filterPipeline)).toBe(true);
+        expect(isFrozen(dynamicView.filterPipeline)).toBe(true);
         // with no filter, results should be all documents
-        const results = dv.data();
-        expect(results.length).toBe(4);
+        expect(dynamicView.data().length).toBe(4);
 
         // find and update a document which will notify view to re-evaluate
-        const gungnir = items.findOne({ name: 'gungnir' });
-        expect(gungnir.owner).toBe('odin');
-        gungnir = deepUnfreeze(gungnir);
-        gungnir.maker = 'dvalin';
-        items.update(gungnir);
+        const document = documents.findOne({ name: 'gungnir' });
+        expect(document?.owner).toBe('odin');
 
-        results = dv.data();
-        expect(results.length).toBe(4);
+        if (!document) {
+          throw new TypeError('Inserted document not found');
+        }
+
+        const unFreezedDocument = deepUnFreeze(document);
+        unFreezedDocument.maker = 'dvalin';
+        documents.update(document);
+
+        expect(dynamicView.data().length).toBe(4);
       });
     });
 
     describe('dynamic view batch removes work as expected', () => {
       it('works', () => {
-        const db = new loki('dvtest');
-        const items = db.addCollection('users', { disableFreeze: false });
-        const dv = items.addDynamicView('dv');
-        const filterEmitted = false;
-        dv.addListener('filter', () => {
+        const database = new Database('dynamicViewTest');
+        const documents = database.addCollection<IABTestRecord>('users', {
+          disableFreeze: false,
+        });
+        const dynamicView = documents.addDynamicView('dynamicView');
+        let filterEmitted = false;
+
+        dynamicView.on(DynamicViewFilterEventName, () => {
           filterEmitted = true;
         });
-        dv.applyFind({ a: 1 });
-        expect(isFrozen(dv.filterPipeline)).toBe(true);
+
+        dynamicView.applyFind({ a: 1 });
+
+        expect(isFrozen(dynamicView.filterPipeline)).toBe(true);
         expect(filterEmitted).toBe(true);
 
-        items.insert([
-          { a: 0, b: 1 },
-          { a: 1, b: 2 },
-          { a: 0, b: 3 },
-          { a: 1, b: 4 },
-          { a: 0, b: 5 },
-          { a: 1, b: 6 },
-          { a: 1, b: 7 },
-          { a: 1, b: 8 },
-          { a: 0, b: 9 },
-        ]);
+        documents.insert(AB_TEST_RECORDS);
 
-        expect(dv.data().length).toEqual(5);
+        expect(dynamicView.data().length).toEqual(5);
 
-        items.findAndRemove({ b: { $lt: 7 } });
+        documents.findAndRemove({ b: { $lt: 7 } });
 
-        expect(dv.data().length).toEqual(2);
+        expect(dynamicView.data().length).toEqual(2);
 
-        const results = dv.branchResultset().simplesort('b').data();
+        const results = dynamicView.branchResultset().simpleSort('b').data();
 
         expect(results[0].b).toEqual(7);
         expect(results[1].b).toEqual(8);
@@ -519,41 +612,35 @@ describe('immutable', () => {
 
     describe('dynamic (persistent/sorted) view batch removes work as expected', () => {
       it('works', () => {
-        const db = new loki('dvtest');
-        const items = db.addCollection('users', { disableFreeze: false });
-        const dv = items.addDynamicView('dv', { persistent: true });
-        const filterEmitted = false;
-        const sortEmitted = false;
-        dv.addListener('filter', () => {
+        const database = new Database('dynamicViewTest');
+        const documents = database.addCollection<IABTestRecord>('users', {
+          disableFreeze: false,
+        });
+        const dynamicView = documents.addDynamicView('dynamicView', {
+          persistent: true,
+        });
+        let filterEmitted = false;
+        let sortEmitted = false;
+        dynamicView.on('filter', () => {
           filterEmitted = true;
         });
-        dv.addListener('sort', () => {
+        dynamicView.on('sort', () => {
           sortEmitted = true;
         });
-        dv.applyFind({ a: 1 });
-        dv.applySimpleSort('b');
-        expect(isFrozen(dv.filterPipeline)).toBe(true);
-        expect(isFrozen(dv.sortCriteriaSimple)).toBe(true);
+        dynamicView.applyFind({ a: 1 });
+        dynamicView.applySimpleSort('b');
+        expect(isFrozen(dynamicView.filterPipeline)).toBe(true);
+        expect(isFrozen(dynamicView.sortCriteriaSimple)).toBe(true);
         expect(filterEmitted).toBe(true);
         expect(sortEmitted).toBe(true);
 
-        items.insert([
-          { a: 0, b: 1 },
-          { a: 1, b: 2 },
-          { a: 0, b: 3 },
-          { a: 1, b: 4 },
-          { a: 0, b: 5 },
-          { a: 1, b: 6 },
-          { a: 1, b: 7 },
-          { a: 1, b: 8 },
-          { a: 0, b: 9 },
-        ]);
+        documents.insert(AB_TEST_RECORDS);
 
-        expect(dv.data().length).toEqual(5);
+        expect(dynamicView.data().length).toEqual(5);
 
-        items.findAndRemove({ b: { $lt: 7 } });
+        documents.findAndRemove({ b: { $lt: 7 } });
 
-        const results = dv.data();
+        const results = dynamicView.data();
         expect(results.length).toEqual(2);
         expect(results[0].b).toEqual(7);
         expect(results[1].b).toEqual(8);
@@ -562,41 +649,38 @@ describe('immutable', () => {
 
     describe('dynamic (persistent/sorted with criteria) view batch removes work as expected', () => {
       it('works', () => {
-        const db = new loki('dvtest');
-        const items = db.addCollection('users', { disableFreeze: false });
-        const dv = items.addDynamicView('dv', { persistent: true });
-        const filterEmitted = false;
-        const sortEmitted = false;
-        dv.addListener('filter', () => {
+        const database = new Database('dynamicViewTest');
+        const documents = database.addCollection<IABTestRecord>('users', {
+          disableFreeze: false,
+        });
+        const dynamicView = documents.addDynamicView('dynamicView', {
+          persistent: true,
+        });
+
+        let filterEmitted = false;
+        let sortEmitted = false;
+
+        dynamicView.on(DynamicViewFilterEventName, () => {
           filterEmitted = true;
         });
-        dv.addListener('sort', () => {
+        dynamicView.on(DynamicViewSortEventName, () => {
           sortEmitted = true;
         });
-        dv.applyFind({ a: 1 });
-        dv.applySortCriteria(['b']);
-        expect(isFrozen(dv.filterPipeline)).toBe(true);
-        expect(isFrozen(dv.sortCriteriaSimple)).toBe(true);
+
+        dynamicView.applyFind({ a: 1 });
+        dynamicView.applySortCriteria(['b']);
+        expect(isFrozen(dynamicView.filterPipeline)).toBe(true);
+        expect(isFrozen(dynamicView.sortCriteriaSimple)).toBe(true);
         expect(filterEmitted).toBe(true);
         expect(sortEmitted).toBe(true);
 
-        items.insert([
-          { a: 0, b: 1 },
-          { a: 1, b: 2 },
-          { a: 0, b: 3 },
-          { a: 1, b: 4 },
-          { a: 0, b: 5 },
-          { a: 1, b: 6 },
-          { a: 1, b: 7 },
-          { a: 1, b: 8 },
-          { a: 0, b: 9 },
-        ]);
+        documents.insert(AB_TEST_RECORDS);
 
-        expect(dv.data().length).toEqual(5);
+        expect(dynamicView.data().length).toEqual(5);
 
-        items.findAndRemove({ b: { $lt: 7 } });
+        documents.findAndRemove({ b: { $lt: 7 } });
 
-        const results = dv.data();
+        const results = dynamicView.data();
         expect(results.length).toEqual(2);
         expect(results[0].b).toEqual(7);
         expect(results[1].b).toEqual(8);
@@ -605,34 +689,26 @@ describe('immutable', () => {
 
     describe('dynamic (persistent/sorted/indexed) view batch removes work as expected', () => {
       it('works', () => {
-        const db = new loki('dvtest');
-        const items = db.addCollection('users', {
+        const database = new Database('dynamicViewTest');
+        const documents = database.addCollection<IABTestRecord>('users', {
           disableFreeze: false,
           indices: ['b'],
         });
-        const dv = items.addDynamicView('dv', { persistent: true });
-        dv.applyFind({ a: 1 });
-        dv.applySimpleSort('b');
-        expect(isFrozen(dv.filterPipeline)).toBe(true);
-        expect(isFrozen(dv.sortCriteriaSimple)).toBe(true);
+        const dynamicView = documents.addDynamicView('dynamicView', {
+          persistent: true,
+        });
+        dynamicView.applyFind({ a: 1 });
+        dynamicView.applySimpleSort('b');
+        expect(isFrozen(dynamicView.filterPipeline)).toBe(true);
+        expect(isFrozen(dynamicView.sortCriteriaSimple)).toBe(true);
 
-        items.insert([
-          { a: 0, b: 1 },
-          { a: 1, b: 2 },
-          { a: 0, b: 3 },
-          { a: 1, b: 4 },
-          { a: 0, b: 5 },
-          { a: 1, b: 6 },
-          { a: 1, b: 7 },
-          { a: 1, b: 8 },
-          { a: 0, b: 9 },
-        ]);
+        documents.insert(AB_TEST_RECORDS);
 
-        expect(dv.data().length).toEqual(5);
+        expect(dynamicView.data().length).toEqual(5);
 
-        items.findAndRemove({ b: { $lt: 7 } });
+        documents.findAndRemove({ b: { $lt: 7 } });
 
-        const results = dv.data();
+        const results = dynamicView.data();
         expect(results.length).toEqual(2);
         expect(results[0].b).toEqual(7);
         expect(results[1].b).toEqual(8);
@@ -641,124 +717,143 @@ describe('immutable', () => {
 
     describe('dynamic view rematerialize works as expected', () => {
       it('works', () => {
-        const db = new loki('dvtest');
-        const items = db.addCollection('users', { disableFreeze: false });
-        items.insert(testRecords);
-        const dv = items.addDynamicView();
+        const database = new Database('dynamicViewTest');
+        const documents = database.addCollection<IPersonTestRecord>('users', {
+          disableFreeze: false,
+        });
+        documents.insert(PERSON_TEST_RECORDS);
+        const dynamicView = documents.addDynamicView();
 
-        dv.applyFind({ owner: 'odin' });
-        dv.applyWhere(function (obj) {
+        dynamicView.applyFind({ owner: 'odin' });
+        dynamicView.applyWhere((obj) => {
           return obj.maker === 'elves';
         });
-        expect(isFrozen(dv.filterPipeline)).toBe(true);
+        expect(isFrozen(dynamicView.filterPipeline)).toBe(true);
 
-        expect(dv.data().length).toEqual(2);
-        expect(dv.filterPipeline.length).toEqual(2);
+        expect(dynamicView.data().length).toEqual(2);
+        expect(dynamicView.filterPipeline.length).toEqual(2);
 
-        dv.rematerialize({ removeWhereFilters: true });
-        expect(dv.data().length).toEqual(2);
-        expect(dv.filterPipeline.length).toEqual(1);
+        dynamicView.rematerialize({ removeWhereFilters: true });
+        expect(dynamicView.data().length).toEqual(2);
+        expect(dynamicView.filterPipeline.length).toEqual(1);
       });
     });
 
     describe('dynamic view toJSON does not circularly reference', () => {
       it('works', () => {
-        const db = new loki('dvtest');
-        const items = db.addCollection('users', { disableFreeze: false });
-        items.insert(testRecords);
-        const dv = items.addDynamicView();
-        expect(isFrozen(dv.filterPipeline)).toBe(true);
+        const database = new Database('dynamicViewTest');
+        const documents = database.addCollection('users', {
+          disableFreeze: false,
+        });
+        documents.insert(PERSON_TEST_RECORDS);
+        const dynamicView = documents.addDynamicView();
+        expect(isFrozen(dynamicView.filterPipeline)).toBe(true);
 
-        const obj = dv.toJSON();
+        const obj = dynamicView.toJSON();
         expect(obj.collection).toEqual(null);
       });
     });
 
     describe('dynamic view removeFilters works as expected', () => {
       it('works', () => {
-        const db = new loki('dvtest');
-        const items = db.addCollection('users', { disableFreeze: false });
-        items.insert(testRecords);
-        const dv = items.addDynamicView('ownr');
+        const database = new Database('dynamicViewTest');
+        const documents = database.addCollection<IPersonTestRecord>('users', {
+          disableFreeze: false,
+        });
+        documents.insert(PERSON_TEST_RECORDS);
+        const dynamicView = documents.addDynamicView('owner');
 
-        dv.applyFind({ owner: 'odin' });
-        expect(isFrozen(dv.filterPipeline)).toBe(true);
-        dv.applyWhere(function (obj) {
+        dynamicView.applyFind({ owner: 'odin' });
+        expect(isFrozen(dynamicView.filterPipeline)).toBe(true);
+        dynamicView.applyWhere((obj) => {
           return obj.maker === 'elves';
         });
-        expect(isFrozen(dv.filterPipeline)).toBe(true);
+        expect(isFrozen(dynamicView.filterPipeline)).toBe(true);
 
-        expect(dv.filterPipeline.length).toEqual(2);
-        expect(dv.data().length).toEqual(2);
+        expect(dynamicView.filterPipeline.length).toEqual(2);
+        expect(dynamicView.data().length).toEqual(2);
 
-        dv.removeFilters();
-        expect(isFrozen(dv.filterPipeline)).toBe(true);
-        expect(dv.filterPipeline.length).toEqual(0);
-        expect(dv.count()).toEqual(4);
+        dynamicView.removeFilters();
+        expect(isFrozen(dynamicView.filterPipeline)).toBe(true);
+        expect(dynamicView.filterPipeline.length).toEqual(0);
+        expect(dynamicView.count()).toEqual(4);
       });
     });
 
     describe('removeDynamicView works correctly', () => {
       it('works', () => {
-        const db = new loki('dvtest');
-        const items = db.addCollection('users', { disableFreeze: false });
-        items.insert(testRecords);
-        const dv = items.addDynamicView('ownr', { persistent: true });
+        const database = new Database('dynamicViewTest');
+        const documents = database.addCollection<IPersonTestRecord>('users', {
+          disableFreeze: false,
+        });
+        documents.insert(PERSON_TEST_RECORDS);
+        const dynamicView = documents.addDynamicView('owner', {
+          persistent: true,
+        });
 
-        dv.applyFind({ owner: 'odin' });
-        dv.applyWhere(function (obj) {
+        dynamicView.applyFind({ owner: 'odin' });
+        dynamicView.applyWhere((obj) => {
           return obj.maker === 'elves';
         });
-        expect(isFrozen(dv.filterPipeline)).toBe(true);
+        expect(isFrozen(dynamicView.filterPipeline)).toBe(true);
 
-        expect(items.DynamicViews.length).toEqual(1);
+        expect(documents.dynamicViews.length).toEqual(1);
 
-        items.removeDynamicView('ownr');
-        expect(items.DynamicViews.length).toEqual(0);
+        documents.removeDynamicView('owner');
+        expect(documents.dynamicViews.length).toEqual(0);
       });
     });
 
     describe('removeDynamicView works correctly (2)', () => {
       it('works', () => {
-        const db = new loki('test.db');
-        const coll = db.addCollection('coll', { disableFreeze: false });
-        coll.addDynamicView('dv1');
-        coll.addDynamicView('dv2');
-        coll.addDynamicView('dv3');
-        coll.addDynamicView('dv4');
-        coll.addDynamicView('dv5');
+        const database = new Database('test.database');
+        const collection = database.addCollection('coll', {
+          disableFreeze: false,
+        });
+        collection.addDynamicView('dynamicView1');
+        collection.addDynamicView('dynamicView2');
+        collection.addDynamicView('dynamicView3');
+        collection.addDynamicView('dynamicView4');
+        collection.addDynamicView('dynamicView5');
 
-        expect(coll.DynamicViews.length).toEqual(5);
-        coll.removeDynamicView('dv3');
-        expect(coll.DynamicViews.length).toEqual(4);
+        expect(collection.dynamicViews.length).toEqual(5);
+        collection.removeDynamicView('dynamicView3');
+        expect(collection.dynamicViews.length).toEqual(4);
 
-        expect(coll.getDynamicView('dv1').name).toEqual('dv1');
-        expect(coll.getDynamicView('dv2').name).toEqual('dv2');
-        expect(coll.getDynamicView('dv3')).toEqual(null);
-        expect(coll.getDynamicView('dv4').name).toEqual('dv4');
-        expect(coll.getDynamicView('dv5').name).toEqual('dv5');
+        expect(collection.getDynamicView('dynamicView1')?.name).toEqual(
+          'dynamicView1'
+        );
+        expect(collection.getDynamicView('dynamicView2')?.name).toEqual(
+          'dynamicView2'
+        );
+        expect(collection.getDynamicView('dynamicView3')).toEqual(null);
+        expect(collection.getDynamicView('dynamicView4')?.name).toEqual(
+          'dynamicView4'
+        );
+        expect(collection.getDynamicView('dynamicView5')?.name).toEqual(
+          'dynamicView5'
+        );
       });
     });
 
-    describe('dynamic view simplesort options work correctly', () => {
+    describe('dynamic view simple sort options work correctly', () => {
       it('works', () => {
-        const idx;
-        const db = new loki('dvtest.db');
-        const coll = db.addCollection('colltest', {
+        const database = new Database('dynamicViewTest.database');
+        const collection = database.addCollection('test', {
           disableFreeze: false,
           indices: ['a', 'b'],
         });
 
-        // add basic dv with filter on a and basic simplesort on b
-        const dv = coll.addDynamicView('dvtest');
-        dv.applyFind({ a: { $lte: 20 } });
-        dv.applySimpleSort('b');
-        expect(isFrozen(dv.filterPipeline)).toBe(true);
-        expect(isFrozen(dv.sortCriteriaSimple)).toBe(true);
+        // add basic dynamicView with filter on a and basic simple sort on b
+        let dynamicView = collection.addDynamicView('dynamicViewTest');
+        dynamicView.applyFind({ a: { $lte: 20 } });
+        dynamicView.applySimpleSort('b');
+        expect(isFrozen(dynamicView.filterPipeline)).toBe(true);
+        expect(isFrozen(dynamicView.sortCriteriaSimple)).toBe(true);
 
         // data only needs to be inserted once since we are leaving collection intact while
         // building up and tearing down dynamic views within it
-        coll.insert([
+        collection.insert([
           { a: 1, b: 11 },
           { a: 2, b: 9 },
           { a: 8, b: 3 },
@@ -768,89 +863,96 @@ describe('immutable', () => {
         ]);
 
         // test whether results are valid
-        const results = dv.data();
-        expect(results.length).toBe(5);
-        for (idx = 0; idx < results.length - 1; idx++) {
-          expect(loki.LokiOps.$lte(results[idx]['b'], results[idx + 1]['b']));
+        let dynamicViewData = dynamicView.data();
+        expect(dynamicViewData.length).toBe(5);
+        for (let i = 0; i < dynamicViewData.length - 1; i += 1) {
+          expect(
+            Operators.$lte(dynamicViewData[i].b, dynamicViewData[i + 1].b)
+          );
         }
 
         // remove dynamic view
-        coll.removeDynamicView('dvtest');
+        collection.removeDynamicView('dynamicViewTest');
 
-        // add basic dv with filter on a and simplesort (with js fallback) on b
-        dv = coll.addDynamicView('dvtest');
-        dv.applyFind({ a: { $lte: 20 } });
-        dv.applySimpleSort('b', { useJavascriptSorting: true });
-        expect(isFrozen(dv.filterPipeline)).toBe(true);
-        expect(isFrozen(dv.sortCriteriaSimple)).toBe(true);
+        // add basic dynamicView with filter on a and simple sort (with js fallback) on b
+        dynamicView = collection.addDynamicView('dynamicViewTest');
+        dynamicView.applyFind({ a: { $lte: 20 } });
+        dynamicView.applySimpleSort('b', { useJavaScriptSorting: true });
+        expect(isFrozen(dynamicView.filterPipeline)).toBe(true);
+        expect(isFrozen(dynamicView.sortCriteriaSimple)).toBe(true);
 
         // test whether results are valid
         // for our simple integer datatypes javascript sorting is same as loki sorting
-        const results = dv.data();
-        expect(results.length).toBe(5);
-        for (idx = 0; idx < results.length - 1; idx++) {
-          expect(results[idx]['b'] <= results[idx + 1]['b']);
+        dynamicViewData = dynamicView.data();
+        expect(dynamicViewData.length).toBe(5);
+        for (let i = 0; i < dynamicViewData.length - 1; i += 1) {
+          expect(dynamicViewData[i].b <= dynamicViewData[i + 1].b);
         }
 
         // remove dynamic view
-        coll.removeDynamicView('dvtest');
+        collection.removeDynamicView('dynamicViewTest');
 
-        // add basic dv with filter on a and simplesort (forced js sort) on b
-        dv = coll.addDynamicView('dvtest');
-        dv.applyFind({ a: { $lte: 20 } });
-        dv.applySimpleSort('b', {
+        // add basic dynamicView with filter on a and simple sort (forced js sort) on b
+        dynamicView = collection.addDynamicView('dynamicViewTest');
+        dynamicView.applyFind({ a: { $lte: 20 } });
+        dynamicView.applySimpleSort('b', {
           disableIndexIntersect: true,
-          useJavascriptSorting: true,
+          useJavaScriptSorting: true,
         });
-        expect(isFrozen(dv.filterPipeline)).toBe(true);
-        expect(isFrozen(dv.sortCriteriaSimple)).toBe(true);
+        expect(isFrozen(dynamicView.filterPipeline)).toBe(true);
+        expect(isFrozen(dynamicView.sortCriteriaSimple)).toBe(true);
 
         // test whether results are valid
-        const results = dv.data();
-        expect(results.length).toBe(5);
-        for (idx = 0; idx < results.length - 1; idx++) {
-          expect(results[idx]['b'] <= results[idx + 1]['b']);
+        dynamicViewData = dynamicView.data();
+        expect(dynamicViewData.length).toBe(5);
+        for (let i = 0; i < dynamicViewData.length - 1; i += 1) {
+          expect(dynamicViewData[i].b <= dynamicViewData[i + 1].b);
         }
 
         // remove dynamic view
-        coll.removeDynamicView('dvtest');
+        collection.removeDynamicView('dynamicViewTest');
 
-        // add basic dv with filter on a and simplesort (forced loki sort) on b
-        dv = coll.addDynamicView('dvtest');
-        dv.applyFind({ a: { $lte: 20 } });
-        dv.applySimpleSort('b', { forceIndexIntersect: true });
-        expect(isFrozen(dv.filterPipeline)).toBe(true);
-        expect(isFrozen(dv.sortCriteriaSimple)).toBe(true);
+        // add basic dynamicView with filter on a and simple sort (forced loki sort) on b
+        dynamicView = collection.addDynamicView('dynamicViewTest');
+        dynamicView.applyFind({ a: { $lte: 20 } });
+        dynamicView.applySimpleSort('b', { forceIndexIntersect: true });
+        expect(isFrozen(dynamicView.filterPipeline)).toBe(true);
+        expect(isFrozen(dynamicView.sortCriteriaSimple)).toBe(true);
 
         // test whether results are valid
-        const results = dv.data();
-        expect(results.length).toBe(5);
-        for (idx = 0; idx < results.length - 1; idx++) {
-          expect(loki.LokiOps.$lte(results[idx]['b'], results[idx + 1]['b']));
+        dynamicViewData = dynamicView.data();
+        expect(dynamicViewData.length).toBe(5);
+        for (let i = 0; i < dynamicViewData.length - 1; i += 1) {
+          expect(
+            Operators.$lte(dynamicViewData[i].b, dynamicViewData[i + 1].b)
+          );
         }
       });
     });
 
     describe('querying branched result set', () => {
-      const elves;
-      beforeAll(() => {
-        const db = new loki('firstonly.db');
-        const items = db.addCollection('items', { disableFreeze: false });
-        items.insert({ name: 'mjolnir', owner: 'thor', maker: 'dwarves' });
-        items.insert({ name: 'gungnir', owner: 'odin', maker: 'elves' });
-        items.insert({ name: 'tyrfing', owner: 'Svafrlami', maker: 'dwarves' });
-        items.insert({ name: 'draupnir', owner: 'odin', maker: 'elves' });
-
-        elves = items.addDynamicView('elves');
-        elves.applyFind({ maker: 'elves' });
-        expect(isFrozen(elves.filterPipeline)).toBe(true);
+      const database = new Database('firstInly.database');
+      const documents = database.addCollection<IPersonTestRecord>('documents', {
+        disableFreeze: false,
       });
+      documents.insert({ name: 'mjolnir', owner: 'thor', maker: 'dwarves' });
+      documents.insert({ name: 'gungnir', owner: 'odin', maker: 'elves' });
+      documents.insert({
+        name: 'tyrfing',
+        owner: 'Svafrlami',
+        maker: 'dwarves',
+      });
+      documents.insert({ name: 'draupnir', owner: 'odin', maker: 'elves' });
+
+      const elves = documents.addDynamicView('elves');
+      elves.applyFind({ maker: 'elves' });
+      expect(isFrozen(elves.filterPipeline)).toBe(true);
 
       it('finds first result with firstOnly: true', () => {
         const resultset = elves.branchResultset();
         const result = resultset.find({ name: { $ne: 'thor' } }, true).data();
         expect(result.length).toBe(1);
-        expect(result[0].name).toBe('gungnir');
+        expect(result[0]?.name).toBe('gungnir');
       });
 
       it('finds first result with firstOnly: true and empty query', () => {
@@ -864,22 +966,22 @@ describe('immutable', () => {
 
   describe('changesApi with disableFreeze', () => {
     it('does what it says on the tin', () => {
-      const db = new loki(),
-        options = {
-          asyncListeners: false,
-          disableChangesApi: false,
-          disableFreeze: false,
-        },
-        users = db.addCollection('users', options),
-        test = db.addCollection('test', options),
-        test2 = db.addCollection('test2', options);
+      const database = new Database();
+      const options = {
+        asyncListeners: false,
+        disableChangesApi: false,
+        disableFreeze: false,
+      };
+      const users = database.addCollection<IPersonTestRecord>('users', options);
+      const test = database.addCollection<IPersonTestRecord>('test', options);
+      const test2 = database.addCollection<IPersonTestRecord>('test2', options);
 
-      const u = users.insert({
+      let document = users.insert({
         name: 'joe',
       });
-      u = deepUnfreeze(u);
-      u.name = 'jack';
-      users.update(u);
+      document = deepUnFreeze(document);
+      document.name = 'jack';
+      users.update(document);
       test.insert({
         name: 'test',
       });
@@ -887,149 +989,179 @@ describe('immutable', () => {
         name: 'test2',
       });
 
-      const userChanges = db.generateChangesNotification(['users']);
+      const userChanges = database.generateChangesNotification(['users']);
 
       expect(userChanges.length).toEqual(2);
-      expect(db.serializeChanges(['users'])).toEqual(
+      expect(database.serializeChanges(['users'])).toEqual(
         JSON.stringify(userChanges)
       );
 
-      const someChanges = db.generateChangesNotification(['users', 'test2']);
+      const someChanges = database.generateChangesNotification([
+        'users',
+        'test2',
+      ]);
 
       expect(someChanges.length).toEqual(3);
-      const allChanges = db.generateChangesNotification();
+      const allChanges = database.generateChangesNotification();
 
       expect(allChanges.length).toEqual(4);
       users.setChangesApi(false);
       expect(users.disableChangesApi).toEqual(true);
 
-      u = deepUnfreeze(u);
-      u.name = 'john';
-      users.update(u);
-      const newChanges = db.generateChangesNotification(['users']);
+      document = deepUnFreeze(document);
+      document.name = 'john';
+      users.update(document);
+      const newChanges = database.generateChangesNotification(['users']);
 
       expect(newChanges.length).toEqual(2);
-      db.clearChanges();
+      database.clearChanges();
 
       expect(users.getChanges().length).toEqual(0);
 
-      u = deepUnfreeze(u);
-      u.name = 'jim';
-      users.update(u);
+      document = deepUnFreeze(document);
+      document.name = 'jim';
+      users.update(document);
       users.flushChanges();
 
       expect(users.getChanges().length).toEqual(0);
     });
 
     it('works with delta mode', () => {
-      const db = new loki(),
-        options = {
-          asyncListeners: false,
-          disableChangesApi: false,
-          disableDeltaChangesApi: false,
-          disableFreeze: false,
-        },
-        items = db.addCollection('items', options);
+      const database = new Database();
+      const options = {
+        asyncListeners: false,
+        disableChangesApi: false,
+        disableDeltaChangesApi: false,
+        disableFreeze: false,
+      };
+      const documents = database.addCollection<IPersonTestRecord>(
+        'documents',
+        options
+      );
 
       // Add some documents to the collection
-      items.insert({
+      documents.insert({
         name: 'mjolnir',
         owner: 'thor',
         maker: { name: 'dwarves', count: 1 },
       });
-      items.insert({
+      documents.insert({
         name: 'gungnir',
         owner: 'odin',
         maker: { name: 'elves', count: 1 },
       });
-      items.insert({
+      documents.insert({
         name: 'tyrfing',
         owner: 'Svafrlami',
         maker: { name: 'dwarves', count: 1 },
       });
-      items.insert({
+      documents.insert({
         name: 'draupnir',
         owner: 'odin',
         maker: { name: 'elves', count: 1 },
       });
 
       // Find and update an existing document
-      const tyrfing = items.findOne({ name: 'tyrfing' });
+      let document = documents.findOne({ name: 'tyrfing' });
 
-      expect(isFrozen(tyrfing)).toBe(true);
-      tyrfing = deepUnfreeze(tyrfing);
-      tyrfing.owner = 'arngrim';
-      items.update(tyrfing);
-      tyrfing = deepUnfreeze(tyrfing);
-      tyrfing.maker.count = 4;
-      items.update(tyrfing);
+      expect(isFrozen(document)).toBe(true);
+      document = deepUnFreeze(document);
 
-      const changes = db.serializeChanges(['items']);
-      changes = JSON.parse(changes);
+      if (!document) {
+        throw new TypeError('Inserted document not found');
+      }
+
+      document.owner = 'arngrim';
+      documents.update(document);
+
+      document = deepUnFreeze(document);
+
+      if (!document || !document.maker) {
+        throw new TypeError('Inserted document not found');
+      }
+
+      if (typeof document.maker !== 'object') {
+        throw new TypeError('The type of maker is incorrect');
+      }
+
+      document.maker.count = 4;
+      documents.update(document);
+
+      const changes: ICollectionChange<IPersonTestRecord>[] = JSON.parse(
+        database.serializeChanges(['documents'])
+      );
 
       expect(changes.length).toEqual(6);
 
       const firstUpdate = changes[4];
       expect(firstUpdate.operation).toEqual('U');
-      expect(firstUpdate.obj.owner).toEqual('arngrim');
-      expect(firstUpdate.obj.name).toBeUndefined();
+      expect(firstUpdate.object.owner).toEqual('arngrim');
+      expect(firstUpdate.object.name).toBeUndefined();
 
       const secondUpdate = changes[5];
       expect(secondUpdate.operation).toEqual('U');
-      expect(secondUpdate.obj.owner).toBeUndefined();
-      expect(secondUpdate.obj.maker).toEqual({ count: 4 });
+      expect(secondUpdate.object.owner).toBeUndefined();
+      expect(secondUpdate.object.maker).toEqual({ count: 4 });
     });
 
     it('batch operations work with delta mode', () => {
-      const db = new loki(),
-        options = {
-          asyncListeners: false,
-          disableChangesApi: false,
-          disableDeltaChangesApi: false,
-          disableFreeze: false,
-        },
-        items = db.addCollection('items', options);
+      interface ITestRecord {
+        name: string;
+        owner: string;
+        maker: string;
+        count: number;
+      }
+
+      const database = new Database();
+
+      const documents = database.addCollection<ITestRecord>('documents', {
+        asyncListeners: false,
+        disableChangesApi: false,
+        disableDeltaChangesApi: false,
+        disableFreeze: false,
+      });
 
       // Add some documents to the collection
-      items.insert([
+      documents.insert([
         { name: 'mjolnir', owner: 'thor', maker: 'dwarves', count: 0 },
         { name: 'gungnir', owner: 'odin', maker: 'elves', count: 0 },
         { name: 'tyrfing', owner: 'Svafrlami', maker: 'dwarves', count: 0 },
         { name: 'draupnir', owner: 'odin', maker: 'elves', count: 0 },
       ]);
 
-      items.chain().update(function (o) {
-        o.count++;
+      documents.chain().update((o) => {
+        o.count += 1;
       });
 
-      const changes = db.serializeChanges(['items']);
-      changes = JSON.parse(changes);
+      const changes: ICollectionChange<IPersonTestRecord>[] = JSON.parse(
+        database.serializeChanges(['documents'])
+      );
 
       expect(changes.length).toEqual(8);
 
-      expect(changes[0].name).toEqual('items');
+      expect(changes[0].name).toEqual('documents');
       expect(changes[0].operation).toEqual('I');
-      expect(changes[1].name).toEqual('items');
+      expect(changes[1].name).toEqual('documents');
       expect(changes[1].operation).toEqual('I');
-      expect(changes[2].name).toEqual('items');
+      expect(changes[2].name).toEqual('documents');
       expect(changes[2].operation).toEqual('I');
-      expect(changes[3].name).toEqual('items');
+      expect(changes[3].name).toEqual('documents');
       expect(changes[3].operation).toEqual('I');
 
-      expect(changes[4].name).toEqual('items');
+      expect(changes[4].name).toEqual('documents');
       expect(changes[4].operation).toEqual('U');
-      expect(changes[4].obj.count).toEqual(1);
-      expect(changes[5].name).toEqual('items');
+      expect(changes[4].object.count).toEqual(1);
+      expect(changes[5].name).toEqual('documents');
       expect(changes[5].operation).toEqual('U');
-      expect(changes[5].obj.count).toEqual(1);
-      expect(changes[6].name).toEqual('items');
+      expect(changes[5].object.count).toEqual(1);
+      expect(changes[6].name).toEqual('documents');
       expect(changes[6].operation).toEqual('U');
-      expect(changes[6].obj.count).toEqual(1);
-      expect(changes[7].name).toEqual('items');
+      expect(changes[6].object.count).toEqual(1);
+      expect(changes[7].name).toEqual('documents');
       expect(changes[7].operation).toEqual('U');
-      expect(changes[7].obj.count).toEqual(1);
+      expect(changes[7].object.count).toEqual(1);
 
-      const keys = Object.keys(changes[7].obj);
+      const keys = Object.keys(changes[7].object);
       keys.sort();
       expect(keys[0]).toEqual('$loki');
       expect(keys[1]).toEqual('count');
@@ -1038,14 +1170,21 @@ describe('immutable', () => {
   });
 
   describe('freeze typed', () => {
-    it('works', () => {
-      const db = new loki('test.json');
-      const users;
+    interface IInjectedPersonTestRecord extends IPersonTestRecord {
+      customInflater?: boolean;
+      onlyInflater?: boolean;
+    }
 
-      function User(n) {
-        this.name = n || '';
-        this.log = () => {
-          console.log('Name: ' + this.name);
+    it('works', () => {
+      const database = new Database('test.json');
+      let collection: Collection<IInjectedPersonTestRecord> | null;
+
+      class User {
+        constructor(public name: string) {}
+
+        log = () => {
+          // eslint-disable-next-line no-console
+          console.log(`Name: ${this.name}`);
         };
       }
 
@@ -1084,12 +1223,11 @@ describe('immutable', () => {
             cachedBinaryIndex: null,
             cachedData: null,
             maxId: 2,
-            DynamicViews: [],
+            dynamicViews: [],
             events: {
               insert: [null],
               update: [null],
               close: [],
-              flushbuffer: [],
               error: [],
               delete: [],
             },
@@ -1104,23 +1242,27 @@ describe('immutable', () => {
       };
 
       // Loading only using proto:
-      db.loadJSON(JSON.stringify(json), {
+      database.loadJSON(JSON.stringify(json), {
         users: {
-          proto: User,
+          Proto: User,
         },
       });
 
-      users = db.getCollection('users');
+      collection = database.getCollection('users');
 
-      expect(users.get(1) instanceof User).toBe(true);
-      expect(users.get(1).name).toBe('joe');
-      expect(isFrozen(users.get(1))).toBe(true);
+      if (!collection) {
+        throw new TypeError(`Collection not found`);
+      }
+
+      expect(collection.get(1) instanceof User).toBe(true);
+      expect(collection.get(1)?.name).toBe('joe');
+      expect(isFrozen(collection.get(1))).toBe(true);
 
       // Loading using proto and inflate:
-      db.loadJSON(JSON.stringify(json), {
+      database.loadJSON<IInjectedPersonTestRecord>(JSON.stringify(json), {
         users: {
-          proto: User,
-          inflate: function (src, dest) {
+          Proto: User,
+          inflate: (src, dest) => {
             dest.$loki = src.$loki;
             dest.meta = src.meta;
             dest.customInflater = true;
@@ -1128,34 +1270,45 @@ describe('immutable', () => {
         },
       });
 
-      users = db.getCollection('users');
+      collection = database.getCollection('users');
 
-      expect(users.get(1) instanceof User).toBe(true);
-      expect(users.get(1).name).toBe('');
-      expect(users.get(1).customInflater).toBe(true);
-      expect(isFrozen(users.get(1))).toBe(true);
+      if (!collection) {
+        throw new TypeError(`Collection not found`);
+      }
+
+      expect(collection.get(1) instanceof User).toBe(true);
+      expect(collection.get(1)?.name).toBe('');
+      expect(collection.get(1)?.customInflater).toBe(true);
+      expect(isFrozen(collection.get(1))).toBe(true);
 
       // Loading only using inflate:
-      db.loadJSON(JSON.stringify(json), {
-        users: {
-          inflate: function (src) {
-            const dest = {};
+      database.loadJSON<Pick<IInjectedPersonTestRecord, 'onlyInflater'>>(
+        JSON.stringify(json),
+        {
+          users: {
+            inflate: (src) => {
+              const destination = {
+                $loki: src.$loki,
+                meta: src.meta,
+                onlyInflater: true,
+              };
 
-            dest.$loki = src.$loki;
-            dest.meta = src.meta;
-            dest.onlyInflater = true;
-
-            return dest;
+              return destination;
+            },
           },
-        },
-      });
+        }
+      );
 
-      users = db.getCollection('users');
+      collection = database.getCollection<IInjectedPersonTestRecord>('users');
 
-      expect(users.get(1) instanceof User).toBe(false);
-      expect(users.get(1).name).toBe(undefined);
-      expect(users.get(1).onlyInflater).toBe(true);
-      expect(isFrozen(users.get(1))).toBe(true);
+      if (!collection) {
+        throw new TypeError(`Collection not found`);
+      }
+
+      expect(collection.get(1) instanceof User).toBe(false);
+      expect(collection.get(1)?.name).toBe(undefined);
+      expect(collection.get(1)?.onlyInflater).toBe(true);
+      expect(isFrozen(collection.get(1))).toBe(true);
     });
   });
 });
