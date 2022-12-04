@@ -38,7 +38,7 @@ import {
 } from './Events';
 import { sub, mean, parseBase10, standardDeviation } from './utils/math';
 
-import type { IQuery } from './typings';
+import type { IQuery, JoinKeyFunction } from './typings';
 import type { Operator } from './Operations';
 import type { TransformRequest } from './ResultSet';
 import type { IDynamicViewOptions } from './DynamicView';
@@ -2978,22 +2978,42 @@ export class Collection<T extends object> extends Target<
    * @param dataOptions - options to data() before input to your map function
    * @returns Result of the mapping operation
    */
-  eqJoin = (
-    joinData: T[] | ResultSet<T> | Collection<T>,
-    leftJoinProperty: keyof T,
-    rightJoinProperty: keyof T,
-    mapFunction: (left: T, right: T) => T,
-    dataOptions: ICollectionEqJoinDataOptions
-  ) => {
+  eqJoin<R extends object>(
+    joinData: R[] | Collection<R> | ResultSet<R>,
+    leftJoinKey: keyof T | JoinKeyFunction<T>,
+    rightJoinKey: keyof R | JoinKeyFunction<R>
+  ): ResultSet<{ left: T; right: R }>;
+  eqJoin<R extends Partial<T>>(
+    joinData: R[] | Collection<R> | ResultSet<R>,
+    leftJoinKey: keyof T | JoinKeyFunction<T>,
+    rightJoinKey: keyof R | JoinKeyFunction<R>,
+    mapFunction?: ((left: T, right: R) => T) | undefined
+  ): ResultSet<T>;
+  eqJoin<R extends Partial<T>, R0 extends object = T>(
+    joinData: R[] | Collection<R> | ResultSet<R>,
+    leftJoinKey: keyof T | JoinKeyFunction<T>,
+    rightJoinKey: keyof R | JoinKeyFunction<R>,
+    mapFunction: (left: T, right: R) => R0
+  ): ResultSet<R0>;
+  eqJoin<R extends Partial<T>>(
+    joinData: R[] | Collection<R> | ResultSet<R>,
+    leftJoinKey: keyof T | JoinKeyFunction<T>,
+    rightJoinKey: keyof R | JoinKeyFunction<R>,
+    mapFunction: Function = (left: T, right: R) => ({
+      left,
+      right,
+    })
+  ) {
     // logic in ResultSet class
     return new ResultSet(this).eqJoin(
       joinData,
-      leftJoinProperty,
-      rightJoinProperty,
-      mapFunction,
-      dataOptions
-    );
-  };
+      leftJoinKey,
+      rightJoinKey,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mapFunction as any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ) as any;
+  }
 
   /* ------------------------+
   | Transaction methods     |

@@ -7,3 +7,10 @@ export type IQuery<Document> = Partial<{
       }>
     | Document[Key];
 }>;
+
+export type JoinKeyFunction<T> = (x: T) => keyof T | number;
+
+export interface IDefaultEqJoinR0<T> {
+  left: T;
+  right: T;
+}
