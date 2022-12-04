@@ -11,6 +11,11 @@ export interface IABTestRecord {
   b?: unknown;
 }
 
+export interface INumericABTestRecord {
+  a: number;
+  b: number;
+}
+
 export interface IIndexTestRecord {
   customIdx: number;
   originalIdx?: number;
@@ -23,6 +28,10 @@ export interface IFooBarTestRecord {
   bar?: string;
 }
 
+export interface IIdTestRecord {
+  id: string;
+}
+
 export interface IFilmDirectoryTestRecord {
   name: string;
   directorId: number;
@@ -32,4 +41,15 @@ export interface IFilmTestRecord {
   title: string;
   filmId: number;
   directorId: number;
+}
+
+export interface ITreeTestRecord {
+  text: string;
+  value: string;
+  id: number;
+  order: number;
+  parents_id: number[];
+  level: number;
+  open: boolean;
+  checked: boolean;
 }

@@ -17,7 +17,12 @@ import {
   isFrozen,
   unFreeze,
 } from '../../src/utils/freeze';
-import { IABTestRecord, IPersonTestRecord } from './definition';
+import {
+  IABTestRecord,
+  IIdTestRecord,
+  INumericABTestRecord,
+  IPersonTestRecord,
+} from './definition';
 
 const PERSON_TEST_RECORDS = [
   { name: 'mjolnir', owner: 'thor', maker: 'dwarves' },
@@ -508,7 +513,7 @@ describe('immutable', () => {
 
   it('should update unique index', () => {
     const database = new Database('test.database');
-    const collection = database.addCollection('documents', {
+    const collection = database.addCollection<IIdTestRecord>('documents', {
       disableFreeze: false,
       unique: ['id'],
     });
@@ -839,10 +844,13 @@ describe('immutable', () => {
     describe('dynamic view simple sort options work correctly', () => {
       it('works', () => {
         const database = new Database('dynamicViewTest.database');
-        const collection = database.addCollection('test', {
-          disableFreeze: false,
-          indices: ['a', 'b'],
-        });
+        const collection = database.addCollection<INumericABTestRecord>(
+          'test',
+          {
+            disableFreeze: false,
+            indices: ['a', 'b'],
+          }
+        );
 
         // add basic dynamicView with filter on a and basic simple sort on b
         let dynamicView = collection.addDynamicView('dynamicViewTest');

@@ -1,4 +1,5 @@
 import { Database } from '../../src';
+
 import { IFilmDirectoryTestRecord, IFilmTestRecord } from './definition';
 
 describe('joins', () => {
