@@ -46,7 +46,7 @@ export class MemoryAdapter
       this.hashStore.set(databaseName, {
         saveCount: (hash?.saveCount ?? 0) + 1,
         lastSave: new Date(),
-        value: databaseString
+        value: databaseString,
       });
 
       resolve();

@@ -128,7 +128,8 @@ export interface IDeserializeDestructuredOptions {
 export interface IDeserializeCollectionOptions {
   delimited: boolean;
   delimiter: string;
-  collectionIndex?: number;
+  collectionIndex: number;
+  partitioned: boolean;
 }
 
 export interface Proto<T> {
@@ -722,7 +723,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
    */
   deserializeDestructured = (
     destructuredSource: string | string[],
-    options?: IDeserializeDestructuredOptions
+    options?: Partial<IDeserializeDestructuredOptions>
   ) => {
     const internalOptions = {
       partitioned: false,
@@ -836,10 +837,10 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
    *
    * @returns an array of documents to attach to collection.data.
    */
-  deserializeCollection = (
+  deserializeCollection = <P extends object>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     destructuredSource: string | string[] | Database<any>,
-    options?: IDeserializeCollectionOptions
+    options?: Partial<IDeserializeCollectionOptions>
   ) => {
     const internalOptions = {
       delimited: true,
@@ -848,7 +849,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
       ...options,
     };
 
-    let workingArray = [];
+    let stringArray = [];
 
     if (internalOptions.delimited) {
       if (typeof destructuredSource !== 'string') {
@@ -856,22 +857,18 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
           'Delimited destructured source can not be an array'
         );
       }
-      workingArray = destructuredSource.split(internalOptions.delimiter);
-      workingArray.pop();
+      stringArray = destructuredSource.split(internalOptions.delimiter);
+      stringArray.pop();
     } else {
       if (!Array.isArray(destructuredSource)) {
         throw new TypeError(
           'Non-delimited destructured source can not be a string'
         );
       }
-      workingArray = destructuredSource;
+      stringArray = destructuredSource;
     }
 
-    for (let i = 0; i < workingArray.length; i += 1) {
-      workingArray[i] = JSON.parse(workingArray[i]);
-    }
-
-    return workingArray;
+    return stringArray.map((x) => JSON.parse(x)) as (P & ICollectionDocument)[];
   };
 
   /**
@@ -1203,7 +1200,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
    *        collections are processed.
    * @returns string representation of the changes
    */
-  serializeChanges = (collectionNamesArray: string[]) => {
+  serializeChanges = (collectionNamesArray?: string[]) => {
     return JSON.stringify(
       this.generateChangesNotification(collectionNamesArray)
     );
