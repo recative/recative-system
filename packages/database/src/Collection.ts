@@ -2,9 +2,9 @@ import {
   lens,
   LensResult,
   isDotNotation,
-  ValidLensField,
   ValidDotNotation,
   ValidSimpleLensField,
+  DotNotation,
 } from '@recative/lens';
 import { Target } from '@recative/event-target';
 
@@ -98,9 +98,9 @@ const NO_OP = (...x: unknown[]): unknown => {
  *        by default.
  */
 export interface ICollectionOptions<T> {
-  unique: (keyof T)[];
+  unique: DotNotation<T>[];
   exact: string[];
-  indices: (keyof T)[];
+  indices: DotNotation<T>[];
   adaptiveBinaryIndices: boolean;
   transactional: boolean;
   asyncListeners: boolean;
@@ -3080,7 +3080,7 @@ export class Collection<T extends object> extends Target<
   /* ----------------+
   | Other utils     |
   +-----------------*/
-  extract = <K extends ValidLensField>(
+  extract = <K extends DotNotation<T>>(
     field: K
   ): LensResult<T & ICollectionDocument, K, ValidDotNotation<K>>[] => {
     const result: LensResult<
@@ -3095,15 +3095,15 @@ export class Collection<T extends object> extends Target<
     return result;
   };
 
-  max = <K extends ValidLensField>(field: K) => {
+  max = <K extends DotNotation<T>>(field: K) => {
     return Math.max.apply(null, this.extract(field) as unknown as number[]);
   };
 
-  min = <K extends ValidLensField>(field: K) => {
+  min = <K extends DotNotation<T>>(field: K) => {
     return Math.min.apply(null, this.extract(field) as unknown as number[]);
   };
 
-  maxRecord = <K extends ValidLensField>(field: K) => {
+  maxRecord = <K extends DotNotation<T>>(field: K) => {
     const useDotNotation = isDotNotation(field);
 
     const result = {
@@ -3135,7 +3135,7 @@ export class Collection<T extends object> extends Target<
     return result;
   };
 
-  minRecord = <K extends ValidLensField>(field: K) => {
+  minRecord = <K extends DotNotation<T>>(field: K) => {
     const useDotNotation = isDotNotation(field);
 
     const result = {
@@ -3167,7 +3167,7 @@ export class Collection<T extends object> extends Target<
     return result;
   };
 
-  extractNumerical = <K extends ValidLensField>(field: K) => {
+  extractNumerical = <K extends DotNotation<T>>(field: K) => {
     return (this.extract(field) as string[]).map(parseBase10).filter((n) => {
       return !Number.isNaN(n);
     });
@@ -3179,17 +3179,17 @@ export class Collection<T extends object> extends Target<
    * @param field - name of property in docs to average
    * @returns average of property in all docs in the collection
    */
-  mean = <K extends ValidLensField>(field: K) => {
+  mean = <K extends DotNotation<T>>(field: K) => {
     return mean(this.extractNumerical(field));
   };
 
-  standardDeviation = <K extends ValidLensField>(field: K) => {
+  standardDeviation = <K extends DotNotation<T>>(field: K) => {
     return standardDeviation(this.extractNumerical(field));
   };
 
   sd = this.standardDeviation;
 
-  mode = <K extends ValidLensField>(field: K) => {
+  mode = <K extends DotNotation<T>>(field: K) => {
     const resultMap = new Map<unknown, number>();
     const data = this.extract(field);
 
@@ -3220,7 +3220,7 @@ export class Collection<T extends object> extends Target<
     return mode;
   };
 
-  median = <K extends keyof T>(field: string | K) => {
+  median = <K extends DotNotation<T>>(field: K) => {
     const values = this.extractNumerical(field);
     values.sort(sub);
 

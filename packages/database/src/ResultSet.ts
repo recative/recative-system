@@ -1,4 +1,5 @@
 import {
+  DotNotation,
   isDotNotation,
   lens,
   LensResult,
@@ -519,7 +520,7 @@ export class ResultSet<T extends object> {
    * const results = users.chain().simpleSort('age').data();
    */
   simpleSort = (
-    property: keyof T,
+    property: DotNotation<T>,
     options?: Partial<ISimpleSortOptions> | boolean
   ) => {
     const internalOptions =
@@ -621,8 +622,12 @@ export class ResultSet<T extends object> {
     // if we have opted to use simplified javascript comparison function...
     if (internalOptions.useJavascriptSorting) {
       return this.sort((obj1, obj2) => {
-        if (obj1[property] === obj2[property]) return 0;
-        if (obj1[property] > obj2[property]) return 1;
+        const field1 = lens(obj1, property);
+        const field2 = lens(obj2, property);
+
+        if (field1 === field2) return 0;
+        // @ts-ignore: This is intended
+        if (field1 > field2) return 1;
         return -1;
       });
     }

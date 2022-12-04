@@ -13,12 +13,14 @@ export const doQueryOperation = (
   const operationKeys = Object.keys(operations);
   const operation = operationKeys[0];
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  return Reflect.get(Operators, operation)?.(
-    type,
-    Reflect.get(operations, operation),
-    record
-  ) ?? false;
+  return (
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    Reflect.get(Operators, operation)?.(
+      type,
+      Reflect.get(operations, operation),
+      record
+    ) ?? false
+  );
 };
 
 type ContainsQuery<DocumentEntry> = DocumentEntry extends string
@@ -112,20 +114,14 @@ export const Operators = {
   /**
    * If two values are qual.
    */
-  $eq: <T>(
-    documentEntry: T,
-    queryEntry: T
-  ) => {
+  $eq: (documentEntry: unknown, queryEntry: unknown) => {
     return documentEntry === queryEntry;
   },
 
   /**
    * abstract/loose equality
    */
-  $aeq: <T>(
-    documentEntry: T,
-    queryEntry: T
-  ) => {
+  $aeq: (documentEntry: unknown, queryEntry: unknown) => {
     // eslint-disable-next-line eqeqeq
     return documentEntry == queryEntry;
   },
@@ -133,10 +129,7 @@ export const Operators = {
   /**
    * Not equals to
    */
-  $ne: <T extends object, K extends keyof T>(
-    documentEntry: T[K],
-    queryEntry: T[K]
-  ) => {
+  $ne: (documentEntry: unknown, queryEntry: unknown) => {
     if (Number.isNaN(documentEntry) && Number.isNaN(queryEntry)) {
       return true;
     }
@@ -189,7 +182,10 @@ export const Operators = {
     return documentEntry <= queryEntry;
   },
 
-  $between: (documentEntry: number, queryEntry: [number, number]) => {
+  $between: (
+    documentEntry: number | null | undefined,
+    queryEntry: [number, number]
+  ) => {
     if (documentEntry === undefined || documentEntry === null) return false;
     return (
       Comparators.gt(documentEntry, queryEntry[0], true) &&
@@ -202,8 +198,16 @@ export const Operators = {
     return documentEntry >= queryEntry[0] && documentEntry <= queryEntry[1];
   },
 
-  $in: <T>(documentEntry: T, queryEntry: T[]) => {
-    return queryEntry.includes(documentEntry);
+  $in: <T>(documentEntry: T, queryEntry: T extends string ? string : T[]) => {
+    if (typeof documentEntry === 'string') {
+      return queryEntry.includes(documentEntry);
+    }
+
+    if (Array.isArray(queryEntry)) {
+      return queryEntry.includes(documentEntry);
+    }
+
+    return false;
   },
 
   $inSet: <T>(documentEntry: T, queryEntry: Set<T>) => {
@@ -294,18 +298,14 @@ export const Operators = {
             );
           }
 
-          return doQueryOperation(
-            Reflect.get(item, property),
-            filter,
-            item
-          );
+          return doQueryOperation(Reflect.get(item, property), filter, item);
         });
       });
     }
     return false;
   },
 
-  $type: <T, R>(documentEntry: T, queryEntry: Type, record: R) => {
+  $type: <T, R>(documentEntry: T, queryEntry: Type, record?: R) => {
     let type: string = typeof documentEntry;
     if (type === 'object') {
       if (Array.isArray(documentEntry)) {
@@ -376,7 +376,7 @@ export const Operators = {
       return documentEntry !== undefined;
     }
     return documentEntry === undefined;
-  }
+  },
 };
 
 export type Operator = keyof typeof Operators;
