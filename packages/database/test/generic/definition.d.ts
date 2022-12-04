@@ -11,6 +11,11 @@ export interface IABTestRecord {
   b?: unknown;
 }
 
+export interface IUnknownABTestRecord {
+  a: unknown;
+  b: unknown;
+}
+
 export interface INumericABTestRecord {
   a: number;
   b: number;
