@@ -22,3 +22,14 @@ export interface IFooBarTestRecord {
   foo: string;
   bar?: string;
 }
+
+export interface IFilmDirectoryTestRecord {
+  name: string;
+  directorId: number;
+}
+
+export interface IFilmTestRecord {
+  title: string;
+  filmId: number;
+  directorId: number;
+}
