@@ -15,3 +15,8 @@ export interface IDefaultEqJoinR0<T> {
   left: T;
   right: T;
 }
+
+export interface AnyRecord {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}
