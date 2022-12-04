@@ -58,3 +58,12 @@ export interface ITreeTestRecord {
   open: boolean;
   checked: boolean;
 }
+
+export interface IUsernameRecord {
+  username: string;
+}
+
+export interface INameValueTestRecord {
+  name: string;
+  val: number;
+}
