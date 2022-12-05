@@ -268,11 +268,11 @@ export const getController = (id: string) => {
       }
       reportProgress();
     },
-    sync(time) {
+    sync(progress, time) {
       if (!$video) return false;
 
       checkVideoPlayingState();
-      seekVideo(time);
+      seekVideo(performance.now() - time + progress);
     },
     suspend() {
       trackSuspended = true;
