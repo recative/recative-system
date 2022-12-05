@@ -41,9 +41,9 @@ type DotNotationImplementation<T, K extends keyof T> = K extends string
     : K
   : never;
 
-type DotNotation<T> = DotNotationImplementation<T, keyof T> | keyof T;
+export type DotNotation<T> = DotNotationImplementation<T, keyof T> | keyof T;
 
-type DotNotationValue<
+export type DotNotationValue<
   T,
   P extends DotNotation<T>
 > = P extends `${infer K}.${infer Rest}`

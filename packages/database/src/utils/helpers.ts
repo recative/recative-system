@@ -1,4 +1,4 @@
-import { isDotNotation, lens } from '@recative/lens';
+import { DotNotation, lens } from '@recative/lens';
 
 /** Helper function for determining 'less-than' conditions for ops, sorting,
  *  and binary indices.
@@ -327,26 +327,19 @@ export const sortHelper = (prop1: unknown, prop2: unknown, desc?: boolean) => {
  *          be first
  */
 export const compoundEval = <T extends object>(
-  properties: [keyof T, boolean][],
+  properties: ([DotNotation<T>, boolean] | DotNotation<T>)[],
   obj1: T,
   obj2: T
 ) => {
-  let val1;
-  let val2;
-
   for (let i = 0, len = properties.length; i < len; i += 1) {
     const property = properties[i];
-    const field = property[0];
+    const field = Array.isArray(property) ? property[0] : property;
+    const sort = Array.isArray(property) ? property[1] : false;
 
-    if (isDotNotation(field)) {
-      val1 = lens(obj1, field, true);
-      val2 = lens(obj2, field, true);
-    } else {
-      val1 = obj1[field];
-      val2 = obj2[field];
-    }
+    const val1 = lens(obj1, field, true);
+    const val2 = lens(obj2, field, true);
 
-    const res = sortHelper(val1, val2, property[1]);
+    const res = sortHelper(val1, val2, sort);
     if (res !== 0) {
       return res;
     }

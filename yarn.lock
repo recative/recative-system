@@ -6943,6 +6943,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@recative/event-target@workspace:packages/event-target":
+  version: 0.0.0-use.local
+  resolution: "@recative/event-target@workspace:packages/event-target"
+  dependencies:
+    "@ungap/event-target": ^0.2.3
+  languageName: unknown
+  linkType: soft
+
 "@recative/lens@workspace:^, @recative/lens@workspace:packages/lens":
   version: 0.0.0-use.local
   resolution: "@recative/lens@workspace:packages/lens"

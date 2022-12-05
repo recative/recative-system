@@ -1,4 +1,4 @@
-import EventTarget from '@ungap/event-target';
+import { Target } from '@recative/event-target';
 
 import type {
   Collection,
@@ -9,6 +9,9 @@ import {
   DynamicViewSortEvent,
   DynamicViewFilterEvent,
   DynamicViewRebuildEvent,
+  DynamicViewSortEventName,
+  DynamicViewFilterEventName,
+  DynamicViewRebuildEventName,
 } from './Events';
 import { delay } from './utils/delay';
 import { CloneMethod } from './utils/clone';
@@ -104,7 +107,7 @@ export class CollectionNotReadyError extends Error {
   }
 }
 
-export type SortCriteria<T> = [keyof T, boolean];
+export type SortCriteria<T> = [keyof T, boolean] | keyof T;
 
 export class ResultSetNotReadyError extends Error {
   message = 'ResultSetNotReady';
@@ -154,7 +157,13 @@ export interface IPerformanceSortPhaseOptions {
  *        'sortPriority' options.
  * @see {@link Collection#addDynamicView} to construct instances of DynamicView
  */
-export class DynamicView<T extends object> extends EventTarget {
+export class DynamicView<T extends object> extends Target<
+  [
+    typeof DynamicViewSortEventName,
+    typeof DynamicViewFilterEventName,
+    typeof DynamicViewRebuildEventName
+  ]
+> {
   options: IDynamicViewOptions;
 
   rebuildPending = false;
@@ -175,7 +184,7 @@ export class DynamicView<T extends object> extends EventTarget {
   // applySimpleSort()
   sortFunction: CompareFunction<T> | null = null;
 
-  sortCriteria: SortCriteria<T> | null = null;
+  sortCriteria: SortCriteria<T>[] | null = null;
 
   sortCriteriaSimple: ISortCriteriaSimple<T> | null = null;
 
@@ -462,11 +471,11 @@ export class DynamicView<T extends object> extends EventTarget {
    * // to sort by age and then name (both ascending)
    * dynamicView.applySortCriteria(['age', 'name']);
    * // to sort by age (ascending) and then by name (descending)
-   * dynamicView.applySortCriteria(['age', ['name', true]);
+   * dynamicView.applySortCriteria(['age', ['name', true]]);
    * // to sort by age (descending) and then by name (descending)
    * dynamicView.applySortCriteria(['age', true], ['name', true]);
    */
-  applySortCriteria = (criteria: SortCriteria<T>) => {
+  applySortCriteria = (criteria: SortCriteria<T>[]) => {
     if (!this.collection) {
       throw new CollectionNotReadyError('apply the sort');
     }

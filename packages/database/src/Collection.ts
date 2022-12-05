@@ -1,13 +1,12 @@
-import EventTarget from '@ungap/event-target';
-
 import {
   lens,
   LensResult,
   isDotNotation,
-  ValidLensField,
   ValidDotNotation,
   ValidSimpleLensField,
+  DotNotation,
 } from '@recative/lens';
+import { Target } from '@recative/event-target';
 
 import * as Comparators from './Comparators';
 
@@ -16,10 +15,30 @@ import { ResultSet, TransformResult } from './ResultSet';
 import { Operators } from './Operations';
 import { DynamicView } from './DynamicView';
 import { UniqueIndex } from './UniqueIndex';
-import { CollectionDocumentDeleteEvent, ErrorEvent } from './Events';
+import {
+  CollectionDocumentDeleteEvent,
+  CollectionDocumentDeleteEventName,
+  CollectionDocumentInsertEvent,
+  CollectionDocumentInsertEventName,
+  CollectionDocumentPreInsertEvent,
+  CollectionDocumentPreInsertEventName,
+  CollectionDocumentPreUpdateEvent,
+  CollectionDocumentPreUpdateEventName,
+  CollectionDocumentUpdateEvent,
+  CollectionDocumentUpdateEventName,
+  ErrorEvent,
+  ErrorEventName,
+  ICollectionDocumentDeleteEventDetail,
+  ICollectionDocumentInsertEventDetail,
+  ICollectionDocumentPreInsertEventDetail,
+  ICollectionDocumentPreUpdateEventDetail,
+  ICollectionDocumentUpdateEventDetail,
+  IErrorEventDetail,
+  WarnEventName,
+} from './Events';
 import { sub, mean, parseBase10, standardDeviation } from './utils/math';
 
-import type { IQuery } from './typings';
+import type { IQuery, JoinKeyFunction } from './typings';
 import type { Operator } from './Operations';
 import type { TransformRequest } from './ResultSet';
 import type { IDynamicViewOptions } from './DynamicView';
@@ -79,9 +98,9 @@ const NO_OP = (...x: unknown[]): unknown => {
  *        by default.
  */
 export interface ICollectionOptions<T> {
-  unique: (keyof T)[];
+  unique: DotNotation<T>[];
   exact: string[];
-  indices: (keyof T)[];
+  indices: DotNotation<T>[];
   adaptiveBinaryIndices: boolean;
   transactional: boolean;
   asyncListeners: boolean;
@@ -118,10 +137,6 @@ export interface ICollectionSummary {
   name: string;
   type: string;
   count: number;
-}
-
-export interface IDeleteEventDetail<T> {
-  target: T;
 }
 
 export interface IWarningEventDetail {
@@ -199,6 +214,16 @@ export interface ICollectionCommitLog<T> {
   data: T;
 }
 
+export interface ICollectionEvents<T> {
+  'pre-insert': ICollectionDocumentPreInsertEventDetail<T>;
+  insert: ICollectionDocumentInsertEventDetail<T>;
+  'pre-update': ICollectionDocumentPreUpdateEventDetail<T>;
+  update: ICollectionDocumentUpdateEventDetail<T>;
+  error: IErrorEventDetail;
+  delete: ICollectionDocumentDeleteEventDetail<T>;
+  warn: IWarningEventDetail;
+}
+
 /**
  * Collection class that handles documents of same type
  *
@@ -207,7 +232,17 @@ export interface ICollectionCommitLog<T> {
  *        configuration object
  * @see {@link Database#addCollection} for normal creation of collections
  */
-export class Collection<T extends object> extends EventTarget {
+export class Collection<T extends object> extends Target<
+  [
+    typeof CollectionDocumentPreInsertEventName,
+    typeof CollectionDocumentInsertEventName,
+    typeof CollectionDocumentPreUpdateEventName,
+    typeof CollectionDocumentUpdateEventName,
+    typeof CollectionDocumentDeleteEventName,
+    typeof ErrorEventName,
+    typeof WarnEventName
+  ]
+> {
   options: ICollectionOptions<T>;
 
   /**
@@ -433,12 +468,14 @@ export class Collection<T extends object> extends EventTarget {
       this.ensureIndex(this.options.indices[i]);
     }
 
-    const handleDeleteEvent = ((event: CustomEvent<IDeleteEventDetail<T>>) => {
+    const handleDeleteEvent = ((
+      event: CustomEvent<ICollectionDocumentDeleteEventDetail<T>>
+    ) => {
       if (!this.disableChangesApi) {
         this.createChange(
           this.name,
           CollectionOperation.Remove,
-          event.detail.target
+          event.detail.document
         );
       }
     }) as unknown as EventListener;
@@ -1285,7 +1322,7 @@ export class Collection<T extends object> extends EventTarget {
    * users.insert([{ name: 'Thor', age: 35}, { name: 'Loki', age: 30}]);
    */
   insert(
-    documents: T,
+    documents: T | T[],
     overrideAdaptiveIndices?: boolean
   ): T & ICollectionDocument;
   insert(
@@ -1316,9 +1353,7 @@ export class Collection<T extends object> extends EventTarget {
 
     let results: (T & ICollectionDocument)[] = [];
     try {
-      this.dispatchEvent(
-        new CustomEvent('pre-insert', { detail: { document: documents } })
-      );
+      this.dispatchEvent(new CollectionDocumentPreInsertEvent(documents));
 
       for (let i = 0; i < documents.length; i += 1) {
         const document = this.insertOne(documents[i], true);
@@ -1336,9 +1371,7 @@ export class Collection<T extends object> extends EventTarget {
 
     // at the 'batch' level, if clone option is true then emitted docs are
     // clones
-    this.dispatchEvent(
-      new CustomEvent('insert', { detail: { documents: results } })
-    );
+    this.dispatchEvent(new CollectionDocumentInsertEvent(results));
 
     // if clone option is set, clone return values
     results = this.cloneObjects ? clone(results, this.cloneMethod) : results;
@@ -1393,7 +1426,7 @@ export class Collection<T extends object> extends EventTarget {
     // database itself listens to add meta
     if (!bulkInsert) {
       this.dispatchEvent(
-        new CustomEvent('pre-insert', { detail: { document } })
+        new CustomEvent('pre-insert', { detail: { documents: [document] } })
       );
     }
 
@@ -1423,7 +1456,7 @@ export class Collection<T extends object> extends EventTarget {
 
     if (!bulkInsert) {
       this.dispatchEvent(
-        new CustomEvent('insert', { detail: { document: result } })
+        new CustomEvent('insert', { detail: { documents: [result] } })
       );
     }
 
@@ -1530,9 +1563,7 @@ export class Collection<T extends object> extends EventTarget {
           ? clone(document, this.cloneMethod)
           : document;
 
-      this.dispatchEvent(
-        new CustomEvent('pre-update', { detail: { document } })
-      );
+      this.dispatchEvent(new CollectionDocumentPreUpdateEvent(document));
 
       this.uniqueNames.forEach((key) => {
         this.getUniqueIndex(key, true).update(oldDocument, newInternal);
@@ -1601,12 +1632,7 @@ export class Collection<T extends object> extends EventTarget {
       }
 
       this.dispatchEvent(
-        new CustomEvent('update', {
-          detail: {
-            newDocument,
-            oldDocument,
-          },
-        })
+        new CollectionDocumentUpdateEvent(newDocument, oldDocument)
       );
       return newDocument;
     } catch (error) {
@@ -1943,7 +1969,7 @@ export class Collection<T extends object> extends EventTarget {
 
     if (Array.isArray(internalDocument)) {
       this.removeBatch(internalDocument);
-      return;
+      return null;
     }
 
     if (!hasOwn(internalDocument, '$loki')) {
@@ -2952,22 +2978,42 @@ export class Collection<T extends object> extends EventTarget {
    * @param dataOptions - options to data() before input to your map function
    * @returns Result of the mapping operation
    */
-  eqJoin = (
-    joinData: T[] | ResultSet<T> | Collection<T>,
-    leftJoinProperty: keyof T,
-    rightJoinProperty: keyof T,
-    mapFunction: (left: T, right: T) => T,
-    dataOptions: ICollectionEqJoinDataOptions
-  ) => {
+  eqJoin<R extends object>(
+    joinData: R[] | Collection<R> | ResultSet<R>,
+    leftJoinKey: keyof T | JoinKeyFunction<T>,
+    rightJoinKey: keyof R | JoinKeyFunction<R>
+  ): ResultSet<{ left: T; right: R }>;
+  eqJoin<R extends Partial<T>>(
+    joinData: R[] | Collection<R> | ResultSet<R>,
+    leftJoinKey: keyof T | JoinKeyFunction<T>,
+    rightJoinKey: keyof R | JoinKeyFunction<R>,
+    mapFunction?: ((left: T, right: R) => T) | undefined
+  ): ResultSet<T>;
+  eqJoin<R extends Partial<T>, R0 extends object = T>(
+    joinData: R[] | Collection<R> | ResultSet<R>,
+    leftJoinKey: keyof T | JoinKeyFunction<T>,
+    rightJoinKey: keyof R | JoinKeyFunction<R>,
+    mapFunction: (left: T, right: R) => R0
+  ): ResultSet<R0>;
+  eqJoin<R extends Partial<T>>(
+    joinData: R[] | Collection<R> | ResultSet<R>,
+    leftJoinKey: keyof T | JoinKeyFunction<T>,
+    rightJoinKey: keyof R | JoinKeyFunction<R>,
+    mapFunction: Function = (left: T, right: R) => ({
+      left,
+      right,
+    })
+  ) {
     // logic in ResultSet class
     return new ResultSet(this).eqJoin(
       joinData,
-      leftJoinProperty,
-      rightJoinProperty,
-      mapFunction,
-      dataOptions
-    );
-  };
+      leftJoinKey,
+      rightJoinKey,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mapFunction as any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ) as any;
+  }
 
   /* ------------------------+
   | Transaction methods     |
@@ -3034,7 +3080,7 @@ export class Collection<T extends object> extends EventTarget {
   /* ----------------+
   | Other utils     |
   +-----------------*/
-  extract = <K extends ValidLensField>(
+  extract = <K extends DotNotation<T>>(
     field: K
   ): LensResult<T & ICollectionDocument, K, ValidDotNotation<K>>[] => {
     const result: LensResult<
@@ -3049,15 +3095,15 @@ export class Collection<T extends object> extends EventTarget {
     return result;
   };
 
-  max = <K extends ValidLensField>(field: K) => {
+  max = <K extends DotNotation<T>>(field: K) => {
     return Math.max.apply(null, this.extract(field) as unknown as number[]);
   };
 
-  min = <K extends ValidLensField>(field: K) => {
+  min = <K extends DotNotation<T>>(field: K) => {
     return Math.min.apply(null, this.extract(field) as unknown as number[]);
   };
 
-  maxRecord = <K extends ValidLensField>(field: K) => {
+  maxRecord = <K extends DotNotation<T>>(field: K) => {
     const useDotNotation = isDotNotation(field);
 
     const result = {
@@ -3089,7 +3135,7 @@ export class Collection<T extends object> extends EventTarget {
     return result;
   };
 
-  minRecord = <K extends ValidLensField>(field: K) => {
+  minRecord = <K extends DotNotation<T>>(field: K) => {
     const useDotNotation = isDotNotation(field);
 
     const result = {
@@ -3121,7 +3167,7 @@ export class Collection<T extends object> extends EventTarget {
     return result;
   };
 
-  extractNumerical = <K extends ValidLensField>(field: K) => {
+  extractNumerical = <K extends DotNotation<T>>(field: K) => {
     return (this.extract(field) as string[]).map(parseBase10).filter((n) => {
       return !Number.isNaN(n);
     });
@@ -3133,17 +3179,17 @@ export class Collection<T extends object> extends EventTarget {
    * @param field - name of property in docs to average
    * @returns average of property in all docs in the collection
    */
-  mean = <K extends ValidLensField>(field: K) => {
+  mean = <K extends DotNotation<T>>(field: K) => {
     return mean(this.extractNumerical(field));
   };
 
-  standardDeviation = <K extends ValidLensField>(field: K) => {
+  standardDeviation = <K extends DotNotation<T>>(field: K) => {
     return standardDeviation(this.extractNumerical(field));
   };
 
   sd = this.standardDeviation;
 
-  mode = <K extends ValidLensField>(field: K) => {
+  mode = <K extends DotNotation<T>>(field: K) => {
     const resultMap = new Map<unknown, number>();
     const data = this.extract(field);
 
@@ -3174,7 +3220,7 @@ export class Collection<T extends object> extends EventTarget {
     return mode;
   };
 
-  median = <K extends keyof T>(field: string | K) => {
+  median = <K extends DotNotation<T>>(field: K) => {
     const values = this.extractNumerical(field);
     values.sort(sub);
 

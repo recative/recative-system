@@ -41,7 +41,11 @@ export const unFreeze = <T extends object>(object: T): T => {
   return clone(object, CloneMethod.Shallow);
 };
 
-export const deepUnFreeze = <T extends object>(object: T): T => {
+export const deepUnFreeze = <T extends object | null>(object: T): T => {
+  if (object === null) {
+    return null as unknown as T;
+  }
+
   if (Array.isArray(object)) {
     return object.map(deepUnFreeze) as T;
   }
@@ -49,9 +53,9 @@ export const deepUnFreeze = <T extends object>(object: T): T => {
   if (object != null && typeof object === 'object') {
     const result = {} as unknown as T;
 
-    for (const properity in object) {
-      if (hasOwn(object, properity)) {
-        Reflect.set(result, properity, Reflect.get(Object, properity));
+    for (const property in object) {
+      if (hasOwn(object, property)) {
+        Reflect.set(result as object, property, Reflect.get(Object, property));
       }
     }
 
@@ -61,7 +65,9 @@ export const deepUnFreeze = <T extends object>(object: T): T => {
   return object;
 };
 
-export const isFrozen = <T>(object: T) => {
+export const isFrozen = <T extends object>(object: T | null) => {
+  if (object === null) return false;
+
   if (Array.isArray(object)) {
     if (!Object.isFrozen(object)) {
       return false;
@@ -75,10 +81,11 @@ export const isFrozen = <T>(object: T) => {
     if (!Object.isFrozen(object)) {
       return false;
     }
-    for (const properity in object) {
+
+    for (const property in object) {
       if (
-        hasOwn(object, properity) &&
-        !isFrozen(Reflect.get(object, properity))
+        hasOwn(object, property) &&
+        !isFrozen(Reflect.get(object as object, property))
       ) {
         return false;
       }
