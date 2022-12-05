@@ -19,6 +19,7 @@ export interface IUnknownABTestRecord {
 export interface INumericABTestRecord {
   a: number;
   b: number;
+  c?: string;
 }
 
 export interface IIndexTestRecord {
