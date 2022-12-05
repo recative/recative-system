@@ -668,7 +668,9 @@ export class ResultSet<T extends object> {
  * @returns Reference to this resultset, sorted, for future chain operations.
  
  */
-  compoundSort = (properties: [keyof T, boolean][]) => {
+  compoundSort = (
+    properties: ([DotNotation<T>, boolean] | DotNotation<T>)[]
+  ) => {
     if (properties.length === 0) {
       throw new Error(
         'Invalid call to compound sort, need at least one property'
