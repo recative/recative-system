@@ -1,5 +1,11 @@
 # @recative/ap-core
 
+## 0.7.2
+
+### Patch Changes
+
+- fix: Typo
+
 ## 0.7.1
 
 ### Patch Changes
