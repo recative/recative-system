@@ -1,5 +1,14 @@
 # @recative/ap-core
 
+## 0.7.4
+
+### Patch Changes
+
+- d42ea97: feat: Add life cycle related function to the protocol
+- 3031e60: feat: Add additional page status check
+- Updated dependencies [d42ea97]
+  - @recative/act-protocol@0.2.11
+
 ## 0.7.3
 
 ### Patch Changes

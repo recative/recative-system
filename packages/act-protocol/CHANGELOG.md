@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.11
+
+### Patch Changes
+
+- d42ea97: feat: Add life cycle related function to the protocol
+
 ## 0.2.10
 
 ### Patch Changes

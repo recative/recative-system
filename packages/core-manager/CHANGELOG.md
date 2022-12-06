@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.11.6
+
+### Patch Changes
+
+- d42ea97: feat: Add life cycle related function to the protocol
+- Updated dependencies [d42ea97]
+  - @recative/act-protocol@0.2.11
+
 ## 0.11.5
 
 ### Patch Changes

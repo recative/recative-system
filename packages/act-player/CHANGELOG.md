@@ -1,5 +1,14 @@
 # @recative/act-player
 
+## 0.5.12
+
+### Patch Changes
+
+- d42ea97: feat: Add life cycle related function to the protocol
+- Updated dependencies [d42ea97]
+  - @recative/act-protocol@0.2.11
+  - @recative/core-manager@0.11.6
+
 ## 0.5.11
 
 ### Patch Changes
