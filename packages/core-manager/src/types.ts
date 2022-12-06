@@ -17,6 +17,7 @@ import { ResourceEntry } from '@recative/smart-resource';
 import { AudioElementInit } from './audio/audioElement';
 
 import type { EpisodeCore } from './episodeCore';
+import type { ContentInstance } from './instance';
 
 import type { PreloadManager } from './manager/preload/PreloadManager';
 import type { ResourceListForClient } from './manager/resource/ResourceListForClient';
@@ -62,10 +63,12 @@ export interface VideoOverlaySpec {
 export interface CoreFunctions {
   // for component independent functions
   core: EpisodeCore;
+  // The content instance
+  content: ContentInstance;
   // switching blocker
   /** Unblock creating and loading of the new asset instance,
    * aka setup of next content or the preload */
-  unblockNextContentSetup(): void
+  unblockNextContentSetup(): void;
   /** Unblock showing of the new asset instance and hiding of the old asset instance,
    * aka the content switch or the showing */
   unblockContentSwitch(): void;
@@ -110,7 +113,12 @@ export interface CoreFunctions {
   log(...x: unknown[]): void;
 }
 
-export type ContentState = 'idle' | 'preloading' | 'ready' | 'destroying' | 'destroyed';
+export type ContentState =
+  | 'idle'
+  | 'preloading'
+  | 'ready'
+  | 'destroying'
+  | 'destroyed';
 
 export type CoreState =
   | 'waitingForCriticalComponent'

@@ -583,6 +583,9 @@ export class EpisodeCore<
 
     return {
       core: this,
+      get content() {
+        return getInstanceFromComponentName();
+      },
       unblockNextContentSetup: () => {
         this.ensureNotDestroyed();
         this.mainSequence?.unblockNextContentSetup(name);

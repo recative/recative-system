@@ -104,6 +104,10 @@ export const getController = (id: string) => {
           close: () => {
             coreFunctions!.finishItself();
           },
+          getIfPlaying: () => coreFunctions?.core.playing.get(),
+          getCoreState: () => coreFunctions?.core.coreState.get(),
+          getContentState: () => coreFunctions?.content.state,
+          getIfContentShowing: () => coreFunctions?.content.showing,
           requireEnvironment: () => {
             if (!connector) {
               throw new TypeError('Connector not available');

@@ -124,6 +124,23 @@ export type HostFunctions = Omit<RawUserImplementedFunctions, 'gotoEpisode'> & {
   panic(code: string, message: string): void;
 
   /**
+   * Get if the player is playing
+   */
+  getIfPlaying(): boolean;
+  /**
+   * Get the life cycle of the core manager
+   */
+  getCoreState(): string;
+  /**
+   * Get the ready status of the core manager
+   */
+  getContentState(): string;
+  /**
+   * Get If the content is shown
+   */
+  getIfContentShowing(): boolean;
+
+  /**
    * Require for environment variable force update
    */
   requireEnvironment(): void;
@@ -280,7 +297,10 @@ export type HostFunctions = Omit<RawUserImplementedFunctions, 'gotoEpisode'> & {
   /**
    * Resource loader related
    */
-  getResourceMetadata(query: string, type: 'label' | 'id'): IDetailedResourceItemForClient | null;
+  getResourceMetadata(
+    query: string,
+    type: 'label' | 'id'
+  ): IDetailedResourceItemForClient | null;
   getResourceUrl(
     query: string,
     searchBy: 'label' | 'id',
@@ -382,9 +402,9 @@ export interface ContentFunctions {
    */
   videoModalClosed(
     request:
-    | ShowVideoModalUrlRequest
-    | ShowVideoModalIdRequest
-    | ShowVideoModalLabelRequest
+      | ShowVideoModalUrlRequest
+      | ShowVideoModalIdRequest
+      | ShowVideoModalLabelRequest
   ): void;
   /**
    * Trigger the queued task
