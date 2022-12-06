@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.7
+
+### Patch Changes
+
+- 2fd5aee: chore: Adjust styling of the overlay
+
 ## 0.4.6
 
 ### Patch Changes
