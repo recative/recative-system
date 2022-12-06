@@ -1,4 +1,4 @@
-import type { _AsyncVersionOf } from 'async-call-rpc'
+import type { _AsyncVersionOf } from 'async-call-rpc';
 
 import { createClientConnector } from '@recative/act-protocol';
 import { createActPointConnector } from '@recative/resource-bridge';
@@ -36,6 +36,15 @@ export const HOST_FUNCTIONS_STORE = FunctionalAtomDefinition(() => {
       logHostFunctionsHooks('Creating connector');
       const contentFunctions = connectToHost(context);
       c = createClientConnector(contentFunctions);
+
+      Promise.all([
+        c.connector.getIfContentShowing(),
+        c.connector.getIfPlaying(),
+      ]).then(([shown, ready]) => {
+        if (shown && ready) {
+          context?.ticker.play();
+        }
+      });
     }
 
     return c.connector;
@@ -98,16 +107,17 @@ const RESOURCE_BRIDGE_FUNCTIONS_STORE = FunctionalAtomDefinition(() => {
     }
 
     if (!hostConnector) {
-      hostConnector = context.store.getValue(HOST_FUNCTIONS_STORE).result.connector;
+      hostConnector =
+        context.store.getValue(HOST_FUNCTIONS_STORE).result.connector;
     }
 
     if (!b) {
       if (
-        !('serviceWorker' in navigator)
-        || !navigator.serviceWorker.controller
+        !('serviceWorker' in navigator) ||
+        !navigator.serviceWorker.controller
       ) {
         logHostFunctionsHooks(
-          "Service worker not enabled in the browser, won't use resource bridge",
+          "Service worker not enabled in the browser, won't use resource bridge"
         );
         return null;
       }
