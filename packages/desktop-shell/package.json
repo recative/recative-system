@@ -1,5 +1,5 @@
 {
-  "name": "desktop-shell",
+  "name": "@recative/desktop-shell",
   "version": "0.1.1",
   "main": "build/main.js",
   "scripts": {

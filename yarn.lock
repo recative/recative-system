@@ -6906,6 +6906,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@recative/desktop-shell@workspace:packages/desktop-shell":
+  version: 0.0.0-use.local
+  resolution: "@recative/desktop-shell@workspace:packages/desktop-shell"
+  dependencies:
+    "@electron-forge/cli": ^6.0.3
+    "@electron-forge/maker-zip": ^6.0.3
+    async-call-rpc: ^6.1.5
+    electron: ^21.2.0
+    electron-is-dev: ^2.0.0
+    electron-squirrel-startup: ^1.0.0
+    npm-run-all: ^4.1.5
+    react-scripts: 5.0.1
+  languageName: unknown
+  linkType: soft
+
 "@recative/device-pressure-measurement-native-backend@workspace:packages/device-pressure-measurement-native-backend":
   version: 0.0.0-use.local
   resolution: "@recative/device-pressure-measurement-native-backend@workspace:packages/device-pressure-measurement-native-backend"
@@ -13690,21 +13705,6 @@ __metadata:
   checksum: 1ec2eedd7ed6bd61dd5e0519fd4c96124e93bb22de8a9d211b02d63e5dd152824853d919bb2090f965cc0e3eb9c515950a9836b332020d810f9c71feb0fd7df4
   languageName: node
   linkType: hard
-
-"desktop-shell@workspace:packages/desktop-shell":
-  version: 0.0.0-use.local
-  resolution: "desktop-shell@workspace:packages/desktop-shell"
-  dependencies:
-    "@electron-forge/cli": ^6.0.3
-    "@electron-forge/maker-zip": ^6.0.3
-    async-call-rpc: ^6.1.5
-    electron: ^21.2.0
-    electron-is-dev: ^2.0.0
-    electron-squirrel-startup: ^1.0.0
-    npm-run-all: ^4.1.5
-    react-scripts: 5.0.1
-  languageName: unknown
-  linkType: soft
 
 "destroy@npm:1.2.0":
   version: 1.2.0
