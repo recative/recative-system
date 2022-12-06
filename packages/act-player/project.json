@@ -13,7 +13,7 @@
     "publish": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
-        "command": "yarn npm publish --tolerate-republish",
+        "command": "yarn npm publish --tolerate-republish --access public",
         "cwd": "packages/act-player"
       },
       "dependsOn": [
@@ -27,7 +27,7 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/act-player/**/*.ts"]
+        "lintFilePatterns": ["packages/act-player/src/**/*.ts"]
       }
     },
     "test": {

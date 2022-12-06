@@ -12,6 +12,7 @@ export * from './hooks/resourceManagerHooks';
 export * from './hooks/hostFunctionsHooks';
 export * from './hooks/pixiHooks';
 export * from './hooks/useI18Fixer';
+export * from './hooks/asyncHooks';
 
 export * from './core/EventTarget';
 export * from './core/AtomStore';

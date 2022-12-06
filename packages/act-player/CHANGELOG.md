@@ -1,5 +1,49 @@
 # @recative/act-player
 
+## 0.5.10
+
+### Patch Changes
+
+- 5d560ae: fix: Use an alternate way to detect broken video element
+- Updated dependencies [79e1738]
+- Updated dependencies [dbbd9e2]
+  - @recative/core-manager@0.11.5
+
+## 0.5.9
+
+### Patch Changes
+
+- 4ce5fb0: fix: Rollback the broken optimization
+
+## 0.5.8
+
+### Patch Changes
+
+- 834fa9e: fix: Reduce false positive in broken video element detection for Safari
+
+## 0.5.7
+
+### Patch Changes
+
+- feb76e9: fix: Incorrect asset data field
+- Updated dependencies [feb76e9]
+  - @recative/definitions@0.5.4
+
+## 0.5.6
+
+### Patch Changes
+
+- fix: `extensionConfiguration` is undefined
+
+## 0.5.5
+
+### Patch Changes
+
+- cc4afe9: feat: Supports extension configurations for assets
+- 84db3a1: feat: Pause the act point while gotoEpisode triggered
+- Updated dependencies [cc4afe9]
+  - @recative/definitions@0.5.3
+
 ## 0.5.4
 
 ### Patch Changes

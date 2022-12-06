@@ -1,0 +1,118 @@
+---
+sidebar_position: 7001
+---
+
+# TN7001: Audio Management
+
+## Introduction
+
+Media playback, especially playing media with sound is a hard-core task
+since different browsers have different media playback strategy:
+
+- Chromium requires user interact (click or touch) with the page at least once,
+  all audios could be played automatically.
+- Safari requires user manually trigger the audio playback.
+- Firefox have a site-by-site configuration panel for their user.
+- Chromium or Safari based WebView, or GeckoView have their own API to decide
+  if the browser should allow auto play or not.
+
+To handle these complex problem Recative System created a consistence audio
+experience across all major browser platforms. This feature is enabled by
+[`@recative/audio-station`](https://recative.github.io/api/audio-station) and
+[`@recative/phonograph`](https://recative.github.io/api/phonograph),
+which created a global `AudioContext`, and manually manage the media playback
+related work instead of using
+[HTMLMediaElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement).
+
+:::info
+However, this architecture has its own limitation: user still have to interact
+with the page at once to enable the global audio context, so we can take over
+the job of audio playback management.
+:::
+
+This tech note will give a brief introduction about the architecture design of
+the audio management system.
+
+# Initialization
+
+`AudioStation` maintain a singleton of audio context and the audio station
+manager, user need to call the
+[`getGlobalAudioStation`](http://localhost:3000/api/audio-station/function/getGlobalAudioStation)
+method to
+[interact with the manager](https://github.com/recative/recative-system/blob/bbc22e46471e4516333525819a24b111c167b9ed/packages/core-manager/src/episodeCore.ts#L105).
+
+```TypeScript
+const audioStation = getGlobalAudioStation();
+```
+
+Then, user need to call the `activate` method in the synchronous call stack
+callback of any click and touch event, the audio station will work after the
+returned promise resolved.
+
+```TypeScript
+audioStation.activate().then(() => {
+  console.log('You can make some noise here now!');
+});
+```
+
+You can find
+[related source code from here](https://github.com/recative/recative-system/blob/bbc22e46471e4516333525819a24b111c167b9ed/packages/core-manager/src/episodeCore.ts#L343-L346).
+
+# Architecture
+
+Audio is managed in a three level model, with different kind of audio backend:
+
+- **Audio Host**: There is an audio host [for each asset](https://github.com/recative/recative-system/blob/df61508153b79018f530f4552b8fbc72df341569/packages/core-manager/src/instance.ts#L110)
+  called [`AudioHost`](https://github.com/recative/recative-system/blob/df61508153b79018f530f4552b8fbc72df341569/packages/core-manager/src/audio/audioHost.ts#L152),
+  it will handle resource loading, playback, destroy, volume manage and subtitle
+  management for different audio files.
+
+* [**LoadableAudioElement**](https://github.com/recative/recative-system/blob/df61508153b79018f530f4552b8fbc72df341569/packages/core-manager/src/audio/audioHost.ts#L22):
+  Build a general abstract interface for different type of audio backend. This
+  level of abstraction will hold the loading status of the audio file.
+
+* **AudioElement**: Did the actual logic for downloading file, controlling
+  the volume, seeking to different time and all operations about an audio file.
+  There are two different type of audio elements.
+
+### Audio Elements
+
+Recative System has two builds in implementations for different use cases, The
+implementation of audio elements extensible, which means developers cannot
+write their own AudioElement implementations.
+
+- **BasicAudioElement**: This is the naïve implementation for audio playback,
+  the codec support is aligned with user's browser. Audio files managed by
+  this kind of audio element is playable if and only if all contents are
+  downloaded and decoded. The data will be stored in the [PCM format](https://en.wikipedia.org/wiki/Pulse-code_modulation)
+  without any compression, so be caution that developers should not play audio
+  longer than 60 seconds to prevent the web page is killed by user's <span title="SAFARI!">browser</span>.
+- **PhonographAudioElement**: Audio files managed by this type of audio
+  element will be spliced into a lot of small fragments, the audio file is
+  playable when enough fragments loaded. There are a buffer holds all the decoded
+  files, only a small amount of the fragments are stored, played audio buffered
+  will be destroyed instantly, so the memory usage is smaller than the
+  `BasicAudioElement`, only binary that not decoded, and PCM fragments in the
+  buffer will be stored in the users' memory. Please notice this audio element
+  only supports the MP3 format.
+
+:::info
+There's interest to support the OGG format but not planned, let us know if you
+need this feature, or even better, would like to implement this feature.
+:::
+
+## Usage
+
+For developers that using Recative Studio, open the resource tab of the resource
+manager, double click the audio resource to open the resource editing modal,
+and tick the _Enable Phonograph backend_ checkbox, your resource will be played
+using the `PhonographAudioElement` to manage the audio file.
+
+For developers who are writing resource definitions manually, write a key with:
+
+```
+'@recative/extension-audio-backends/PhonographAudioBackend~~backend'
+```
+
+with the value `yes`, inside the [`extensionConfiguration`](/api/definitions/interface/IResourceFile#extensionConfigurations)
+field, the core manager will use the phonograph audio backend now.

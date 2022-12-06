@@ -16,40 +16,68 @@ import { AdditionalSubtitleDefine } from '@recative/act-protocol';
 import { WithLogger } from '../LogCollector';
 import { convertSRTToStatesWithPrefix } from '../utils/managedCoreState';
 import {
-  AudioElement, AudioElementInit, createAudioElement, destroyAudioElementInit,
+  AudioElement,
+  AudioElementInit,
+  createAudioElement,
+  destroyAudioElementInit,
 } from './audioElement';
 
 class LoadableAudioElement extends WithLogger {
+  /**
+   * Audio element contains decoded audio data.
+   */
   private audioElement: AudioElement | null = null;
 
-  private pendingBuffer:
-    | Promise<AudioElementInit | null>
-    | null = null;
+  /**
+   * Audio element definition to be resolved.
+   */
+  private pendingBuffer: Promise<AudioElementInit | null> | null = null;
 
+  /**
+   * The promise for showing if audio clip (decoded audio resource) loaded.
+   */
   private pendingClipLoading: Promise<void> | null = null;
 
-  // For attached subtitle
+  /**
+   * State list of this audio element, like subtitle and other custom operations
+   */
   states: ManagedCoreStateList = new ManagedCoreStateList();
 
+  /**
+   * If the state list is dirty, for resource release purpose.
+   */
   cachedManagedStateDirty = false;
 
+  /**
+   * If the audio element is not destroyed.
+   */
   working = true;
 
   constructor(
     private mixer: AudioMixer,
-    audioClipResponse: Promise<AudioElementInit | null>,
+    audioClipResponse: Promise<AudioElementInit | null>
   ) {
     super();
+
     if (mixer.destroyed) {
       throw new Error('The associated `AudioHost` is already destroyed');
     }
+
+    // Load the audio resource
     this.setAudio(audioClipResponse);
   }
 
+  /**
+   * Set the audio element definition, contains information about the audio
+   * backend and the audio src.
+   * @param audioClipResponsePromise A promise contains the definition of the
+   * audio.
+   */
   setAudio(audioClipResponsePromise: Promise<AudioElementInit | null>) {
     this.audioElement?.destroy();
     this.audioElement = null;
     this.pendingBuffer = audioClipResponsePromise;
+
     if (this.pendingBuffer !== null) {
       this.pendingClipLoading = this.loadAudio(this.pendingBuffer);
     } else {
@@ -57,14 +85,14 @@ class LoadableAudioElement extends WithLogger {
     }
   }
 
-  waitForLoadFinish() {
-    return this.pendingClipLoading ?? Promise.resolve();
-  }
-
+  /**
+   * Download the audio file and decode the audio.
+   * @param audioClipResponsePromise
+   * @returns Promise that resolved when the audio is loaded.
+   */
   private async loadAudio(
-    audioClipResponsePromise: Promise<AudioElementInit | null>,
+    audioClipResponsePromise: Promise<AudioElementInit | null>
   ) {
-
     const audioElementInit = await audioClipResponsePromise;
     if (this.pendingBuffer !== audioClipResponsePromise || !this.working) {
       if (audioElementInit) {
@@ -80,6 +108,17 @@ class LoadableAudioElement extends WithLogger {
     this.pendingClipLoading = null;
   }
 
+  /**
+   * Waiting for the audio element to be loaded, if there's no audio loading
+   * request happened, the the promise will be resolved instantly.
+   */
+  waitForLoadFinish() {
+    return this.pendingClipLoading ?? Promise.resolve();
+  }
+
+  /**
+   * Release all resource in the memory.
+   */
   destroy() {
     this.audioElement?.destroy();
     this.audioElement = null;
@@ -103,16 +142,24 @@ class LoadableAudioElement extends WithLogger {
     this.audioElement?.stop();
   }
 
-  seek(time?: number) {
+  get time() {
     if (this.audioElement === null) {
       return 0;
     }
-    const result = this.audioElement.time;
-    if (time) {
+
+    return this.audioElement.time;
+  }
+
+  seek(time?: number) {
+    if (time && this.audioElement) {
       this.audioElement.time = time;
-      this.cachedManagedStateDirty = this.states.seek(this.audioElement.time * 1000, UpdateReason.Manually)
+      this.cachedManagedStateDirty = this.states.seek(
+        this.audioElement.time * 1000,
+        UpdateReason.Manually
+      );
     }
-    return result;
+
+    return this.time;
   }
 
   fade(startVolume: number, endVolume: number, duration: number) {
@@ -159,12 +206,15 @@ export class AudioHost extends WithLogger {
   constructor(
     station: AudioStation,
     private instanceId: string,
-    private managedCoreStateManager: ManagedCoreStateManager,
+    private managedCoreStateManager: ManagedCoreStateManager
   ) {
     super();
     this.mixer = new AudioMixer(station);
   }
 
+  /**
+   * Release all loadable audio element and managed core state.
+   */
   destroy() {
     this.mixer?.destroy();
     this.mixer = null;
@@ -175,15 +225,26 @@ export class AudioHost extends WithLogger {
     this.sources.clear();
   }
 
+  /**
+   * Add audio definition to the host, and trigger the loading process of this
+   * element.
+   * @param id The id of the request.
+   * @param audioClipResponsePromise The detailed spec of the request.
+   * @returns
+   */
   addAudio(
     id: string,
-    audioClipResponsePromise: Promise<AudioElementInit | null>,
+    audioClipResponsePromise: Promise<AudioElementInit | null>
   ): Promise<void> {
     if (this.destroyed) {
       return Promise.reject(new Error('The `AudioHost` is already destroyed'));
     }
+
     if (!this.sources.has(id)) {
-      this.sources.set(id, new LoadableAudioElement(this.mixer!, audioClipResponsePromise));
+      this.sources.set(
+        id,
+        new LoadableAudioElement(this.mixer!, audioClipResponsePromise)
+      );
       this.sources.get(id)!.logger = this.logger.extend(id);
     } else {
       this.sources.get(id)!.setAudio(audioClipResponsePromise);
@@ -191,6 +252,10 @@ export class AudioHost extends WithLogger {
     return this.sources.get(id)!.waitForLoadFinish()!;
   }
 
+  /**
+   * Release the memory resource of the single audio element.
+   * @param id The id of the element loading request
+   */
   destroyAudio(id: string) {
     const source = this.sources.get(id);
     if (source !== undefined) {
@@ -242,6 +307,10 @@ export class AudioHost extends WithLogger {
     }
   }
 
+  /**
+   * Seek all the managed state based on the time of each source.
+   * @returns If the state list is dirty
+   */
   updateManagedState() {
     if (!this.managedStateEnabled) {
       return false;
@@ -256,7 +325,7 @@ export class AudioHost extends WithLogger {
       }
       if (playing) {
         this.managedCoreStateManager.addStateList(source.states);
-        dirty ||= source.states.seek(source.seek() * 1000, UpdateReason.Tick);
+        dirty ||= source.states.seek(source.time * 1000, UpdateReason.Tick);
         dirty ||= source.cachedManagedStateDirty;
         source.cachedManagedStateDirty = false;
       } else {
@@ -278,6 +347,10 @@ export class AudioHost extends WithLogger {
     }
   }
 
+  /**
+   * Add manually written subtitle.
+   * @param subtitles Subtitle configurations.
+   */
   addSubtitleToAudio(subtitles: AdditionalSubtitleDefine[]) {
     subtitles.forEach((spec) => {
       const source = this.sources.get(spec.id);
@@ -291,31 +364,38 @@ export class AudioHost extends WithLogger {
             managedStateExtensionId: SUBTITLE_MANAGED_CORE_STATE_EXTENSION_ID,
             spec: subtitle.text ?? '',
           };
-        }),
+        })
       );
     });
   }
 
+  /**
+   * Add SRT subtitle to audio.
+   * @param subtitles Parsed SRT subtitle.
+   */
   addSrtSubtitleToAudio(subtitles: { id: string; srt: string }[]) {
     subtitles.forEach((spec) => {
       const source = this.sources.get(spec.id);
       source?.states.updateTriggers(
         convertSRTToStatesWithPrefix(
           spec.srt,
-          `${this.instanceId}|subtitle|additional|${spec.id}`,
-        ),
+          `${this.instanceId}|subtitle|additional|${spec.id}`
+        )
       );
     });
   }
 }
 
 let globalAudioHost: AudioHost | null = null;
+/**
+ * Get the singleton audio host
+ */
 export const getGlobalAudioHost = (): AudioHost => {
   if (globalAudioHost == null) {
     globalAudioHost = new AudioHost(
       getGlobalAudioStation(),
       'global',
-      new ManagedCoreStateManager(),
+      new ManagedCoreStateManager()
     );
   }
   return globalAudioHost;

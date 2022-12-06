@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.11.5
+
+### Patch Changes
+
+- 79e1738: fix: Don't update audioElement time if it is not playing when pause
+- dbbd9e2: feat: Log url when audio track is loaded
+
 ## 0.11.4
 
 ### Patch Changes

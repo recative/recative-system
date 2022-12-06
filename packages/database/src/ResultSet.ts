@@ -1,4 +1,10 @@
-import { isDotNotation, lens, LensResult, ValidSimpleLensField } from '@recative/lens';
+import {
+  DotNotation,
+  isDotNotation,
+  lens,
+  LensResult,
+  ValidSimpleLensField,
+} from '@recative/lens';
 
 import { Operators } from './Operations';
 // eslint-disable-next-line import/no-cycle
@@ -8,7 +14,7 @@ import { CompareFunction } from './DynamicView';
 import { compoundEval, sortHelper } from './utils/helpers';
 import { resolveTransformParameters } from './utils/resolveTransform';
 
-import type { IQuery } from './typings';
+import type { IQuery, JoinKeyFunction } from './typings';
 import type { Operator } from './Operations';
 import type { ICollectionDocument } from './Collection';
 
@@ -27,7 +33,7 @@ export enum TransformType {
   EqJoin = 'eqJoin',
   MapReduce = 'mapReduce',
   Update = 'update',
-  Remove = 'remove'
+  Remove = 'remove',
 }
 
 export interface IFindTransformRequest<T> {
@@ -170,15 +176,16 @@ export type TransformRequestChainResult<
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyTransformRequest = TransformRequest<any, any, any>;
 
-type TransformResult<T extends AnyTransformRequest | AnyTransformRequest[]> =
-  T extends ReadonlyOrNot<
-    infer U extends TransformRequest<infer D, infer R0, infer R1>
-  >
-    ? TransformResultImplementation<D, U['type'], R0, R1>
-    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    T extends [ReadonlyOrNot<TransformRequest<infer D, any, any>>, ...any[]]
-    ? TransformRequestChainResult<D, T>
-    : never;
+export type TransformResult<
+  T extends AnyTransformRequest | AnyTransformRequest[] | undefined
+> = T extends ReadonlyOrNot<
+  infer U extends TransformRequest<infer D, infer R0, infer R1>
+>
+  ? TransformResultImplementation<D, U['type'], R0, R1>
+  : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  T extends [ReadonlyOrNot<TransformRequest<infer D, any, any>>, ...any[]]
+  ? TransformRequestChainResult<D, T>
+  : never;
 
 /**
  * if an op is registered in this object, our 'calculateRange' can use it with
@@ -234,13 +241,6 @@ export interface IResultSetDataOptions {
   forceClones: boolean;
   forceCloneMethod: CloneMethod;
   removeMeta: boolean;
-}
-
-export type JoinKeyFunction<T> = (x: T) => keyof T;
-
-export interface IDefaultEqJoinR0<T> {
-  left: T;
-  right: T;
 }
 
 /**
@@ -391,10 +391,13 @@ export class ResultSet<T extends object> {
       | TransformInstance
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       | TransformInstance[]
+      | undefined
   >(
-    transform: Transform,
+    transform?: Transform,
     parameters?: Record<string, unknown>
-  ): ResultSet<TransformResult<Transform>> => {
+  ): ResultSet<
+    Transform extends undefined ? T : TransformResult<Transform>
+  > => {
     // if transform is name, then do lookup first
     let internalTransform: TransformInstance[] = Array.isArray(transform)
       ? transform
@@ -517,19 +520,19 @@ export class ResultSet<T extends object> {
    * const results = users.chain().simpleSort('age').data();
    */
   simpleSort = (
-    property: keyof T,
+    property: DotNotation<T>,
     options?: Partial<ISimpleSortOptions> | boolean
   ) => {
     const internalOptions =
       typeof options === 'boolean'
         ? {
-            desc: options
+            desc: options,
           }
         : {
             desc: false,
             disableIndexIntersect: false,
             forceIndexIntersect: false,
-            useJavascriptSorting: false
+            useJavascriptSorting: false,
           };
 
     let eff;
@@ -619,8 +622,12 @@ export class ResultSet<T extends object> {
     // if we have opted to use simplified javascript comparison function...
     if (internalOptions.useJavascriptSorting) {
       return this.sort((obj1, obj2) => {
-        if (obj1[property] === obj2[property]) return 0;
-        if (obj1[property] > obj2[property]) return 1;
+        const field1 = lens(obj1, property);
+        const field2 = lens(obj2, property);
+
+        if (field1 === field2) return 0;
+        // @ts-ignore: This is intended
+        if (field1 > field2) return 1;
         return -1;
       });
     }
@@ -661,7 +668,9 @@ export class ResultSet<T extends object> {
  * @returns Reference to this resultset, sorted, for future chain operations.
  
  */
-  compoundSort = (properties: [keyof T, boolean][]) => {
+  compoundSort = (
+    properties: ([DotNotation<T>, boolean] | DotNotation<T>)[]
+  ) => {
     if (properties.length === 0) {
       throw new Error(
         'Invalid call to compound sort, need at least one property'
@@ -894,7 +903,7 @@ export class ResultSet<T extends object> {
     propertyOrOperation: O | P,
     queryEntry: unknown,
     firstOnly: boolean = false,
-    usingDotNotation?: D,
+    usingDotNotation?: D
   ): ResultSet<T> => {
     const result: number[] = [];
 
@@ -1045,7 +1054,9 @@ export class ResultSet<T extends object> {
           const secondPhaseFilter = Reflect.get(
             secondPassIndexedOps,
             propertyOrOperation
-          ) as (typeof secondPassIndexedOps)[keyof typeof secondPassIndexedOps] | undefined;
+          ) as
+            | typeof secondPassIndexedOps[keyof typeof secondPassIndexedOps]
+            | undefined;
 
           if (secondPhaseFilter) {
             // must be a function, implying 2nd phase filtering of results from
@@ -1057,8 +1068,11 @@ export class ResultSet<T extends object> {
             );
 
             if (
-              lensValue !== undefined
-              && secondPhaseFilter(lensValue as unknown as LensResult<T, P, D>, value)
+              lensValue !== undefined &&
+              secondPhaseFilter(
+                lensValue as unknown as LensResult<T, P, D>,
+                value
+              )
             ) {
               result.push(index.values[i]);
               if (firstOnly) {
@@ -1176,7 +1190,7 @@ export class ResultSet<T extends object> {
    */
   data = (options?: Partial<IResultSetDataOptions>) => {
     const internalOptions = {
-      ...options
+      ...options,
     };
 
     const result = [];
@@ -1262,7 +1276,9 @@ export class ResultSet<T extends object> {
   * });
   */
   update = (
-    updateFunction: (x: T & ICollectionDocument) => T & ICollectionDocument
+    updateFunction: (
+      x: T & ICollectionDocument
+    ) => (T & ICollectionDocument) | void
   ) => {
     if (typeof updateFunction !== 'function') {
       throw new TypeError('Argument is not a function');
@@ -1451,40 +1467,39 @@ export class ResultSet<T extends object> {
    *  .eqJoin(products, "prodId", "productId", mapFn)
    *  .data();
    */
-  eqJoin<R = T>(
-    joinData: T[] | Collection<T> | ResultSet<T>,
+  eqJoin<R extends object>(
+    joinData: R[] | Collection<R> | ResultSet<R>,
     leftJoinKey: keyof T | JoinKeyFunction<T>,
     rightJoinKey: keyof R | JoinKeyFunction<R>
-  ): ResultSet<T>;
-  eqJoin<R = T>(
-    joinData: T[] | Collection<T> | ResultSet<T>,
+  ): ResultSet<{ left: T; right: R }>;
+  eqJoin<R extends Partial<T>>(
+    joinData: R[] | Collection<R> | ResultSet<R>,
     leftJoinKey: keyof T | JoinKeyFunction<T>,
     rightJoinKey: keyof R | JoinKeyFunction<R>,
-    mapFunction: undefined,
+    mapFunction?: ((left: T, right: R) => T) | undefined,
     dataOptions?: IResultSetDataOptions
   ): ResultSet<T>;
-  eqJoin<R = T, R0 extends object = T>(
-    joinData: T[] | Collection<T> | ResultSet<T>,
+  eqJoin<R extends Partial<T>, R0 extends object = T>(
+    joinData: R[] | Collection<R> | ResultSet<R>,
     leftJoinKey: keyof T | JoinKeyFunction<T>,
     rightJoinKey: keyof R | JoinKeyFunction<R>,
-    mapFunction: (left: T, right: T) => R0,
+    mapFunction: (left: T, right: R) => R0,
     dataOptions?: IResultSetDataOptions
   ): ResultSet<R0>;
-  eqJoin<R = T>(
-    joinData: T[] | Collection<T> | ResultSet<T>,
+  eqJoin<R extends Partial<T>>(
+    joinData: R[] | Collection<R> | ResultSet<R>,
     leftJoinKey: keyof T | JoinKeyFunction<T>,
     rightJoinKey: keyof R | JoinKeyFunction<R>,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    mapFunction: any = (left: any, right: any) => ({
+    mapFunction: Function = (left: T, right: R) => ({
       left,
-      right
+      right,
     }),
     dataOptions?: IResultSetDataOptions
   ) {
     let leftData = [];
     let rightData: R[] = [];
     const result: T[] = [];
-    const joinMap = new Map<keyof R | R[keyof R], R>();
+    const joinMap = new Map<keyof R | R[keyof R] | number, R>();
 
     // get the left data
     leftData = this.data(dataOptions);
@@ -1524,7 +1539,8 @@ export class ResultSet<T extends object> {
     this.filteredRows = [];
     this.filterInitialized = false;
 
-    return this;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this as any;
   }
 
   /**

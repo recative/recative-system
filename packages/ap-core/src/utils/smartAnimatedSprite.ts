@@ -236,6 +236,7 @@ export class SmartAnimatedSprite extends PIXI.AnimatedSprite {
       if (this._height) {
         this.scale.y = utils.sign(this.scale.y) * (this._height / textures[0].orig.height);
       }
+      this.emit('textureupdate', {});
     };
 
     if (textures[0].baseTexture.valid) {

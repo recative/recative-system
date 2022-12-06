@@ -5,10 +5,12 @@ const IS_SAFARI = isSafari();
 
 const isVideoPlaying = (video: HTMLVideoElement) => {
   // From: https://stackoverflow.com/questions/6877403/how-to-tell-if-a-video-element-is-currently-playing
-  return !!(video.currentTime > 0
-    && !video.paused
-    && !video.ended
-    && video.readyState > HTMLMediaElement.HAVE_CURRENT_DATA);
+  return !!(
+    video.currentTime > 0 &&
+    !video.paused &&
+    !video.ended &&
+    video.readyState > HTMLMediaElement.HAVE_CURRENT_DATA
+  );
 };
 
 const isVideoWaiting = (video: HTMLVideoElement) => {
@@ -37,8 +39,8 @@ const hasEnoughBuffer = (video: HTMLVideoElement) => {
   for (let i = 0; i < buffered.length; i += 1) {
     if (buffered.start(i) <= currentTime && currentTime < buffered.end(i)) {
       if (
-        buffered.end(i)
-        >= Math.min(duration - BUFFER_SIZE_DELTA, currentTime + BUFFER_SIZE_TARGET)
+        buffered.end(i) >=
+        Math.min(duration - BUFFER_SIZE_DELTA, currentTime + BUFFER_SIZE_TARGET)
       ) {
         return true;
       }
@@ -58,7 +60,7 @@ export const getController = (id: string) => {
   let cachedTime = 0;
 
   let lastSyncTime: number | null = null;
-  let lastProgress = 0;
+  let lastSeekProgress: number | null = null;
 
   const playVideo = () => {
     if (!$video) return false;
@@ -66,37 +68,36 @@ export const getController = (id: string) => {
     if (!videoShown) return false;
     if (isVideoPlaying($video)) return false;
 
-    $video.play().catch(() => { });
+    $video.play().catch(() => {});
   };
 
   const reloadVideo = () => {
     $video?.load();
     videoReady = false;
     lastSyncTime = null;
-  }
+  };
 
   const reportProgress = () => {
     if (!coreFunctions) return;
     if (!$video) return;
-    const progress = $video.currentTime * 1000
-    const time = Date.now()
+    const progress = $video.currentTime * 1000;
+    const time = Date.now();
+    coreFunctions.reportProgress(progress);
     // For iOS 16 Safari: recover from broken video element when
     // everything looks fine but the progress do not grow and the video is black
-    if (IS_SAFARI) {
-      if ($video.readyState >= $video.HAVE_ENOUGH_DATA && $video.networkState === $video.NETWORK_IDLE) {
-        if (lastSyncTime !== null && trackPlaying && !trackSuspended) {
-          if (time > lastSyncTime && progress - lastProgress < Math.min(time - lastSyncTime, 1)) {
-            coreFunctions?.log(`The video element is broken, reload video`);
-            reloadVideo();
-            return
-          }
-        }
+    if (IS_SAFARI && lastSeekProgress !== null) {
+      if (Math.abs(lastSeekProgress - progress) > 10) {
+        coreFunctions?.log(`The video element is broken, reload video`);
+        reloadVideo();
       }
     }
-    coreFunctions.reportProgress(progress);
-    lastProgress = progress;
-    lastSyncTime = time;
-  }
+    lastSeekProgress = null;
+    if (isVideoPlaying($video)) {
+      lastSyncTime = time;
+    } else {
+      lastSyncTime = null;
+    }
+  };
 
   const checkVideoPlayingState = () => {
     // For iOS Safari: sometime the video is unexpected paused by browser when the window is hidden
@@ -108,23 +109,26 @@ export const getController = (id: string) => {
     }
     const isPlaying = trackPlaying && !trackSuspended;
     if (isPlaying !== !$video.paused) {
-      coreFunctions?.log(`Unmatched playing state: should be ${isPlaying} instead of ${!$video.paused}`);
+      coreFunctions?.log(
+        `Unmatched playing state: should be ${isPlaying} instead of ${!$video.paused}`
+      );
       if (isPlaying) {
         playVideo();
+        reportProgress();
       } else {
-        lastSyncTime = null;
         $video.pause();
+        reportProgress();
+        lastSyncTime = null;
       }
-      reportProgress();
     }
   };
 
   const needCheckup = () => {
     if (lastSyncTime === null) {
-      return true
+      return true;
     }
-    return Date.now() - lastSyncTime > 300
-  }
+    return Date.now() - lastSyncTime > 300;
+  };
 
   const forceCheckup = () => {
     if (!coreFunctions) return;
@@ -134,7 +138,7 @@ export const getController = (id: string) => {
     const isPlaying = trackPlaying && !trackSuspended;
 
     if (isPlaying && needCheckup()) {
-      reportProgress()
+      reportProgress();
     }
   };
 
@@ -148,11 +152,15 @@ export const getController = (id: string) => {
       cachedTime = time;
       return;
     }
-    if ($video.readyState >= $video.HAVE_METADATA && time / 1000 > $video.duration) {
+    if (
+      $video.readyState >= $video.HAVE_METADATA &&
+      time / 1000 > $video.duration
+    ) {
       // video should be already end!
       coreFunctions?.finishItself();
     } else {
       $video.currentTime = time / 1000;
+      lastSeekProgress = time;
     }
   };
 
@@ -160,8 +168,8 @@ export const getController = (id: string) => {
     if (trackPlaying && !trackSuspended) {
       playVideo();
     } else {
-      lastSyncTime = null;
       $video?.pause();
+      lastSyncTime = null;
     }
     if ($video !== null) {
       $video.currentTime = cachedTime / 1000;
@@ -172,7 +180,9 @@ export const getController = (id: string) => {
     $video = videoTag;
   };
 
-  const removeVideoTag = () => { $video = null; };
+  const removeVideoTag = () => {
+    $video = null;
+  };
 
   const setVideoReady = () => {
     if (videoReady) {
@@ -198,25 +208,25 @@ export const getController = (id: string) => {
       // we already complete seeking here
       return;
     }
-    const stuckReasons = []
+    const stuckReasons = [];
     if ($video.seeking) {
-      stuckReasons.push("seeking")
+      stuckReasons.push('seeking');
       coreFunctions.log('Stuck reason: seeking');
     }
     if ($video.readyState <= HTMLMediaElement.HAVE_CURRENT_DATA) {
-      stuckReasons.push("do not have data")
+      stuckReasons.push('do not have data');
     }
     if (stuckReasons.length <= 0) {
-      stuckReasons.push("unknown")
+      stuckReasons.push('unknown');
     }
-    coreFunctions.log(`Stuck reason: ${stuckReasons.join(", ")}`);
+    coreFunctions.log(`Stuck reason: ${stuckReasons.join(', ')}`);
     // As a workaround to force the browser to update the readyState
     if (!$video.seeking) {
       // eslint-disable-next-line no-self-assign
       $video.currentTime = $video.currentTime;
     }
     coreFunctions.reportStuck();
-  }
+  };
 
   const unstuckCheck = () => {
     if (!$video) return false;
@@ -228,7 +238,7 @@ export const getController = (id: string) => {
       return true;
     }
     return false;
-  }
+  };
 
   const controller: Partial<ComponentFunctions> = {
     showContent: (contentId) => {
@@ -258,11 +268,11 @@ export const getController = (id: string) => {
       }
       reportProgress();
     },
-    sync(time) {
+    sync(progress, time) {
       if (!$video) return false;
 
       checkVideoPlayingState();
-      seekVideo(time);
+      seekVideo(performance.now() - time + progress);
     },
     suspend() {
       trackSuspended = true;

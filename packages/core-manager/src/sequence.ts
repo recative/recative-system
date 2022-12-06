@@ -1,3 +1,7 @@
+import EventTarget from '@ungap/event-target';
+import { nanoid } from 'nanoid';
+import { atom, computed, ReadableAtom, WritableAtom } from 'nanostores';
+
 import {
   IAssetForClient,
   ContentSpec,
@@ -5,18 +9,15 @@ import {
   ManagerCoreStateTrigger,
 } from '@recative/definitions';
 import {
-  atom, computed, ReadableAtom, WritableAtom,
-} from 'nanostores';
-import { nanoid } from 'nanoid';
-import {
   allSettled,
   OpenPromise,
   OpenPromiseState,
   TimeSlicingQueue,
 } from '@recative/open-promise';
-import { AudioStation } from '@recative/audio-station';
-import EventTarget from '@ungap/event-target';
-import type { ComponentFunctions, CustomEventHandler, Progress } from './types';
+
+import type { AudioStation } from '@recative/audio-station';
+
+import { Logger } from './LogCollector';
 // eslint-disable-next-line import/no-cycle
 import { ContentInstance } from './instance';
 import {
@@ -24,7 +25,8 @@ import {
   throttledAtom,
   ThrottledAtomReturnType,
 } from './utils/nanostore';
-import { Logger } from './LogCollector';
+
+import type { ComponentFunctions, CustomEventHandler, Progress } from './types';
 
 export interface ContentInfo {
   id: string;
@@ -186,7 +188,7 @@ export class ContentSequence {
    */
   playing = computed(
     [this.selfPlaying, this.parentPlaying],
-    (self, parent) => self && parent,
+    (self, parent) => self && parent
   );
 
   /**
@@ -246,7 +248,7 @@ export class ContentSequence {
   /**
    * Is the sequence actual showing, when it is showing itself and parent is also showing
    */
-  showing = false
+  showing = false;
 
   /**
    * Is the sequence finally destroyed.
@@ -283,15 +285,16 @@ export class ContentSequence {
     this.preciseTime = distinctAtom(
       computed(
         this.progress,
-        (progress) => this.segmentsDuration
-          .filter(
-            (duration, i) => Number.isFinite(duration) && i < progress.segment,
-          )
-          .reduce((a, b) => a + b, 0)
-          + (Number.isFinite(this.segmentsDuration[progress.segment])
+        (progress) =>
+          this.segmentsDuration
+            .filter(
+              (duration, i) => Number.isFinite(duration) && i < progress.segment
+            )
+            .reduce((a, b) => a + b, 0) +
+          (Number.isFinite(this.segmentsDuration[progress.segment])
             ? progress.progress
-            : 0),
-      ),
+            : 0)
+      )
     );
     this.time = throttledAtom(this.preciseTime);
 
@@ -314,7 +317,7 @@ export class ContentSequence {
     try {
       this.dependencyReady.resolve();
       // eslint-disable-next-line no-empty
-    } catch { }
+    } catch {}
   };
 
   private async internalDestroy() {
@@ -329,8 +332,9 @@ export class ContentSequence {
       }
     });
     await allSettled(
-      Array.from(this.managedContentInstance).map((instance) => instance.destroy(),
-      ),
+      Array.from(this.managedContentInstance).map((instance) =>
+        instance.destroy()
+      )
     );
     this.contents.clear();
     this.preloadedContents.clear();
@@ -503,7 +507,7 @@ export class ContentSequence {
     if (currentContent.instance === instance) {
       this.logContent(`Current content ${instance.id} finish`);
       this.eventTarget.dispatchEvent(
-        new CustomEvent('segmentEnd', { detail: this.currentSegment }),
+        new CustomEvent('segmentEnd', { detail: this.currentSegment })
       );
       this.contentSwitching();
     }
@@ -521,7 +525,7 @@ export class ContentSequence {
     this.switchingUnblocked = new OpenPromise();
     const blocker = this.option.getContentSwitchBlocker(
       this.lastSegment,
-      this.currentSegment,
+      this.currentSegment
     );
     blocker.forEach((name) => {
       this.nextContentSetupBlocker.add(name);
@@ -604,7 +608,7 @@ export class ContentSequence {
     // start and play the new content
     this.showContent(content);
     this.eventTarget.dispatchEvent(
-      new CustomEvent('segmentStart', { detail: this.currentSegment }),
+      new CustomEvent('segmentStart', { detail: this.currentSegment })
     );
     if (lastContent !== undefined) {
       this.hideContent(lastContent);
@@ -670,9 +674,9 @@ export class ContentSequence {
    */
   private prepareNextContent() {
     this.preloadedContents.forEach((content) => {
-      this.destroyContent(content)
-    })
-    this.preloadedContents.clear()
+      this.destroyContent(content);
+    });
+    this.preloadedContents.clear();
     if (this.currentSegment + 1 < this.contentList.length) {
       const content = this.contentList[this.currentSegment + 1];
       if (content.instance !== null) {
@@ -743,43 +747,43 @@ export class ContentSequence {
   }
 
   updateShowing() {
-    const showing = this.selfShowing && this.parentShowing
+    const showing = this.selfShowing && this.parentShowing;
     if (this.showing === showing) {
-      return
+      return;
     }
     if (showing) {
       this.showing = true;
       this.contentList.forEach((content) => {
         const { instance } = content;
-        instance?.parentShow()
+        instance?.parentShow();
       });
     } else {
       this.showing = false;
       this.contentList.forEach((content) => {
         const { instance } = content;
-        instance?.parentHide()
+        instance?.parentHide();
       });
     }
   }
 
   show() {
-    this.selfShowing = true
-    this.updateShowing()
+    this.selfShowing = true;
+    this.updateShowing();
   }
 
   hide() {
-    this.selfShowing = false
-    this.updateShowing()
+    this.selfShowing = false;
+    this.updateShowing();
   }
 
   parentShow() {
-    this.parentShowing = true
-    this.updateShowing()
+    this.parentShowing = true;
+    this.updateShowing();
   }
 
   parentHide() {
-    this.parentShowing = false
-    this.updateShowing()
+    this.parentShowing = false;
+    this.updateShowing();
   }
 
   setVolume(volume: number) {

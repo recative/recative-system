@@ -11,10 +11,13 @@
     "commitlint",
     "craco",
     "definedin",
+    "draupnir",
     "dteq",
+    "dvalin",
     "filteredrows",
     "geckoview",
     "gradlew",
+    "gungnir",
     "hookz",
     "iife",
     "jbetween",
@@ -22,6 +25,7 @@
     "jlte",
     "keyin",
     "lktxp",
+    "mjolnir",
     "msgpack",
     "nanostore",
     "nanostores",
@@ -40,10 +44,14 @@
     "resultdata",
     "resultsdirty",
     "resultset",
+    "stucked",
+    "Styletron",
     "sublist",
+    "technotes",
     "textureupdate",
     "Transferables",
     "tsdb",
+    "tyrfing",
     "undefinedin",
     "ungap",
     "unplugin",
@@ -61,5 +69,26 @@
   "typescript.tsdk": "node_modules\\typescript\\lib",
   "editor.formatOnSave": true,
   "editor.formatOnPaste": false,
-  "editor.tabSize": 2
+  "editor.tabSize": 2,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[plaintext]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }

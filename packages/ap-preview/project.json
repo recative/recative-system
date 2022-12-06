@@ -20,7 +20,7 @@
     "publish": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
-        "command": "yarn npm publish --tolerate-republish",
+        "command": "yarn npm publish --tolerate-republish --access public",
         "cwd": "packages/ap-preview"
       },
       "dependsOn": [
@@ -32,20 +32,14 @@
     },
     "lint": {
       "executor": "@nrwl/linter:eslint",
-      "outputs": [
-        "{options.outputFile}"
-      ],
+      "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": [
-          "packages/ap-preview/**/*.ts"
-        ]
+        "lintFilePatterns": ["packages/ap-preview/src/**/*.ts"]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": [
-        "coverage/packages/ap-preview"
-      ],
+      "outputs": ["coverage/packages/ap-preview"],
       "options": {
         "jestConfig": "packages/ap-preview/jest.config.ts",
         "passWithNoTests": true

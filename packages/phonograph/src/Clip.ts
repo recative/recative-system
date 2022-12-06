@@ -1,24 +1,28 @@
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable import/no-cycle */
+
 import {
-  AudioContext,
   GainNode,
+  IGainNode,
+  IAudioNode,
+  AudioContext,
   IAudioBuffer,
   IAudioBufferSourceNode,
-  IAudioNode,
-  IGainNode,
 } from 'standardized-audio-context';
 
-import warn from './utils/warn';
 import Chunk from './Chunk';
 import Clone from './Clone';
+import warn from './utils/warn';
 import { slice } from './utils/buffer';
-import { Loader, FetchLoader, XhrLoader } from './Loader';
 import { IAdapter } from './adapters/IAdapter';
+import { Loader, FetchLoader, XhrLoader } from './Loader';
 
 const CHUNK_SIZE = 64 * 1024;
 const OVERLAP = 0.2;
 
 class PhonographError extends Error {
   phonographCode: string;
+
   url: string;
 
   constructor(message: string, opts: { phonographCode: string; url: string }) {
@@ -40,59 +44,91 @@ interface AudioBufferCache<Metadata> {
 
 export default class Clip<Metadata> {
   url: string;
+
   loop: boolean;
+
   readonly adapter: IAdapter<Metadata>;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private callbacks: Record<string, Array<(data?: any) => void>> = {};
+
   context: AudioContext;
 
   buffered = 0;
+
   length = 0;
+
   private _loaded = false;
+
   public get loaded() {
     return this._loaded;
   }
+
   public set loaded(value) {
     this._loaded = value;
   }
+
   private _canplaythrough = false;
+
   public get canplaythrough() {
     return this._canplaythrough;
   }
+
   public set canplaythrough(value) {
     this._canplaythrough = value;
   }
+
   loader: Loader;
+
   metadata: Metadata | null = null;
+
   playing = false;
+
   ended = false;
 
   private _startTime: number = 0;
+
   private _currentTime = 0;
+
   private __chunks: Chunk<Metadata>[] = [];
+
   public get _chunks(): Chunk<Metadata>[] {
     return this.__chunks;
   }
+
   public set _chunks(value: Chunk<Metadata>[]) {
     this.__chunks = value;
   }
+
   private _contextTimeAtStart: number = 0;
+
   private _pendingSourceStart: number = 0;
+
   private _connected: boolean = false;
+
   private fadeTarget: number;
+
   private _gain: GainNode<AudioContext>;
+
   private _loadStarted: boolean = false;
+
   private _actualPlaying = false;
+
   public get stuck() {
     if (this.playing) {
-      return !this._actualPlaying
+      return !this._actualPlaying;
     }
     return !this.audioBufferCacheHit();
   }
+
   private _currentSource: IAudioBufferSourceNode<AudioContext> | null = null;
+
   private _nextSource: IAudioBufferSourceNode<AudioContext> | null = null;
+
   private _currentGain: IGainNode<AudioContext> | null = null;
+
   private _nextGain: IGainNode<AudioContext> | null = null;
+
   private _audioBufferCache: AudioBufferCache<Metadata> | null = null;
 
   constructor({
@@ -128,12 +164,12 @@ export default class Clip<Metadata> {
     if (!this._loadStarted) {
       this._loadStarted = true;
 
-      let tempBuffer = new Uint8Array(CHUNK_SIZE * 2);
+      const tempBuffer = new Uint8Array(CHUNK_SIZE * 2);
       let p = 0;
       let processedBytes = 0;
       let nextFrameStartBytes = 0;
 
-      let loadStartTime = Date.now();
+      const loadStartTime = Date.now();
       let totalLoadedBytes = 0;
 
       const checkCanplaythrough = () => {
@@ -142,7 +178,7 @@ export default class Clip<Metadata> {
         let duration = 0;
         let bytes = 0;
 
-        for (let chunk of this._chunks) {
+        for (const chunk of this._chunks) {
           if (!chunk.duration) break;
           duration += chunk.duration;
           bytes += chunk.raw.length;
@@ -240,8 +276,9 @@ export default class Clip<Metadata> {
               }
             }
 
+            p += 1;
             // write new data to buffer
-            tempBuffer[p++] = uint8Array[i];
+            tempBuffer[p] = uint8Array[i];
           }
 
           totalLoadedBytes += uint8Array.length;
@@ -421,9 +458,8 @@ export default class Clip<Metadata> {
       return (
         this._startTime + (this.context.currentTime - this._contextTimeAtStart)
       );
-    } else {
-      return this._currentTime;
     }
+    return this._currentTime;
   }
 
   set currentTime(currentTime) {
@@ -432,7 +468,7 @@ export default class Clip<Metadata> {
       this._currentTime = currentTime;
       this._audioBufferCache = null;
       this.trySetupAudioBufferCache();
-      this.play().catch(() => { });
+      this.play().catch(() => {});
     } else {
       this._currentTime = currentTime;
       this._audioBufferCache = null;
@@ -442,7 +478,7 @@ export default class Clip<Metadata> {
 
   get duration() {
     let total = 0;
-    for (let chunk of this._chunks) {
+    for (const chunk of this._chunks) {
       if (!chunk.duration) return null;
       total += chunk.duration;
     }

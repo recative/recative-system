@@ -10,10 +10,10 @@
         "cwd": "packages/documents"
       }
     },
-    "build": {
+    "build-docs": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
-        "command": "yarn build",
+        "command": "yarn build:docs",
         "cwd": "packages/documents"
       }
     },
@@ -21,7 +21,7 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/documents/**/*.ts"]
+        "lintFilePatterns": ["packages/documents/src/**/*.ts"]
       }
     },
     "test": {

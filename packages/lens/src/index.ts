@@ -6,10 +6,7 @@ export type ValidLensField =
   | string[]
   | Readonly<string[]>;
 
-export type ValidSimpleLensField = 
-  | string
-  | number
-  | symbol;
+export type ValidSimpleLensField = string | number | symbol;
 
 export type ValidDotNotation<T> = T extends `${string}.${string}`
   ? true
@@ -44,9 +41,9 @@ type DotNotationImplementation<T, K extends keyof T> = K extends string
     : K
   : never;
 
-type DotNotation<T> = DotNotationImplementation<T, keyof T> | keyof T;
+export type DotNotation<T> = DotNotationImplementation<T, keyof T> | keyof T;
 
-type DotNotationValue<
+export type DotNotationValue<
   T,
   P extends DotNotation<T>
 > = P extends `${infer K}.${infer Rest}`
@@ -114,11 +111,11 @@ export type LensResult<T, P, U> = U extends true
  * may know that a path is *not* nested. In which case, this
  * function avoids a costly string.split('.')
  *
- * examples:
- * getIn({a: 1}, "a") => 1
- * getIn({a: 1}, "a", true) => 1
- * getIn({a: {b: 1}}, ["a", "b"], true) => 1
- * getIn({a: {b: 1}}, "a.b", true) => 1
+ * @examples
+ * getIn({a: 1}, "a")
+ * getIn({a: 1}, "a", true)
+ * getIn({a: {b: 1}}, ["a", "b"], true)
+ * getIn({a: {b: 1}}, "a.b", true)
  */
 export const lens = <T, P extends ValidLensField, U extends boolean>(
   object: T,
@@ -135,7 +132,7 @@ export const lens = <T, P extends ValidLensField, U extends boolean>(
         'The path should be a string if not using not notation option'
       );
     }
-    return Reflect.get(object, path) as LensResult<T, P, U>;
+    return Reflect.get(object as object, path) as LensResult<T, P, U>;
   }
 
   if (
@@ -148,7 +145,7 @@ export const lens = <T, P extends ValidLensField, U extends boolean>(
   }
 
   if (typeof path === 'number' || typeof path === 'symbol') {
-    return Reflect.get(object, path) as LensResult<T, P, U>;
+    return Reflect.get(object as object, path) as LensResult<T, P, U>;
   }
 
   const internalPath =

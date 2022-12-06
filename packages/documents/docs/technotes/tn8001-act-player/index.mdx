@@ -1,0 +1,98 @@
+---
+sidebar_position: 8001
+---
+
+# TN8001: Act Player: Episode Level Media Playback
+
+## Introduction
+
+Act player implemented a React binding of Episode Core, it implemented all user
+interfaces of the player, and built a bridge from your asset to the episode
+core.
+
+Act player provides a build-in interface implementation, which provides:
+
+- **Loading Indicator:** Core manager will show this component if the metadata or content
+  is not loaded, or the buffer of the video have drained.
+
+- **Subtitle:** This will show subtitle of your video content or audio clip
+  inside the act point program.
+
+- **Dialog Component:** That show additional information on the right side of
+  your content, it looks like the information card of YouTube, but can display
+  more type of information, like texture, and audio.
+
+- **Controller:** Pause and play, setting content language, volume, navigating
+  to different assets and time, and more fundamental elements for a player.
+
+- **Stage:** The stage contains all assets to be played, it will create and destroy
+  React Elements for different contents, and connect these contents with
+  _Core Manager_.
+
+## Essential parts of a player
+
+The components we introduced above are default implementation for the player,
+developers can pass their own
+[interface component](/api/act-player/interface/IUnmanagedActPointProps#interfaceComponents)
+into the player and customize the visual experience and functionality of the
+player. All interface components are React components, they are stored in an
+array, they will be rendered in the player container.
+
+## Interface component
+
+We must make the component met specific
+[typing signature](/api/act-player#InterfaceExtensionComponent) to make sure
+_Core Manager_ and _Act Player_ can communicate with the component
+implementation, basically, we will pass two parameters:
+
+- **`core`:** A instance of the _Episode Core_, we can use this parameter to
+  control most behavior of the player.
+
+- **`loadingComponent`:** A component that indicate something is still loading,
+  you can show this component if something is stilling being cooked.
+
+After the component is created, we can start to interact with the _Episode Core_.
+
+### Different type of interface components
+
+There're different type of interface components, you can choose one based on
+your technical requirement.
+
+- **Naïve components:** If we don't need let the _Episode Core_ to control
+  the lifecycle of the component, this component is a naïve component, we don't
+  need to do anything special.
+
+- **Managed components:** Managed components hooked up with the life cycle
+  management process of the _Episode Core_,
+  [component functions](/api/core-manager/interface/ComponentFunctions). Here are
+  three use cases:
+
+  - **A play button layer:** if the media playback was paused, ask core
+    call the `pause` function we provided via `componentFunctions`. When the
+    function was called, we show the large "play" button.
+
+  - **A transition animation layer:** show an animation while switching between
+    assets above the player, which can hide the underlying resource loading
+    process. we use `shouldBlockContentSwitch` life cycle to notify the
+    _Episode Core_ that all lifecycles should be processed manually, then we
+    call `unblockAssetSetup` while the "ease-in" animation was played, then call
+    `unblockAssetPlay` when the "ease-out" animation was played. For more
+    details, see "Switching between contents" section below.
+
+- **Critical components:** Critical components must be registered before or the
+  player will not process any incoming requests. There is currently only one
+  critical component called `stage`. Critical component could be naïve or
+  managed.
+
+:::info
+Stage will show all assets available in an episode. The stage component should
+implement methods that create, destroy, show, hide content in its
+`ComponentFunctions`, for more detail, checkout the
+[source code](https://github.com/recative/recative-system/blob/master/packages/act-player/src/components/Stage/Stage.tsx).
+
+Assets inside the stage components are implemented by _asset instance components_
+like [videos](https://github.com/recative/recative-system/blob/master/packages/act-player/src/components/Stage/ActPoint.tsx)
+and [act points](https://github.com/recative/recative-system/blob/master/packages/act-player/src/components/Stage/ActPoint.tsx).
+The API for both is quite like that of _interface components_, but
+we do not support third-party interface components implementations.
+:::

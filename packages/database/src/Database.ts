@@ -1,7 +1,7 @@
 import EventTarget from '@ungap/event-target';
 import { OpenPromise } from '@recative/open-promise';
 
-import { Collection } from './Collection';
+import { Collection, ICollectionDocument } from './Collection';
 import { deepFreeze } from './utils/freeze';
 import { copyProperties } from './utils/copyProperties';
 import { serializeReplacer } from './utils/serializeReplacer';
@@ -9,16 +9,17 @@ import { Environment, getEnv } from './utils/getEnv';
 import type {
   ICollectionOptions,
   ICollectionSummary,
-  ICollectionChange
+  ICollectionChange,
 } from './Collection';
 import { delay } from './utils/delay';
-import { PersistenceAdapter, PersistenceAdapterMode } from './adapter/typings';
+import { CloneMethod } from './utils/clone';
 import { MemoryAdapter } from './adapter/memory';
+import { PersistenceAdapter, PersistenceAdapterMode } from './adapter/typings';
 
 export enum SerializationMethod {
   Normal = 'normal',
   Pretty = 'pretty',
-  Destructured = 'destructured'
+  Destructured = 'destructured',
 }
 
 /**
@@ -61,7 +62,7 @@ const DEFAULT_OPTION = {
   adapter: null,
   serializationMethod: SerializationMethod.Normal,
   destructureDelimiter: '$<\n',
-  throttledSaves: true
+  throttledSaves: true,
 };
 
 /**
@@ -128,23 +129,32 @@ export interface IDeserializeDestructuredOptions {
 export interface IDeserializeCollectionOptions {
   delimited: boolean;
   delimiter: string;
-  collectionIndex?: number;
+  collectionIndex: number;
+  partitioned: boolean;
 }
 
-export interface ILoadJSONCollectionConfiguration {
-  inflate: <T>(source: T, destination?: T) => T;
-  Proto: typeof Collection;
+export interface Proto<T> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  new (...args: any[]): T;
+}
+
+export interface ILoadJSONCollectionConfiguration<T> {
+  inflate: (
+    source: T & ICollectionDocument,
+    destination: T & ICollectionDocument
+  ) => (T & ICollectionDocument) | void;
+  Proto: Proto<T>;
 }
 
 /**
  * apply or override collection level settings
  * @field retainDirtyFlags - whether collection dirty flags will be preserved
  */
-export interface ILoadJSONOptions {
+export interface ILoadJSONOptions<T = any> {
   throttledSaves: boolean;
   retainDirtyFlags: boolean;
   [collectionName: string]:
-    | ILoadJSONCollectionConfiguration
+    | Partial<ILoadJSONCollectionConfiguration<T>>
     | boolean
     | string
     | number
@@ -224,7 +234,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
     this.options = Object.freeze({
       ...DEFAULT_OPTION,
       env: getEnv(),
-      ...options
+      ...options,
     });
 
     this.addEventListener('init', this.clearChanges);
@@ -252,7 +262,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
     this.options = Object.freeze({
       ...DEFAULT_OPTION,
       env: getEnv(),
-      ...options
+      ...options,
     });
 
     // if user passes adapter, set persistence mode to adapter and retain
@@ -316,7 +326,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
     // in case running in an environment without accurate environment detection,
     // pass 'NA'
     const databaseCopy = new Database(this.fileName, {
-      adapter: new MemoryAdapter()
+      adapter: new MemoryAdapter(),
     });
 
     // currently inverting and letting loadJSONObject do most of the work
@@ -348,7 +358,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
   addCollection = <P extends object>(
     name: string,
     options?: Partial<ICollectionOptions<P>>
-  ) => {
+  ): Collection<P> => {
     let i;
     const len = this.collections.length;
 
@@ -401,7 +411,9 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
    * Retrieves reference to a collection by name.
    * @param collectionName - name of collection to look up
    */
-  getCollection = (collectionName: string) => {
+  getCollection = <U extends object>(
+    collectionName: string
+  ): Collection<U> | null => {
     const collectionCount = this.collections.length;
 
     for (let i = 0; i < collectionCount; i += 1) {
@@ -413,7 +425,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
     // no such collection
     this.dispatchEvent(
       new CustomEvent('warning', {
-        detail: new TypeError(`collection ${collectionName} not found`)
+        detail: new TypeError(`collection ${collectionName} not found`),
       })
     );
 
@@ -446,7 +458,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
       collections[i] = {
         name: this.collections[i].name,
         type: this.collections[i].objType,
-        count: this.collections[i].data.length
+        count: this.collections[i].data.length,
       };
     }
 
@@ -525,7 +537,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
       partitioned: false,
       partition: -1,
       delimiter: this.options.destructureDelimiter,
-      ...options
+      ...options,
     };
 
     // 'partitioned' along with 'partition' of 0 or greater is a request for
@@ -537,7 +549,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
       return this.serializeCollection({
         delimited: internalOptions.delimited,
         delimiter: internalOptions.delimiter,
-        collectionIndex: internalOptions.partition
+        collectionIndex: internalOptions.partition,
       });
     }
 
@@ -545,7 +557,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
     // container via shallow copy
     let databaseCopy: Database<PersistenceAdapterMode.Default> | null =
       new Database(this.fileName, {
-        adapter: new MemoryAdapter()
+        adapter: new MemoryAdapter(),
       });
 
     databaseCopy.loadJSONObject(this);
@@ -562,7 +574,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
       // since we are deconstructing, override serializationMethod to normal for
       // here
       return databaseCopy.serialize({
-        serializationMethod: SerializationMethod.Normal
+        serializationMethod: SerializationMethod.Normal,
       });
     }
 
@@ -570,7 +582,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
     // start by pushing db serialization into first array element
     reConstructed.push(
       databaseCopy.serialize({
-        serializationMethod: SerializationMethod.Normal
+        serializationMethod: SerializationMethod.Normal,
       })
     );
 
@@ -581,7 +593,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
       result = this.serializeCollection({
         delimited: internalOptions.delimited,
         delimiter: internalOptions.delimiter,
-        collectionIndex: i
+        collectionIndex: i,
       });
 
       // NDA : Non-Delimited Array : one iterable concatenated array with empty
@@ -665,7 +677,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
   serializeCollection = (options?: Partial<ISerializeCollectionOptions>) => {
     const internalOptions = {
       delimited: true,
-      ...options
+      ...options,
     };
 
     if (!internalOptions.collectionIndex) {
@@ -712,13 +724,13 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
    */
   deserializeDestructured = (
     destructuredSource: string | string[],
-    options?: IDeserializeDestructuredOptions
+    options?: Partial<IDeserializeDestructuredOptions>
   ) => {
     const internalOptions = {
       partitioned: false,
       delimited: true,
       delimiter: this.options.destructureDelimiter,
-      ...options
+      ...options,
     };
 
     let workingArray: string[] = [];
@@ -826,19 +838,19 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
    *
    * @returns an array of documents to attach to collection.data.
    */
-  deserializeCollection = (
+  deserializeCollection = <P extends object>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     destructuredSource: string | string[] | Database<any>,
-    options?: IDeserializeCollectionOptions
+    options?: Partial<IDeserializeCollectionOptions>
   ) => {
     const internalOptions = {
       delimited: true,
       partitioned: false,
       delimiter: this.options.destructureDelimiter,
-      ...options
+      ...options,
     };
 
-    let workingArray = [];
+    let stringArray = [];
 
     if (internalOptions.delimited) {
       if (typeof destructuredSource !== 'string') {
@@ -846,22 +858,18 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
           'Delimited destructured source can not be an array'
         );
       }
-      workingArray = destructuredSource.split(internalOptions.delimiter);
-      workingArray.pop();
+      stringArray = destructuredSource.split(internalOptions.delimiter);
+      stringArray.pop();
     } else {
       if (!Array.isArray(destructuredSource)) {
         throw new TypeError(
           'Non-delimited destructured source can not be a string'
         );
       }
-      workingArray = destructuredSource;
+      stringArray = destructuredSource;
     }
 
-    for (let i = 0; i < workingArray.length; i += 1) {
-      workingArray[i] = JSON.parse(workingArray[i]);
-    }
-
-    return workingArray;
+    return stringArray.map((x) => JSON.parse(x)) as (P & ICollectionDocument)[];
   };
 
   /**
@@ -870,7 +878,10 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
    * @param serializedDb - a serialized database database string
    * @param options - apply or override collection level settings
    */
-  loadJSON = (serializedDb: string, options?: Partial<ILoadJSONOptions>) => {
+  loadJSON = <P extends object>(
+    serializedDb: string,
+    options?: Partial<ILoadJSONOptions<P>>
+  ) => {
     let dbObject: unknown;
     if (serializedDb.length === 0) {
       dbObject = {};
@@ -890,7 +901,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
       }
     }
 
-    this.loadJSONObject(dbObject, options);
+    this.loadJSONObject<P>(dbObject, options);
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -916,7 +927,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
    */
   loadJSONObject = <P extends object>(
     databaseObject: unknown,
-    options?: Partial<ILoadJSONOptions>
+    options?: Partial<ILoadJSONOptions<P>>
   ) => {
     if (!Database.isDatabaseObject(databaseObject)) {
       throw new TypeError(
@@ -925,7 +936,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
     }
 
     const internalOptions = {
-      ...options
+      ...options,
     };
 
     // restore save throttled boolean only if not defined in options
@@ -937,7 +948,10 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
 
     const makeLoader = (
       collection: Collection<P>
-    ): (<U extends object>(x: U, y?: U) => U) => {
+    ): ((
+      x: P & ICollectionDocument,
+      y?: P & ICollectionDocument
+    ) => P & ICollectionDocument) => {
       const collectionOptions = internalOptions[collection.name];
 
       if (!collectionOptions) {
@@ -962,12 +976,12 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
           throw new TypeError('Inflater must be a function if proto provided');
         }
 
-        return <U extends object>(data: U): U => {
-          const collectionInstance = new collectionOptions.Proto(
+        return (data: P & ICollectionDocument): P & ICollectionDocument => {
+          const collectionInstance = new collectionOptions.Proto!(
             collection.name
-          ) as unknown as Collection<U>;
-          inflater(data, collectionInstance as U);
-          return collectionInstance as U;
+          ) as unknown as P & ICollectionDocument;
+
+          return inflater(data, collectionInstance) ?? collectionInstance;
         };
       }
 
@@ -977,7 +991,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
         );
       }
 
-      return collectionOptions.inflate;
+      return inflater;
     };
 
     const collectionCount = databaseObject.collections
@@ -990,12 +1004,12 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
       const collection: Collection<P> | undefined =
         databaseObject.collections[i];
 
-      const copiedCollection = this.addCollection(collection.name, {
+      const copiedCollection = this.addCollection<P>(collection.name, {
         disableChangesApi: collection.disableChangesApi,
         disableDeltaChangesApi: collection.disableDeltaChangesApi,
         disableMeta: collection.disableMeta,
         disableFreeze:
-          'disableFreeze' in collection ? collection.disableFreeze : true
+          'disableFreeze' in collection ? collection.disableFreeze : true,
       });
 
       copiedCollection.adaptiveBinaryIndices =
@@ -1006,7 +1020,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
       copiedCollection.asyncListeners = collection.asyncListeners;
       copiedCollection.cloneObjects = collection.cloneObjects;
       copiedCollection.cloneMethod =
-        collection.cloneMethod || 'parse-stringify';
+        collection.cloneMethod || CloneMethod.ParseStringify;
       copiedCollection.autoupdate = collection.autoupdate;
       copiedCollection.changes = collection.changes;
       // @ts-ignore Let refactor this later
@@ -1100,7 +1114,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
           collectionDynamicView.resultSet.filterInitialized;
 
         dynamicView.rematerialize({
-          removeWhereFilters: true
+          removeWhereFilters: true,
         });
       }
 
@@ -1156,7 +1170,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
    * @returns  array of changes
    * @see private method createChange() in Collection
    */
-  generateChangesNotification = (collectionNamesArray: string[]) => {
+  generateChangesNotification = (collectionNamesArray?: string[]) => {
     // This could be any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const getCollName = (collection: Collection<any>) => {
@@ -1164,7 +1178,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
     };
 
     const selectedCollections =
-      collectionNamesArray || this.collections.map(getCollName);
+      collectionNamesArray ?? this.collections.map(getCollName);
 
     // This could be any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1187,7 +1201,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
    *        collections are processed.
    * @returns string representation of the changes
    */
-  serializeChanges = (collectionNamesArray: string[]) => {
+  serializeChanges = (collectionNamesArray?: string[]) => {
     return JSON.stringify(
       this.generateChangesNotification(collectionNamesArray)
     );
@@ -1222,7 +1236,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
       recursiveWaitLimit: false,
       recursiveWaitLimitDuration: 2000,
       started: Date.now(),
-      ...options
+      ...options,
     };
 
     // if save is not pending
@@ -1285,7 +1299,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
 
       this.dispatchEvent(
         new CustomEvent('loaded', {
-          detail: { fileName: this.fileName, isEmpty: false }
+          detail: { fileName: this.fileName, isEmpty: false },
         })
       );
       return null;
@@ -1294,7 +1308,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
     if (!databaseString) {
       this.dispatchEvent(
         new CustomEvent('loaded', {
-          detail: { fileName: this.fileName, isEmpty: true }
+          detail: { fileName: this.fileName, isEmpty: true },
         })
       );
       return null;
@@ -1306,7 +1320,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
       this.loadJSONObject(databaseString, options || {});
       this.dispatchEvent(
         new CustomEvent('loaded', {
-          detail: { fileName: this.fileName, isEmpty: false }
+          detail: { fileName: this.fileName, isEmpty: false },
         })
       );
       return null; // return null on success
@@ -1413,7 +1427,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
             return [
               collection.dirty,
               // @ts-ignore Let's fix this later
-              collection.dirtyIds
+              collection.dirtyIds,
             ];
           });
           this.collections.forEach((collection) => {

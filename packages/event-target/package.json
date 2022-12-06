@@ -1,0 +1,24 @@
+{
+  "name": "@recative/event-target",
+  "version": "0.0.1",
+  "source": "src/index.ts",
+  "main": "dist/main.js",
+  "module": "dist/module.js",
+  "types": "dist/types.d.ts",
+  "repository": "https://github.com/recative/recative-system",
+  "scripts": {
+    "clean": "rimraf ./dist",
+    "watch": "rollup -c -w",
+    "build": "yarn clean && rollup -c",
+    "test": "jest"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "browserslist": [
+    "last 1 Chrome versions"
+  ],
+  "dependencies": {
+    "@ungap/event-target": "^0.2.3"
+  }
+}

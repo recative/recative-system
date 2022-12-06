@@ -22,9 +22,14 @@
     "time-schedule": "packages/time-schedule",
     "database": "packages/database",
     "ugly-json": "packages/ugly-json",
+    "event-target": "packages/event-target",
     "web-shell": "packages/web-shell",
     "capacitor-geckoview": "packages/capacitor-geckoview",
     "desktop-shell": "packages/desktop-shell",
-    "lens": "packages/lens"
+    "lens": "packages/lens",
+    "video-renderer-native-backend": "packages/video-renderer-native-backend",
+    "think-data-native-backend": "packages/think-data-native-backend",
+    "device-pressure-measurement-native-backend": "packages/device-pressure-measurement-native-backend",
+    "resource-loader-native-backend": "packages/resource-loader-native-backend"
   }
 }

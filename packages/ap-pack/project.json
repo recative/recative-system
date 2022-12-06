@@ -12,7 +12,7 @@
     "publish": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
-        "command": "yarn npm publish --tolerate-republish",
+        "command": "yarn npm publish --tolerate-republish --access public",
         "cwd": "packages/ap-pack"
       },
       "dependsOn": [
@@ -26,7 +26,7 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/ap-pack/**/*.ts"]
+        "lintFilePatterns": ["packages/ap-pack/src/**/*.ts"]
       }
     },
     "test": {

@@ -1,23 +1,47 @@
-import EventTarget from '@ungap/event-target';
-
 import {
   lens,
   LensResult,
   isDotNotation,
-  ValidLensField,
   ValidDotNotation,
-  ValidSimpleLensField
+  ValidSimpleLensField,
+  DotNotation,
 } from '@recative/lens';
+import { Target } from '@recative/event-target';
 
 import * as Comparators from './Comparators';
 
 // eslint-disable-next-line import/no-cycle
-import { ResultSet } from './ResultSet';
+import { ResultSet, TransformResult } from './ResultSet';
 import { Operators } from './Operations';
 import { DynamicView } from './DynamicView';
+import { UniqueIndex } from './UniqueIndex';
+import {
+  CollectionDocumentDeleteEvent,
+  CollectionDocumentDeleteEventName,
+  CollectionDocumentInsertEvent,
+  CollectionDocumentInsertEventName,
+  CollectionDocumentPreInsertEvent,
+  CollectionDocumentPreInsertEventName,
+  CollectionDocumentPreUpdateEvent,
+  CollectionDocumentPreUpdateEventName,
+  CollectionDocumentUpdateEvent,
+  CollectionDocumentUpdateEventName,
+  ErrorEvent,
+  ErrorEventName,
+  ICollectionDocumentDeleteEventDetail,
+  ICollectionDocumentInsertEventDetail,
+  ICollectionDocumentPreInsertEventDetail,
+  ICollectionDocumentPreUpdateEventDetail,
+  ICollectionDocumentUpdateEventDetail,
+  IErrorEventDetail,
+  WarnEventName,
+} from './Events';
+import { sub, mean, parseBase10, standardDeviation } from './utils/math';
 
-import type { IQuery } from './typings';
+import type { IQuery, JoinKeyFunction } from './typings';
 import type { Operator } from './Operations';
+import type { TransformRequest } from './ResultSet';
+import type { IDynamicViewOptions } from './DynamicView';
 
 import { delay } from './utils/delay';
 import { hasOwn } from './utils/hasOwn';
@@ -25,13 +49,6 @@ import { clone, CloneMethod } from './utils/clone';
 import { freeze, deepFreeze, unFreeze } from './utils/freeze';
 import { ensureMetadata, IDocumentMetadata } from './utils/ensureMetadata';
 import { isObservable, observe, suspenseObserve } from './utils/observe';
-
-import type { TransformRequest } from './ResultSet';
-import type { IDynamicViewOptions } from './DynamicView';
-// eslint-disable-next-line import/no-cycle
-import { CollectionDocumentDeleteEvent, ErrorEvent } from './Events';
-import { sub, mean, parseBase10, standardDeviation } from './utils/math';
-import { UniqueIndex } from './UniqueIndex';
 
 export interface ICollectionChange<T extends object> {
   name: string;
@@ -81,9 +98,9 @@ const NO_OP = (...x: unknown[]): unknown => {
  *        by default.
  */
 export interface ICollectionOptions<T> {
-  unique: (keyof T)[];
+  unique: DotNotation<T>[];
   exact: string[];
-  indices: (keyof T)[];
+  indices: DotNotation<T>[];
   adaptiveBinaryIndices: boolean;
   transactional: boolean;
   asyncListeners: boolean;
@@ -113,17 +130,13 @@ export const DEFAULT_COLLECTION_OPTIONS = {
   clone: false,
   cloneMethod: CloneMethod.ParseStringify,
   serializableIndices: true,
-  disableFreeze: true
+  disableFreeze: true,
 };
 
 export interface ICollectionSummary {
   name: string;
   type: string;
   count: number;
-}
-
-export interface IDeleteEventDetail<T> {
-  target: T;
 }
 
 export interface IWarningEventDetail {
@@ -137,7 +150,7 @@ export interface IConfigureCollectionOptions {
 export enum CollectionOperation {
   Update = 'U',
   Remove = 'R',
-  Insert = 'I'
+  Insert = 'I',
 }
 
 export interface ITtlStatus {
@@ -201,6 +214,16 @@ export interface ICollectionCommitLog<T> {
   data: T;
 }
 
+export interface ICollectionEvents<T> {
+  'pre-insert': ICollectionDocumentPreInsertEventDetail<T>;
+  insert: ICollectionDocumentInsertEventDetail<T>;
+  'pre-update': ICollectionDocumentPreUpdateEventDetail<T>;
+  update: ICollectionDocumentUpdateEventDetail<T>;
+  error: IErrorEventDetail;
+  delete: ICollectionDocumentDeleteEventDetail<T>;
+  warn: IWarningEventDetail;
+}
+
 /**
  * Collection class that handles documents of same type
  *
@@ -209,7 +232,17 @@ export interface ICollectionCommitLog<T> {
  *        configuration object
  * @see {@link Database#addCollection} for normal creation of collections
  */
-export class Collection<T extends object> extends EventTarget {
+export class Collection<T extends object> extends Target<
+  [
+    typeof CollectionDocumentPreInsertEventName,
+    typeof CollectionDocumentInsertEventName,
+    typeof CollectionDocumentPreUpdateEventName,
+    typeof CollectionDocumentUpdateEventName,
+    typeof CollectionDocumentDeleteEventName,
+    typeof ErrorEventName,
+    typeof WarnEventName
+  ]
+> {
   options: ICollectionOptions<T>;
 
   /**
@@ -231,7 +264,7 @@ export class Collection<T extends object> extends EventTarget {
     // @ts-ignore: Let's fix this later
     unique: {} as Record<UniqueIndex<string>>,
     // @ts-ignore: Let's fix this later
-    exact: {} as Record<string, ExactIndex<string>>
+    exact: {} as Record<string, ExactIndex<string>>,
   };
 
   createTime = Date.now();
@@ -348,7 +381,7 @@ export class Collection<T extends object> extends EventTarget {
   readonly ttl: ITtlStatus = {
     age: null,
     ttlInterval: null,
-    daemon: null
+    daemon: null,
   };
 
   /**
@@ -371,17 +404,20 @@ export class Collection<T extends object> extends EventTarget {
   protected consoleWrapper = {
     log: NO_OP,
     warn: NO_OP,
-    error: NO_OP
+    error: NO_OP,
   };
 
   isIncremental = false;
 
-  constructor(public name: string, options?: Partial<ICollectionOptions<T>>) {
+  constructor(
+    public name: string = 'Collection',
+    options?: Partial<ICollectionOptions<T>>
+  ) {
     super();
 
     this.options = {
       ...DEFAULT_COLLECTION_OPTIONS,
-      ...options
+      ...options,
     };
 
     this.objType = name;
@@ -419,6 +455,8 @@ export class Collection<T extends object> extends EventTarget {
 
     this.disableFreeze = this.options.disableFreeze;
 
+    this.chain = this.chain.bind(this);
+
     if (this.disableChangesApi) {
       this.disableDeltaChangesApi = true;
     }
@@ -430,12 +468,14 @@ export class Collection<T extends object> extends EventTarget {
       this.ensureIndex(this.options.indices[i]);
     }
 
-    const handleDeleteEvent = ((event: CustomEvent<IDeleteEventDetail<T>>) => {
+    const handleDeleteEvent = ((
+      event: CustomEvent<ICollectionDocumentDeleteEventDetail<T>>
+    ) => {
       if (!this.disableChangesApi) {
         this.createChange(
           this.name,
           CollectionOperation.Remove,
-          event.detail.target
+          event.detail.document
         );
       }
     }) as unknown as EventListener;
@@ -555,7 +595,7 @@ export class Collection<T extends object> extends EventTarget {
       object:
         operation === 'U' && !this.disableDeltaChangesApi
           ? this.getChangeDelta(newObject, oldObject)
-          : JSON.parse(JSON.stringify(newObject))
+          : JSON.parse(JSON.stringify(newObject)),
     });
   };
 
@@ -697,7 +737,7 @@ export class Collection<T extends object> extends EventTarget {
       query.push(object);
     }
     return {
-      $and: query
+      $and: query,
     } as IQuery<T>;
   };
 
@@ -807,7 +847,7 @@ export class Collection<T extends object> extends EventTarget {
     const index: IBinaryIndex<number> = {
       name: property,
       dirty: true,
-      values: this.prepareFullDocIndex()
+      values: this.prepareFullDocIndex(),
     };
     this.binaryIndices[property] = index;
 
@@ -864,7 +904,7 @@ export class Collection<T extends object> extends EventTarget {
       randomSampling: false,
       randomSamplingFactor: 0.1,
       repair: false,
-      ...options
+      ...options,
     };
 
     const results = [];
@@ -909,7 +949,7 @@ export class Collection<T extends object> extends EventTarget {
 
   checkIndex = (
     property: keyof T,
-    options?: Partial<ICheckCollectionIndexOptions>,  
+    options?: Partial<ICheckCollectionIndexOptions>,
     usingDotNotation?: boolean
   ) => {
     const internalOptions = { ...options };
@@ -1061,20 +1101,12 @@ export class Collection<T extends object> extends EventTarget {
     return valid;
   };
 
-  getBinaryIndexValues = <P extends ValidSimpleLensField>(
-    property: P
-  ): LensResult<T, P, true>[] => {
+  getBinaryIndexValues = (property: ValidSimpleLensField): unknown[] => {
     const indexValues = this.binaryIndices[property].values;
-    const result: LensResult<T, P, true>[] = [];
+    const result: unknown[] = [];
 
     for (let i = 0; i < indexValues.length; i += 1) {
-      result.push(
-        lens(
-          this.data[indexValues[i]],
-          property,
-          true
-        ) as LensResult<T, P, true>
-      );
+      result.push(lens(this.data[indexValues[i]], property, true) as unknown);
     }
 
     return result;
@@ -1105,7 +1137,7 @@ export class Collection<T extends object> extends EventTarget {
     }
 
     // if index already existed, (re)loading it will likely cause collisions, rebuild always
-    const newIndex = new UniqueIndex<T, P>(field);
+    const newIndex = new UniqueIndex<T>(field);
     this.constraints.unique[field] = newIndex;
 
     for (let i = 0; i < this.data.length; i += 1) {
@@ -1189,7 +1221,10 @@ export class Collection<T extends object> extends EventTarget {
    *
    * const results = progenyView.data();
    */
-  addDynamicView = (name: string, options?: Partial<IDynamicViewOptions>) => {
+  addDynamicView = (
+    name: string = '',
+    options?: Partial<IDynamicViewOptions>
+  ) => {
     const dynamicView = new DynamicView(this, name, options);
     this.dynamicViews.push(dynamicView);
 
@@ -1235,7 +1270,9 @@ export class Collection<T extends object> extends EventTarget {
    */
   findAndUpdate = (
     filterObject: IQuery<T> | FilterFunction<T>,
-    updateFunction: (x: T & ICollectionDocument) => T & ICollectionDocument
+    updateFunction: (
+      x: T & ICollectionDocument
+    ) => (T & ICollectionDocument) | void
   ) => {
     if (typeof filterObject === 'function') {
       return this.updateWhere(
@@ -1284,9 +1321,16 @@ export class Collection<T extends object> extends EventTarget {
    * // alternatively, insert array of documents
    * users.insert([{ name: 'Thor', age: 35}, { name: 'Loki', age: 30}]);
    */
-  insert(documents: T, overrideAdaptiveIndices?: boolean): T;
-  insert(documents: T[], overrideAdaptiveIndices?: boolean): T[];
-  insert(documents: T | T[], overrideAdaptiveIndices?: boolean) {
+  insert(
+    documents: T | T[],
+    overrideAdaptiveIndices?: boolean
+  ): T & ICollectionDocument;
+  insert(
+    documents: T[],
+    overrideAdaptiveIndices?: boolean
+  ): (T & ICollectionDocument)[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  insert(documents: any, overrideAdaptiveIndices?: boolean) {
     if (!Array.isArray(documents)) {
       return this.insertOne(documents);
     }
@@ -1309,9 +1353,7 @@ export class Collection<T extends object> extends EventTarget {
 
     let results: (T & ICollectionDocument)[] = [];
     try {
-      this.dispatchEvent(
-        new CustomEvent('pre-insert', { detail: { document: documents } })
-      );
+      this.dispatchEvent(new CollectionDocumentPreInsertEvent(documents));
 
       for (let i = 0; i < documents.length; i += 1) {
         const document = this.insertOne(documents[i], true);
@@ -1329,9 +1371,7 @@ export class Collection<T extends object> extends EventTarget {
 
     // at the 'batch' level, if clone option is true then emitted docs are
     // clones
-    this.dispatchEvent(
-      new CustomEvent('insert', { detail: { documents: results } })
-    );
+    this.dispatchEvent(new CollectionDocumentInsertEvent(results));
 
     // if clone option is set, clone return values
     results = this.cloneObjects ? clone(results, this.cloneMethod) : results;
@@ -1374,7 +1414,7 @@ export class Collection<T extends object> extends EventTarget {
       if (typeof clonedDocument.meta === 'undefined') {
         clonedDocument.meta = {
           revision: 0,
-          created: 0
+          created: 0,
         };
       } else if (!this.disableFreeze) {
         clonedDocument.meta = unFreeze(clonedDocument.meta);
@@ -1386,7 +1426,7 @@ export class Collection<T extends object> extends EventTarget {
     // database itself listens to add meta
     if (!bulkInsert) {
       this.dispatchEvent(
-        new CustomEvent('pre-insert', { detail: { document } })
+        new CustomEvent('pre-insert', { detail: { documents: [document] } })
       );
     }
 
@@ -1416,7 +1456,7 @@ export class Collection<T extends object> extends EventTarget {
 
     if (!bulkInsert) {
       this.dispatchEvent(
-        new CustomEvent('insert', { detail: { document: result } })
+        new CustomEvent('insert', { detail: { documents: [result] } })
       );
     }
 
@@ -1443,7 +1483,7 @@ export class Collection<T extends object> extends EventTarget {
     this.dirty = true;
     this.constraints = {
       unique: {},
-      exact: {}
+      exact: {},
     };
 
     // if removing indices entirely
@@ -1467,7 +1507,9 @@ export class Collection<T extends object> extends EventTarget {
    *
    * @param {object} document - document to update within the collection
    */
-  update = (document: T & ICollectionDocument) => {
+  update = (
+    document: (T & ICollectionDocument) | (T & ICollectionDocument)[]
+  ) => {
     if (Array.isArray(document)) {
       // if not cloning, disable adaptive binary indices for the duration of the
       // batch update, followed by lazy rebuild and re-enabling adaptive indices
@@ -1517,13 +1559,11 @@ export class Collection<T extends object> extends EventTarget {
       // reference
       let newInternal =
         this.cloneObjects ||
-          (!this.disableDeltaChangesApi && this.disableFreeze)
+        (!this.disableDeltaChangesApi && this.disableFreeze)
           ? clone(document, this.cloneMethod)
           : document;
 
-      this.dispatchEvent(
-        new CustomEvent('pre-update', { detail: { document } })
-      );
+      this.dispatchEvent(new CollectionDocumentPreUpdateEvent(document));
 
       this.uniqueNames.forEach((key) => {
         this.getUniqueIndex(key, true).update(oldDocument, newInternal);
@@ -1592,12 +1632,7 @@ export class Collection<T extends object> extends EventTarget {
       }
 
       this.dispatchEvent(
-        new CustomEvent('update', {
-          detail: {
-            newDocument,
-            oldDocument
-          }
-        })
+        new CollectionDocumentUpdateEvent(newDocument, oldDocument)
       );
       return newDocument;
     } catch (error) {
@@ -1633,15 +1668,13 @@ export class Collection<T extends object> extends EventTarget {
       this.startTransaction();
 
       if (
-        typeof this.maxId !== 'number'
-        || Number.isNaN(this.maxId)
-        || !Number.isFinite(this.maxId)
+        typeof this.maxId !== 'number' ||
+        Number.isNaN(this.maxId) ||
+        !Number.isFinite(this.maxId)
       ) {
-        this.maxId = (
-          this.data?.length
-            ? Math.max(...this.data.map((x) => x.$loki))
-            : 0
-        ) + 1;
+        this.maxId =
+          (this.data?.length ? Math.max(...this.data.map((x) => x.$loki)) : 0) +
+          1;
       } else {
         this.maxId += 1;
       }
@@ -1712,14 +1745,18 @@ export class Collection<T extends object> extends EventTarget {
    */
   updateWhere = (
     filterFunction: FilterFunction<T>,
-    updateFunction: (x: T & ICollectionDocument) => T & ICollectionDocument
+    updateFunction: (
+      x: T & ICollectionDocument
+    ) => (T & ICollectionDocument) | void
   ) => {
     const results = this.where(filterFunction);
 
     try {
       for (let i = 0; i < results.length; i += 1) {
         const document = updateFunction(results[i]);
-        this.update(document);
+        if (document) {
+          this.update(document);
+        }
       }
     } catch (error) {
       this.rollback();
@@ -1907,6 +1944,7 @@ export class Collection<T extends object> extends EventTarget {
       | (T & ICollectionDocument)
       | number
       | ((T & ICollectionDocument) | number)[]
+      | null
   ) => {
     if (!this.idIndex) {
       throw new TypeError(
@@ -1931,7 +1969,7 @@ export class Collection<T extends object> extends EventTarget {
 
     if (Array.isArray(internalDocument)) {
       this.removeBatch(internalDocument);
-      return;
+      return null;
     }
 
     if (!hasOwn(internalDocument, '$loki')) {
@@ -2085,7 +2123,11 @@ export class Collection<T extends object> extends EventTarget {
     binaryIndexName: K,
     usingDotNotation?: D
   ) => {
-    const value = lens(this.data[dataPosition], binaryIndexName, usingDotNotation);
+    const value = lens(
+      this.data[dataPosition],
+      binaryIndexName,
+      usingDotNotation
+    );
     const index = this.binaryIndices[binaryIndexName].values;
 
     if (value === undefined || value === null) {
@@ -2095,7 +2137,8 @@ export class Collection<T extends object> extends EventTarget {
     // i think calculateRange can probably be moved to collection
     // as it doesn't seem to need resultset.  need to verify
     const range = this.calculateRange(
-      '$eq', binaryIndexName,
+      '$eq',
+      binaryIndexName,
       value as LensResult<T, K, D>,
       usingDotNotation
     );
@@ -2124,10 +2167,13 @@ export class Collection<T extends object> extends EventTarget {
    * @param dataPosition : coll.data array index/position
    * @param binaryIndexName : index to search for dataPosition in
    */
-  adaptiveBinaryIndexInsert = <K extends ValidSimpleLensField, D extends boolean>(
+  adaptiveBinaryIndexInsert = <
+    K extends ValidSimpleLensField,
+    D extends boolean
+  >(
     dataPosition: number,
     binaryIndexName: K,
-    usingDotNotation?: D,
+    usingDotNotation?: D
   ) => {
     const index = this.binaryIndices[binaryIndexName].values;
     let value = lens(
@@ -2139,22 +2185,18 @@ export class Collection<T extends object> extends EventTarget {
     // If you are inserting a javascript Date value into a binary index, convert
     // to epoch time
     if (this.serializableIndices === true && value instanceof Date) {
-      value = lens(
-        this.data[dataPosition],
-        binaryIndexName,
-        usingDotNotation
-      );
+      value = lens(this.data[dataPosition], binaryIndexName, usingDotNotation);
     }
 
     const indexPosition =
       index.length === 0 || value === undefined || value === null
         ? 0
         : this.calculateRangeStart(
-          binaryIndexName,
-          value as LensResult<T, K, D>,
-          true,
-          usingDotNotation
-        );
+            binaryIndexName,
+            value as LensResult<T, K, D>,
+            true,
+            usingDotNotation
+          );
 
     // insert new data index into our binary index at the proper sorted location
     // for relevant property calculated by `indexPosition`.
@@ -2313,7 +2355,7 @@ export class Collection<T extends object> extends EventTarget {
     property: ValidSimpleLensField,
     value: LensResult<T, P, D>,
     adaptive?: boolean,
-    usingDotNotation?: boolean
+    usingDotNotation?: D
   ) => {
     const { data } = this;
     const index = this.binaryIndices[property].values;
@@ -2374,7 +2416,10 @@ export class Collection<T extends object> extends EventTarget {
    * a value (which may or may not yet exist) this will find the final position
    * of that upper range value.
    */
-  private calculateRangeEnd = <K extends ValidSimpleLensField, D extends boolean>(
+  private calculateRangeEnd = <
+    K extends ValidSimpleLensField,
+    D extends boolean
+  >(
     property: K,
     value: LensResult<T, K, D>,
     usingDotNotation?: D
@@ -2757,16 +2802,20 @@ export class Collection<T extends object> extends EventTarget {
    * @returns First matching document, or null if none
    * @memberof Collection
    */
-  findOne = (query: Partial<IQuery<T>> = {}) => {
+  findOne = (
+    query: Partial<IQuery<T>> = {}
+  ): (T & ICollectionDocument) | null => {
     // Instantiate ResultSet and exec find op passing firstOnly = true param
     const result = this.chain().find(query, true).data();
 
     if (Array.isArray(result) && result.length === 0) {
       return null;
     }
+
     if (!this.cloneObjects) {
       return result[0];
     }
+
     return clone(result[0], this.cloneMethod);
   };
 
@@ -2780,18 +2829,23 @@ export class Collection<T extends object> extends EventTarget {
    * @returns (this) resultset, or data array if any map or join-functions where
    *          called
    * */
-  chain = (
-    transform?: TransformRequest<T> | TransformRequest<T>[],
+  chain(): ResultSet<T>;
+  chain<Transform extends TransformRequest<T> | TransformRequest<T>[]>(
+    transform: TransformRequest<T> | TransformRequest<T>[],
     parameters?: Record<string, unknown>
-  ) => {
-    const resultSet = new ResultSet(this);
+  ): ResultSet<TransformResult<Transform>>;
+  chain(
+    transform?: TransformRequest<T> | TransformRequest<T>[] | undefined,
+    parameters?: Record<string, unknown>
+  ) {
+    const resultSet = new ResultSet<T>(this);
 
-    if (typeof transform === 'undefined') {
+    if (!transform) {
       return resultSet;
     }
 
     return resultSet.transform(transform, parameters);
-  };
+  }
 
   /**
    * Find method, api is similar to mongodb.
@@ -2800,7 +2854,7 @@ export class Collection<T extends object> extends EventTarget {
    * @param query - 'mongo-like' query object
    * @returns Array of matching documents
    * */
-  find = (query: IQuery<T>) => {
+  find = (query?: IQuery<T>): (T & ICollectionDocument)[] => {
     return this.chain().find(query).data();
   };
 
@@ -2889,14 +2943,14 @@ export class Collection<T extends object> extends EventTarget {
    *   return document.legs === 8;
    * });
    */
-  where = (filter: FilterFunction<T>) => {
+  where = (filter: FilterFunction<T>): (T & ICollectionDocument)[] => {
     // This is because chain could return any types of data, but it's not the
     // case here
     return (
       this.chain()
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .where(filter as any)
-        .data()
+        .data() as (T & ICollectionDocument)[]
     );
   };
 
@@ -2924,22 +2978,42 @@ export class Collection<T extends object> extends EventTarget {
    * @param dataOptions - options to data() before input to your map function
    * @returns Result of the mapping operation
    */
-  eqJoin = (
-    joinData: T[] | ResultSet<T> | Collection<T>,
-    leftJoinProperty: keyof T,
-    rightJoinProperty: keyof T,
-    mapFunction: (left: T, right: T) => T,
-    dataOptions: ICollectionEqJoinDataOptions
-  ) => {
+  eqJoin<R extends object>(
+    joinData: R[] | Collection<R> | ResultSet<R>,
+    leftJoinKey: keyof T | JoinKeyFunction<T>,
+    rightJoinKey: keyof R | JoinKeyFunction<R>
+  ): ResultSet<{ left: T; right: R }>;
+  eqJoin<R extends Partial<T>>(
+    joinData: R[] | Collection<R> | ResultSet<R>,
+    leftJoinKey: keyof T | JoinKeyFunction<T>,
+    rightJoinKey: keyof R | JoinKeyFunction<R>,
+    mapFunction?: ((left: T, right: R) => T) | undefined
+  ): ResultSet<T>;
+  eqJoin<R extends Partial<T>, R0 extends object = T>(
+    joinData: R[] | Collection<R> | ResultSet<R>,
+    leftJoinKey: keyof T | JoinKeyFunction<T>,
+    rightJoinKey: keyof R | JoinKeyFunction<R>,
+    mapFunction: (left: T, right: R) => R0
+  ): ResultSet<R0>;
+  eqJoin<R extends Partial<T>>(
+    joinData: R[] | Collection<R> | ResultSet<R>,
+    leftJoinKey: keyof T | JoinKeyFunction<T>,
+    rightJoinKey: keyof R | JoinKeyFunction<R>,
+    mapFunction: Function = (left: T, right: R) => ({
+      left,
+      right,
+    })
+  ) {
     // logic in ResultSet class
     return new ResultSet(this).eqJoin(
       joinData,
-      leftJoinProperty,
-      rightJoinProperty,
-      mapFunction,
-      dataOptions
-    );
-  };
+      leftJoinKey,
+      rightJoinKey,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mapFunction as any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ) as any;
+  }
 
   /* ------------------------+
   | Transaction methods     |
@@ -2997,7 +3071,7 @@ export class Collection<T extends object> extends EventTarget {
       this.commitLog.push({
         timestamp,
         message,
-        data: JSON.parse(JSON.stringify(stage[key]))
+        data: JSON.parse(JSON.stringify(stage[key])),
       });
     }
     this.stages[stageName] = {};
@@ -3006,7 +3080,7 @@ export class Collection<T extends object> extends EventTarget {
   /* ----------------+
   | Other utils     |
   +-----------------*/
-  extract = <K extends ValidLensField>(
+  extract = <K extends DotNotation<T>>(
     field: K
   ): LensResult<T & ICollectionDocument, K, ValidDotNotation<K>>[] => {
     const result: LensResult<
@@ -3021,20 +3095,20 @@ export class Collection<T extends object> extends EventTarget {
     return result;
   };
 
-  max = <K extends ValidLensField>(field: K) => {
+  max = <K extends DotNotation<T>>(field: K) => {
     return Math.max.apply(null, this.extract(field) as unknown as number[]);
   };
 
-  min = <K extends ValidLensField>(field: K) => {
+  min = <K extends DotNotation<T>>(field: K) => {
     return Math.min.apply(null, this.extract(field) as unknown as number[]);
   };
 
-  maxRecord = <K extends ValidLensField>(field: K) => {
+  maxRecord = <K extends DotNotation<T>>(field: K) => {
     const useDotNotation = isDotNotation(field);
 
     const result = {
       index: null as number | null,
-      value: undefined as number | undefined
+      value: undefined as number | undefined,
     };
 
     let max: number | undefined;
@@ -3061,12 +3135,12 @@ export class Collection<T extends object> extends EventTarget {
     return result;
   };
 
-  minRecord = <K extends ValidLensField>(field: K) => {
+  minRecord = <K extends DotNotation<T>>(field: K) => {
     const useDotNotation = isDotNotation(field);
 
     const result = {
       index: null as number | null,
-      value: undefined as number | undefined
+      value: undefined as number | undefined,
     };
 
     let min: number | undefined;
@@ -3093,7 +3167,7 @@ export class Collection<T extends object> extends EventTarget {
     return result;
   };
 
-  extractNumerical = <K extends ValidLensField>(field: K) => {
+  extractNumerical = <K extends DotNotation<T>>(field: K) => {
     return (this.extract(field) as string[]).map(parseBase10).filter((n) => {
       return !Number.isNaN(n);
     });
@@ -3105,17 +3179,17 @@ export class Collection<T extends object> extends EventTarget {
    * @param field - name of property in docs to average
    * @returns average of property in all docs in the collection
    */
-  mean = <K extends ValidLensField>(field: K) => {
+  mean = <K extends DotNotation<T>>(field: K) => {
     return mean(this.extractNumerical(field));
   };
 
-  standardDeviation = <K extends ValidLensField>(field: K) => {
+  standardDeviation = <K extends DotNotation<T>>(field: K) => {
     return standardDeviation(this.extractNumerical(field));
   };
 
   sd = this.standardDeviation;
 
-  mode = <K extends ValidLensField>(field: K) => {
+  mode = <K extends DotNotation<T>>(field: K) => {
     const resultMap = new Map<unknown, number>();
     const data = this.extract(field);
 
@@ -3146,7 +3220,7 @@ export class Collection<T extends object> extends EventTarget {
     return mode;
   };
 
-  median = <K extends keyof T>(field: string | K) => {
+  median = <K extends DotNotation<T>>(field: K) => {
     const values = this.extractNumerical(field);
     values.sort(sub);
 

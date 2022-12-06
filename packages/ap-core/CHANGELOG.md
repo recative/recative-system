@@ -1,5 +1,11 @@
 # @recative/ap-core
 
+## 0.7.0
+
+### Minor Changes
+
+- 1891485: feat: Add a new asyncDataSource hook
+
 ## 0.6.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@recative/definitions",
-  "version": "0.5.2",
+  "version": "0.5.4",
   "source": "src/index.ts",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -12,7 +12,8 @@
     "build": "yarn tsc --project ./commonjs.tsconfig.json && yarn tsc --project ./esmodule.tsconfig.json"
   },
   "devDependencies": {
-    "@types/xxhashjs": "^0.2.2"
+    "@types/xxhashjs": "^0.2.2",
+    "typescript": "4.9.3"
   },
   "files": [
     "dist/**/*"
@@ -21,7 +22,6 @@
     "last 1 Chrome versions"
   ],
   "dependencies": {
-    "typescript": "4.8.2",
     "xxhashjs": "^0.2.2"
   }
 }

@@ -13,7 +13,7 @@
     "publish": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
-        "command": "yarn npm publish --tolerate-republish",
+        "command": "yarn npm publish --tolerate-republish --access public",
         "cwd": "packages/database"
       },
       "dependsOn": [
@@ -25,20 +25,14 @@
     },
     "lint": {
       "executor": "@nrwl/linter:eslint",
-      "outputs": [
-        "{options.outputFile}"
-      ],
+      "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": [
-          "packages/database/**/*.ts"
-        ]
+        "lintFilePatterns": ["packages/database/src/**/*.ts"]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": [
-        "coverage/packages/database"
-      ],
+      "outputs": ["coverage/packages/database"],
       "options": {
         "jestConfig": "packages/database/jest.config.ts",
         "passWithNoTests": true

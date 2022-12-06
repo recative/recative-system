@@ -1,5 +1,53 @@
 # Changelog
 
+## 11.0.11
+
+### Patch Changes
+
+- Updated dependencies [79e1738]
+- Updated dependencies [dbbd9e2]
+- Updated dependencies [5d560ae]
+  - @recative/core-manager@0.11.5
+  - @recative/act-player@0.5.10
+
+## 11.0.10
+
+### Patch Changes
+
+- Updated dependencies [4ce5fb0]
+  - @recative/act-player@0.5.9
+
+## 11.0.9
+
+### Patch Changes
+
+- Updated dependencies [834fa9e]
+  - @recative/act-player@0.5.8
+
+## 11.0.8
+
+### Patch Changes
+
+- Updated dependencies [feb76e9]
+  - @recative/act-player@0.5.7
+  - @recative/definitions@0.5.4
+
+## 11.0.7
+
+### Patch Changes
+
+- Updated dependencies
+  - @recative/act-player@0.5.6
+
+## 11.0.6
+
+### Patch Changes
+
+- Updated dependencies [cc4afe9]
+- Updated dependencies [84db3a1]
+  - @recative/act-player@0.5.5
+  - @recative/definitions@0.5.3
+
 ## 11.0.5
 
 ### Patch Changes
