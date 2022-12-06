@@ -128,10 +128,16 @@ export const connectToHost = (context: IComponentContext) => {
       },
       play() {
         if (localStorage.getItem('@recative/ap-pack/debug-lifecycle')) {
-          document.body.classList.remove('recative-not-ready');
-          document.body.classList.remove('recative-ready');
-          document.body.classList.remove('recative-pause');
-          document.body.classList.add('recative-play');
+          document
+            .querySelector('#overlay')
+            ?.classList.remove('recative-not-ready');
+          document
+            .querySelector('#overlay')
+            ?.classList.remove('recative-ready');
+          document
+            .querySelector('#overlay')
+            ?.classList.remove('recative-pause');
+          document.querySelector('#overlay')?.classList.add('recative-play');
         }
 
         context.store.register(ACT_POINT_PLAYING);
@@ -141,10 +147,14 @@ export const connectToHost = (context: IComponentContext) => {
       },
       pause() {
         if (localStorage.getItem('@recative/ap-pack/debug-lifecycle')) {
-          document.body.classList.remove('recative-not-ready');
-          document.body.classList.remove('recative-ready');
-          document.body.classList.remove('recative-play');
-          document.body.classList.add('recative-pause');
+          document
+            .querySelector('#overlay')
+            ?.classList.remove('recative-not-ready');
+          document
+            .querySelector('#overlay')
+            ?.classList.remove('recative-ready');
+          document.querySelector('#overlay')?.classList.remove('recative-play');
+          document.querySelector('#overlay')?.classList.add('recative-pause');
         }
 
         context.store.register(ACT_POINT_PLAYING);
