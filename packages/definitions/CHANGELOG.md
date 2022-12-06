@@ -1,11 +1,5 @@
 # Changelog
 
-## 0.5.3
-
-### Patch Changes
-
-- cc4afe9: feat: Supports extension configurations for assets
-
 ## 0.5.2
 
 ### Patch Changes
