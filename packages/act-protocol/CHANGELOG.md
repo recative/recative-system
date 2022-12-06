@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.10
+
+### Patch Changes
+
+- 7f8a4f0: feat: Add a life cycle debugging flag
+- Updated dependencies [cc4afe9]
+  - @recative/definitions@0.5.3
+
 ## 0.2.9
 
 ### Patch Changes

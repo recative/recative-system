@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.5
+
+### Patch Changes
+
+- 7f8a4f0: feat: Add a life cycle debugging flag
+- Updated dependencies [cc4afe9]
+  - @recative/act-player@0.5.5
+
 ## 0.4.4
 
 ### Patch Changes

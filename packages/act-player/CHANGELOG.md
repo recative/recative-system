@@ -1,5 +1,15 @@
 # @recative/act-player
 
+## 0.5.5
+
+### Patch Changes
+
+- cc4afe9: feat: Supports extension configurations for assets
+- Updated dependencies [cc4afe9]
+- Updated dependencies [7f8a4f0]
+  - @recative/definitions@0.5.3
+  - @recative/act-protocol@0.2.10
+
 ## 0.5.4
 
 ### Patch Changes
