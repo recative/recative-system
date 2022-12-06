@@ -43,7 +43,7 @@ export class DialogManager {
 
   readonly dialogMessageList = computed(
     this.internalDialogMessageList,
-    (dialog) => dialog,
+    (dialog) => dialog
   );
 
   readonly dialogActions = atom<DialogActions | null>(null);
@@ -52,7 +52,7 @@ export class DialogManager {
     private components: Map<string, Partial<ComponentFunctions>>,
     private episodeData: OpenPromise<InternalEpisodeData>,
     private ensureNotDestroyed: () => void,
-    private envVariable: ReadableAtom<IEnvVariable>,
+    private envVariable: ReadableAtom<IEnvVariable>
   ) {}
 
   readonly triggerDialogAction = (action: DialogActionTriggerResponse) => {
@@ -102,7 +102,7 @@ export class DialogManager {
               resourceEntries,
               // eslint-disable-next-line no-underscore-dangle
               this.envVariable.get().__smartResourceConfig,
-              { lang: 10, device: 1, screen: 1 },
+              { lang: 10, device: 1, screen: 1 }
             );
           } else {
             throw new Error('Invalid group type');
@@ -119,7 +119,10 @@ export class DialogManager {
           throw new Error('Resource file not found');
         }
 
-        const url = selectUrl(resourceFile.url, episodeData.preferredUploaders).next().value;
+        const url = selectUrl(
+          resourceFile.url,
+          episodeData.preferredUploaders
+        ).next().value;
 
         if (!url) {
           throw new Error('No resource URL found');

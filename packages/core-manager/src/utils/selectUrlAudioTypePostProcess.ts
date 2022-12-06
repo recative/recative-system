@@ -7,7 +7,7 @@ export interface RawAudioClipResponse {
 }
 
 export const selectUrlAudioTypePostProcess = async (
-  url: string,
+  url: string
 ): Promise<RawAudioClipResponse | null> => {
   try {
     const audioStation = getGlobalAudioStation();

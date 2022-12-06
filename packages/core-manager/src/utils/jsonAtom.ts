@@ -8,7 +8,9 @@ export const jsonAtom = <T>(key: string, defaultValue: T) => {
   });
   const realJsonAtom = atom(rawJsonAtom.get() ?? defaultValue);
   const { set } = realJsonAtom;
-  rawJsonAtom.subscribe((x) => { set(x ?? defaultValue); });
+  rawJsonAtom.subscribe((x) => {
+    set(x ?? defaultValue);
+  });
   realJsonAtom.set = (value) => {
     rawJsonAtom.set(value ?? defaultValue);
   };

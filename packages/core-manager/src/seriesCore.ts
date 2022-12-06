@@ -78,12 +78,12 @@ export interface IEpisodeMetadata {
 }
 
 export class SeriesCore<
-  T extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable,
+  T extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable
 > {
   private internalCurrentEpisodeCore = atom<EpisodeCore<T> | null>(null);
 
   readonly currentEpisodeCore = readonlyAtom<EpisodeCore<T> | null>(
-    this.internalCurrentEpisodeCore,
+    this.internalCurrentEpisodeCore
   );
 
   private destroyPromise: Promise<void> | null = null;
@@ -95,7 +95,7 @@ export class SeriesCore<
   readonly userData = atom<IUserRelatedEnvVariable | undefined>();
 
   readonly userImplementedFunction = atom<Partial<RawUserImplementedFunctions>>(
-    {},
+    {}
   );
 
   readonly eventTarget = new EventTarget() as SeriesCoreEventTarget;
@@ -121,7 +121,7 @@ export class SeriesCore<
   };
 
   private updateUserImplementedFunction = (
-    userImplementedFunction: Partial<RawUserImplementedFunctions>,
+    userImplementedFunction: Partial<RawUserImplementedFunctions>
   ) => {
     this.ensureNotDestroying();
     const episodeCore = this.currentEpisodeCore.get();
@@ -142,7 +142,7 @@ export class SeriesCore<
     episodeId: string,
     forceReload?: boolean,
     assetOrder?: number,
-    assetTime?: number,
+    assetTime?: number
   ) => {
     this.ensureNotDestroying();
     if (this.switching) {
@@ -162,12 +162,15 @@ export class SeriesCore<
         const metadata = await metadataPromise;
         oldEpisodeCore.seek(
           metadata.initialAssetStatus?.order ?? 0,
-          metadata.initialAssetStatus?.time ?? 0,
+          metadata.initialAssetStatus?.time ?? 0
         );
         this.switching = false;
         return oldEpisodeCore;
       }
-      if (this.config.shouldBlockEpisodeDestroy?.(oldEpisodeId, episodeId) ?? false) {
+      if (
+        this.config.shouldBlockEpisodeDestroy?.(oldEpisodeId, episodeId) ??
+        false
+      ) {
         this.episodeDestroyUnblocked = new OpenPromise<void>();
         await this.episodeDestroyUnblocked;
       }
@@ -195,11 +198,11 @@ export class SeriesCore<
     const userData = this.userData.get();
     if (userData !== undefined) {
       newEpisodeCore.envVariableManager.userRelatedEnvVariableAtom.set(
-        userData,
+        userData
       );
     }
     newEpisodeCore.setUserImplementedFunctions(
-      this.userImplementedFunction.get(),
+      this.userImplementedFunction.get()
     );
     this.internalCurrentEpisodeCore.set(newEpisodeCore);
     newEpisodeCore.eventTarget.addEventListener('segmentStart', (event) => {
@@ -209,7 +212,7 @@ export class SeriesCore<
             episodeId,
             segment: event.detail,
           },
-        }),
+        })
       );
     });
     newEpisodeCore.eventTarget.addEventListener('segmentEnd', (event) => {
@@ -219,7 +222,7 @@ export class SeriesCore<
             episodeId,
             segment: event.detail,
           },
-        }),
+        })
       );
     });
     newEpisodeCore.eventTarget.addEventListener('end', () => {
@@ -228,16 +231,19 @@ export class SeriesCore<
           detail: {
             episodeId,
           },
-        }),
+        })
       );
     });
     newEpisodeCore.initializeEpisode(metadata.episodeData);
 
     this.eventTarget.dispatchEvent(
-      new CustomEvent('initialized', { detail: { episodeId } }),
+      new CustomEvent('initialized', { detail: { episodeId } })
     );
 
-    if (this.config.shouldBlockEpisodePlay?.(oldEpisodeId, episodeId) ?? false) {
+    if (
+      this.config.shouldBlockEpisodePlay?.(oldEpisodeId, episodeId) ??
+      false
+    ) {
       this.episodePlayUnblocked = externalDependency;
     } else {
       externalDependency.resolve();

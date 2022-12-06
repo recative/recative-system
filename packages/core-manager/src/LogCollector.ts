@@ -19,27 +19,28 @@ interface ILogItem {
   message: string;
 }
 
-const formatMessage = (messages: unknown[]) => messages.map((message) => {
-  if (Object.prototype.toString.call(message) === '[object Error]') {
-    const EMessage = message as Error;
-    return `${EMessage.name}: ${EMessage.message}`;
-  }
-  if (typeof message === 'object') {
-    return JSON.stringify(message, null, 2);
-  }
-  if (typeof message === 'undefined') {
-    return 'undefined';
-  }
-  if (
-    typeof message === 'string'
-      || typeof message === 'number'
-      || typeof message === 'boolean'
-      || typeof message === 'function'
-  ) {
-    return message.toString();
-  }
-  return Object.prototype.toString.call(message);
-});
+const formatMessage = (messages: unknown[]) =>
+  messages.map((message) => {
+    if (Object.prototype.toString.call(message) === '[object Error]') {
+      const EMessage = message as Error;
+      return `${EMessage.name}: ${EMessage.message}`;
+    }
+    if (typeof message === 'object') {
+      return JSON.stringify(message, null, 2);
+    }
+    if (typeof message === 'undefined') {
+      return 'undefined';
+    }
+    if (
+      typeof message === 'string' ||
+      typeof message === 'number' ||
+      typeof message === 'boolean' ||
+      typeof message === 'function'
+    ) {
+      return message.toString();
+    }
+    return Object.prototype.toString.call(message);
+  });
 
 export interface Logger {
   (...messages: unknown[]): void;
@@ -64,7 +65,7 @@ export class LogCollector extends EventTarget {
   Logger = (
     domain: string,
     level: LogLevel = LogLevel.Debug,
-    debugLogger = this.debugLogger.extend(domain),
+    debugLogger = this.debugLogger.extend(domain)
   ) => {
     const logger: Logger = (...messages: unknown[]) => {
       // @ts-ignore: Incorrect typing, maybe
@@ -85,7 +86,7 @@ export class LogCollector extends EventTarget {
       const result = this.Logger(
         nestedDomain,
         nestedLevel,
-        debugLogger.extend(nestedDomain),
+        debugLogger.extend(nestedDomain)
       );
 
       result.domain = [...logger.domain, nestedDomain];

@@ -46,7 +46,6 @@ export class SubsequenceManager extends WithLogger {
     });
   }
 
-
   show() {
     this.showing = true;
     this.subsequences.forEach((subsequence) => {
@@ -65,7 +64,9 @@ export class SubsequenceManager extends WithLogger {
     this.destroyed = true;
     this.pause();
     await allSettled(
-      Array.from(this.subsequences.values()).map((subsequence) => subsequence.destroy()),
+      Array.from(this.subsequences.values()).map((subsequence) =>
+        subsequence.destroy()
+      )
     );
     this.subsequences.clear();
   }

@@ -14,7 +14,9 @@ export class RunTaskInDestroyedTaskQueueManagerError extends Error {
   name = 'RunTaskInDestroyedTaskQueueManager';
 
   constructor(taskId: string) {
-    super(`Task queue manager was destroyed, unable to execute tasks "${taskId}" registered inside the queue.`);
+    super(
+      `Task queue manager was destroyed, unable to execute tasks "${taskId}" registered inside the queue.`
+    );
   }
 }
 
@@ -33,10 +35,8 @@ export class TaskQueueManager {
 
   constructor(
     private instance: ContentInstance,
-    private instanceOptions: InstanceOption,
-  ) {
-
-  }
+    private instanceOptions: InstanceOption
+  ) {}
 
   requireQueuedTask(taskId: string) {
     if (this.tasks.has(taskId)) {

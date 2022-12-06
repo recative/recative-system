@@ -48,7 +48,7 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
     public readonly rawResourceList: IResourceItemForClient[],
     private trustedUploaders: string[],
     private core: EpisodeCore,
-    private enableGlobalCache = true,
+    private enableGlobalCache = true
   ) {
     super(cleanUpResourceListForClient(rawResourceList, true));
   }
@@ -68,30 +68,33 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
   getResourceByUrlMap = async <
     Result = string,
     PostProcess extends
-    | PostProcessCallback<Result, AdditionalData>
-    | PostProcessMagicWords = PostProcessMagicWords.Url,
-    AdditionalData = undefined,
-    >(
+      | PostProcessCallback<Result, AdditionalData>
+      | PostProcessMagicWords = PostProcessMagicWords.Url,
+    AdditionalData = undefined
+  >(
     urlMap: Record<string, string>,
     postProcess?: PostProcess,
     additionalData?: AdditionalData,
     taskId = 'client-side-selector-url-map',
     addToGlobalCache = false,
-    useSlowQueue = false,
+    useSlowQueue = false
   ): Promise<Result | null> => {
     if (postProcess === PostProcessMagicWords.Metadata) {
-      throw new TypeError('getResourceByUrlMap can not return a resource metadata');
+      throw new TypeError(
+        'getResourceByUrlMap can not return a resource metadata'
+      );
     }
 
     let finalUrlMap = urlMap;
 
     if (REDIRECT_URL_EXTENSION_ID in urlMap) {
-      const nextId = urlMap[REDIRECT_URL_EXTENSION_ID]
-        .replace('redirect://', '')
-        .split('#')[0];
+      const nextId = urlMap[REDIRECT_URL_EXTENSION_ID].replace(
+        'redirect://',
+        ''
+      ).split('#')[0];
       const nextResource = await this.getResourceById<
-      Result,
-      PostProcessMagicWords.Metadata
+        Result,
+        PostProcessMagicWords.Metadata
       >(
         nextId,
         null,
@@ -99,7 +102,7 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
         PostProcessMagicWords.Metadata,
         'file',
         useSlowQueue,
-        taskId,
+        taskId
       );
 
       if (!nextResource) {
@@ -120,7 +123,7 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
     // This function cache the url of try valid resource url.
     const wrappedPostProcess = (
       url: string,
-      internalAdditionalData?: AdditionalData,
+      internalAdditionalData?: AdditionalData
     ) => {
       cachedMap.set(encodedUrlMap, url);
       cachedPromise.resolve(url);
@@ -135,11 +138,11 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
     };
 
     // If the URL is cached.
-    const cache = this.cachedUrlMap.get(encodedUrlMap)
-                  ?? GLOBAL_CACHE.get(encodedUrlMap);
+    const cache =
+      this.cachedUrlMap.get(encodedUrlMap) ?? GLOBAL_CACHE.get(encodedUrlMap);
     if (cache) {
-      return Promise.resolve(cache).then(
-        (x) => wrappedPostProcess(x, additionalData),
+      return Promise.resolve(cache).then((x) =>
+        wrappedPostProcess(x, additionalData)
       );
     }
 
@@ -147,24 +150,28 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
 
     // If the URL is not cached.
     const task = new OpenPromise<Result | null>((resolve, reject) => {
-      const reportTryTask = !!localStorage.getItem('@recative/core-manager/report-resource-validation');
-      const logObject: Record<string, string> | undefined = reportTryTask ? {} : undefined;
+      const reportTryTask = !!localStorage.getItem(
+        '@recative/core-manager/report-resource-validation'
+      );
+      const logObject: Record<string, string> | undefined = reportTryTask
+        ? {}
+        : undefined;
       tryValidResourceUrl<
-      PostProcessCallback<Result, AdditionalData>,
-      Result,
-      AdditionalData
+        PostProcessCallback<Result, AdditionalData>,
+        Result,
+        AdditionalData
       >(
         selectUrl(
           finalUrlMap,
           this.core.getEpisodeData()!.preferredUploaders,
           this.core.resolution.get(),
-          logObject,
+          logObject
         ),
         wrappedPostProcess,
         additionalData,
         this.trustedUploaders,
         taskId,
-        logObject,
+        logObject
       )
         .then(resolve)
         .catch(reject)
@@ -175,7 +182,9 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
               .map((x) => `${x[0]}\t${x[1]}`)
               .join('\r\n');
 
-            const title = `${taskId}\r\n${new Array(taskId.length + 1).fill('=').join('')}\r\n\r\n`;
+            const title = `${taskId}\r\n${new Array(taskId.length + 1)
+              .fill('=')
+              .join('')}\r\n\r\n`;
             const header = 'plugin\tstatus\tresult\r\n';
             const sep = '-------\t-------\t-------\r\n';
 
@@ -211,28 +220,27 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
   getResourceByResourceDescription = <
     Result = string,
     PostProcess extends
-    | PostProcessCallback<Result, IResourceFileForClient>
-    | PostProcessMagicWords = PostProcessMagicWords.Url,
+      | PostProcessCallback<Result, IResourceFileForClient>
+      | PostProcessMagicWords = PostProcessMagicWords.Url
   >(
     resource: IDetailedResourceItemForClient,
     envConfig: Record<string, string> | null = null,
     weights?: Record<string, number>,
     postProcess?: PostProcess,
     useSlowQueue = false,
-    taskId = 'client-query',
-  ):Promise<
-  | null
-  | (
-    PostProcess extends PostProcessMagicWords.Metadata
-      ? IDetailedResourceItemForClient
-      : Result
-  )
+    taskId = 'client-query'
+  ): Promise<
+    | null
+    | (PostProcess extends PostProcessMagicWords.Metadata
+        ? IDetailedResourceItemForClient
+        : Result)
   > => {
     let finalResource: IDetailedResourceItemForClient | undefined;
 
     if (resource.type === 'group') {
       const trueEnvConfig = {
-        ...this.core.envVariableManager.envVariableAtom.get().__smartResourceConfig,
+        ...this.core.envVariableManager.envVariableAtom.get()
+          .__smartResourceConfig,
         ...envConfig,
       };
 
@@ -243,7 +251,7 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
         })),
         trueEnvConfig,
         weights,
-        taskId,
+        taskId
       );
 
       finalResource = this.filesById.get(matchedResource);
@@ -261,24 +269,23 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
       return Promise.resolve(finalResource ?? null) as any;
     }
 
-    const shouldCacheToGlobal = this.enableGlobalCache && (
-      !finalResource.episodeIds.length
-      || finalResource.cacheToHardDisk
-    );
+    const shouldCacheToGlobal =
+      this.enableGlobalCache &&
+      (!finalResource.episodeIds.length || finalResource.cacheToHardDisk);
 
     // type `PostProcess` is not PostProcessMagicWords.Metadata now
     return this.getResourceByUrlMap<
-    Result,
-    PostProcess,
-    IResourceFileForClient
+      Result,
+      PostProcess,
+      IResourceFileForClient
     >(
       finalResource.url,
       postProcess,
       finalResource,
       taskId,
       shouldCacheToGlobal,
-      useSlowQueue,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      useSlowQueue
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ) as any;
   };
 
@@ -302,8 +309,8 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
   getResourceById = <
     Result = string,
     PostProcess extends
-    | PostProcessCallback<Result, IResourceFileForClient>
-    | PostProcessMagicWords = PostProcessMagicWords.Url,
+      | PostProcessCallback<Result, IResourceFileForClient>
+      | PostProcessMagicWords = PostProcessMagicWords.Url
   >(
     id: string,
     envConfig: Record<string, string> | null = null,
@@ -311,39 +318,33 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
     postProcess?: PostProcess,
     resourceType?: 'group' | 'file',
     useSlowQueue = false,
-    taskId = `client-${id}`,
+    taskId = `client-${id}`
   ) => {
     const resource = this.queryItem(id, 'id', resourceType);
 
     if (!resource) return null;
 
-    return this.getResourceByResourceDescription<
-    Result,
-    PostProcess
-    >(
+    return this.getResourceByResourceDescription<Result, PostProcess>(
       resource,
       envConfig,
       weights,
       postProcess,
       useSlowQueue,
-      taskId,
+      taskId
     );
   };
 
   private queryItem = (
     query: string,
     searchBy: 'label' | 'id',
-    resourceType?: 'group' | 'file',
+    resourceType?: 'group' | 'file'
   ): IDetailedResourceItemForClient | undefined => {
-    const group = (
-      searchBy === 'label'
-        ? this.groupsByLabel
-        : this.groupsById
+    const group = (searchBy === 'label'
+      ? this.groupsByLabel
+      : this.groupsById
     ).get(query) as unknown as IDetailedResourceGroupForClient;
     const file = (
-      searchBy === 'label'
-        ? this.filesByLabel
-        : this.filesById
+      searchBy === 'label' ? this.filesByLabel : this.filesById
     ).get(query);
 
     let result: IDetailedResourceItemForClient | undefined;
@@ -369,7 +370,11 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
     }
 
     if (result && 'redirectTo' in result && result.redirectTo) {
-      return this.queryItem(result.redirectTo.split('#')[0], 'id', resourceType);
+      return this.queryItem(
+        result.redirectTo.split('#')[0],
+        'id',
+        resourceType
+      );
     }
 
     return result;
@@ -395,8 +400,8 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
   getResourceByLabel = <
     Result = string,
     PostProcess extends
-    | PostProcessCallback<Result, IResourceFileForClient>
-    | PostProcessMagicWords = PostProcessMagicWords.Url,
+      | PostProcessCallback<Result, IResourceFileForClient>
+      | PostProcessMagicWords = PostProcessMagicWords.Url
   >(
     label: string,
     envConfig: Record<string, string> | null = null,
@@ -404,7 +409,7 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
     postProcess?: PostProcess,
     resourceType?: 'group' | 'file',
     useSlowQueue = false,
-    taskId = `client-${label}`,
+    taskId = `client-${label}`
   ) => {
     const resource = this.queryItem(label, 'label', resourceType);
 
@@ -416,7 +421,7 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
       weights,
       postProcess,
       useSlowQueue,
-      taskId,
+      taskId
     );
   };
 
@@ -440,8 +445,8 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
   getResourceByQuery = <
     Result = string,
     PostProcess extends
-    | PostProcessCallback<Result, IResourceFileForClient>
-    | PostProcessMagicWords = PostProcessMagicWords.Url,
+      | PostProcessCallback<Result, IResourceFileForClient>
+      | PostProcessMagicWords = PostProcessMagicWords.Url
   >(
     query: string,
     queryType: 'label' | 'id',
@@ -450,7 +455,7 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
     postProcess?: PostProcess,
     resourceType?: 'group' | 'file',
     useSlowQueue = false,
-    taskId = `client-${query}`,
+    taskId = `client-${query}`
   ) => {
     if (queryType === 'label') {
       return this.getResourceByLabel<Result, PostProcess>(
@@ -460,7 +465,7 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
         postProcess,
         resourceType,
         useSlowQueue,
-        taskId,
+        taskId
       );
     }
     return this.getResourceById<Result, PostProcess>(
@@ -470,7 +475,7 @@ export class ResourceListForClient extends ResourceList<IDetailedResourceItemFor
       postProcess,
       resourceType,
       useSlowQueue,
-      taskId,
+      taskId
     );
   };
 }

@@ -10,7 +10,7 @@ export function* selectUrl(
   urlMap: Record<string, string>,
   preferredUploaders: string[],
   preferredResolution?: { width: number; height: number },
-  logObject: Record<string, string> | undefined = undefined,
+  logObject: Record<string, string> | undefined = undefined
 ) {
   const urlSpecs = preferredUploaders
     .map((uploader) => {
@@ -27,7 +27,7 @@ export function* selectUrl(
       ([, url]) =>
         // URL exists
         // eslint-disable-next-line implicit-arrow-linebreak
-        url !== undefined,
+        url !== undefined
     );
 
   if (!urlSpecs.length) {
@@ -87,7 +87,7 @@ export function* selectUrl(
         url: src,
         score: Math.min(
           preferredResolution.width - width,
-          preferredResolution.height - height,
+          preferredResolution.height - height
         ),
       }))
       .sort((a, b) => {

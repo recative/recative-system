@@ -26,7 +26,7 @@ export interface IEnvVariable {
 export const DEFAULT_LANGUAGE = 'en';
 
 export class EnvVariableManager<
-  T extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable,
+  T extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable
 > extends WithLogger {
   private browserRelatedEnvVariable = getBrowserRelatedEnvVariable();
 
@@ -41,12 +41,12 @@ export class EnvVariableManager<
   private screenSizeEnvVariableAtom = atom(getScreenSizeKeyword());
 
   private deviceTypeEnvVariableAtom = atom(
-    this.browserRelatedEnvVariable.isTouchScreen ? 'touch' : 'mouse',
+    this.browserRelatedEnvVariable.isTouchScreen ? 'touch' : 'mouse'
   );
 
   constructor(
     private languageAtom: WritableAtom<string>,
-    private additionalEnvVariableAtom: WritableAtom<T>,
+    private additionalEnvVariableAtom: WritableAtom<T>
   ) {
     super();
     this.envVariableAtom = computed(
@@ -68,7 +68,7 @@ export class EnvVariableManager<
             screen,
           },
         };
-      },
+      }
     );
 
     if (typeof window !== 'undefined') {

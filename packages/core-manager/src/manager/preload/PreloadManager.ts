@@ -1,7 +1,11 @@
 import debug from 'debug';
 import { atom } from 'nanostores';
 
-import { allSettled, OpenPromise, TimeSlicingQueue } from '@recative/open-promise';
+import {
+  allSettled,
+  OpenPromise,
+  TimeSlicingQueue,
+} from '@recative/open-promise';
 import {
   IResourceFileForClient,
   PreloadLevel,
@@ -28,7 +32,7 @@ export class PreloadManager {
 
   readonly nonBlockingResourceCacheScheduled = atom(false);
 
-  constructor(private core: EpisodeCore) { }
+  constructor(private core: EpisodeCore) {}
 
   private ensureEpisodeData = () => {
     const episodeData = this.core.getEpisodeData();
@@ -50,10 +54,15 @@ export class PreloadManager {
 
     const episodeData = this.ensureEpisodeData();
 
-    const resourceFiles = [...episodeData.resources.resourceFiles]
-      .filter(PreloadManager.blockingFileFilter);
+    const resourceFiles = [...episodeData.resources.resourceFiles].filter(
+      PreloadManager.blockingFileFilter
+    );
 
-    log(`Caching URL (${resourceFiles.length}): ${resourceFiles.map((x) => `${x.label} (${x.id.substring(0, 5)})`).join(', ')}`);
+    log(
+      `Caching URL (${resourceFiles.length}): ${resourceFiles
+        .map((x) => `${x.label} (${x.id.substring(0, 5)})`)
+        .join(', ')}`
+    );
     const tasks = resourceFiles
       .map((x) => episodeData.resources.getResourceById(x.id))
       .filter(isNotNullable);
@@ -74,39 +83,34 @@ export class PreloadManager {
   private fetchSingleFile = (
     resource: IResourceFileForClient,
     taskQueue: TimeSlicingQueue = this.core.fastTaskQueue,
-    reason = 'unknown',
+    reason = 'unknown'
   ) => {
     const episodeData = this.ensureEpisodeData();
     return episodeData.resources.getResourceById<
       string,
       PostProcessCallback<string, unknown>
-    >(
-      resource.id,
-      null,
-      undefined,
-      (url) => {
-        const task = new OpenPromise<string | null>((resolve) => {
-          log(`Preloading ${resource.label}(${resource.id}), reason: ${reason}`);
-          this.core.resourceLoader
-            .fetchResource({
-              id: resource.id,
-              url,
-              cacheLevel: resource.cacheToHardDisk
-                ? ResourceLoaderCacheLevel.Idb
-                : ResourceLoaderCacheLevel.FetchCache,
-            })
-            .then(() => resolve(url))
-            .catch(() => resolve(null))
-            .finally(() => {
-              log(`Preload ${resource.label}(${resource.id}) finished`);
-            });
-        }, true);
+    >(resource.id, null, undefined, (url) => {
+      const task = new OpenPromise<string | null>((resolve) => {
+        log(`Preloading ${resource.label}(${resource.id}), reason: ${reason}`);
+        this.core.resourceLoader
+          .fetchResource({
+            id: resource.id,
+            url,
+            cacheLevel: resource.cacheToHardDisk
+              ? ResourceLoaderCacheLevel.Idb
+              : ResourceLoaderCacheLevel.FetchCache,
+          })
+          .then(() => resolve(url))
+          .catch(() => resolve(null))
+          .finally(() => {
+            log(`Preload ${resource.label}(${resource.id}) finished`);
+          });
+      }, true);
 
-        taskQueue.add(task, `fetch-resource:${reason}:${resource.label}`);
+      taskQueue.add(task, `fetch-resource:${reason}:${resource.label}`);
 
-        return task.promise;
-      },
-    );
+      return task.promise;
+    });
   };
 
   private static blockingFileFilter = (resource: IResourceFileForClient) => {
@@ -133,10 +137,15 @@ export class PreloadManager {
     const episodeData = this.ensureEpisodeData();
     const resourceFiles = [...episodeData.resources.resourceFiles];
 
-    const blockingResources = resourceFiles
-      .filter(PreloadManager.blockingFileFilter);
+    const blockingResources = resourceFiles.filter(
+      PreloadManager.blockingFileFilter
+    );
 
-    log(`Blocking resources (${blockingResources.length}): ${blockingResources.map((x) => `${x.label} (${x.id.substring(0, 5)})`).join(', ')}`);
+    log(
+      `Blocking resources (${blockingResources.length}): ${blockingResources
+        .map((x) => `${x.label} (${x.id.substring(0, 5)})`)
+        .join(', ')}`
+    );
     const tasks = resourceFiles
       .filter(PreloadManager.blockingFileFilter)
       .map((x) => this.fetchSingleFile(x, this.core.fastTaskQueue, 'blocking'))
@@ -167,7 +176,9 @@ export class PreloadManager {
 
     const tasks = resourceFiles
       .filter(PreloadManager.nonBlockingFileFilter)
-      .map((x) => this.fetchSingleFile(x, this.core.slowTaskQueue, 'non-blocking'))
+      .map((x) =>
+        this.fetchSingleFile(x, this.core.slowTaskQueue, 'non-blocking')
+      )
       .filter(isNotNullable);
 
     await allSettled(tasks);

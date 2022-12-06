@@ -1,6 +1,4 @@
-import {
-  atom, computed, ReadableAtom, WritableAtom,
-} from 'nanostores';
+import { atom, computed, ReadableAtom, WritableAtom } from 'nanostores';
 
 export const readonlyAtom = <T>(input: ReadableAtom<T>) => {
   return computed(input, (v) => v);
@@ -22,7 +20,8 @@ export interface ThrottledAtomReturnType<T> {
 }
 
 export const throttledAtom = <T>(
-  input: ReadableAtom<T>, interval: number = 200,
+  input: ReadableAtom<T>,
+  interval: number = 200
 ): ThrottledAtomReturnType<T> => {
   const output = atom(input.get());
   let lastUpdateTime = performance.now();
@@ -38,6 +37,11 @@ export const throttledAtom = <T>(
   return { atom: readonlyAtom(output), forceUpdate: update };
 };
 
-export const connect = <T>(source: ReadableAtom<T>, target: WritableAtom<T>) => {
-  source.subscribe((x) => { target.set(x); });
+export const connect = <T>(
+  source: ReadableAtom<T>,
+  target: WritableAtom<T>
+) => {
+  source.subscribe((x) => {
+    target.set(x);
+  });
 };

@@ -9,12 +9,15 @@ import {
 import { BGMSpec } from '../audio/bgmManager';
 import type { BGMStateSpec, InternalEpisodeData } from '../types';
 
-import { RawAudioClipResponse, selectUrlAudioTypePostProcess } from './selectUrlAudioTypePostProcess';
+import {
+  RawAudioClipResponse,
+  selectUrlAudioTypePostProcess,
+} from './selectUrlAudioTypePostProcess';
 import { PostProcessCallback } from './tryValidResourceUrl';
 
 export const filterBGMState = (
   states: Set<ManagedCoreState<unknown>>,
-  episodeData: InternalEpisodeData | null,
+  episodeData: InternalEpisodeData | null
 ): BGMSpec[] => {
   if (!episodeData) {
     return [];
@@ -36,14 +39,9 @@ export const filterBGMState = (
   const spec: BGMSpec[] = [];
   bgmStates.forEach((state, id) => {
     const audioClipPromise = episodeData.resources.getResourceById<
-    RawAudioClipResponse,
-    PostProcessCallback<RawAudioClipResponse, unknown>
-    >(
-      state.resourceId,
-      null,
-      undefined,
-      selectUrlAudioTypePostProcess,
-    );
+      RawAudioClipResponse,
+      PostProcessCallback<RawAudioClipResponse, unknown>
+    >(state.resourceId, null, undefined, selectUrlAudioTypePostProcess);
 
     if (!audioClipPromise) {
       return;
@@ -77,7 +75,7 @@ export const convertSRTToStatesWithPrefix = (srt: string, prefix: string) => {
         number,
         number,
         number,
-        number,
+        number
       ];
       return (
         numbers[3] + 1000 * (numbers[2] + 60 * (numbers[1] + 60 * numbers[0]))

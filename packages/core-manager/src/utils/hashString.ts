@@ -7,7 +7,7 @@ export const hashString = (x: string) => {
 
   for (i = 0; i < x.length; i += 1) {
     chr = x.charCodeAt(i);
-    hash = ((hash << 5) - hash) + chr;
+    hash = (hash << 5) - hash + chr;
     hash |= 0;
   }
 

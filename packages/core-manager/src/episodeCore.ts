@@ -86,7 +86,7 @@ export type EpisodeCoreEventTarget = EventTarget & {
 };
 
 export class EpisodeCore<
-  AdditionalEnvVariable extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable,
+  AdditionalEnvVariable extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable
 > {
   private logCollector = new LogCollector('core');
 
@@ -110,7 +110,7 @@ export class EpisodeCore<
     6,
     8,
     this.fastTaskQueue,
-    'slow',
+    'slow'
   );
 
   private components = new Map<string, Partial<ComponentFunctions>>();
@@ -126,7 +126,8 @@ export class EpisodeCore<
 
   private episodeData: OpenPromise<InternalEpisodeData>;
 
-  private userImplementedFunctions: Partial<RawUserImplementedFunctions> | null = null;
+  private userImplementedFunctions: Partial<RawUserImplementedFunctions> | null =
+    null;
 
   // Dialog Related
 
@@ -160,7 +161,7 @@ export class EpisodeCore<
 
   readonly stageEmpty = computed(
     this.showingContentCount,
-    (count) => count === 0,
+    (count) => count === 0
   );
 
   private internalAutoplayReady = atom(this.audioStation.activated);
@@ -198,7 +199,7 @@ export class EpisodeCore<
   private internalSegmentsDuration = atom<number[]>([]);
 
   readonly segmentsDuration = readonlyAtom<number[]>(
-    this.internalSegmentsDuration,
+    this.internalSegmentsDuration
   );
 
   private internalProgress = atom<Progress>({ segment: 0, progress: 0 });
@@ -234,14 +235,17 @@ export class EpisodeCore<
     this.episodeId = config.episodeId;
     this.contentLanguage = jsonAtom(
       '@recative/core-manager/content-lang',
-      config.defaultContentLanguage ?? DEFAULT_LANGUAGE,
+      config.defaultContentLanguage ?? DEFAULT_LANGUAGE
     );
     this.subtitleLanguage = jsonAtom(
       '@recative/core-manager/subtitle-lang',
-      config.defaultSubtitleLanguage ?? DEFAULT_LANGUAGE,
+      config.defaultSubtitleLanguage ?? DEFAULT_LANGUAGE
     );
 
-    this.managedCoreStateManager.addEventListener("event", this.handleManagedCoreState)
+    this.managedCoreStateManager.addEventListener(
+      'event',
+      this.handleManagedCoreState
+    );
 
     this.criticalComponentReady = new OpenPromise();
     this.episodeData = new OpenPromise();
@@ -253,21 +257,21 @@ export class EpisodeCore<
     });
     this.internalManagedCoreState.subscribe((state) => {
       this.bgmManager.setBGMState(
-        filterBGMState(state, this.episodeData.resolvedValue),
+        filterBGMState(state, this.episodeData.resolvedValue)
       );
     });
 
     this.additionalEnvVariable = atom(config.initialEnvVariable);
     this.envVariableManager = new EnvVariableManager<AdditionalEnvVariable>(
       this.contentLanguage,
-      this.additionalEnvVariable,
+      this.additionalEnvVariable
     );
 
     this.dialogManager = new DialogManager(
       this.components,
       this.episodeData,
       this.ensureNotDestroyed,
-      this.envVariableManager.envVariableAtom,
+      this.envVariableManager.envVariableAtom
     );
     this.fastTaskQueue.run();
     this.slowTaskQueue.run();
@@ -284,7 +288,7 @@ export class EpisodeCore<
       resources: new ResourceListForClient(
         data.resources,
         data.trustedUploaders ?? [],
-        this,
+        this
       ),
       preloader: new PreloadManager(this),
     };
@@ -334,8 +338,8 @@ export class EpisodeCore<
     performance.measure(
       'launchPreloader',
       'launchPreloader-start',
-      'launchPreloader-end',
-    )
+      'launchPreloader-end'
+    );
     episodeData.preloader.fetchNonBlockingResources();
   }
 
@@ -359,7 +363,7 @@ export class EpisodeCore<
       dependencyLoadedPromise: allSettled([
         preload,
         Promise.resolve(config.externalDependency),
-      ]).then(() => { }),
+      ]).then(() => {}),
       audioStation: this.audioStation,
       managedCoreStateManager: this.managedCoreStateManager,
       volume: this.volume.get(),
@@ -378,8 +382,8 @@ export class EpisodeCore<
         const blocker = new Set<string>();
         this.components.forEach((component, name) => {
           if (
-            component.shouldBlockContentSwitch?.(lastSegment, currentSegment)
-            ?? false
+            component.shouldBlockContentSwitch?.(lastSegment, currentSegment) ??
+            false
           ) {
             blocker.add(name);
           }
@@ -390,11 +394,11 @@ export class EpisodeCore<
     this.ready = true;
     this.mainSequence.eventTarget.addEventListener(
       'segmentStart',
-      this.forwardEvent,
+      this.forwardEvent
     );
     this.mainSequence.eventTarget.addEventListener(
       'segmentEnd',
-      this.forwardEvent,
+      this.forwardEvent
     );
     this.mainSequence.eventTarget.addEventListener('end', this.forwardEvent);
     this.mainSequence.firstAssetInstanceReady.then(() => {
@@ -416,7 +420,7 @@ export class EpisodeCore<
     this.mainSequence.switchToFirstContent();
     this.updateManagedCoreStateLoop();
 
-    if ((config.attemptAutoplay ?? true)) {
+    if (config.attemptAutoplay ?? true) {
       this.play();
     }
   }
@@ -426,24 +430,24 @@ export class EpisodeCore<
   };
 
   private handleManagedCoreState = (event: Event) => {
-    const { trigger } = (event as ManagedCoreStateTriggerEvent).detail
-    this.logTrigger(`ManagedCoreStateEvent`, trigger)
+    const { trigger } = (event as ManagedCoreStateTriggerEvent).detail;
+    this.logTrigger(`ManagedCoreStateEvent`, trigger);
     if (trigger.managedStateExtensionId === PAUSE_CORE_STATE_EXTENSION_ID) {
       // TODO: pause the specific sequence/audio
       this.pause();
       // Make sure the video stop at the specific time
       if (this.mainSequence!.progress.get().progress - trigger.time > 33) {
-        this.seek(this.mainSequence!.currentSegment, trigger.time + 1)
+        this.seek(this.mainSequence!.currentSegment, trigger.time + 1);
       }
     }
-  }
+  };
 
   private async internalDestroy() {
     this.logMain('Core start to destroy');
     this.updateState();
     if (
-      this.episodeData.state === OpenPromiseState.Idle
-      || this.episodeData.state === OpenPromiseState.Pending
+      this.episodeData.state === OpenPromiseState.Idle ||
+      this.episodeData.state === OpenPromiseState.Pending
     ) {
       this.episodeData.resolve({
         assets: [],
@@ -464,14 +468,17 @@ export class EpisodeCore<
     this.contentInstances.clear();
     this.userImplementedFunctions = null;
     if (
-      this.criticalComponentReady.state === OpenPromiseState.Idle
-      || this.criticalComponentReady.state === OpenPromiseState.Pending
+      this.criticalComponentReady.state === OpenPromiseState.Idle ||
+      this.criticalComponentReady.state === OpenPromiseState.Pending
     ) {
       this.criticalComponentReady.resolve();
     }
 
     this.envVariableManager.destroy();
-    this.managedCoreStateManager.removeEventListener("event", this.handleManagedCoreState)
+    this.managedCoreStateManager.removeEventListener(
+      'event',
+      this.handleManagedCoreState
+    );
     this.destroyed = true;
     this.updateState();
     this.logMain('Core fully destroyed');
@@ -515,8 +522,8 @@ export class EpisodeCore<
 
   private updateManagedCoreState() {
     if (
-      this.mainSequence?.updateManagedCoreState()
-      || this.managedCoreStateDirty
+      this.mainSequence?.updateManagedCoreState() ||
+      this.managedCoreStateDirty
     ) {
       const { state } = this.managedCoreStateManager;
       this.internalManagedCoreState.set(state);
@@ -564,22 +571,24 @@ export class EpisodeCore<
       return instance;
     };
 
-    const forwardToInstanceFunctions = <
-      N extends keyof ContentInstance,
-      K extends keyof ContentInstance[N],
-      F extends Extract<ContentInstance[N][K], (...args: never[]) => unknown>,
-    >(
-      feature: N,
-      key: K,
-    ) => (...args: Parameters<F>) => {
-      this.ensureNotDestroyed();
-      const instance = getInstanceFromComponentName();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (instance[feature][key] as any)?.call(
-        instance[feature],
-        ...args,
-      ) as ReturnType<F>;
-    };
+    const forwardToInstanceFunctions =
+      <
+        N extends keyof ContentInstance,
+        K extends keyof ContentInstance[N],
+        F extends Extract<ContentInstance[N][K], (...args: never[]) => unknown>
+      >(
+        feature: N,
+        key: K
+      ) =>
+      (...args: Parameters<F>) => {
+        this.ensureNotDestroyed();
+        const instance = getInstanceFromComponentName();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (instance[feature][key] as any)?.call(
+          instance[feature],
+          ...args
+        ) as ReturnType<F>;
+      };
 
     return {
       core: this,
@@ -623,23 +632,23 @@ export class EpisodeCore<
           audioClip:
             'resourceLabel' in x
               ? this.getEpisodeData()!.resources.getResourceByLabel<
-                AudioElementInit,
-                PostProcessCallback<AudioElementInit, IResourceFileForClient>
-              >(
-                x.resourceLabel,
-                addAudioEnv,
-                addAudioWeight,
-                selectUrlAudioElementInitPostProcess,
-              )
+                  AudioElementInit,
+                  PostProcessCallback<AudioElementInit, IResourceFileForClient>
+                >(
+                  x.resourceLabel,
+                  addAudioEnv,
+                  addAudioWeight,
+                  selectUrlAudioElementInitPostProcess
+                )
               : this.getEpisodeData()!.resources.getResourceById<
-                AudioElementInit,
-                PostProcessCallback<AudioElementInit, IResourceFileForClient>
-              >(
-                x.resourceId,
-                addAudioEnv,
-                addAudioWeight,
-                selectUrlAudioElementInitPostProcess,
-              ),
+                  AudioElementInit,
+                  PostProcessCallback<AudioElementInit, IResourceFileForClient>
+                >(
+                  x.resourceId,
+                  addAudioEnv,
+                  addAudioWeight,
+                  selectUrlAudioElementInitPostProcess
+                ),
         }));
 
         const subtitleEnv = {
@@ -657,15 +666,15 @@ export class EpisodeCore<
           url:
             'resourceLabel' in x
               ? this.getEpisodeData()!.resources.getResourceByLabel(
-                x.resourceLabel,
-                subtitleEnv,
-                subtitleWeight,
-              )
+                  x.resourceLabel,
+                  subtitleEnv,
+                  subtitleWeight
+                )
               : this.getEpisodeData()!.resources.getResourceById(
-                x.resourceId,
-                subtitleEnv,
-                subtitleWeight,
-              ),
+                  x.resourceId,
+                  subtitleEnv,
+                  subtitleWeight
+                ),
         }));
 
         this.logAudio('Adding audio files', audios.map((x) => x.id).join(', '));
@@ -676,7 +685,7 @@ export class EpisodeCore<
               return instance.audioHost.addAudio(id, audioClipPromise);
             }
             return Promise.resolve();
-          }),
+          })
         );
 
         instance.audioHost.addSrtSubtitleToAudio(
@@ -691,9 +700,9 @@ export class EpisodeCore<
                 }
 
                 return null;
-              }),
+              })
             )
-          ).filter(isNotNullable),
+          ).filter(isNotNullable)
         );
       },
       playAudio: forwardToInstanceFunctions('audioHost', 'play'),
@@ -704,13 +713,13 @@ export class EpisodeCore<
       addSubtitleToAudio: (subtitles: AdditionalSubtitleDefine[]) => {
         forwardToInstanceFunctions(
           'audioHost',
-          'addSubtitleToAudio',
+          'addSubtitleToAudio'
         )(subtitles);
         this.managedCoreStateDirty = true;
       },
       updateAudioVolume: forwardToInstanceFunctions(
         'audioHost',
-        'updateVolume',
+        'updateVolume'
       ),
       updateAudioLoop: forwardToInstanceFunctions('audioHost', 'updateLoop'),
       updateContentState: (state: ContentState) => {
@@ -725,29 +734,34 @@ export class EpisodeCore<
       },
       reportProgress: forwardToInstanceFunctions(
         'progressReporter',
-        'reportProgress',
+        'reportProgress'
       ),
       reportStuck: forwardToInstanceFunctions(
         'progressReporter',
-        'reportStuck',
+        'reportStuck'
       ),
       reportUnstuck: forwardToInstanceFunctions(
         'progressReporter',
-        'reportUnstuck',
+        'reportUnstuck'
       ),
       setManagedCoreStateTriggers: (triggers) => {
         getInstanceFromComponentName().additionalManagedCoreStateList.updateTriggers(
-          triggers,
+          triggers
         );
         this.managedCoreStateDirty = true;
       },
-      getManagedCoreState: () => getInstanceFromComponentName().additionalManagedCoreStateList.state,
+      getManagedCoreState: () =>
+        getInstanceFromComponentName().additionalManagedCoreStateList.state,
       addManagedCoreState: (state: ManagedCoreState<unknown>) => {
-        getInstanceFromComponentName().additionalManagedCoreStateList.addState(state);
+        getInstanceFromComponentName().additionalManagedCoreStateList.addState(
+          state
+        );
         this.managedCoreStateDirty = true;
       },
       deleteManagedCoreState: (state: ManagedCoreState<unknown>) => {
-        getInstanceFromComponentName().additionalManagedCoreStateList.deleteState(state);
+        getInstanceFromComponentName().additionalManagedCoreStateList.deleteState(
+          state
+        );
         this.managedCoreStateDirty = true;
       },
       clearCoreState: () => {
@@ -762,19 +776,19 @@ export class EpisodeCore<
       },
       createSequence: forwardToInstanceFunctions(
         'subsequenceManager',
-        'createSequence',
+        'createSequence'
       ),
       startSequence: forwardToInstanceFunctions(
         'subsequenceManager',
-        'startSequence',
+        'startSequence'
       ),
       showSequence: forwardToInstanceFunctions(
         'subsequenceManager',
-        'showSequence',
+        'showSequence'
       ),
       hideSequence: forwardToInstanceFunctions(
         'subsequenceManager',
-        'hideSequence',
+        'hideSequence'
       ),
       log: this.logComponent.extend(name),
     };
@@ -782,13 +796,13 @@ export class EpisodeCore<
 
   registerComponent(
     name: string,
-    component: Partial<ComponentFunctions>,
+    component: Partial<ComponentFunctions>
   ): CoreFunctions {
     this.ensureNotDestroyed();
     if (this.components.has(name)) {
       this.logComponent(
-        `Another component with the name "${name}" have been registered,`
-        + ' it will be unregistered to allow the new component to be registered',
+        `Another component with the name "${name}" have been registered,` +
+          ' it will be unregistered to allow the new component to be registered'
       );
       this.unregisterComponent(name);
     }
@@ -796,8 +810,8 @@ export class EpisodeCore<
     this.logComponent(`Component ${name} registered`);
 
     if (
-      this.criticalComponentReady.state === OpenPromiseState.Idle
-      || this.criticalComponentReady.state === OpenPromiseState.Pending
+      this.criticalComponentReady.state === OpenPromiseState.Idle ||
+      this.criticalComponentReady.state === OpenPromiseState.Pending
     ) {
       // TODO: more
       if (this.components.has('stage')) {
