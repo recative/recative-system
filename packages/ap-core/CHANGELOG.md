@@ -1,5 +1,11 @@
 # @recative/ap-core
 
+## 0.7.3
+
+### Patch Changes
+
+- 4ef58d0: fix: Styling of the debugging overlay
+
 ## 0.7.2
 
 ### Patch Changes

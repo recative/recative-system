@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.6
+
+### Patch Changes
+
+- 4ef58d0: fix: Styling of the debugging overlay
+
 ## 0.4.5
 
 ### Patch Changes
