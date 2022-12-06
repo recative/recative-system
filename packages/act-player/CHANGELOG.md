@@ -1,5 +1,13 @@
 # @recative/act-player
 
+## 0.5.11
+
+### Patch Changes
+
+- 56bb94e: fix: Video sync should use timestamp of progress
+- Updated dependencies [07dc4e0]
+  - @recative/act-protocol@0.2.10
+
 ## 0.5.10
 
 ### Patch Changes

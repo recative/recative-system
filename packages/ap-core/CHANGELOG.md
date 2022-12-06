@@ -1,5 +1,13 @@
 # @recative/ap-core
 
+## 0.7.1
+
+### Patch Changes
+
+- 07dc4e0: feat: Add a life cycle debugging flag
+- Updated dependencies [07dc4e0]
+  - @recative/act-protocol@0.2.10
+
 ## 0.7.0
 
 ### Minor Changes

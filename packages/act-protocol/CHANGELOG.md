@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.10
+
+### Patch Changes
+
+- 07dc4e0: feat: Add a life cycle debugging flag
+
 ## 0.2.9
 
 ### Patch Changes
