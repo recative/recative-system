@@ -83,27 +83,30 @@ export const PRELOAD_ACT_POINT = EventDefinition();
 export const DIALOG_AREA_OPENED = EventDefinition();
 export const DIALOG_AREA_CLOSED = EventDefinition();
 export const DIALOG_MESSAGE = EventDefinition<IDialogMessageEventDetail>();
-export const DIALOG_ACTION_TRIGGERED = EventDefinition<DialogActionTriggerResponse>();
+export const DIALOG_ACTION_TRIGGERED =
+  EventDefinition<DialogActionTriggerResponse>();
 export const ENV_VARIABLE_UPDATE = EventDefinition<IEnvVariable>();
 export const FINISHED_PAYMENT = EventDefinition<IFinishedPaymentEventDetail>();
-export const VIDEO_MODAL_CLOSED = EventDefinition<IVideoModalClosedEventDetail>();
-export const RESOLUTION_UPDATE = EventDefinition<IResolutionUpdateEventDetail>();
+export const VIDEO_MODAL_CLOSED =
+  EventDefinition<IVideoModalClosedEventDetail>();
+export const RESOLUTION_UPDATE =
+  EventDefinition<IResolutionUpdateEventDetail>();
 export const TEXT_FIELD_UPDATE = EventDefinition<IUpdateTextFieldEventDetail>();
 export const SEQUENCE_ENDED = EventDefinition<ISequenceEndedEventDetail>();
 
 export const ACT_POINT_SHOWN = AtomDefinition(false);
 export const ACT_POINT_PLAYING = AtomDefinition(false);
 export const ENV_VARIABLE_STORE = FunctionalAtomDefinition<null | IEnvVariable>(
-  () => null,
+  () => null
 );
 export const INITIALIZE_TASK_STORE = FunctionalAtomDefinition(
-  () => new Map<string, OpenPromise<void>>(),
+  () => new Map<string, OpenPromise<void>>()
 );
 
 export const connectToHost = (context: IComponentContext) => {
   const contentFunctions: ContentFunctions = new Proxy(
     {
-      requestHeartbeat() { },
+      requestHeartbeat() {},
       // preload() {
       //   context.eventTarget.fire(PRELOAD_ACT_POINT);
       // },
@@ -124,11 +127,11 @@ export const connectToHost = (context: IComponentContext) => {
         context.eventTarget.fire(DESTROY);
       },
       play() {
-        if (localStorage.getItem("@recative/ap-pack/debug-lifecycle")) {
+        if (localStorage.getItem('@recative/ap-pack/debug-lifecycle')) {
           document.body.classList.remove('recative-not-ready');
           document.body.classList.remove('recative-ready');
           document.body.classList.remove('recative-pause');
-          document.body.classList.add('recative-paly');
+          document.body.classList.add('recative-play');
         }
 
         context.store.register(ACT_POINT_PLAYING);
@@ -137,10 +140,10 @@ export const connectToHost = (context: IComponentContext) => {
         context.eventTarget.fire(PLAY);
       },
       pause() {
-        if (localStorage.getItem("@recative/ap-pack/debug-lifecycle")) {
+        if (localStorage.getItem('@recative/ap-pack/debug-lifecycle')) {
           document.body.classList.remove('recative-not-ready');
           document.body.classList.remove('recative-ready');
-          document.body.classList.remove('recative-paly');
+          document.body.classList.remove('recative-play');
           document.body.classList.add('recative-pause');
         }
 
@@ -171,11 +174,11 @@ export const connectToHost = (context: IComponentContext) => {
         context.store.register(ENV_VARIABLE_STORE);
         context.store.setValue(
           ENV_VARIABLE_STORE,
-          env as unknown as IEnvVariable,
+          env as unknown as IEnvVariable
         );
         context.eventTarget.fire(
           ENV_VARIABLE_UPDATE,
-          env as unknown as IEnvVariable,
+          env as unknown as IEnvVariable
         );
       },
       updateResolution(x: number, y: number) {
@@ -184,7 +187,7 @@ export const connectToHost = (context: IComponentContext) => {
       finishPayment(type: string) {
         context.eventTarget.fire(FINISHED_PAYMENT, { type });
       },
-      videoModalClosed() { },
+      videoModalClosed() {},
       async runQueuedTask(taskId: string) {
         const initializeTasks = context.store.getValue(INITIALIZE_TASK_STORE);
         const initializeTask = initializeTasks.get(taskId);
@@ -207,7 +210,7 @@ export const connectToHost = (context: IComponentContext) => {
         logProtocol(`Client function accessed: %c${prop}`, 'color: #64DD17');
         return target[prop];
       },
-    },
+    }
   );
 
   return contentFunctions;
