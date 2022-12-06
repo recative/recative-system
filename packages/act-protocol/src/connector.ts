@@ -23,7 +23,14 @@ export const createHostConnector = (
     log: { sendLocalStack: true, type: 'pretty' },
   });
 
-  return { connector, channel, destroy };
+  return {
+    connector,
+    channel,
+    destroy,
+    get destroyed() {
+      return destroyed
+    }
+  };
 };
 
 export const createClientConnector = (functions: ContentFunctions) => {
@@ -42,5 +49,12 @@ export const createClientConnector = (functions: ContentFunctions) => {
     log: { sendLocalStack: true, type: 'pretty' },
   });
 
-  return { connector, channel, destroy };
+  return {
+    connector,
+    channel,
+    destroy,
+    get destroyed() {
+      return destroyed
+    }
+  };
 };

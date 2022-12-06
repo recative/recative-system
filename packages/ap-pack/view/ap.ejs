@@ -14,6 +14,23 @@
   <meta name="application-name" content="AP Preview">
   <meta name="msapplication-TileColor" content="#376e85">
   <meta name="theme-color" content="#203A43">
+  <style>
+    .recative-not-ready {
+      box-shadow: inset 0px 0px 0px 12px #F44336;
+    }
+
+    .recative-ready {
+      box-shadow: inset 0px 0px 0px 12px #FF9800;
+    }
+
+    .recative-play {
+      box-shadow: inset 0px 0px 0px 12px #4CAF50;
+    }
+
+    .recative-pause {
+      box-shadow: inset 0px 0px 0px 12px #673AB7;
+    }
+  </style>
   <title>AP Preview</title>
 </head>
 
@@ -21,6 +38,9 @@
   <div id="root"></div>
 </body>
 <script>
+  if (localStorage.getItem("@recative/ap-pack/debug-lifecycle")) {
+    document.body.classList.add('recative-not-ready');
+  }
   let emergencyChannel;
   let serviceWorkerRegistered = false;
   let serviceWorkerRegisterError = false;
@@ -90,6 +110,11 @@
           document.body.appendChild(document.createElement("script")).src =
             file;
         });
+
+        if (localStorage.getItem("@recative/ap-pack/debug-lifecycle")) {
+          document.body.classList.remove('recative-not-ready');
+          document.body.classList.add('recative-ready');
+        }
       });
     })
   };

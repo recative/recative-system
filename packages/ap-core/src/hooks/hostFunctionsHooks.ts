@@ -4,13 +4,12 @@ import { createClientConnector } from '@recative/act-protocol';
 import { createActPointConnector } from '@recative/resource-bridge';
 import type { ServiceWorkerFunctions } from '@recative/resource-bridge';
 
-import { FunctionalAtomDefinition } from '../core/AtomStore';
 import { connectToHost } from '../core/protocol';
+import { FunctionalAtomDefinition } from '../core/AtomStore';
 import {
   logHostFunctionsHooks,
   logResourceBridgeFunctionsHooks,
 } from '../utils/log';
-
 
 import { useStore, useResourceTracker, useContext } from './baseHooks';
 
@@ -84,8 +83,8 @@ const RESOURCE_BRIDGE_FUNCTIONS_STORE = FunctionalAtomDefinition(() => {
 
   let b: ReturnType<typeof createActPointConnector> | null = null;
   let hostConnector:
-  | ReturnType<typeof createClientConnector>['connector']
-  | null = null;
+    | ReturnType<typeof createClientConnector>['connector']
+    | null = null;
 
   logResourceBridgeFunctionsHooks('Initialize resource bridge functions store');
 

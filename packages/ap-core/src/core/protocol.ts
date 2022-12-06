@@ -124,12 +124,26 @@ export const connectToHost = (context: IComponentContext) => {
         context.eventTarget.fire(DESTROY);
       },
       play() {
+        if (localStorage.getItem("@recative/ap-pack/debug-lifecycle")) {
+          document.body.classList.remove('recative-not-ready');
+          document.body.classList.remove('recative-ready');
+          document.body.classList.remove('recative-pause');
+          document.body.classList.add('recative-paly');
+        }
+
         context.store.register(ACT_POINT_PLAYING);
         context.store.setValue(ACT_POINT_PLAYING, true);
         context.ticker.replay();
         context.eventTarget.fire(PLAY);
       },
       pause() {
+        if (localStorage.getItem("@recative/ap-pack/debug-lifecycle")) {
+          document.body.classList.remove('recative-not-ready');
+          document.body.classList.remove('recative-ready');
+          document.body.classList.remove('recative-paly');
+          document.body.classList.add('recative-pause');
+        }
+
         context.store.register(ACT_POINT_PLAYING);
         context.store.setValue(ACT_POINT_PLAYING, false);
         context.ticker.pause();
