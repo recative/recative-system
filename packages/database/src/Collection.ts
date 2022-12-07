@@ -1322,7 +1322,7 @@ export class Collection<T extends object> extends Target<
    * users.insert([{ name: 'Thor', age: 35}, { name: 'Loki', age: 30}]);
    */
   insert(
-    documents: T | T[],
+    documents: T,
     overrideAdaptiveIndices?: boolean
   ): T & ICollectionDocument;
   insert(

@@ -1,4 +1,4 @@
-import EventTarget from '@ungap/event-target';
+import { Target } from '@recative/event-target';
 import { OpenPromise } from '@recative/open-promise';
 
 import { Collection, ICollectionDocument } from './Collection';
@@ -15,6 +15,14 @@ import { delay } from './utils/delay';
 import { CloneMethod } from './utils/clone';
 import { MemoryAdapter } from './adapter/memory';
 import { PersistenceAdapter, PersistenceAdapterMode } from './adapter/typings';
+import {
+  DatabaseCloseEvent,
+  DatabaseCloseEventName,
+  DatabaseDocumentLoadEvent,
+  DatabaseDocumentLoadEventName,
+  WarnEvent,
+  WarnEventName,
+} from './Events';
 
 export enum SerializationMethod {
   Normal = 'normal',
@@ -150,6 +158,7 @@ export interface ILoadJSONCollectionConfiguration<T> {
  * apply or override collection level settings
  * @field retainDirtyFlags - whether collection dirty flags will be preserved
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface ILoadJSONOptions<T = any> {
   throttledSaves: boolean;
   retainDirtyFlags: boolean;
@@ -182,7 +191,13 @@ export interface IThrottledSaveDrainOptions {
 /**
  * The main database class.
  */
-export class Database<T extends PersistenceAdapterMode> extends EventTarget {
+export class Database<T extends PersistenceAdapterMode> extends Target<
+  [
+    typeof WarnEventName,
+    typeof DatabaseDocumentLoadEventName,
+    typeof DatabaseCloseEventName
+  ]
+> {
   options: IDatabaseOptions<T>;
 
   // We have to use any here since we really don't know anything about the data
@@ -424,9 +439,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
 
     // no such collection
     this.dispatchEvent(
-      new CustomEvent('warning', {
-        detail: new TypeError(`collection ${collectionName} not found`),
-      })
+      new WarnEvent(new TypeError(`collection ${collectionName} not found`))
     );
 
     return null;
@@ -1146,7 +1159,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
       }
 
       this.addEventListener('close', resolve, { once: true });
-      this.dispatchEvent(new CustomEvent('close'));
+      this.dispatchEvent(new DatabaseCloseEvent());
     });
   };
 
@@ -1298,20 +1311,12 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
     if (typeof databaseString === 'string') {
       this.loadJSON(databaseString, options ?? {});
 
-      this.dispatchEvent(
-        new CustomEvent('loaded', {
-          detail: { fileName: this.fileName, isEmpty: false },
-        })
-      );
+      this.dispatchEvent(new DatabaseDocumentLoadEvent(this.fileName, false));
       return null;
     }
     // falsy result means new database
     if (!databaseString) {
-      this.dispatchEvent(
-        new CustomEvent('loaded', {
-          detail: { fileName: this.fileName, isEmpty: true },
-        })
-      );
+      this.dispatchEvent(new DatabaseDocumentLoadEvent(this.fileName, true));
       return null;
     }
 
@@ -1319,11 +1324,7 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
     // attempt to load from JSON object
     if (typeof databaseString === 'object') {
       this.loadJSONObject(databaseString, options || {});
-      this.dispatchEvent(
-        new CustomEvent('loaded', {
-          detail: { fileName: this.fileName, isEmpty: false },
-        })
-      );
+      this.dispatchEvent(new DatabaseDocumentLoadEvent(this.fileName, false));
       return null; // return null on success
     }
 

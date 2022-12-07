@@ -122,10 +122,32 @@ export class ErrorEvent extends Event<IErrorEventDetail> {
   }
 }
 
-export const WarnEventName = createEventName<IErrorEventDetail>('warn');
+export const WarnEventName = createEventName<IErrorEventDetail>('warning');
 
 export class WarnEvent extends Event<IErrorEventDetail> {
   constructor(error: unknown) {
-    super(ErrorEventName, { error });
+    super(WarnEventName, { error });
+  }
+}
+
+export interface IDatabaseDocumentLoadEventDetail {
+  fileName: string;
+  isEmpty: boolean;
+}
+
+export const DatabaseDocumentLoadEventName =
+  createEventName<IDatabaseDocumentLoadEventDetail>('load');
+
+export class DatabaseDocumentLoadEvent extends Event<IDatabaseDocumentLoadEventDetail> {
+  constructor(fileName: string, isEmpty: boolean) {
+    super(DatabaseDocumentLoadEventName, { fileName, isEmpty });
+  }
+}
+
+export const DatabaseCloseEventName = createEventName<void>('close');
+
+export class DatabaseCloseEvent extends Event<void> {
+  constructor() {
+    super(DatabaseCloseEventName);
   }
 }
