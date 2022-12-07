@@ -68,3 +68,25 @@ export interface INameValueTestRecord {
   name: string;
   val: number;
 }
+
+export interface IUserLanguageRecord {
+  name: string;
+  age?: number;
+  lang?: string;
+}
+
+export interface IUserAddrRecord {
+  first: string;
+  last: string;
+  addr?: {
+    street?: string;
+    state?: string;
+    zip?: number;
+  };
+}
+
+interface IIdStrFloatTestRecord {
+  testId: number;
+  testString: string;
+  testFloat: number;
+}
