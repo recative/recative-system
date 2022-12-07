@@ -981,7 +981,8 @@ export class Database<T extends PersistenceAdapterMode> extends EventTarget {
             collection.name
           ) as unknown as P & ICollectionDocument;
 
-          return inflater(data, collectionInstance) ?? collectionInstance;
+          return (inflater(data, collectionInstance) ??
+            collectionInstance) as P & ICollectionDocument;
         };
       }
 
