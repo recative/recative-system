@@ -1,5 +1,11 @@
 # @capacitor/android-geckoview
 
+## 1.0.4
+
+### Patch Changes
+
+- 12068e8: fix: communication bug with native
+
 ## 1.0.2
 
 ### Patch Changes
