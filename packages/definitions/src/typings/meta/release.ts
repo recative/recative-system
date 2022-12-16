@@ -72,7 +72,6 @@ export interface ISeriesMetadata {
   readonly id: string;
   title: Record<string, string>;
   description: Record<string, string>;
-  deprecated: boolean;
   loadingCoverForCatalogPageResourceId: string;
   loadingCoverForMainContentsResourceId: string;
 }
