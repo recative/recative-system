@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.5
+
+### Patch Changes
+
+- 6040066: feat: Add deprecated flag for releases
+
 ## 0.5.4
 
 ### Patch Changes
