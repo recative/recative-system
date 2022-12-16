@@ -43,7 +43,7 @@ export interface IFindTransformRequest<T> {
 
 export interface IWhereTransformRequest<T> {
   type: TransformType.Where;
-  filter: (x: T & ICollectionDocument) => boolean;
+  filter: ((x: T & ICollectionDocument) => boolean) | string;
 }
 
 export interface ISimpleSortTransformRequest<T> {
@@ -76,16 +76,16 @@ export interface IOffsetTransformRequest {
 export interface IMapTransformRequest<T, R0> {
   type: TransformType.Map;
   mapFunction: (x: T) => R0;
-  dataOptions?: IResultSetDataOptions;
+  dataOptions?: Partial<IResultSetDataOptions>;
 }
 
 export interface IEqJoinTransformRequest<T, R0, R1> {
   type: TransformType.EqJoin;
-  joinData: R0[];
+  joinData: R0[] | Collection<R0>;
   leftJoinKey: keyof T | JoinKeyFunction<T>;
   rightJoinKey: keyof R0 | JoinKeyFunction<R0>;
   mapFunction: (left: T, right: R0) => R1;
-  dataOptions?: IResultSetDataOptions;
+  dataOptions?: Partial<IResultSetDataOptions>;
 }
 
 export interface IMapReduceTransformRequest<T, R0, R1> {
@@ -122,11 +122,7 @@ export interface ITransformRequestMap<
   [TransformType.Remove]: IRemoveTransformRequest;
 }
 
-export type TransformRequest<
-  T extends object,
-  R0 extends object = T,
-  R1 extends object = T
-> =
+export type TransformRequest<T, R0 = T, R1 = T> =
   | IFindTransformRequest<T>
   | IWhereTransformRequest<T>
   | ISimpleSortTransformRequest<T>
@@ -141,10 +137,10 @@ export type TransformRequest<
   | IRemoveTransformRequest;
 
 type TransformResultImplementation<
-  T extends object,
+  T,
   Type extends TransformType,
-  R0 extends object = T,
-  R1 extends object = T
+  R0 = T,
+  R1 = T
 > = Type extends TransformType.Map
   ? R0
   : Type extends TransformType.EqJoin
@@ -155,23 +151,21 @@ type TransformResultImplementation<
 
 export type ReadonlyOrNot<T> = Readonly<T> | T;
 
-export type TransformRequestChainResult<
-  T extends object,
-  Transforms
-> = Transforms extends ReadonlyOrNot<
-  [
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    infer U extends ReadonlyOrNot<TransformRequest<any, infer R0, infer R1>>,
-    ...infer Rest
-  ]
->
-  ? Rest extends []
-    ? TransformResultImplementation<T, U['type'], R0, R1>
-    : TransformRequestChainResult<
-        TransformResultImplementation<T, U['type'], R0, R1>,
-        Rest
-      >
-  : never;
+export type TransformRequestChainResult<T, Transforms> =
+  Transforms extends ReadonlyOrNot<
+    [
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      infer U extends ReadonlyOrNot<TransformRequest<any, infer R0, infer R1>>,
+      ...infer Rest
+    ]
+  >
+    ? Rest extends []
+      ? TransformResultImplementation<T, U['type'], R0, R1>
+      : TransformRequestChainResult<
+          TransformResultImplementation<T, U['type'], R0, R1>,
+          Rest
+        >
+    : never;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyTransformRequest = TransformRequest<any, any, any>;
@@ -257,7 +251,7 @@ export interface IResultSetDataOptions {
  *      .where(function(obj) { return obj.name === 'Toyota' })
  *      .data();
  */
-export class ResultSet<T extends object> {
+export class ResultSet<T> {
   filteredRows: number[] = [];
 
   filterInitialized = false;
@@ -393,7 +387,7 @@ export class ResultSet<T extends object> {
       | TransformInstance[]
       | undefined
   >(
-    transform?: Transform,
+    transform?: Transform | string,
     parameters?: Record<string, unknown>
   ): ResultSet<
     Transform extends undefined ? T : TransformResult<Transform>
@@ -1120,7 +1114,7 @@ export class ResultSet<T extends object> {
    *  .where((doc) => doc.age >= 30)
    *  .data();
    */
-  where = (filter: (x: T & ICollectionDocument) => boolean) => {
+  where = (filter: string | ((x: T & ICollectionDocument) => boolean)) => {
     let viewFunction;
     const result = [];
 
@@ -1477,14 +1471,14 @@ export class ResultSet<T extends object> {
     leftJoinKey: keyof T | JoinKeyFunction<T>,
     rightJoinKey: keyof R | JoinKeyFunction<R>,
     mapFunction?: ((left: T, right: R) => T) | undefined,
-    dataOptions?: IResultSetDataOptions
+    dataOptions?: Partial<IResultSetDataOptions>
   ): ResultSet<T>;
-  eqJoin<R extends Partial<T>, R0 extends object = T>(
+  eqJoin<R extends Partial<T>, R0>(
     joinData: R[] | Collection<R> | ResultSet<R>,
     leftJoinKey: keyof T | JoinKeyFunction<T>,
     rightJoinKey: keyof R | JoinKeyFunction<R>,
     mapFunction: (left: T, right: R) => R0,
-    dataOptions?: IResultSetDataOptions
+    dataOptions?: Partial<IResultSetDataOptions>
   ): ResultSet<R0>;
   eqJoin<R extends Partial<T>>(
     joinData: R[] | Collection<R> | ResultSet<R>,
@@ -1494,7 +1488,7 @@ export class ResultSet<T extends object> {
       left,
       right,
     }),
-    dataOptions?: IResultSetDataOptions
+    dataOptions?: Partial<IResultSetDataOptions>
   ) {
     let leftData = [];
     let rightData: R[] = [];
@@ -1558,7 +1552,7 @@ export class ResultSet<T extends object> {
    */
   map = <R0 extends object>(
     mapFunction: (x: T) => R0,
-    dataOptions?: IResultSetDataOptions
+    dataOptions?: Partial<IResultSetDataOptions>
   ) => {
     const data = this.data(dataOptions).map(mapFunction);
     // return return a new resultset with no filters

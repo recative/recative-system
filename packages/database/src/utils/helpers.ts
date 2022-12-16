@@ -326,7 +326,7 @@ export const sortHelper = (prop1: unknown, prop2: unknown, desc?: boolean) => {
  * @returns 0, -1, or 1 to designate if identical (sort-wise) or which should
  *          be first
  */
-export const compoundEval = <T extends object>(
+export const compoundEval = <T>(
   properties: ([DotNotation<T>, boolean] | DotNotation<T>)[],
   obj1: T,
   obj2: T

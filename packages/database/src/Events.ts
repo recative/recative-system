@@ -83,14 +83,14 @@ export interface IErrorEventDetail {
   error: unknown;
 }
 
-export interface IDynamicViewRebuildEventDetail<T extends object> {
+export interface IDynamicViewRebuildEventDetail<T> {
   dynamicView: DynamicView<T>;
 }
 
 export const DynamicViewRebuildEventName =
   createEventName<IDynamicViewRebuildEventDetail<any>>('rebuild');
 
-export class DynamicViewRebuildEvent<T extends object> extends Event<
+export class DynamicViewRebuildEvent<T> extends Event<
   IDynamicViewRebuildEventDetail<T>
 > {
   constructor(dynamicView: DynamicView<T>) {

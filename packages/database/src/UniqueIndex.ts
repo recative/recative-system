@@ -5,7 +5,7 @@ import { IntMap } from './utils/IntMap';
 
 import type { ICollectionDocument } from './Collection';
 
-export class UniqueIndex<T extends object> {
+export class UniqueIndex<T> {
   keyMap = new Map<unknown, T>();
 
   lokiMap = new IntMap<unknown>();
@@ -70,7 +70,7 @@ export class UniqueIndex<T extends object> {
     if (document !== null && typeof document !== 'undefined') {
       // avoid using `delete`
       this.keyMap.delete(key);
-      this.lokiMap.delete((document as ICollectionDocument).$loki);
+      this.lokiMap.delete((document as unknown as ICollectionDocument).$loki);
     } else {
       throw new Error(`Key is not in unique index: ${String(this.field)}`);
     }

@@ -157,7 +157,7 @@ export interface IPerformanceSortPhaseOptions {
  *        'sortPriority' options.
  * @see {@link Collection#addDynamicView} to construct instances of DynamicView
  */
-export class DynamicView<T extends object> extends Target<
+export class DynamicView<T> extends Target<
   [
     typeof DynamicViewSortEventName,
     typeof DynamicViewFilterEventName,
@@ -323,13 +323,25 @@ export class DynamicView<T extends object> extends Target<
 
   branchResultset(): ResultSet<T>;
   branchResultset<
-    Transform extends TransformRequest<T> | TransformRequest<T>[]
+    R0,
+    R1,
+    Transform extends
+      | TransformRequest<T, R0, R1>
+      | TransformRequest<T, R0, R1>[]
   >(
-    transform: TransformRequest<T> | TransformRequest<T>[],
+    transform: TransformRequest<T, R0, R1> | TransformRequest<T, R0, R1>[],
     parameters?: Record<string, unknown>
   ): ResultSet<TransformResult<Transform>>;
+  branchResultset<R>(
+    transform: string,
+    parameters?: Record<string, unknown>
+  ): ResultSet<R>;
   branchResultset(
-    transform?: TransformRequest<T> | TransformRequest<T>[] | undefined,
+    transform?:
+      | TransformRequest<T>
+      | TransformRequest<T>[]
+      | string
+      | undefined,
     parameters?: Record<string, unknown>
   ) {
     if (!this.resultSet) {

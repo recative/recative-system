@@ -5,9 +5,9 @@ export enum CloneMethod {
   ShallowRecurseObjects = 'shallow-recurse-objects',
 }
 
-export const clone = <T extends object>(
+export const clone = <T>(
   data: T,
-  method: CloneMethod = CloneMethod.ParseStringify,
+  method: CloneMethod = CloneMethod.ParseStringify
 ) => {
   if (data === null || data === undefined) {
     return null;
@@ -48,16 +48,13 @@ export const clone = <T extends object>(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const value = (data as any)[key];
 
-      if (
-        typeof value === 'object'
-        && value.constructor.name === 'Object'
-      ) {
+      if (typeof value === 'object' && value.constructor.name === 'Object') {
         cloned[key] = clone(value, CloneMethod.ShallowRecurseObjects);
       } else if (Array.isArray(value)) {
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         cloned[key] = cloneObjectArray(
           value,
-          CloneMethod.ShallowRecurseObjects,
+          CloneMethod.ShallowRecurseObjects
         );
       }
     }
@@ -68,7 +65,7 @@ export const clone = <T extends object>(
 
 export const cloneObjectArray = <T extends object>(
   data: T[],
-  method: CloneMethod,
+  method: CloneMethod
 ) => {
   if (method === CloneMethod.ParseStringify) {
     return clone(data, method);

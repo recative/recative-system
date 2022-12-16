@@ -50,7 +50,7 @@ import { freeze, deepFreeze, unFreeze } from './utils/freeze';
 import { ensureMetadata, IDocumentMetadata } from './utils/ensureMetadata';
 import { isObservable, observe, suspenseObserve } from './utils/observe';
 
-export interface ICollectionChange<T extends object> {
+export interface ICollectionChange<T> {
   name: string;
   operation: CollectionOperation;
   object: T;
@@ -232,7 +232,7 @@ export interface ICollectionEvents<T> {
  *        configuration object
  * @see {@link Database#addCollection} for normal creation of collections
  */
-export class Collection<T extends object> extends Target<
+export class Collection<T> extends Target<
   [
     typeof CollectionDocumentPreInsertEventName,
     typeof CollectionDocumentInsertEventName,
@@ -283,7 +283,7 @@ export class Collection<T extends object> extends Target<
    * transforms will be used to store frequently used query chains as a series
    * of steps which itself can be stored along with the database.
    */
-  transforms: Record<string, TransformRequest<T>[]> = {};
+  transforms: Record<string, TransformRequest<T, any, any>[]> = {};
 
   /**
    * the object type of the collection
@@ -509,7 +509,7 @@ export class Collection<T extends object> extends Target<
    * Compare changed object (which is a forced clone) with existing object and
    * return the delta
    */
-  getChangeDelta = <P extends object>(newObject: P, oldObject?: P) => {
+  getChangeDelta = <P>(newObject: P, oldObject?: P) => {
     if (oldObject) {
       return this.getObjectDelta<P>(oldObject, newObject);
     }
@@ -517,7 +517,7 @@ export class Collection<T extends object> extends Target<
     return JSON.parse(JSON.stringify(newObject));
   };
 
-  getObjectDelta = <P extends object>(oldObject: P, newObject: P) => {
+  getObjectDelta = <P>(oldObject: P, newObject: P) => {
     const propertyNames = isObject(newObject)
       ? (Object.keys(newObject) as unknown as string[] as (keyof P)[])
       : null;
@@ -688,7 +688,10 @@ export class Collection<T extends object> extends Target<
    *
    * var results = users.chain('progeny').data();
    */
-  addTransform = (name: string, transform: TransformRequest<T>[]) => {
+  addTransform = <R0, R1>(
+    name: string,
+    transform: TransformRequest<T, R0, R1>[]
+  ) => {
     if (hasOwn(this.transforms, name)) {
       throw new TypeError('a transform by that name already exists');
     }
@@ -852,20 +855,9 @@ export class Collection<T extends object> extends Target<
     this.binaryIndices[property] = index;
 
     const wrappedComparer = ((key: ValidSimpleLensField, data: T[]) => {
-      const propPath =
-        typeof key === 'string' && isDotNotation(key) ? key.split('.') : false;
-
       return (a: number, b: number) => {
-        let val1: T | undefined;
-        let val2: T | undefined;
-
-        if (propPath) {
-          val1 = lens(Reflect.get(data, a), propPath, true);
-          val2 = lens(Reflect.get(data, b), propPath, true);
-        } else {
-          val1 = Reflect.get(Reflect.get(data, a), key) as T | undefined;
-          val2 = Reflect.get(Reflect.get(data, b), key) as T | undefined;
-        }
+        const val1 = lens(Reflect.get(data, a), key, true);
+        const val2 = lens(Reflect.get(data, b), key, true);
 
         if (val1 !== val2) {
           if (Comparators.lt(val1, val2, false)) return -1;
@@ -2830,12 +2822,26 @@ export class Collection<T extends object> extends Target<
    *          called
    * */
   chain(): ResultSet<T>;
-  chain<Transform extends TransformRequest<T> | TransformRequest<T>[]>(
-    transform: TransformRequest<T> | TransformRequest<T>[],
+  chain(
+    transformId: string,
+    parameters?: Record<string, unknown>
+  ): ResultSet<T>;
+  chain<
+    R0,
+    R1,
+    Transform extends
+      | TransformRequest<T, R0, R1>
+      | TransformRequest<T, R0, R1>[]
+  >(
+    transform: TransformRequest<T, R0, R1> | TransformRequest<T, R0, R1>[],
     parameters?: Record<string, unknown>
   ): ResultSet<TransformResult<Transform>>;
-  chain(
-    transform?: TransformRequest<T> | TransformRequest<T>[] | undefined,
+  chain<R0, R1>(
+    transform?:
+      | TransformRequest<T, R0, R1>
+      | TransformRequest<T, R0, R1>[]
+      | undefined
+      | string,
     parameters?: Record<string, unknown>
   ) {
     const resultSet = new ResultSet<T>(this);
@@ -2989,7 +2995,7 @@ export class Collection<T extends object> extends Target<
     rightJoinKey: keyof R | JoinKeyFunction<R>,
     mapFunction?: ((left: T, right: R) => T) | undefined
   ): ResultSet<T>;
-  eqJoin<R extends Partial<T>, R0 extends object = T>(
+  eqJoin<R extends Partial<T>, R0 = T>(
     joinData: R[] | Collection<R> | ResultSet<R>,
     leftJoinKey: keyof T | JoinKeyFunction<T>,
     rightJoinKey: keyof R | JoinKeyFunction<R>,
