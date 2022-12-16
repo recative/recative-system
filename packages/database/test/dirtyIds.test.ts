@@ -1,5 +1,5 @@
-import { Database } from '../../src';
-import { PersistenceAdapterMode } from '../../src/adapter/typings';
+import { Database } from '../src';
+import { PersistenceAdapterMode } from '../src/adapter/typings';
 import { IFooBarTestRecord } from './definition';
 
 const FOOBAR_DATA = [{ foo: '1' }, { foo: '2' }, { foo: '3' }];

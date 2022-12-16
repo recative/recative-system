@@ -1,4 +1,4 @@
-import { Database, ICollectionChange } from '../../src';
+import { Database, ICollectionChange } from '../src';
 
 import { IPersonTestRecord } from './definition';
 

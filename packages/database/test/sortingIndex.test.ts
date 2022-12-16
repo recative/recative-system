@@ -1,5 +1,5 @@
-import { Collection, Database } from '../../src';
-import { Operators } from '../../src/Operations';
+import { Collection, Database } from '../src';
+import { Operators } from '../src/Operations';
 import {
   IABTestRecord,
   INumericABTestRecord,

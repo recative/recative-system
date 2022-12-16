@@ -5,9 +5,9 @@ import {
   DatabaseCloseEventName,
   ensureDocumentType,
   ICollectionDocument,
-} from '../../src';
-import { MemoryAdapter } from '../../src/adapter/memory';
-import { hasOwn } from '../../src/utils/hasOwn';
+} from '../src';
+import { MemoryAdapter } from '../src/adapter/memory';
+import { hasOwn } from '../src/utils/hasOwn';
 import {
   IABTestRecord,
   IIdStrFloatTestRecord,

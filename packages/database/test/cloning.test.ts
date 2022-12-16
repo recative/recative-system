@@ -1,6 +1,6 @@
-import { hasOwn } from '../../src/utils/hasOwn';
-import { CloneMethod } from '../../src/utils/clone';
-import { Collection, Database } from '../../src';
+import { hasOwn } from '../src/utils/hasOwn';
+import { CloneMethod } from '../src/utils/clone';
+import { Collection, Database } from '../src';
 
 import { IPersonTestRecord } from './definition';
 

@@ -1,6 +1,6 @@
-import { Database } from '../../src';
-import { DynamicView } from '../../src/DynamicView';
-import { Operators } from '../../src/Operations';
+import { Database } from '../src';
+import { DynamicView } from '../src/DynamicView';
+import { Operators } from '../src/Operations';
 import { IPersonTestRecord } from './definition';
 
 const PERSON_DATA: IPersonTestRecord[] = [

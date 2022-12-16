@@ -1,4 +1,4 @@
-import { Collection, Database } from '../../src';
+import { Collection, Database } from '../src';
 
 import { IPersonTestRecord } from './definition';
 

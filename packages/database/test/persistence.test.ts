@@ -1,8 +1,8 @@
 /* eslint-disable class-methods-use-this */
-import { hasOwn } from '../../src/utils/hasOwn';
-import { MemoryAdapter } from '../../src/adapter/memory';
-import { PartitioningAdapter } from '../../src/adapter/partitioning';
-import { Collection, Database, SerializationMethod } from '../../src';
+import { hasOwn } from '../src/utils/hasOwn';
+import { MemoryAdapter } from '../src/adapter/memory';
+import { PartitioningAdapter } from '../src/adapter/partitioning';
+import { Collection, Database, SerializationMethod } from '../src';
 
 import {
   IABTestRecord,
@@ -10,7 +10,7 @@ import {
   IPersonTestRecord,
   IUsernameRecord,
 } from './definition';
-import { PersistenceAdapterMode } from '../../src/adapter/typings';
+import { PersistenceAdapterMode } from '../src/adapter/typings';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const globalDatabase: Database<any>;

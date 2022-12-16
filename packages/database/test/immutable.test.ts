@@ -7,16 +7,16 @@ import {
   CollectionDocumentInsertEventName,
   CollectionDocumentUpdateEventName,
   CollectionDocumentDeleteEventName,
-} from '../../src';
-import { MemoryAdapter } from '../../src/adapter/memory';
-import { Operators } from '../../src/Operations';
+} from '../src';
+import { MemoryAdapter } from '../src/adapter/memory';
+import { Operators } from '../src/Operations';
 import {
   deepFreeze,
   deepUnFreeze,
   freeze,
   isFrozen,
   unFreeze,
-} from '../../src/utils/freeze';
+} from '../src/utils/freeze';
 import {
   IABTestRecord,
   IIdTestRecord,

@@ -1,5 +1,5 @@
-import { hasOwn } from '../../src/utils/hasOwn';
-import { Collection, Database, ICollectionDocument } from '../../src';
+import { hasOwn } from '../src/utils/hasOwn';
+import { Collection, Database, ICollectionDocument } from '../src';
 
 import { IABTestRecord, IPersonTestRecord } from './definition';
 

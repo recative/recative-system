@@ -1,5 +1,5 @@
-import { Database } from '../../src';
-import { Operators } from '../../src/Operations';
+import { Database } from '../src';
+import { Operators } from '../src/Operations';
 import {
   ITreeTestRecord,
   IPersonTestRecord,
