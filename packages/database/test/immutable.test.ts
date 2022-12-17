@@ -23,6 +23,7 @@ import {
   INumericABTestRecord,
   IPersonTestRecord,
 } from './definition';
+import { User } from './utils';
 
 const PERSON_TEST_RECORDS = [
   { name: 'mjolnir', owner: 'thor', maker: 'dwarves' },
@@ -1187,15 +1188,6 @@ describe('immutable', () => {
       const database = new Database('test.json');
       let collection: Collection<IInjectedPersonTestRecord> | null;
 
-      class User {
-        constructor(public name: string) {}
-
-        log = () => {
-          // eslint-disable-next-line no-console
-          console.log(`Name: ${this.name}`);
-        };
-      }
-
       const json = {
         filename: 'test.json',
         collections: [
@@ -1232,20 +1224,12 @@ describe('immutable', () => {
             cachedData: null,
             maxId: 2,
             dynamicViews: [],
-            events: {
-              insert: [null],
-              update: [null],
-              close: [],
-              error: [],
-              delete: [],
-            },
             disableFreeze: false,
           },
         ],
         events: {
           close: [],
         },
-        ENV: 'NODEJS',
         fs: {},
       };
 

@@ -273,7 +273,7 @@ describe('transforms', () => {
             },
           ],
           {
-            NameFilter: function (x: IPersonTestRecord) {
+            NameFilter(x: IPersonTestRecord) {
               return x.name.indexOf('nir') !== -1;
             },
           }
@@ -434,7 +434,7 @@ describe('transforms', () => {
           mapFunction: (left, right) => {
             // Since our collection options do not specify cloning, this is only safe
             // because we have cloned internal objects with dataOptions before modifying them.
-            Object.keys(right).forEach(function (key) {
+            Object.keys(right).forEach((key) => {
               left[key] = right[key];
             });
 
@@ -461,7 +461,7 @@ describe('transforms', () => {
       expect(results[0].name).toEqual('Martin Scorsese');
       expect(results[5].title).toEqual('Raiders of the Lost Ark');
       expect(results[5].name).toEqual('Steven Spielberg');
-      results.forEach(function (obj) {
+      results.forEach((obj) => {
         expect(Object.keys(obj).length).toEqual(4);
       });
     });
@@ -506,7 +506,7 @@ describe('transforms', () => {
       expect(results[3].a).toEqual(4);
       expect(results[3].b).toEqual(6);
       expect(results[3].c).toEqual(2);
-      results.forEach(function (obj) {
+      results.forEach((obj) => {
         expect(Object.keys(obj).length).toEqual(3);
       });
     });

@@ -151,7 +151,7 @@ export interface ILoadJSONCollectionConfiguration<T> {
     source: T & ICollectionDocument,
     destination: T & ICollectionDocument
   ) => (T & ICollectionDocument) | void;
-  Proto: Proto<T>;
+  Proto?: Proto<T>;
 }
 
 /**
