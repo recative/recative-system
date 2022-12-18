@@ -4,11 +4,11 @@ import { isDotNotation } from '@recative/lens';
 import * as Comparators from './Comparators';
 
 import { hasOwn } from './utils/hasOwn';
-import { AnyRecord, IQuery } from './typings';
+import { IQuery } from './typings';
 
 export const doQueryOperation = (
   type: unknown,
-  operations: IQuery<unknown>,
+  operations: Record<string, unknown>,
   record: unknown
 ): boolean => {
   const operationKeys = Object.keys(operations);
@@ -275,10 +275,7 @@ export const Operators = {
     return false;
   },
 
-  $elemMatch: <T extends AnyRecord>(
-    documentEntry: T[],
-    queryEntry: IQuery<T>
-  ) => {
+  $elemMatch: <T>(documentEntry: T[], queryEntry: IQuery<T>) => {
     if (Array.isArray(documentEntry)) {
       return documentEntry.some((item) => {
         return Object.keys(queryEntry).every((property) => {
@@ -299,18 +296,18 @@ export const Operators = {
             );
           }
 
-          return doQueryOperation(Reflect.get(item, property), filter, item);
+          return doQueryOperation(
+            Reflect.get(item as object, property),
+            filter,
+            item
+          );
         });
       });
     }
     return false;
   },
 
-  $type: <R extends AnyRecord>(
-    documentEntry: unknown,
-    queryEntry: Type,
-    record?: R
-  ) => {
+  $type: <R>(documentEntry: unknown, queryEntry: Type, record?: R) => {
     let type: string = typeof documentEntry;
     if (type === 'object') {
       if (Array.isArray(documentEntry)) {
@@ -328,11 +325,7 @@ export const Operators = {
     return queryEntry === Number.isFinite(documentEntry);
   },
 
-  $size: <R extends AnyRecord>(
-    documentEntry: unknown,
-    queryEntry: number,
-    record: R
-  ) => {
+  $size: <R>(documentEntry: unknown, queryEntry: number, record: R) => {
     if (Array.isArray(documentEntry)) {
       return typeof queryEntry !== 'object'
         ? documentEntry.length === queryEntry
@@ -341,10 +334,10 @@ export const Operators = {
     return false;
   },
 
-  $len: <R extends AnyRecord>(
+  $len: <R>(
     documentEntry: ArrayLike<unknown>,
     queryEntry: number | IQuery<R>,
-    record: R
+    record: unknown
   ) => {
     if (typeof documentEntry === 'string') {
       return typeof queryEntry !== 'object'
@@ -354,46 +347,35 @@ export const Operators = {
     return false;
   },
 
-  $where: <T extends AnyRecord>(
-    documentEntry: T,
-    queryEntry: (x: T) => boolean
-  ) => {
+  $where: <T>(documentEntry: T, queryEntry: (x: T) => boolean) => {
     return !!queryEntry(documentEntry);
   },
 
-  $not: <R extends AnyRecord>(
-    documentEntry: unknown,
-    queryEntry: IQuery<R>,
-    record: R
-  ) => {
+  $not: <T>(
+    documentEntry: T,
+    queryEntry: IQuery<T>,
+    record: unknown
+  ): boolean => {
     return !doQueryOperation(documentEntry, queryEntry, record);
   },
 
-  $and: <R extends AnyRecord>(
-    documentEntry: unknown,
-    queryEntry: IQuery<R>[],
-    record: R
-  ) => {
-    for (let i = 0; i < queryEntry.length; i += 1) {
-      if (!doQueryOperation(documentEntry, queryEntry[i], record)) {
-        return false;
-      }
-    }
-    return true;
-  },
+  // $and: <R>(documentEntry: unknown, queryEntry: IQuery<R>[], record: R) => {
+  //   for (let i = 0; i < queryEntry.length; i += 1) {
+  //     if (!doQueryOperation(documentEntry, queryEntry[i], record)) {
+  //       return false;
+  //     }
+  //   }
+  //   return true;
+  // },
 
-  $or: <R extends AnyRecord>(
-    documentEntry: unknown,
-    queryEntry: IQuery<R>[],
-    record: R
-  ) => {
-    for (let i = 0; i < queryEntry.length; i += 1) {
-      if (doQueryOperation(documentEntry, queryEntry[i], record)) {
-        return true;
-      }
-    }
-    return false;
-  },
+  // $or: <R>(documentEntry: unknown, queryEntry: IQuery<R>[], record: R) => {
+  //   for (let i = 0; i < queryEntry.length; i += 1) {
+  //     if (doQueryOperation(documentEntry, queryEntry[i], record)) {
+  //       return true;
+  //     }
+  //   }
+  //   return false;
+  // },
 
   $exists: (documentEntry: unknown, queryEntry: unknown) => {
     if (queryEntry) {
@@ -445,7 +427,7 @@ export interface QueryEntry<DocumentEntry> {
   $len: DocumentEntry extends ArrayLike<any> ? number : never;
   $where: (x: DocumentEntry) => boolean;
   $not: IQuery<DocumentEntry>;
-  $and: IQuery<DocumentEntry>[];
-  $or: IQuery<DocumentEntry>[];
+  // $and: IQuery<DocumentEntry>[];
+  // $or: IQuery<DocumentEntry>[];
   $exists: unknown;
 }
