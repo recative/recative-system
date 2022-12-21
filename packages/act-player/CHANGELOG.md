@@ -1,5 +1,11 @@
 # @recative/act-player
 
+## 0.5.13
+
+### Patch Changes
+
+- 5073159: fix(act-player): Race condition on Safari
+
 ## 0.5.12
 
 ### Patch Changes
