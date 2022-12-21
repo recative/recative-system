@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.7
+
+### Patch Changes
+
+- 6a1b64e: fix: undefined is not an object
+
 ## 0.11.6
 
 ### Patch Changes
