@@ -414,8 +414,8 @@ export class ContentInstance extends WithLogger {
   private async internalDestroy() {
     this.log('Content instance start to destroy');
     await this.option
-      .getComponent(this.id)!
-      .destroyItself?.()
+      .getComponent(this.id)
+      ?.destroyItself?.()
       ?.finally(() => {});
     this.option.forEachComponent((component) => {
       component.destroyContent?.(this.id);
