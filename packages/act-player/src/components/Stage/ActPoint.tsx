@@ -82,7 +82,6 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
   const [iFrameHeight, setIFrameHeight] = React.useState(-1);
   const iFrameRef = React.useRef<HTMLIFrameElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const videoComponentInitialized = React.useRef(false);
   const resolution = useStore(props.core.resolution);
   const width: number | undefined = resolution?.width;
   const height: number | undefined = resolution?.height;
@@ -247,23 +246,32 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
     };
   }, [core]);
 
+  const [loaded, setLoaded] = React.useState(false);
+  const [initialized, setInitialized] = React.useState(false);
+
+  const handleLoaded = React.useCallback(() => {
+    setLoaded(true);
+  }, []);
+
   React.useLayoutEffect(() => {
-    if (videoComponentInitialized.current) return;
     if (!entryPoint) return;
 
     const $iFrame = iFrameRef.current;
     if (!$iFrame) return;
 
+    if (!loaded) return;
+    if (!$iFrame.contentWindow) return;
+    if (initialized) return;
+
     const messageChannel = new MessageChannel();
     messageChannel.port1.addEventListener('message', handleEmergencyMessage);
 
-    $iFrame.contentWindow!.postMessage('ap-emergency-channel', '*', [
+    $iFrame.contentWindow.postMessage('ap-emergency-channel', '*', [
       messageChannel.port2,
     ]);
 
-    videoComponentInitialized.current = true;
-
     core.controller.setActPointTag($iFrame);
+    setInitialized(true);
 
     return () => {
       core.controller.removeActPointTag();
@@ -272,8 +280,10 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
         handleEmergencyMessage,
       );
       messageChannel.port1.close();
+      setInitialized(false);
+      setLoaded(false);
     };
-  }, [core.controller, entryPoint, handleEmergencyMessage]);
+  }, [core.controller, entryPoint, handleEmergencyMessage, initialized, loaded]);
 
   React.useEffect(() => {
     core.coreFunctions.updateContentState('preloading');
@@ -325,6 +335,7 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
             className={cn(iFrameStyles, iFrameSizeStyles)}
             width={iFrameWidth}
             height={iFrameHeight}
+            onLoad={handleLoaded}
             src={injectedEntryPoint}
           />
         ) : (
