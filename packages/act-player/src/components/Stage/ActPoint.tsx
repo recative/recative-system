@@ -288,7 +288,13 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
   React.useEffect(() => {
     core.coreFunctions.updateContentState('preloading');
 
-    return () => props.core.unregisterComponent(props.id);
+    return () => {
+      const state = props.core.coreState.get();
+      if (state === 'destroyed') return;
+      if (state === 'destroying') return;
+
+      props.core.unregisterComponent(props.id);
+    }
   }, [core.coreFunctions, props.core, props.id]);
 
   const LoadingComponent = props.loadingComponent ?? Loading;
