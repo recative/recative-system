@@ -157,7 +157,11 @@ export class SeriesCore<
     const oldEpisodeCore = this.currentEpisodeCore.get();
     const oldEpisodeId = oldEpisodeCore?.episodeId ?? '';
 
-    if (oldEpisodeCore !== null) {
+    if (
+      oldEpisodeCore !== null &&
+      oldEpisodeCore.coreState.get() !== 'destroyed' &&
+      oldEpisodeCore.coreState.get() !== 'destroying'
+    ) {
       if (oldEpisodeCore.episodeId === episodeId) {
         const metadata = await metadataPromise;
         oldEpisodeCore.seek(
@@ -167,10 +171,8 @@ export class SeriesCore<
         this.switching = false;
         return oldEpisodeCore;
       }
-      if (
-        this.config.shouldBlockEpisodeDestroy?.(oldEpisodeId, episodeId) ??
-        false
-      ) {
+
+      if (this.config.shouldBlockEpisodeDestroy?.(oldEpisodeId, episodeId)) {
         this.episodeDestroyUnblocked = new OpenPromise<void>();
         await this.episodeDestroyUnblocked;
       }
