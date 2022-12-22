@@ -1,5 +1,11 @@
 # @recative/act-player
 
+## 0.5.14
+
+### Patch Changes
+
+- 7a602af: fix: Act point hangs
+
 ## 0.5.13
 
 ### Patch Changes
