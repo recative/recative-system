@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.8
+
+### Patch Changes
+
+- d22a0be: fix: Playback hangs
+
 ## 0.11.7
 
 ### Patch Changes
