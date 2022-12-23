@@ -247,7 +247,7 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
   }, [core]);
 
   const [loaded, setLoaded] = React.useState(false);
-  const [initialized, setInitialized] = React.useState(false);
+  const initialized = React.useRef(false);
 
   const handleLoaded = React.useCallback(() => {
     setLoaded(true);
@@ -261,7 +261,7 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
 
     if (!loaded) return;
     if (!$iFrame.contentWindow) return;
-    if (initialized) return;
+    if (initialized.current) return;
 
     const messageChannel = new MessageChannel();
     messageChannel.port1.addEventListener('message', handleEmergencyMessage);
@@ -271,7 +271,7 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
     ]);
 
     core.controller.setActPointTag($iFrame);
-    setInitialized(true);
+    initialized.current = true;
 
     return () => {
       core.controller.removeActPointTag();
@@ -280,7 +280,7 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
         handleEmergencyMessage,
       );
       messageChannel.port1.close();
-      setInitialized(false);
+      initialized.current = false;
       setLoaded(false);
     };
   }, [core.controller, entryPoint, handleEmergencyMessage, initialized, loaded]);
