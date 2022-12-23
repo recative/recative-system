@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.9
+
+### Patch Changes
+
+- 3eb1643: feat: More log in SeriesCore
+
 ## 0.11.8
 
 ### Patch Changes

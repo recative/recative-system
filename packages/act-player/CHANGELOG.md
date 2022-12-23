@@ -1,5 +1,14 @@
 # @recative/act-player
 
+## 0.5.15
+
+### Patch Changes
+
+- 625867a: fix: ActPoint destroy do not finish
+- a4cfcaf: fix: ActPoint initialized should be ref instead of state
+- Updated dependencies [3eb1643]
+  - @recative/core-manager@0.11.9
+
 ## 0.5.14
 
 ### Patch Changes
