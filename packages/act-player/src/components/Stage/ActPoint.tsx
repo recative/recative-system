@@ -291,7 +291,6 @@ export const InternalActPoint: AssetExtensionComponent = React.memo((props) => {
     return () => {
       const state = props.core.coreState.get();
       if (state === 'destroyed') return;
-      if (state === 'destroying') return;
 
       props.core.unregisterComponent(props.id);
     }
