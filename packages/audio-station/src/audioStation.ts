@@ -6,6 +6,8 @@ import type { AudioMixer } from './audioMixer';
  * The audio manager
  */
 export class AudioStation {
+  private cachedAudioContext: AudioContextOptions;
+
   audioContext: AudioContext | null;
 
   mixers: Set<AudioMixer>;
@@ -20,10 +22,11 @@ export class AudioStation {
     if ('AudioContext' in globalThis) {
       baseOption.sampleRate = 48000;
     }
-    this.audioContext = new AudioContext({
+    this.cachedAudioContext = {
       ...baseOption,
       ...audioContextOption,
-    });
+    };
+    this.audioContext = new AudioContext(this.cachedAudioContext);
     this.mixers = new Set();
     this.clips = new Set();
   }
@@ -85,6 +88,20 @@ export class AudioStation {
       throw new Error('The audio station was destroyed');
     }
     return this.audioContext!.currentTime;
+  }
+
+  /**
+   * Reset the audio station when its audio context is broken
+   * Designed for iOS, but potentially useful on other platforms
+   */
+  reset() {
+    if (this.destroyed) {
+      throw new Error('The audio station was destroyed');
+    }
+    // TODO: event to other component
+    // TODO: replace all nodes
+    this.audioContext?.close();
+    this.audioContext = new AudioContext(this.cachedAudioContext);
   }
 
   /**
