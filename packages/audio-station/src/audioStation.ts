@@ -98,10 +98,13 @@ export class AudioStation {
     if (this.destroyed) {
       throw new Error('The audio station was destroyed');
     }
-    // TODO: event to other component
-    // TODO: replace all nodes
     this.audioContext?.close();
-    this.audioContext = new AudioContext(this.cachedAudioContext);
+    const newAudioContext = new AudioContext(this.cachedAudioContext);
+    this.mixers.forEach((mixer) => {
+      mixer.replaceAudioContext(newAudioContext);
+    });
+    // TODO: event to other component
+    this.audioContext = newAudioContext;
   }
 
   /**
