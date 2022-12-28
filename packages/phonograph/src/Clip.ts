@@ -358,6 +358,18 @@ export default class Clip<Metadata> {
     this._gain.disconnect(destination, output, input);
   }
 
+  _disconnectAllAndReplaceAudioContext(newAudioContext: AudioContext) {
+    // To be safe, make sure the clip is paused when calling this
+    // TODO: do we need to maintain more thing
+    this._gain.disconnect();
+    this.context = newAudioContext;
+    this._chunks.forEach((chunk) => {
+      chunk.context = newAudioContext;
+    });
+    this._gain = newAudioContext.createGain();
+    this._gain.gain.value = this.fadeTarget;
+  }
+
   dispose() {
     if (this.playing) this.pause();
 
