@@ -9,6 +9,7 @@ const bitrateLookup: Record<string, (number | null)[]> = {
   22: [null, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160],
 };
 
+// eslint-disable-next-line prefer-destructuring
 bitrateLookup[23] = bitrateLookup[22];
 
 export default function getFrameLength(
@@ -16,9 +17,9 @@ export default function getFrameLength(
   i: number,
   metadata: Metadata
 ) {
-  const mpegVersion = metadata.mpegVersion;
-  const mpegLayer = metadata.mpegLayer;
-  const sampleRate = metadata.sampleRate;
+  const { mpegVersion } = metadata;
+  const { mpegLayer } = metadata;
+  const { sampleRate } = metadata;
 
   const bitrateCode = (data[i + 2] & 0b11110000) >> 4;
   const bitrate =

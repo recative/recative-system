@@ -11,6 +11,7 @@ export interface Loader {
 
 export class FetchLoader implements Loader {
   url: string;
+
   _cancelled: boolean;
 
   constructor(url: string) {
@@ -101,7 +102,9 @@ export class FetchLoader implements Loader {
 
 export class XhrLoader implements Loader {
   url: string;
+
   _cancelled: boolean;
+
   _xhr: XMLHttpRequest | null;
 
   constructor(url: string) {

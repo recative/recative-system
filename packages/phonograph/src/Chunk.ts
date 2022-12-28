@@ -3,24 +3,35 @@ import { AudioContext, IAudioBuffer } from 'standardized-audio-context';
 import { slice } from './utils/buffer';
 import { IAdapter } from './adapters/IAdapter';
 
-import Clip from './Clip';
-
+import type Clip from './Clip';
 
 export default class Chunk<Metadata> {
   clip: Clip<Metadata>;
+
   context: AudioContext;
+
   duration: number | null = null;
+
   numFrames: number | null = null;
+
   chunkIndex: number;
+
   raw: Uint8Array;
+
   extended: Uint8Array | null;
-  extendedWithHeader: Uint8Array | null;;
+
+  extendedWithHeader: Uint8Array | null;
+
   ready: boolean;
+
   next: Chunk<Metadata> | null = null;
+
   readonly adapter: IAdapter<Metadata>;
 
   private _attached: boolean;
+
   private _firstByte: number;
+
   private callbacks: Record<string, Array<(data?: any) => void>> = {};
 
   constructor({
@@ -29,17 +40,17 @@ export default class Chunk<Metadata> {
     onready,
     onerror,
     adapter,
-    chunkIndex
+    chunkIndex,
   }: {
     clip: Clip<Metadata>;
     raw: Uint8Array;
     onready: (() => void) | null;
     onerror: (error: Error) => void;
     adapter: IAdapter<Metadata>;
-    chunkIndex: number
+    chunkIndex: number;
   }) {
     this.clip = clip;
-    this.chunkIndex = chunkIndex
+    this.chunkIndex = chunkIndex;
     this.context = clip.context;
 
     this.raw = raw;
@@ -61,12 +72,12 @@ export default class Chunk<Metadata> {
 
     const decode = (callback: () => void, errback: (err: Error) => void) => {
       const buffer = slice(raw, this._firstByte, raw.length);
-      const bufferWithId3Header = this.adapter.wrapChunk(buffer).buffer
+      const bufferWithId3Header = this.adapter.wrapChunk(buffer).buffer;
 
       this.context.decodeAudioData(bufferWithId3Header, callback, (err) => {
         if (err) {
-          return errback(err)
-        };
+          return errback(err);
+        }
 
         this._firstByte += 1;
 
@@ -190,10 +201,12 @@ export default class Chunk<Metadata> {
         let p = 0;
 
         for (let i = this._firstByte; i < rawLen; i += 1) {
+          // eslint-disable-next-line no-plusplus
           this.extended[p++] = this.raw[i];
         }
 
         for (let i = 0; i < nextLen; i += 1) {
+          // eslint-disable-next-line no-plusplus
           this.extended[p++] = this.next.raw[i];
         }
       } else {
@@ -202,7 +215,7 @@ export default class Chunk<Metadata> {
             ? slice(this.raw, this._firstByte, this.raw.length)
             : this.raw;
       }
-      this.extendedWithHeader = this.adapter.wrapChunk(this.extended)
+      this.extendedWithHeader = this.adapter.wrapChunk(this.extended);
 
       this._fire('ready');
     }

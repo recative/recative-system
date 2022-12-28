@@ -496,7 +496,8 @@ export default class Clip<Metadata> {
 
   set volume(volume) {
     this.stopFade();
-    this._gain.gain.value = this.fadeTarget = volume;
+    this.fadeTarget = volume;
+    this._gain.gain.value = volume;
   }
 
   fade(startVolume: number, endVolume: number, duration: number) {
@@ -682,7 +683,7 @@ export default class Clip<Metadata> {
     const { currentChunk, nextBuffer } = this._audioBufferCache!;
     if ((currentChunk?.next ?? null) !== null) {
       const pendingStart =
-        this._pendingSourceStart + currentChunk?.next!.duration!;
+        this._pendingSourceStart + currentChunk!.next!.duration!;
       this._nextSource = this.context.createBufferSource();
       this._nextSource.buffer = nextBuffer!;
       this._nextGain = this.context.createGain();
