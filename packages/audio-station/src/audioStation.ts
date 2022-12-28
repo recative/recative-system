@@ -1,7 +1,14 @@
 import { AudioContext } from 'standardized-audio-context';
 import { AudioClip } from './audioClip';
 import type { AudioMixer } from './audioMixer';
+import type { CustomEventHandler } from './util';
 
+export type AudioStationEventTarget = EventTarget & {
+  addEventListener(
+    type: 'reset',
+    callback: CustomEventHandler<undefined>
+  ): void;
+};
 /**
  * The audio manager
  */
@@ -13,6 +20,8 @@ export class AudioStation {
   mixers: Set<AudioMixer>;
 
   clips: Set<AudioClip>;
+
+  readonly eventTarget = new EventTarget() as AudioStationEventTarget;
 
   constructor(audioContextOption?: AudioContextOptions) {
     const baseOption: AudioContextOptions = {
@@ -103,8 +112,8 @@ export class AudioStation {
     this.mixers.forEach((mixer) => {
       mixer.replaceAudioContext(newAudioContext);
     });
-    // TODO: event to other component
     this.audioContext = newAudioContext;
+    this.eventTarget.dispatchEvent(new CustomEvent('reset'));
   }
 
   /**

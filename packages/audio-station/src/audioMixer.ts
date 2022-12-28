@@ -3,8 +3,8 @@ import type { AudioContext, GainNode } from 'standardized-audio-context';
 import EventTarget from '@ungap/event-target';
 import type { AudioSource } from './audioSource';
 import type { AudioStation } from './audioStation';
+import type { CustomEventHandler } from './util';
 
-export type CustomEventHandler<T> = (event: CustomEvent<T>) => void;
 export type AudioMixerEventTarget = EventTarget & {
   addEventListener(
     type: 'resume',
