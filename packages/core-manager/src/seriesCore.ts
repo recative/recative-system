@@ -146,6 +146,7 @@ export class SeriesCore<
   ) => {
     this.ensureNotDestroying();
     if (this.switching) {
+      log('Call setEpisode when switching, ignore');
       return this.currentEpisodeCore.get();
     }
     this.switching = true;
@@ -156,6 +157,7 @@ export class SeriesCore<
     });
     const oldEpisodeCore = this.currentEpisodeCore.get();
     const oldEpisodeId = oldEpisodeCore?.episodeId ?? '';
+    log(`Call setEpisode, from ${oldEpisodeId} to ${episodeId}`);
 
     if (
       oldEpisodeCore !== null &&
@@ -163,7 +165,9 @@ export class SeriesCore<
       oldEpisodeCore.coreState.get() !== 'destroying'
     ) {
       if (oldEpisodeCore.episodeId === episodeId) {
+        log(`Switching in the same episode, waiting for metadata`);
         const metadata = await metadataPromise;
+        log(`Switching in the same episode, directly seek`);
         oldEpisodeCore.seek(
           metadata.initialAssetStatus?.order ?? 0,
           metadata.initialAssetStatus?.time ?? 0
@@ -173,16 +177,23 @@ export class SeriesCore<
       }
 
       if (this.config.shouldBlockEpisodeDestroy?.(oldEpisodeId, episodeId)) {
+        log('Episode destroy blocked');
         this.episodeDestroyUnblocked = new OpenPromise<void>();
         await this.episodeDestroyUnblocked;
+        log('Episode destroy unblocked');
       }
+      log('Start to destroy old episode');
       await oldEpisodeCore.destroy();
+      log('Old episode destroyed');
       this.ensureNotDestroying();
     }
 
+    log('Start navigating to new episode');
     await this.config.navigate(episodeId, forceReload);
+    log('Navigated to new episode');
     this.ensureNotDestroying();
 
+    log(`Waiting for metadata`);
     const metadata = await metadataPromise;
     log('Got metadata: ', metadata);
 
@@ -252,6 +263,7 @@ export class SeriesCore<
     }
 
     this.switching = false;
+    log(`Complete setEpisode`);
     return this.currentEpisodeCore.get();
   };
 
