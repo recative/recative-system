@@ -1,6 +1,6 @@
 {
   "name": "@recative/capacitor-geckoview",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "repository": "https://github.com/recative/recative-system",
   "scripts": {
     "verify": "./gradlew clean lint build test -b capacitor/build.gradle"
