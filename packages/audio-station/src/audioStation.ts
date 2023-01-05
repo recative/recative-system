@@ -13,9 +13,16 @@ export type AudioStationEventTarget = EventTarget & {
  * The audio manager
  */
 export class AudioStation {
-  private cachedAudioContext: AudioContextOptions;
+  private cachedAudioContextOption: AudioContextOptions;
 
   audioContext: AudioContext | null;
+
+  private lastCheckedAudioContextCurrentTime: number | null = null;
+
+  private lastCheckedAudioContextPerformanceNow: number | null = null;
+
+  private checkAudioContextInterval: ReturnType<typeof setInterval> | null =
+    null;
 
   mixers: Set<AudioMixer>;
 
@@ -31,13 +38,46 @@ export class AudioStation {
     if ('AudioContext' in globalThis) {
       baseOption.sampleRate = 48000;
     }
-    this.cachedAudioContext = {
+    this.cachedAudioContextOption = {
       ...baseOption,
       ...audioContextOption,
     };
-    this.audioContext = new AudioContext(this.cachedAudioContext);
+    this.audioContext = new AudioContext(this.cachedAudioContextOption);
+    this.audioContext.addEventListener(
+      'statechange',
+      this.handleAudioContextStateChange
+    );
+    this.checkAudioContextInterval = setInterval(this.check, 1000);
     this.mixers = new Set();
     this.clips = new Set();
+  }
+
+  private handleAudioContextStateChange = () => {
+    if (this.audioContext?.state !== 'running') {
+      this.resetCheckedTime();
+    }
+  };
+
+  private resetCheckedTime() {
+    this.lastCheckedAudioContextCurrentTime = null;
+    this.lastCheckedAudioContextPerformanceNow = null;
+  }
+
+  private resumeAudioContext() {
+    const { audioContext } = this;
+    return (
+      audioContext?.resume().catch((err) => {
+        if (audioContext === this.audioContext) {
+          if (
+            (err as Error)?.message.includes('Failed to start the audio device')
+          ) {
+            // iOS audioContext broken
+            this.reset();
+          }
+        }
+        throw err;
+      }) ?? Promise.resolve()
+    );
   }
 
   /**
@@ -47,7 +87,7 @@ export class AudioStation {
     if (this.destroyed) {
       throw new Error('The audio station was destroyed');
     }
-    return this.audioContext!.resume();
+    return this.resumeAudioContext();
   }
 
   /**
@@ -78,7 +118,13 @@ export class AudioStation {
       mixer.destroy();
     });
     const { audioContext } = this;
+    this.audioContext?.removeEventListener(
+      'statechange',
+      this.handleAudioContextStateChange
+    );
     this.audioContext = null;
+    this.resetCheckedTime();
+    clearInterval(this.checkAudioContextInterval);
     return audioContext?.close() ?? Promise.resolve();
   }
 
@@ -107,14 +153,60 @@ export class AudioStation {
     if (this.destroyed) {
       throw new Error('The audio station was destroyed');
     }
+    this.resetCheckedTime();
+    this.audioContext?.removeEventListener(
+      'statechange',
+      this.handleAudioContextStateChange
+    );
     this.audioContext?.close();
-    const newAudioContext = new AudioContext(this.cachedAudioContext);
+    const newAudioContext = new AudioContext(this.cachedAudioContextOption);
     this.mixers.forEach((mixer) => {
       mixer.replaceAudioContext(newAudioContext);
     });
     this.audioContext = newAudioContext;
+    this.audioContext.addEventListener(
+      'statechange',
+      this.handleAudioContextStateChange
+    );
     this.eventTarget.dispatchEvent(new CustomEvent('reset'));
   }
+
+  /**
+   * Check that is the audio context is broken, and reset if it is
+   * Designed for iOS, but potentially useful on other platforms
+   */
+  private check = () => {
+    if (this.destroyed) {
+      throw new Error('The audio station was destroyed');
+    }
+    if (this.audioContext?.state === 'closed') {
+      this.reset();
+      return;
+    }
+    if (this.audioContext?.state === 'running') {
+      const audioContextCurrentTime = this.audioContext!.currentTime;
+      const audioContextPerformanceNow = performance.now();
+      if (
+        this.lastCheckedAudioContextCurrentTime !== null &&
+        this.lastCheckedAudioContextPerformanceNow !== null
+      ) {
+        const audioContextCurrentTimeDiff =
+          audioContextCurrentTime - this.lastCheckedAudioContextCurrentTime;
+        const audioContextPerformanceNowDiff =
+          audioContextPerformanceNow -
+          this.lastCheckedAudioContextPerformanceNow;
+        if (
+          audioContextCurrentTimeDiff <
+          audioContextPerformanceNowDiff * 0.01
+        ) {
+          this.reset();
+          return;
+        }
+      }
+      this.lastCheckedAudioContextCurrentTime = audioContextCurrentTime;
+      this.lastCheckedAudioContextPerformanceNow = audioContextPerformanceNow;
+    }
+  };
 
   /**
    * Load audio buffer from a specific url
