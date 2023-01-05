@@ -12,7 +12,8 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "js": ["content.js"],
+      "run_at": "document_start"
     }
   ],
   "background": {
@@ -20,12 +21,15 @@
     "persistent": true
   },
   "permissions": [
+    "storage",
     "nativeMessaging",
     "geckoViewAddons",
     "activeTab",
     "webRequest",
     "*://localhost/*",
+    "*://*.aliyuncs.com/*",
     "webRequestBlocking",
-    "*://localhost/*"
+    "*://localhost/*",
+    "*://*.aliyuncs.com/*"
   ]
 }
