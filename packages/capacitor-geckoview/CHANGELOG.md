@@ -1,5 +1,12 @@
 # @capacitor/android-geckoview
 
+## 1.0.6
+
+### Patch Changes
+
+- 51f3fff: fix: Some capacitor extensions is not responding the messages from the WebView
+- 8de4f7b: fix: plugins no effect some time
+
 ## 1.0.4
 
 ### Patch Changes
