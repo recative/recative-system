@@ -50,6 +50,29 @@ browser.webRequest.onBeforeRequest.addListener(
   ['blocking']
 );
 
+browser.webRequest.onHeadersReceived.addListener(function onHeadersReceived(resp) {
+  var len = resp.responseHeaders.length;
+  while(--len) {
+    if(resp.responseHeaders[len].name.toLowerCase() === "access-control-allow-origin") {
+      resp.responseHeaders[len].value = "*";
+      break;
+    }
+  }
+  if (len === 0) { //if we didn't find it len will be zero
+    resp.responseHeaders.push({
+      'name': 'Access-Control-Allow-Origin',
+      'value': '*'
+    });
+  }
+  console.log(`rewrite: ${resp.url}`);
+  return {responseHeaders: resp.responseHeaders};
+}, {
+  urls: ['*://*.aliyuncs.com/*', '*://localhost/*'],
+  /*TYPES: "main_frame", "sub_frame", "stylesheet", "script",
+           "image", "object", "xmlhttprequest", "other" */
+//  types: ['xmlhttprequest']
+}, ['blocking', 'responseHeaders']);
+
 // background <=> native
 const port = browser.runtime.connectNative('browser');
 
