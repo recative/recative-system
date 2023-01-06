@@ -97,7 +97,7 @@ export class AudioSource {
 
   private resetSource() {
     this.destroySource();
-    const source = this.station.audioContext!.createBufferSource();
+    const source = this.gain!.context.createBufferSource();
     source.buffer = this.clip.buffer;
     source.connect(this.gain!);
     source.addEventListener('ended', this.onEnd);

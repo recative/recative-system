@@ -232,6 +232,7 @@ export class EpisodeCore<
   readonly episodeId: string;
 
   constructor(config: EpisodeCoreConfig<AdditionalEnvVariable>) {
+    (globalThis as any).audioStation = this.audioStation;
     this.episodeId = config.episodeId;
     this.contentLanguage = jsonAtom(
       '@recative/core-manager/content-lang',
