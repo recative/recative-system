@@ -124,7 +124,7 @@ export class AudioStation {
     );
     this.audioContext = null;
     this.resetCheckedTime();
-    clearInterval(this.checkAudioContextInterval);
+    clearInterval(this.checkAudioContextInterval ?? undefined);
     return audioContext?.close() ?? Promise.resolve();
   }
 
@@ -184,7 +184,7 @@ export class AudioStation {
       return;
     }
     if (this.audioContext?.state === 'running') {
-      const audioContextCurrentTime = this.audioContext!.currentTime;
+      const audioContextCurrentTime = this.audioContext!.currentTime * 1000;
       const audioContextPerformanceNow = performance.now();
       if (
         this.lastCheckedAudioContextCurrentTime !== null &&
