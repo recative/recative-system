@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.12.0
+
+### Minor Changes
+
+- 46019d0: feat: Detect broken audio context and reset audio
+
+### Patch Changes
+
+- Updated dependencies [46019d0]
+  - @recative/audio-station@0.4.0
+  - @recative/phonograph@2.2.0
+
 ## 0.11.9
 
 ### Patch Changes

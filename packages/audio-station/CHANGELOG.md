@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0
+
+### Minor Changes
+
+- 46019d0: feat: Detect broken audio context and reset audio
+
 ## 0.3.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # phonograph changelog
 
+## 2.2.0
+
+### Minor Changes
+
+- 46019d0: feat: Detect broken audio context and reset audio
+
 ## 2.1.1
 
 ### Patch Changes

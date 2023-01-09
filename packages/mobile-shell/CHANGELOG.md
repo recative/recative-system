@@ -1,5 +1,12 @@
 # @recative/mobile-shell
 
+## 0.2.4
+
+### Patch Changes
+
+- @recative/act-player@0.5.16
+- @recative/client-sdk@12.0.0
+
 ## 0.2.3
 
 ### Patch Changes
