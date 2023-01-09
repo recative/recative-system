@@ -6614,7 +6614,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@recative/act-player@^0.5.11, @recative/act-player@^0.5.14, @recative/act-player@^0.5.3, @recative/act-player@workspace:packages/act-player":
+"@recative/act-player@^0.5.11, @recative/act-player@^0.5.15, @recative/act-player@^0.5.3, @recative/act-player@workspace:packages/act-player":
   version: 0.0.0-use.local
   resolution: "@recative/act-player@workspace:packages/act-player"
   dependencies:
@@ -6622,7 +6622,7 @@ __metadata:
     "@paciolan/remote-module-loader": ^3.0.2
     "@react-hookz/web": ^15.1.0
     "@recative/act-protocol": ^0.2.11
-    "@recative/core-manager": ^0.11.6
+    "@recative/core-manager": ^0.11.9
     "@recative/definitions": ^0.5.4
     "@recative/smart-resource": ^0.2.0
     "@types/debug": ^4.1.7
@@ -6823,9 +6823,9 @@ __metadata:
     "@nanostores/react": ^0.1.5
     "@paciolan/remote-module-loader": ^3.0.2
     "@react-hookz/web": ^15.1.0
-    "@recative/act-player": ^0.5.14
+    "@recative/act-player": ^0.5.15
     "@recative/act-protocol": ^0.2.11
-    "@recative/core-manager": ^0.11.8
+    "@recative/core-manager": ^0.11.9
     "@recative/definitions": ^0.5.4
     "@recative/open-promise": ^0.2.3
     "@recative/smart-resource": ^0.2.1
@@ -6845,9 +6845,9 @@ __metadata:
   peerDependencies:
     "@nanostores/react": ^0.1.5
     "@paciolan/remote-module-loader": "*"
-    "@recative/act-player": 0.5.14
+    "@recative/act-player": 0.5.15
     "@recative/act-protocol": "*"
-    "@recative/core-manager": 0.11.8
+    "@recative/core-manager": 0.11.9
     "@recative/smart-resource": "*"
     baseui: ^12.1.0
     classnames: "*"
@@ -6861,7 +6861,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/core-manager@^0.11.0, @recative/core-manager@^0.11.6, @recative/core-manager@^0.11.8, @recative/core-manager@workspace:packages/core-manager":
+"@recative/core-manager@^0.11.0, @recative/core-manager@^0.11.9, @recative/core-manager@workspace:packages/core-manager":
   version: 0.0.0-use.local
   resolution: "@recative/core-manager@workspace:packages/core-manager"
   dependencies:
