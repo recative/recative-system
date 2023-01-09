@@ -65,7 +65,7 @@ const parseObjectQuery = <Document>(
 export const matchObject = <Document>(
   value: Document,
   query: Query<Document>,
-  data: unknown
+  data?: unknown
 ): boolean => {
   const parsedQuery = parseObjectQuery(value, query);
 
