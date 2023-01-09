@@ -1,5 +1,18 @@
 # @capacitor/android-geckoview
 
+## 1.0.7
+
+### Patch Changes
+
+- 7a88e81: feat: add support for delayed loading and bug fixes for extension
+
+## 1.0.6
+
+### Patch Changes
+
+- 51f3fff: fix: Some capacitor extensions is not responding the messages from the WebView
+- 8de4f7b: fix: plugins no effect some time
+
 ## 1.0.4
 
 ### Patch Changes

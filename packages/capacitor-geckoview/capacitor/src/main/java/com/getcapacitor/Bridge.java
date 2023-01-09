@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.ViewTreeObserver;
 import android.webkit.ValueCallback;
@@ -237,9 +238,11 @@ public class Bridge implements IPostMessage {
                 server = null;
             }
         }
+        String overriddenUserAgentString = TextUtils.isEmpty(config.getOverriddenUserAgentString())?"":config.getOverriddenUserAgentString();
+        String appendedUserAgentString = TextUtils.isEmpty(config.getAppendedUserAgentString())?"":config.getAppendedUserAgentString();
         GeckoSessionSettings sessionSettings = new GeckoSessionSettings.Builder()
                 .allowJavascript(true)
-                .userAgentOverride("random_port/" + config.getPort() + ";" + config.getOverriddenUserAgentString() + config.getAppendedUserAgentString())
+                .userAgentOverride("random_port/" + config.getPort() + ";" +overriddenUserAgentString + appendedUserAgentString)
                 .build();
         GeckoSession session = new GeckoSession(sessionSettings);
         session.setContentDelegate(new GeckoSession.ContentDelegate() {

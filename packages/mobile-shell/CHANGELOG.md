@@ -1,5 +1,11 @@
 # @recative/mobile-shell
 
+## 0.2.3
+
+### Patch Changes
+
+- 4bca46c: feat: Supports async initialize
+
 ## 0.2.2
 
 ### Patch Changes

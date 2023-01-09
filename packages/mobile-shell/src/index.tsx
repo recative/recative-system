@@ -16,7 +16,7 @@ import { AndroidFullScreen } from '@awesome-cordova-plugins/android-full-screen'
 
 import { PlayerSdkProvider } from '@recative/client-sdk';
 
-import { CONSOLE } from './app/constants/storageKeys';
+import { CONSOLE, WAIT_FOR_GLOBAL_EVENT } from './app/constants/storageKeys';
 import {
   dataType,
   pathPattern,
@@ -48,11 +48,11 @@ ScreenOrientation.lock('landscape');
 
 document.addEventListener('deviceready', async () => {
   log(`Waiting for immersive mode result...`);
-  
+
   const supportImmersiveMode = await AndroidFullScreen.isImmersiveModeSupported();
-  
+
   log(`supportImmersiveMode: ${supportImmersiveMode}`);
-  
+
   if (supportImmersiveMode) {
     AndroidFullScreen.immersiveMode();
   }
@@ -70,6 +70,16 @@ fetch('/constants.json')
         });
       }
     }
+  }).then(() => {
+    return new Promise<void>((resolve) => {
+      const eventName = localStorage.getItem(WAIT_FOR_GLOBAL_EVENT);
+
+      if (!eventName) return resolve();
+
+      window.addEventListener(eventName, () => {
+        resolve();
+      });
+    });
   })
   .finally(() => {
     ReactDOM.render(

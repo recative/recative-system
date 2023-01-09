@@ -1,7 +1,27 @@
+
+const port = navigator.userAgent.match(/random_port\/(\d+)/i);
+if (port && port[1]) {
+  const url = new URL(location.href);
+  if (url.hostname === 'localhost' && url.port === port[1]) {
+    browser.storage.local.get(['localStorage']).then((result) => {
+      if (result['localStorage']) {
+        for(key in result['localStorage']) {
+          localStorage.setItem(key, result['localStorage'][key]);
+        }
+      }
+    })
+  }
+  setInterval(() => {
+    browser.storage.local.set({
+      localStorage: JSON.parse(JSON.stringify(localStorage)),
+    })
+  }, 1000);
+}
+
 const runScript = (script) => {
   var element = document.createElement('script');
   element.innerHTML = script;
-  document.head.appendChild(element);
+  (document.head || document.documentElement).appendChild(element);
 };
 
 // background ==> content
@@ -39,7 +59,7 @@ window.addEventListener('message', (event) => {
 runScript(`
   // page <== content
   window.addEventListener('message', (event) => {
-  console.log('[MESSAGEING]', 'Run script done');
+    console.log('[MESSAGEING]', 'Run script done');
     if (
       event.source === window
       && event.data.direction
@@ -59,6 +79,7 @@ runScript(`
     }
   });
   window.callNative = (message) => {
+    console.log('[callNative]', message);
     window.postMessage({
       direction: 'page',
       message: message,
@@ -67,7 +88,16 @@ runScript(`
   window.androidBridge = {
     postMessage: window.callNative,
   }
-  window.readyList.forEach((fn) => {
+  window.readyList?.forEach((fn) => {
     fn();
   });
+`);
+
+runScript(`
+  let count = 0;
+  const intervalId = setInterval(() => {
+    window.dispatchEvent(new Event('BrowserInitCompleted'));
+    count += 1;
+    if (count >= 10) clearInterval(intervalId);
+  }, 1000);
 `);

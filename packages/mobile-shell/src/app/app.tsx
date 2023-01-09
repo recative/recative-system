@@ -1,11 +1,13 @@
 import * as React from "react";
 import { setupIonicReact } from "@ionic/react";
 
+import { useEpisodes } from "@recative/client-sdk";
+
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import { InternalPlayer } from "./player";
+import { INDEX_ORDER } from "./constants/storageKeys";
 
-import { useEpisodes } from "@recative/client-sdk";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
@@ -27,7 +29,7 @@ import "@ionic/react/css/display.css";
 import "./theme/variables.css";
 import "./theme/main.css";
 
-const indexEpisodeOrder = localStorage.getItem('@recative/mobile-shell/index-order');
+const indexEpisodeOrder = localStorage.getItem(INDEX_ORDER);
 
 setupIonicReact();
 

@@ -4,6 +4,10 @@
 
 window.readyList = [];
 
+setTimeout(() => {
+  if (!window.androidBridge) location.reload();
+}, 5000)
+
 const nativeBridge = (function (exports) {
     'use strict';
 
@@ -152,9 +156,15 @@ const nativeBridge = (function (exports) {
                     const eventName = args[0];
                     const handler = args[1];
                     if (eventName === 'deviceready' && handler) {
-                        window.readyList.push(() => {
-                            Promise.resolve().then(handler);
-                        });
+                        if (!window.androidBridge) {
+                          console.log('aaaaaaa push')
+                          window.readyList.push(() => {
+                              Promise.resolve().then(handler);
+                          });
+                        } else {
+                          console.log('aaaaaaa run')
+                          Promise.resolve().then(handler);
+                        }
                     }
                     else if (eventName === 'backbutton' && cap.Plugins.App) {
                         // Add a dummy listener so Capacitor doesn't do the default
@@ -628,10 +638,19 @@ const nativeBridge = (function (exports) {
                 var _a;
                 try {
                     // win.androidBridge.postMessage(JSON.stringify(data));
-                    window.postMessage({
-                        direction: 'page',
-                        message: JSON.stringify(data),
-                    }, '*');
+                    if (!window.androidBridge) {
+                      window.readyList.push(() => {
+                        window.postMessage({
+                            direction: 'page',
+                            message: JSON.stringify(data),
+                        }, '*');
+                      });
+                    } else {
+                      window.postMessage({
+                          direction: 'page',
+                          message: JSON.stringify(data),
+                      }, '*');
+                    }
                 }
                 catch (e) {
                     (_a = win === null || win === void 0 ? void 0 : win.console) === null || _a === void 0 ? void 0 : _a.error(e);
