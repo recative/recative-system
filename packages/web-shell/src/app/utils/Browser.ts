@@ -79,3 +79,14 @@ export const Browser = {
     browserFinishedListeners = [];
   },
 };
+
+// Use postMessage to emulate open custom url
+window.addEventListener('message', (event) => {
+  if (event.source !== lastWindow) {
+    return;
+  }
+  const data = event.data;
+  if (data?.source === 'opened-window-url') {
+    (window as any).handleOpenURL(data?.url);
+  }
+});
