@@ -57,7 +57,11 @@ const closeWindow = () => {
 export const Browser = {
   open: async (option: { url: string; windowName?: string }) => {
     closeWindow();
-    lastWindow = window.open(option.url, option.windowName ?? '_blank');
+    lastWindow = window.open(
+      option.url,
+      option.windowName ?? '_blank',
+      'popup'
+    );
     checkWindowClosedInterval = setInterval(checkWindowClosed, 1000);
   },
   close: async () => {
