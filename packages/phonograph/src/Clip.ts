@@ -276,9 +276,9 @@ export default class Clip<Metadata> {
               }
             }
 
-            p += 1;
             // write new data to buffer
             tempBuffer[p] = uint8Array[i];
+            p += 1;
           }
 
           totalLoadedBytes += uint8Array.length;
