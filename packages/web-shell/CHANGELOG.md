@@ -1,5 +1,15 @@
 # @recative/web-shell
 
+## 0.4.0
+
+### Minor Changes
+
+- 77fd2e0: feat: Use postMessage to emulate opening custom url
+
+### Patch Changes
+
+- 34738bf: feat: Open new window in popup
+
 ## 0.3.0
 
 ### Minor Changes

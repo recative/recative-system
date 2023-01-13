@@ -1,5 +1,11 @@
 # phonograph changelog
 
+## 2.2.1
+
+### Patch Changes
+
+- 409153f: fix: Incorrectly increase p before use it
+
 ## 2.2.0
 
 ### Minor Changes
