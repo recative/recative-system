@@ -5,3 +5,40 @@ sidebar_position: 7003
 # TN7003: Resource Management
 
 ## Introduction
+
+The resource management system of the Recative System provides:
+
+- **Responsible resource loading mechanism:** Developers can let your
+  application automatically pick up the resource by its language, platform like
+  Windows or Android, and interaction methods, like touch screen or a mouse.
+
+- **Resource loading:** We provide a series of methods to optimize how resource
+  is loaded for the Web and mobile platforms, loading the resources in a priority
+  queue to optimize the user experience of resource loading.
+
+- **Resource conversion:** Including automatically create atlas images, format
+  converting for the compatibility concerns.
+
+- **Resource packing:** Creating multiple bundling profiles for different
+  deployment purposes, for a example, you may want to create a web application
+  and a mobile app at the same time, since all resources are published to
+  different CDNs, you don't want to include them into the website again, but
+  for the mobile application, you want to include all the resources into the
+  package, since it would enable a better loading experience. With the resource
+  packing feature, such requirements could be met.
+
+## Architecture design
+
+### Client side
+
+The architecture of the resource loading process is constructed by:
+
+- **`@recative/definition`:** The definition packages tells developers how the
+  metadata of each resource file [is defined](/api/definitions/interface/IResourceFile),
+  developers could write definition manually for each resource file, but it is
+  not recommended, considering use Recative Studio to generate the definitions
+  since it will provide a user friendly graphical interface for developers,
+  while managing a large amount of files, Recative Studio is always more useful.
+
+- **@recative/client-sdk`:** If you are using Recative Studio to generate your
+  configurations,
