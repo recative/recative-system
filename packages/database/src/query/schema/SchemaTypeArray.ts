@@ -2,7 +2,7 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { SchemaType } from './SchemaType';
-import { getSchema } from './utils/getSchema';
+import { getSchema } from '../utils/getSchema';
 
 /**
  * Array schema type.

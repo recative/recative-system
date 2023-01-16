@@ -47,8 +47,8 @@ export class SchemaTypeDate<Document extends Date> extends SchemaType<
    * @param value
    * @param _data
    */
-  value(value: Document, _data: unknown) {
-    return value ? value.toISOString() : value;
+  value(value: Document, _data: unknown): string {
+    return value ? value.toISOString() : (value as unknown as string);
   }
 
   /**
