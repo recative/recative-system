@@ -6,7 +6,7 @@ window.readyList = [];
 
 setTimeout(() => {
   if (!window.androidBridge) location.reload();
-}, 2000)
+}, 5000)
 
 const nativeBridge = (function (exports) {
     'use strict';

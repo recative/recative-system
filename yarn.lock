@@ -6614,7 +6614,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@recative/act-player@^0.5.11, @recative/act-player@^0.5.14, @recative/act-player@^0.5.3, @recative/act-player@workspace:packages/act-player":
+"@recative/act-player@^0.5.11, @recative/act-player@^0.5.16, @recative/act-player@workspace:packages/act-player":
   version: 0.0.0-use.local
   resolution: "@recative/act-player@workspace:packages/act-player"
   dependencies:
@@ -6622,7 +6622,7 @@ __metadata:
     "@paciolan/remote-module-loader": ^3.0.2
     "@react-hookz/web": ^15.1.0
     "@recative/act-protocol": ^0.2.11
-    "@recative/core-manager": ^0.11.6
+    "@recative/core-manager": ^0.12.0
     "@recative/definitions": ^0.5.4
     "@recative/smart-resource": ^0.2.0
     "@types/debug": ^4.1.7
@@ -6754,9 +6754,9 @@ __metadata:
     "@parcel/transformer-react-refresh-wrap": ^2.7.0
     "@parcel/transformer-typescript-types": ^2.7.0
     "@react-hookz/web": ^15.1.0
-    "@recative/act-player": ^0.5.3
+    "@recative/act-player": ^0.5.16
     "@recative/act-protocol": ^0.2.9
-    "@recative/core-manager": ^0.11.0
+    "@recative/core-manager": ^0.12.0
     "@recative/definitions": ^0.5.0
     "@recative/smart-resource": ^0.2.0
     "@types/debug": ^4.1.7
@@ -6798,7 +6798,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/audio-station@^0.3.0, @recative/audio-station@workspace:packages/audio-station":
+"@recative/audio-station@^0.4.0, @recative/audio-station@workspace:packages/audio-station":
   version: 0.0.0-use.local
   resolution: "@recative/audio-station@workspace:packages/audio-station"
   dependencies:
@@ -6815,7 +6815,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/client-sdk@^11.0.0, @recative/client-sdk@workspace:packages/client-sdk":
+"@recative/client-sdk@^12.0.0, @recative/client-sdk@workspace:packages/client-sdk":
   version: 0.0.0-use.local
   resolution: "@recative/client-sdk@workspace:packages/client-sdk"
   dependencies:
@@ -6823,9 +6823,9 @@ __metadata:
     "@nanostores/react": ^0.1.5
     "@paciolan/remote-module-loader": ^3.0.2
     "@react-hookz/web": ^15.1.0
-    "@recative/act-player": ^0.5.14
+    "@recative/act-player": ^0.5.16
     "@recative/act-protocol": ^0.2.11
-    "@recative/core-manager": ^0.11.8
+    "@recative/core-manager": ^0.12.0
     "@recative/definitions": ^0.5.4
     "@recative/open-promise": ^0.2.3
     "@recative/smart-resource": ^0.2.1
@@ -6845,9 +6845,9 @@ __metadata:
   peerDependencies:
     "@nanostores/react": ^0.1.5
     "@paciolan/remote-module-loader": "*"
-    "@recative/act-player": 0.5.14
+    "@recative/act-player": 0.5.16
     "@recative/act-protocol": "*"
-    "@recative/core-manager": 0.11.8
+    "@recative/core-manager": 0.12.0
     "@recative/smart-resource": "*"
     baseui: ^12.1.0
     classnames: "*"
@@ -6861,16 +6861,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/core-manager@^0.11.0, @recative/core-manager@^0.11.6, @recative/core-manager@^0.11.8, @recative/core-manager@workspace:packages/core-manager":
+"@recative/core-manager@^0.12.0, @recative/core-manager@workspace:packages/core-manager":
   version: 0.0.0-use.local
   resolution: "@recative/core-manager@workspace:packages/core-manager"
   dependencies:
     "@nanostores/persistent": ^0.5.2
     "@recative/act-protocol": ^0.2.11
-    "@recative/audio-station": ^0.3.0
+    "@recative/audio-station": ^0.4.0
     "@recative/definitions": ^0.5.1
     "@recative/open-promise": ^0.2.3
-    "@recative/phonograph": ^2.0.0
+    "@recative/phonograph": ^2.2.0
     "@recative/resource-loader": ^0.2.3
     "@recative/smart-resource": ^0.2.1
     "@recative/time-schedule": ^0.2.1
@@ -6988,8 +6988,8 @@ __metadata:
     "@ionic/react": ^6.0.0
     "@ionic/react-router": ^6.0.0
     "@paciolan/remote-module-loader": ^3.0.2
-    "@recative/act-player": ^0.5.3
-    "@recative/client-sdk": ^11.0.0
+    "@recative/act-player": ^0.5.16
+    "@recative/client-sdk": ^12.0.0
     "@types/craco__craco": ^6.4.0
     "@types/fs-extra": ^9.0.13
     "@types/path-browserify": ^1.0.0
@@ -7040,7 +7040,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/phonograph@^2.0.0, @recative/phonograph@workspace:packages/phonograph":
+"@recative/phonograph@^2.2.0, @recative/phonograph@workspace:packages/phonograph":
   version: 0.0.0-use.local
   resolution: "@recative/phonograph@workspace:packages/phonograph"
   dependencies:
@@ -7185,7 +7185,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@recative/time-schedule@workspace:packages/time-schedule"
   dependencies:
-    "@recative/audio-station": ^0.3.0
+    "@recative/audio-station": ^0.4.0
   languageName: unknown
   linkType: soft
 

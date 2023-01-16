@@ -3,12 +3,21 @@ import type { AudioContext, GainNode } from 'standardized-audio-context';
 import EventTarget from '@ungap/event-target';
 import type { AudioSource } from './audioSource';
 import type { AudioStation } from './audioStation';
+import type { CustomEventHandler } from './util';
 
-export type CustomEventHandler<T> = (event:CustomEvent<T>)=>void;
 export type AudioMixerEventTarget = EventTarget & {
-  addEventListener(type: 'resume', callback:CustomEventHandler<undefined>):void,
-  addEventListener(type: 'suspend', callback:CustomEventHandler<undefined>):void,
-  addEventListener(type: 'destroy', callback:CustomEventHandler<undefined>):void,
+  addEventListener(
+    type: 'resume',
+    callback: CustomEventHandler<undefined>
+  ): void;
+  addEventListener(
+    type: 'suspend',
+    callback: CustomEventHandler<undefined>
+  ): void;
+  addEventListener(
+    type: 'destroy',
+    callback: CustomEventHandler<undefined>
+  ): void;
 };
 
 /**
@@ -20,6 +29,8 @@ export class AudioMixer {
   node: GainNode<AudioContext> | null;
 
   sources: Set<AudioSource>;
+
+  private cachedVolume = 1;
 
   readonly eventTarget = new EventTarget() as AudioMixerEventTarget;
 
@@ -112,6 +123,30 @@ export class AudioMixer {
       return;
     }
 
+    this.cachedVolume = value;
     this.node!.gain.value = value;
+  }
+
+  /**
+   * Replace audio context used in this mixer
+   * Should be only used by AudioStation#reset
+   */
+  replaceAudioContext(newAudioContext: AudioContext) {
+    const suspended = this.isSuspended();
+    if (!suspended) {
+      this.suspend();
+    }
+    this.node?.disconnect();
+    this.node = null;
+    const newNode = newAudioContext.createGain();
+    newNode.connect(newAudioContext.destination);
+    newNode.gain.value = this.cachedVolume;
+    this.sources.forEach((source) => {
+      source.replaceAudioContext(newAudioContext, newNode);
+    });
+    this.node = newNode;
+    if (!suspended) {
+      this.resume();
+    }
   }
 }

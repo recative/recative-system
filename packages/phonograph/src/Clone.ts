@@ -24,6 +24,7 @@ export default class Clone<Metadata> extends Clip<Metadata> {
     return this.original.canplaythrough;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   set canplaythrough(_) {
     // eslint-disable-line no-unused-vars
     // noop
@@ -33,6 +34,7 @@ export default class Clone<Metadata> extends Clip<Metadata> {
     return this.original.loaded;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   set loaded(_) {
     // eslint-disable-line no-unused-vars
     // noop
@@ -42,6 +44,7 @@ export default class Clone<Metadata> extends Clip<Metadata> {
     return this.original._chunks;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   set _chunks(_) {
     // eslint-disable-line no-unused-vars
     // noop

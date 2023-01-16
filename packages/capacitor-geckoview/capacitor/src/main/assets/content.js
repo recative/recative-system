@@ -88,7 +88,16 @@ runScript(`
   window.androidBridge = {
     postMessage: window.callNative,
   }
-  while(window.readyList.length > 0) {
-    window.readyList.pop()();
-  }
+  window.readyList?.forEach((fn) => {
+    fn();
+  });
+`);
+
+runScript(`
+  let count = 0;
+  const intervalId = setInterval(() => {
+    window.dispatchEvent(new Event('BrowserInitCompleted'));
+    count += 1;
+    if (count >= 10) clearInterval(intervalId);
+  }, 1000);
 `);

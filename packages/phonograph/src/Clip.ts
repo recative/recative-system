@@ -276,9 +276,9 @@ export default class Clip<Metadata> {
               }
             }
 
-            p += 1;
             // write new data to buffer
             tempBuffer[p] = uint8Array[i];
+            p += 1;
           }
 
           totalLoadedBytes += uint8Array.length;
@@ -356,6 +356,18 @@ export default class Clip<Metadata> {
     input?: number
   ) {
     this._gain.disconnect(destination, output, input);
+  }
+
+  _disconnectAllAndReplaceAudioContext(newAudioContext: AudioContext) {
+    // To be safe, make sure the clip is paused when calling this
+    // TODO: do we need to maintain more thing
+    this._gain.disconnect();
+    this.context = newAudioContext;
+    this._chunks.forEach((chunk) => {
+      chunk.context = newAudioContext;
+    });
+    this._gain = newAudioContext.createGain();
+    this._gain.gain.value = this.fadeTarget;
   }
 
   dispose() {
@@ -496,7 +508,8 @@ export default class Clip<Metadata> {
 
   set volume(volume) {
     this.stopFade();
-    this._gain.gain.value = this.fadeTarget = volume;
+    this.fadeTarget = volume;
+    this._gain.gain.value = volume;
   }
 
   fade(startVolume: number, endVolume: number, duration: number) {
@@ -682,7 +695,7 @@ export default class Clip<Metadata> {
     const { currentChunk, nextBuffer } = this._audioBufferCache!;
     if ((currentChunk?.next ?? null) !== null) {
       const pendingStart =
-        this._pendingSourceStart + currentChunk?.next!.duration!;
+        this._pendingSourceStart + currentChunk!.next!.duration!;
       this._nextSource = this.context.createBufferSource();
       this._nextSource.buffer = nextBuffer!;
       this._nextGain = this.context.createGain();

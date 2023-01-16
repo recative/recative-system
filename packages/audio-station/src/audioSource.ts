@@ -1,4 +1,8 @@
-import type { AudioBufferSourceNode, AudioContext, GainNode } from 'standardized-audio-context';
+import type {
+  AudioBufferSourceNode,
+  AudioContext,
+  GainNode,
+} from 'standardized-audio-context';
 import type { AudioStation } from './audioStation';
 import type { AudioClip } from './audioClip';
 import type { AudioMixer } from './audioMixer';
@@ -93,7 +97,7 @@ export class AudioSource {
 
   private resetSource() {
     this.destroySource();
-    const source = this.station.audioContext!.createBufferSource();
+    const source = this.gain!.context.createBufferSource();
     source.buffer = this.clip.buffer;
     source.connect(this.gain!);
     source.addEventListener('ended', this.onEnd);
@@ -141,7 +145,9 @@ export class AudioSource {
     this.progressCalculated = false;
     this.resetSource();
     if (this.progress < 0) {
-      this.source?.start(this.station.audioContext!.currentTime - this.progress);
+      this.source?.start(
+        this.station.audioContext!.currentTime - this.progress
+      );
     } else {
       this.source?.start(0, this.progress);
     }
@@ -192,7 +198,9 @@ export class AudioSource {
       this.progressCalculated = false;
       this.resetSource();
       if (this.progress < 0) {
-        this.source?.start(this.station.audioContext!.currentTime - this.progress);
+        this.source?.start(
+          this.station.audioContext!.currentTime - this.progress
+        );
       } else {
         this.source?.start(0, this.progress);
       }
@@ -325,5 +333,22 @@ export class AudioSource {
   removeEndHandler(handler: () => void) {
     this.ensureNotDestroyed();
     this.endHandlers.delete(handler);
+  }
+
+  /**
+   * Replace audio context used in this source
+   * Should be only used by AudioMixer#replaceAudioContext
+   */
+  replaceAudioContext(
+    newAudioContext: AudioContext,
+    newMixerNode: GainNode<AudioContext>
+  ) {
+    // The source should be suspended here
+    // so we do not need to replace source node since it do not exist
+    this.gain?.disconnect();
+    this.gain = null;
+    const newGain = newAudioContext.createGain();
+    newGain.connect(newMixerNode);
+    this.gain = newGain;
   }
 }

@@ -2,10 +2,56 @@ import {
   AudioClip,
   AudioMixer,
   AudioSource,
+  AudioStation,
   getGlobalAudioStation,
 } from '@recative/audio-station';
 import { IResourceFileForClient } from '@recative/definitions';
 import { Clip as PhonographClip, mp3Adapter } from '@recative/phonograph';
+
+export class PhonographClipWithAudioStation {
+  phonograph: PhonographClip<unknown>;
+
+  mixer: AudioMixer | null = null;
+
+  constructor(public audioStation: AudioStation, url: string) {
+    this.phonograph = new PhonographClip({
+      context: audioStation.audioContext!,
+      url,
+      adapter: mp3Adapter,
+    }) as PhonographClip<unknown>;
+    this.audioStation.eventTarget.addEventListener(
+      'reset',
+      this.audioStationResetHandler
+    );
+  }
+
+  setMixer(mixer: AudioMixer | null) {
+    if (this.mixer !== null) {
+      this.phonograph.disconnect(this.mixer.node!);
+    }
+    this.mixer = mixer;
+    if (this.mixer !== null) {
+      this.phonograph.connect(this.mixer.node!);
+    }
+  }
+
+  dispose() {
+    this.audioStation.eventTarget.removeEventListener(
+      'reset',
+      this.audioStationResetHandler
+    );
+    this.phonograph.dispose();
+  }
+
+  audioStationResetHandler = () => {
+    this.phonograph._disconnectAllAndReplaceAudioContext(
+      this.audioStation.audioContext!
+    );
+    if (this.mixer !== null) {
+      this.phonograph.connect(this.mixer.node!);
+    }
+  };
+}
 
 /**
  * Common interface for Audio Player on different backends
@@ -99,7 +145,7 @@ export class BasicAudioElement implements AudioElement {
 }
 
 export class PhonographAudioElement implements AudioElement {
-  private clip: PhonographClip<unknown> | null = null;
+  private clip: PhonographClipWithAudioStation | null = null;
 
   private suspended = false;
 
@@ -107,11 +153,11 @@ export class PhonographAudioElement implements AudioElement {
 
   private updateActualPlay = () => {
     if (this.playing && !this.suspended) {
-      if (!this.clip?.playing) {
-        this.clip?.play()?.catch(() => {});
+      if (!this.clip?.phonograph?.playing) {
+        this.clip?.phonograph?.play()?.catch(() => {});
       }
-    } else if (this.clip?.playing) {
-      this.clip?.pause();
+    } else if (this.clip?.phonograph?.playing) {
+      this.clip?.phonograph?.pause();
     }
   };
 
@@ -129,9 +175,9 @@ export class PhonographAudioElement implements AudioElement {
     this.destroy();
   };
 
-  constructor(private mixer: AudioMixer, clip: PhonographClip<unknown>) {
+  constructor(private mixer: AudioMixer, clip: PhonographClipWithAudioStation) {
     this.clip = clip;
-    clip.connect(mixer.node!);
+    clip.setMixer(mixer);
     this.suspended = mixer.isSuspended();
     mixer.eventTarget.addEventListener('suspend', this.onMixerSuspend);
     mixer.eventTarget.addEventListener('resume', this.onMixerResume);
@@ -149,9 +195,9 @@ export class PhonographAudioElement implements AudioElement {
   }
 
   stop() {
-    this.clip?.pause();
+    this.clip?.phonograph?.pause();
     if (this.clip !== null) {
-      this.clip.currentTime = 0;
+      this.clip.phonograph.currentTime = 0;
     }
   }
 
@@ -160,7 +206,7 @@ export class PhonographAudioElement implements AudioElement {
   }
 
   destroy(): void {
-    this.clip?.disconnect(this.mixer.node!);
+    this.clip?.setMixer(null);
     this.mixer.eventTarget.removeEventListener('suspend', this.onMixerSuspend);
     this.mixer.eventTarget.removeEventListener('resume', this.onMixerResume);
     this.mixer.eventTarget.removeEventListener('destroy', this.onMixerDestroy);
@@ -173,48 +219,48 @@ export class PhonographAudioElement implements AudioElement {
   }
 
   get stuck() {
-    return this.clip?.stuck ?? false;
+    return this.clip?.phonograph?.stuck ?? false;
   }
 
   get volume() {
-    return this.clip?.volume ?? 0;
+    return this.clip?.phonograph?.volume ?? 0;
   }
 
   set volume(volume: number) {
     if (this.clip !== null) {
-      this.clip.volume = volume;
+      this.clip.phonograph.volume = volume;
     }
   }
 
   get time(): number {
     if (this.clip !== null) {
-      return this.clip.currentTime;
+      return this.clip.phonograph.currentTime;
     }
     return 0;
   }
 
   set time(value: number) {
     if (this.clip !== null) {
-      this.clip.currentTime = value;
+      this.clip.phonograph.currentTime = value;
     }
   }
 
   get loop() {
     if (this.clip !== null) {
-      return this.clip.loop;
+      return this.clip.phonograph.loop;
     }
     return false;
   }
 
   set loop(value) {
     if (this.clip !== null) {
-      this.clip.loop = value;
+      this.clip.phonograph.loop = value;
     }
   }
 
   fade(startVolume: number, endVolume: number, duration: number) {
     if (this.clip !== null) {
-      this.clip.fade(startVolume, endVolume, duration);
+      this.clip.phonograph.fade(startVolume, endVolume, duration);
     }
   }
 }
@@ -227,7 +273,7 @@ export interface BasicAudioElementInit {
 
 export interface PhonographAudioElementInit {
   backend: 'phonograph';
-  clip: PhonographClip<unknown>;
+  clip: PhonographClipWithAudioStation;
 }
 
 export type AudioElementInit =
@@ -253,7 +299,7 @@ export const destroyAudioElementInit = (init: AudioElementInit) => {
 
 export const getAudioElementInitUrl = (init: AudioElementInit) => {
   if (init.backend === 'phonograph') {
-    return init.clip.url;
+    return init.clip.phonograph.url;
   }
   return init.url;
 };
@@ -280,14 +326,13 @@ export const selectUrlPhonographAudioElementInitPostProcess = async (
   try {
     const audioStation = getGlobalAudioStation();
 
-    const phonographClip = new PhonographClip({
-      context: audioStation.audioContext!,
-      url,
-      adapter: mp3Adapter,
-    }) as PhonographClip<unknown>;
+    const phonographClip = new PhonographClipWithAudioStation(
+      audioStation,
+      url
+    );
 
     // wait for canplaythrough
-    await phonographClip.buffer(true);
+    await phonographClip.phonograph.buffer(true);
 
     return { clip: phonographClip, backend: 'phonograph' };
   } catch (e) {

@@ -57,7 +57,11 @@ const closeWindow = () => {
 export const Browser = {
   open: async (option: { url: string; windowName?: string }) => {
     closeWindow();
-    lastWindow = window.open(option.url, option.windowName ?? '_blank');
+    lastWindow = window.open(
+      option.url,
+      option.windowName ?? '_blank',
+      'popup'
+    );
     checkWindowClosedInterval = setInterval(checkWindowClosed, 1000);
   },
   close: async () => {
@@ -75,3 +79,14 @@ export const Browser = {
     browserFinishedListeners = [];
   },
 };
+
+// Use postMessage to emulate open custom url
+window.addEventListener('message', (event) => {
+  if (event.source !== lastWindow) {
+    return;
+  }
+  const data = event.data;
+  if (data?.source === 'opened-window-url') {
+    (window as any).handleOpenURL(data?.url);
+  }
+});
