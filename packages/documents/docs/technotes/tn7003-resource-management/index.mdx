@@ -6,39 +6,158 @@ sidebar_position: 7003
 
 ## Introduction
 
-The resource management system of the Recative System provides:
+The Reactive System's resource management system provides:
 
-- **Responsible resource loading mechanism:** Developers can let your
-  application automatically pick up the resource by its language, platform like
-  Windows or Android, and interaction methods, like touch screen or a mouse.
+- **Responsive resource loading:** Developers can configure the application to
+  automatically select resources based on language, platform (e.g. Windows or
+  Android), and interaction methods (e.g. touch screen or mouse).
 
-- **Resource loading:** We provide a series of methods to optimize how resource
-  is loaded for the Web and mobile platforms, loading the resources in a priority
-  queue to optimize the user experience of resource loading.
+- **Optimized resource loading:** We offer methods for optimizing resource
+  loading on web and mobile platforms, using a priority queue to enhance the
+  user experience.
 
-- **Resource conversion:** Including automatically create atlas images, format
-  converting for the compatibility concerns.
+- **Resource conversion:** Automatically create atlas images and convert formats
+  for compatibility.
 
-- **Resource packing:** Creating multiple bundling profiles for different
-  deployment purposes, for a example, you may want to create a web application
-  and a mobile app at the same time, since all resources are published to
-  different CDNs, you don't want to include them into the website again, but
-  for the mobile application, you want to include all the resources into the
-  package, since it would enable a better loading experience. With the resource
-  packing feature, such requirements could be met.
+- **Resource bundling:** Create multiple profiles for different deployment
+  needs. For example, when creating a web and mobile app simultaneously,
+  resources can be published to different CDNs. The website may not require all
+  resources, but the mobile app may benefit from having all resources bundled in
+  the package for better loading performance.
 
-## Architecture design
+## Client side resource management
 
-### Client side
+### Data flow
 
-The architecture of the resource loading process is constructed by:
+- **`@recative/definition`:** This package defines the metadata for each
+  resource file. Developers can manually write definitions for each file, but it
+  is recommended to use Recative Studio to generate them for a more
+  user-friendly interface and ease of management for larger sets of files.
 
-- **`@recative/definition`:** The definition packages tells developers how the
-  metadata of each resource file [is defined](/api/definitions/interface/IResourceFile),
-  developers could write definition manually for each resource file, but it is
-  not recommended, considering use Recative Studio to generate the definitions
-  since it will provide a user friendly graphical interface for developers,
-  while managing a large amount of files, Recative Studio is always more useful.
+- **`@recative/client-sdk`:** If using Recative Studio to generate
+  configurations, this package can utilize the output and handle data fetching
+  and decoding tasks.
 
-- **@recative/client-sdk`:** If you are using Recative Studio to generate your
-  configurations,
+- **`@recative/act-player`:** If using `@recative/client-sdk`, the player is
+  automatically created. Alternatively, developers can manually pass resource
+  definitions to the player, which acts as a conduit to the
+  `@recative/core-manager` for resource management.
+
+- **`@recative/core-manager`:** This layer is responsible for managing the
+  selection of resources.
+
+### Resource selection
+
+If the developer required a resource group, like a texture. The resource will be
+selected with a weighted score. Recative System will pick the resource with the
+maximum score as the result resource file.
+
+Such tasks is finished by the [`@recative/smart-resource`](/api/smart-resource/function/calculateResourceScore)
+
+There are three necessary elements for the resource selection task:
+
+- **Selector:** A string with colon, the string before the colon is the group
+  name and the string after the colon is the value, here is an example:
+
+  ```
+  category:image
+  ~~~~~~~~ ~~~~~
+  Group    Value
+  ```
+
+- **Environmental variable configurations: ** This is the detailed config of
+  users' devices. If you are using the API provided by `@recative/core-manager`,
+  these variables would be specified by the [`EnvVariableManager`](https://github.com/recative/recative-system/blob/a391b0dfbc42a8ccffcec6404dc3e86bb019f12f/packages/core-manager/src/manager/envVariable/EnvVariableManager.ts)
+  with the following keys:
+
+  - **`lang`:** The language of users' devices.
+
+  - **`device`:** The input device is a mouse or a touch screen.
+
+  - **`screen`:** The screen size is [small, medium or large](https://github.com/recative/recative-system/blob/a391b0dfbc42a8ccffcec6404dc3e86bb019f12f/packages/core-manager/src/manager/envVariable/utils/screenSize.ts#L1).
+
+## Configuration Generation
+
+If developers decide to manage their resource files with the Recative Studio,
+the configuration will be managed automatically. By importing the resource will
+be processed by various extensions:
+
+- **`@recative/extension-av`:** Splits audio and video files into different
+  channels for the video playback system provided by the Recative System. This
+  improves consistency across all major platforms. The audio file will be
+  converted to fix any possible compatibility issues.
+- **`@recative/atlas`:** Analyzes the dimensions of textures and packs them into
+  an atlas texture to save memory and improve the stability of the application
+  on mobile platforms.
+- **`@recative/extension-audio-backends`:** Provides options on the interface
+  that guide the audio system to play audio files in a streamed way even when
+  using the [Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API).
+- **`@recative/extension-crowdin`: ** Provides scripts for synchronizing
+  translation files from the Crowdin platform. These files can be used for
+  internationalization purposes.
+
+:::info
+Although there is currently no way for users of the Recative Studio to add
+third-party extensions, developers can create a pull request to the code
+repository and discuss their desired extension with the Recative team.
+
+This way, the team can review the proposed solution and potentially implement
+it in the future.
+:::
+
+## API Usage
+
+### Video
+
+The official implementation of the Video component in the Recative Studio
+requires that the audio and video channels be split into two separate files. The
+category tag must be set to video and audio, respectively, for each file. This
+means that the group must contain two files, one with the `category:audio` tag
+and the other with the `category:video` tag in its [`tags`](/api/definitions/interface/IResourceFile#tags)
+field. This is to ensure that the correct files are used for the video and audio
+channels during playback.
+
+### Interactive program
+
+For developers who is developing your program with `PIXI.js`, here is a
+component provided by the `@recative/ap-core`, here is an example:
+
+```ts
+import { SmartSprite } from '@recative/ap-core';
+
+const MyComponent = () => {
+  const nameSprite = new SmartSprite({ label: YOUR_RESOURCE_LABEL });
+
+  nameSprite.anchor.set(0.5);
+  nameSprite.position.set(1082, 174 + i * 80);
+
+  // It is a general PIXI component, so you can add it to some container.
+  // someContainer.addChild(nameSprite);
+};
+```
+
+### Develop your own interface component
+
+The `ResourceManager` provided by the `episodeCore` contains methods for
+developers to manually selecting resources from the episode configuration,
+here are the example:
+
+```ts
+const matchedResource = props.core
+  .getEpisodeData()
+  ?.episodeData.resources.getResourceByQuery(
+    YOUR_RESOURCE_LABEL,
+    'label',
+    {
+      category: 'subtitle',
+      lang: 'en',
+    },
+    {
+      category: 1e4,
+      lang: 1,
+    }
+  );
+```
+
+Please checkout the [official implementation](https://github.com/recative/recative-system/blob/feb76e968128289ccde3782dea390e7decc766a1/packages/act-player/src/components/Stage/Video.tsx#L228-L299)
+for more detail.

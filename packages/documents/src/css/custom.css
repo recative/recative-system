@@ -78,6 +78,10 @@ h6 code {
   font-weight: 600;
 }
 
+strong code {
+  font-weight: 600;
+}
+
 nav.menu {
   margin: 0;
   padding: 12px;
