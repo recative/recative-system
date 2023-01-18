@@ -1,0 +1,58 @@
+---
+sidebar_position: 8002
+---
+
+# TN8002: Client SDK: Series Level Media Playback
+
+## Introduction
+
+An client SDK will manage the media playback task across different episodes, and
+related data loading tasks:
+
+- **Data Loading:** Client SDK will manage the metadata fetching and decoding
+  related task. Recative Studio supports encoding the data in multiple formats
+  for different use cases. Client SDK provides a consistent way to fetch the
+  data.
+
+- **Router Management:** Client SDK will manage the switching task between
+  different episodes, including destroying old player, creating new player and
+  manage related lifecycle.
+
+- **Interface Customization:** Recative System provides a very flexible and
+  decoupling way to customize most detail about how the play works.
+
+## Usage
+
+### Initializing
+
+Developers can use the client SDK by using the `ContentModuleFactory`, this is
+a component factory, developers provides the URL pattern of the metadata file
+and the component factory returns a React component that handles the episode
+switching automatically. Here is an example:
+
+```ts
+import { ContentModuleFactory } from '@recative/client-sdk';
+
+const Content = ContentModuleFactory(
+  'https://recative.github.io/production/$fileName',
+  'uson'
+);
+```
+
+It is safe to memo the `Content` component if the parameters are controlled
+by React.
+
+```ts
+const Player: React.FC = () => {
+  const config = useSomeConfig();
+
+  const Content = React.useMemo(
+    () => ContentModuleFactory(config.pathPattern, config.dataType),
+    [config.pathPattern, config.dataType]
+  );
+
+  // now you can use the content component like: <Content />
+};
+```
+
+### Router Management
