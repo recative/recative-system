@@ -2,9 +2,9 @@
 
 import type { CallbackBasedChannel } from 'async-call-rpc';
 
-let ipcRenderer: Electron.IpcRenderer | undefined
+let ipcRenderer: Electron.IpcRenderer | undefined;
 if (window.electron) {
-  ipcRenderer = window.electron.ipcRenderer 
+  ipcRenderer = window.electron.ipcRenderer;
 }
 
 type JSONRPCHandlerCallback = (data: unknown) => Promise<unknown>;
@@ -36,7 +36,7 @@ export class IpcRendererChannel implements CallbackBasedChannel {
   send(x: unknown): void {
     if (x === undefined) return;
     if (ipcRenderer) {
-        ipcRenderer.send('rpc-message', x);
+      ipcRenderer.send('rpc-message', x);
     }
   }
 }
