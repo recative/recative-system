@@ -1,0 +1,3 @@
+module.exports = {
+  customProtocolName: "recative"
+}
