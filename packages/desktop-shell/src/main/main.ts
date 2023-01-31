@@ -106,6 +106,7 @@ app.on('activate', () => {
 
 function handleCustomUrl(url: string) {
   console.error('open-url', url);
+  mainWindow?.webContents.send('open-url', url);
 }
 
 // For custom protocol on none-Windows

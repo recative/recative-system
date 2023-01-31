@@ -1,3 +1,3 @@
 module.exports = {
-  customProtocolName: "recative"
+  customProtocolName: "bon-music"
 }
