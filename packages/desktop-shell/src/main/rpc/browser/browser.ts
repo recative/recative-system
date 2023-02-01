@@ -16,7 +16,7 @@ export const InAppBrowserCreate = (
   target?: string,
   options?: string | Record<string, string>
 ) => {
-  return window.open(url, target, convertInAppBrowserOption(options));
+  return shell.openExternal(url);
 };
 
 export const BrowserOpen = async (option: {
