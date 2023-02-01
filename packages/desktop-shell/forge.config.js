@@ -15,10 +15,10 @@ module.exports = {
       'tsconfig.json'
     ],
     asar: true,
-    protocols: {
+    protocols: [{
       name: customProtocolName,
       schemes: [customProtocolName]
-    }
+    }]
   },
   makers: []
 }
