@@ -14,6 +14,7 @@ module.exports = {
       'rollup.config.js',
       'tsconfig.json'
     ],
+    asar: true,
     protocols: {
       name: customProtocolName,
       schemes: [customProtocolName]
