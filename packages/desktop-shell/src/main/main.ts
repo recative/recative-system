@@ -42,8 +42,7 @@ let mainWindow: BrowserWindow | null = null;
 function createWindow() {
   // Create the browser window.
   const window = new BrowserWindow({
-    width: 800,
-    height: 600,
+    fullscreen: true,
     webPreferences: {
       nodeIntegration: true,
       preload: path.join(__dirname, 'preload.js'),
