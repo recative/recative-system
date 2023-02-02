@@ -1,5 +1,13 @@
 # Changelog
 
+## 12.0.1
+
+### Patch Changes
+
+- Updated dependencies [8969ae5]
+- Updated dependencies [76afb49]
+  - @recative/core-manager@0.12.1
+
 ## 12.0.0
 
 ### Patch Changes
