@@ -509,7 +509,9 @@ export class ContentSequence {
       this.eventTarget.dispatchEvent(
         new CustomEvent('segmentEnd', { detail: this.currentSegment })
       );
-      this.contentSwitching();
+      if (!this.switching) {
+        this.contentSwitching();
+      }
     }
   }
 
@@ -616,8 +618,8 @@ export class ContentSequence {
       this.destroyContent(lastContent);
     }
     this.logProgress('Finished content switching');
-    this.switching = false;
     content.instance!.setTime(this.nextSegmentStartTime);
+    this.switching = false;
     this.nextSegmentStartTime = 0;
     this.updateProgress();
     this.updateStuck();
