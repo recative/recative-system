@@ -3,16 +3,13 @@ import os from 'os';
 import url from 'url';
 import fs from 'fs-extra';
 import { dialog } from 'electron';
+import { tmpDir } from '../../utils/tmpFile';
 
 export interface WriteTempFileOptions {
   path: string;
   data: ArrayBuffer;
   recursive?: boolean;
 }
-
-const tmpDir = fs.mkdtempSync(
-  path.resolve(os.tmpdir(), 'recative-desktop-shell-')
-);
 
 export const WriteTempFile = async (options: WriteTempFileOptions) => {
   const fullPath = path.normalize(path.join(tmpDir, options.path));
