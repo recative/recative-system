@@ -21,6 +21,10 @@
 //           window.onmessage    window.postMessage
 //
 
+browser.storage.local.set({
+  'SESSION_ID': new Date().getTime(),
+})
+
 const portRegex = /http\:\/\/localhost\:(\d+)(.*)&/i;
 const sourceString = 'http://localhost/';
 
@@ -52,8 +56,8 @@ browser.webRequest.onBeforeRequest.addListener(
 
 browser.webRequest.onHeadersReceived.addListener(function onHeadersReceived(resp) {
   var len = resp.responseHeaders.length;
-  while(--len) {
-    if(resp.responseHeaders[len].name.toLowerCase() === "access-control-allow-origin") {
+  while (--len) {
+    if (resp.responseHeaders[len].name.toLowerCase() === "access-control-allow-origin") {
       resp.responseHeaders[len].value = "*";
       break;
     }
@@ -65,12 +69,12 @@ browser.webRequest.onHeadersReceived.addListener(function onHeadersReceived(resp
     });
   }
   console.log(`rewrite: ${resp.url}`);
-  return {responseHeaders: resp.responseHeaders};
+  return { responseHeaders: resp.responseHeaders };
 }, {
   urls: ['*://*.aliyuncs.com/*', '*://localhost/*'],
   /*TYPES: "main_frame", "sub_frame", "stylesheet", "script",
            "image", "object", "xmlhttprequest", "other" */
-//  types: ['xmlhttprequest']
+  //  types: ['xmlhttprequest']
 }, ['blocking', 'responseHeaders']);
 
 // background <=> native

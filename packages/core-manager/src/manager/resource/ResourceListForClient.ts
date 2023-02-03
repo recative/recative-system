@@ -6,20 +6,22 @@ import {
   ResourceList,
   REDIRECT_URL_EXTENSION_ID,
   cleanUpResourceListForClient,
-  IResourceFileForClient,
 } from '@recative/definitions';
 import { OpenPromise } from '@recative/open-promise';
 import { getMatchedResource } from '@recative/smart-resource';
+
 import type {
   IResourceItemForClient,
+  IResourceFileForClient,
   IDetailedResourceItemForClient,
   IDetailedResourceGroupForClient,
 } from '@recative/definitions';
 
 import { selectUrl } from '../../utils/resource';
 import { tryValidResourceUrl } from '../../utils/tryValidResourceUrl';
-import type { PostProcessCallback } from '../../utils/tryValidResourceUrl';
+
 import type { EpisodeCore } from '../../episodeCore';
+import type { PostProcessCallback } from '../../utils/tryValidResourceUrl';
 
 const log = debug('core:resource-list');
 
