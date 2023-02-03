@@ -19,6 +19,7 @@ import {
   trustedUploaders,
   preferredUploaders,
 } from './constants/configurations';
+import { blobWriter } from './utils/BlobWriter';
 
 const log = debug('desktop-shell:player');
 
@@ -62,7 +63,8 @@ const InternalPlayer: React.FC = () => {
           addListener: server.BrowserAddListener,
           removeAllListeners: server.BrowserRemoveAllListeners,
         }
-      }
+      },
+      blobWriter,
     }),
     [navigate],
   );
