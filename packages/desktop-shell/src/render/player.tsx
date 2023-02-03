@@ -65,6 +65,11 @@ const InternalPlayer: React.FC = () => {
         }
       },
       blobWriter,
+      share: {
+        Share: {
+          share: server.ShareBySaveFile,
+        }
+      }
     }),
     [navigate],
   );
