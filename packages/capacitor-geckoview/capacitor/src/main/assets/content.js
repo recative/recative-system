@@ -1,22 +1,29 @@
-
-const port = navigator.userAgent.match(/random_port\/(\d+)/i);
-if (port && port[1]) {
-  const url = new URL(location.href);
-  if (url.hostname === 'localhost' && url.port === port[1]) {
-    browser.storage.local.get(['localStorage']).then((result) => {
-      if (result['localStorage']) {
-        for(key in result['localStorage']) {
-          localStorage.setItem(key, result['localStorage'][key]);
-        }
+const syncLocalStorage = async () => {
+  const port = navigator.userAgent.match(/random_port\/(\d+)/i);
+  if (port && port[1]) {
+    const SESSION_ID = await browser.storage.local.get('SESSION_ID');
+    if (!localStorage.getItem('__OVERWRITE_SUCCESS') !== SESSION_ID) {
+      const url = new URL(location.href);
+      if (url.hostname === 'localhost' && url.port === port[1]) {
+        browser.storage.local.get(['localStorage']).then((result) => {
+          if (result['localStorage']) {
+            for (key in result['localStorage']) {
+              localStorage.setItem(key, result['localStorage'][key]);
+            }
+          }
+        });
+        localStorage.setItem('__OVERWRITE_SUCCESS', SESSION_ID);
       }
-    })
+    }
+    setInterval(() => {
+      const data = JSON.parse(JSON.stringify(localStorage));
+      delete data['__OVERWRITE_SUCCESS'];
+      browser.storage.local.set({
+        localStorage: data,
+      })
+    }, 1000);
   }
-  setInterval(() => {
-    browser.storage.local.set({
-      localStorage: JSON.parse(JSON.stringify(localStorage)),
-    })
-  }, 1000);
-}
+};
 
 const runScript = (script) => {
   var element = document.createElement('script');
