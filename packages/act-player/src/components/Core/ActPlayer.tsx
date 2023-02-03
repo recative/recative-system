@@ -34,6 +34,7 @@ import { LoadingLayer } from '../Loading/LoadingLayer';
 import { InterfaceExtensionComponent } from '../../types/ExtensionCore';
 
 import { useEpisodeInitializer } from './hooks/useEpisodeInitializer';
+import { Inspector } from './Inspector';
 
 export type PlayerResourceProp = IResourceItemForClient;
 
@@ -79,15 +80,15 @@ const DEFAULT_INTERFACE_COMPONENTS = [
 export const InternalManagedActPlayer = <
   T extends Record<string, unknown>,
 >(
-    {
-      core,
-      coreRef,
-      interfaceComponents,
-      interfaceComponentProps,
-      pauseWhenNotVisible,
-      loadingComponent,
-    }: IInternalManagedActPlayerProps<T>,
-  ) => {
+  {
+    core,
+    coreRef,
+    interfaceComponents,
+    interfaceComponentProps,
+    pauseWhenNotVisible,
+    loadingComponent,
+  }: IInternalManagedActPlayerProps<T>,
+) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   React.useImperativeHandle(coreRef, () => core);
@@ -137,6 +138,7 @@ export const InternalManagedActPlayer = <
           {...interfaceComponentProps}
         />
       ))}
+      <Inspector core={core} />
     </Block>
     // </React.StrictMode>
   );
@@ -145,28 +147,28 @@ export const InternalManagedActPlayer = <
 const InternalUnmanagedActPlayer = <
   T extends Record<string, unknown>,
 >(
-    {
-      coreRef,
-      episodeId,
-      interfaceComponents,
-      interfaceComponentProps,
-      assets,
-      resources,
-      preferredUploaders,
-      trustedUploaders,
-      userData,
-      envVariable,
-      initialAsset,
-      userImplementedFunctions,
-      disableAutoPlay,
-      pauseWhenNotVisible,
-      loadingComponent,
-      onEnd,
-      onSegmentEnd,
-      onSegmentStart,
-      onInitialized,
-    }: IInternalUnmanagedActPlayerProps<T>,
-  ) => {
+  {
+    coreRef,
+    episodeId,
+    interfaceComponents,
+    interfaceComponentProps,
+    assets,
+    resources,
+    preferredUploaders,
+    trustedUploaders,
+    userData,
+    envVariable,
+    initialAsset,
+    userImplementedFunctions,
+    disableAutoPlay,
+    pauseWhenNotVisible,
+    loadingComponent,
+    onEnd,
+    onSegmentEnd,
+    onSegmentStart,
+    onInitialized,
+  }: IInternalUnmanagedActPlayerProps<T>,
+) => {
   const core = useConstant(() => {
     const manager = new EpisodeCore<T>({
       initialEnvVariable: envVariable,

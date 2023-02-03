@@ -6642,6 +6642,7 @@ __metadata:
     querystring-es3: ^0.2.1
     react-click-away-listener: ^2.0.5
     react-error-boundary: ^3.1.4
+    react-konami-code: ^2.3.0
     react-slider: 2.0.1
     react-tooltip: ^4.2.21
     react-use: ^17.3.1
@@ -6825,7 +6826,7 @@ __metadata:
     "@react-hookz/web": ^15.1.0
     "@recative/act-player": ^0.5.16
     "@recative/act-protocol": ^0.2.11
-    "@recative/core-manager": ^0.12.0
+    "@recative/core-manager": ^0.12.1
     "@recative/definitions": ^0.5.4
     "@recative/open-promise": ^0.2.3
     "@recative/smart-resource": ^0.2.1
@@ -6847,7 +6848,7 @@ __metadata:
     "@paciolan/remote-module-loader": "*"
     "@recative/act-player": 0.5.16
     "@recative/act-protocol": "*"
-    "@recative/core-manager": 0.12.0
+    "@recative/core-manager": 0.12.1
     "@recative/smart-resource": "*"
     baseui: ^12.1.0
     classnames: "*"
@@ -6861,7 +6862,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recative/core-manager@^0.12.0, @recative/core-manager@workspace:packages/core-manager":
+"@recative/core-manager@^0.12.0, @recative/core-manager@^0.12.1, @recative/core-manager@workspace:packages/core-manager":
   version: 0.0.0-use.local
   resolution: "@recative/core-manager@workspace:packages/core-manager"
   dependencies:
@@ -24711,6 +24712,18 @@ __metadata:
     react: ^17.0.0 || ^16.3.0 || ^15.5.4
     react-dom: ^17.0.0 || ^16.3.0 || ^15.5.4
   checksum: 5718bcd9210ad5b06eb9469cf8b9b44be9498845a7702e621343618e8251f26357e6e1c865532cf170db6165df1cb30202787e057309d8848c220bc600ec0d1a
+  languageName: node
+  linkType: hard
+
+"react-konami-code@npm:^2.3.0":
+  version: 2.3.0
+  resolution: "react-konami-code@npm:2.3.0"
+  dependencies:
+    prop-types: ^15.8.1
+  peerDependencies:
+    react: ">= 16.8.0"
+    react-dom: ">= 16.8.0"
+  checksum: 9cdaa1e7466b0e22474b00dbcd895b7b0aa82a12f07ac870a833b84b328b0e712f5cfa46596fec70d5833bc75de2b666ed630d8fdbf9518dd530841a569e6364
   languageName: node
   linkType: hard
 

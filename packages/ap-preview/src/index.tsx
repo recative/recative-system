@@ -227,20 +227,23 @@ export const renderPlayer = (selector = '#app', resourceServerPort = 9999) => {
         }
       }
     })
+    .catch((e) => {
+      console.error(e);
+    })
     .finally(() => {
       root.render(
-      <StyletronProvider value={engine}>
-        <BaseProvider theme={DarkTheme}>
-          <PlayerSdkProvider
-            pathPattern={temporaryPath ?? `${pathBase}/$fileName`}
-            dataType={dataType ?? 'json'}
-          >
-            <HashRouter>
-              <App />
-            </HashRouter>
-          </PlayerSdkProvider>
-        </BaseProvider>
-      </StyletronProvider>,
+        <StyletronProvider value={engine}>
+          <BaseProvider theme={DarkTheme}>
+            <PlayerSdkProvider
+              pathPattern={temporaryPath ?? `${pathBase}/$fileName`}
+              dataType={dataType ?? 'json'}
+            >
+              <HashRouter>
+                <App />
+              </HashRouter>
+            </PlayerSdkProvider>
+          </BaseProvider>
+        </StyletronProvider>,
       );
     });
 };

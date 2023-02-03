@@ -43,6 +43,7 @@
     "nanostores": "^0.5.12",
     "react-click-away-listener": "^2.0.5",
     "react-error-boundary": "^3.1.4",
+    "react-konami-code": "^2.3.0",
     "react-slider": "2.0.1",
     "react-tooltip": "^4.2.21",
     "react-use": "^17.3.1",
