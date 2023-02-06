@@ -6,13 +6,17 @@ module.exports = {
     ignore: [
       'public[/\\\\]*.*',
       'src[/\\\\]*.*',
-      'node_modules[/\\\\]*.*',
+      '^/node_modules[/\\\\]*.*',
       '.gitignore',
       'forge.config.js',
       'project.json',
       'README.md',
+      'CHANGELOG.md',
       'rollup.config.js',
-      'tsconfig.json'
+      'tsconfig.json',
+      'yarn.lock',
+      '.vscode',
+      '.yarn',
     ],
     asar: true,
     protocols: [{

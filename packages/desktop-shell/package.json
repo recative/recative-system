@@ -22,9 +22,9 @@
   "dependencies": {
     "@types/fs-extra": "9.0.13",
     "async-call-rpc": "^6.1.5",
-    "fs-extra": "10.0.0",
     "electron-is-dev": "^2.0.0",
     "electron-squirrel-startup": "^1.0.0",
+    "fs-extra": "10.0.0",
     "react-scripts": "5.0.1"
   },
   "devDependencies": {
