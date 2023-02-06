@@ -19,6 +19,13 @@ export interface IInspector<T extends Record<string, unknown>> {
   core: EpisodeCore<T> | null;
 }
 
+const titleStyle: StyleObject = {
+  marginTop: '16px',
+  marginBottom: '20px',
+  display: 'flex',
+  alignItems: 'center',
+}
+
 const containerStyle: StyleObject = {
   top: 0,
   left: 0,
@@ -103,7 +110,7 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
   if (!core) {
     return <Block className={css(containerStyle)}>
       <Block className={css(contentStyle)}>
-        <HeadingXSmall display="flex" alignItems="center">
+        <HeadingXSmall className={css(titleStyle)}>
           <RecativeLogo height="1.5em" /><Block marginLeft="8px"> | Inspector</Block>
         </HeadingXSmall>
 
@@ -115,6 +122,8 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
   }
 
   const { width, height } = core.resolution.get();
+
+  const browser = Reflect.get(core.envVariableManager, 'browserRelatedEnvVariable');
 
   return (
     <Block className={css(containerStyle)}>
@@ -160,6 +169,21 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
         <SectionTitle>
           ENV MANAGER
         </SectionTitle>
+
+        <SectionContent
+          title="LANG"
+          content={Reflect.get(core.envVariableManager, 'languageAtom').get()}
+        />
+
+        <SectionContent
+          title="SCR SIZE / DEV TYPE"
+          content={`${Reflect.get(core.envVariableManager, 'screenSizeEnvVariableAtom').get()} / ${Reflect.get(core.envVariableManager, 'deviceTypeEnvVariableAtom').get()}`}
+        />
+
+        <SectionContent
+          title="MOBILE / WECHAT / OS"
+          content={`${s(browser.isMobile)} / ${s(browser.isWeChat)} / ${s(browser.os)}`}
+        />
 
         <SectionTitle>
           ASSETS
