@@ -332,6 +332,12 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
     stuck();
   }, [stuck]);
 
+  const handleError = React.useCallback(() => {
+    const videoError = videoRef.current?.error
+    // eslint-disable-next-line no-console
+    console.error(`Video element error: ${videoError?.code}, ${videoError?.message}`)
+  }, []);
+
   return (
     <ModuleContainer hidden={!props.show}>
       <Block ref={containerRef} className={cn(fullSizeStyle)}>
@@ -347,6 +353,7 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
           onTimeUpdate={handleTimeUpdate}
           onEnded={core.coreFunctions.finishItself}
           onWaiting={handleWaiting}
+          onError={handleError}
         >
           <source ref={videoSourceRef} />
         </video>
