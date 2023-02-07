@@ -6614,7 +6614,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@recative/act-player@^0.5.11, @recative/act-player@^0.5.16, @recative/act-player@workspace:packages/act-player":
+"@recative/act-player@^0.5.11, @recative/act-player@^0.5.16, @recative/act-player@workspace:^, @recative/act-player@workspace:packages/act-player":
   version: 0.0.0-use.local
   resolution: "@recative/act-player@workspace:packages/act-player"
   dependencies:
@@ -7220,6 +7220,7 @@ __metadata:
   resolution: "@recative/web-shell@workspace:packages/web-shell"
   dependencies:
     "@react-hookz/web": ^15.1.0
+    "@recative/act-player": "workspace:^"
     http: "npm:stream-http@^3.2.0"
     https: "npm:https-browserify@^1.0.0"
     react: 18.2.0

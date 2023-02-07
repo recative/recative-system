@@ -33,6 +33,7 @@ export interface ProgressReporter {
 }
 
 export interface InstanceOption {
+  contentId: string;
   spec: ContentSpec;
   triggers?: ManagerCoreStateTrigger[];
   audioStation: AudioStation;
@@ -58,6 +59,11 @@ export interface InstanceOption {
  * This should only be used in this package
  */
 export class ContentInstance extends WithLogger {
+  /**
+   * The asset ID configured from the asset list
+   */
+  readonly contentId: string;
+
   /**
    * Lifecycle state of ContentInstance
    */
@@ -123,6 +129,7 @@ export class ContentInstance extends WithLogger {
   constructor(public id: string, private option: InstanceOption) {
     super();
 
+    this.contentId = option.contentId;
     this.parentShowing = option.parentShowing;
     this.logger = option.logger;
     this.managedCoreStateList.updateTriggers(option.triggers ?? []);

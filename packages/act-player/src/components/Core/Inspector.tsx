@@ -4,7 +4,8 @@ import { useKonami } from 'react-konami-code';
 import { useStyletron } from 'baseui';
 
 import type { StyleObject } from 'styletron-react';
-import type { EpisodeCore } from '@recative/core-manager';
+import type { EpisodeCore, ContentSequence } from '@recative/core-manager';
+
 
 import { Block } from 'baseui/block';
 import { HeadingXSmall, LabelMedium, LabelSmall, LabelXSmall, ParagraphSmall, ParagraphXSmall } from 'baseui/typography';
@@ -47,6 +48,11 @@ const contentStyle: StyleObject = {
   padding: '16px',
   background: 'rgba(0,0,0,0.99)',
   color: 'white',
+}
+
+const contentGroupStyle: StyleObject = {
+  paddingLeft: '4px',
+  borderLeft: '2px solid rgba(255, 255, 255, 0.5)',
 }
 
 const listContentStyle: StyleObject = {
@@ -125,6 +131,8 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
 
   const browser = Reflect.get(core.envVariableManager, 'browserRelatedEnvVariable');
 
+  const mainSequence = Reflect.get(core, 'mainSequence') as ContentSequence | null;
+
   return (
     <Block className={css(containerStyle)}>
       <Block className={css(contentStyle)}>
@@ -166,6 +174,11 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
           content={`${s(core.miniMode.get())} / ${width}x${height}`}
         />
 
+        <SectionContent
+          title="CONTENT LANG / SUBTITLE LANG"
+          content={`${core.contentLanguage.get()} / ${core.subtitleLanguage.get()}`}
+        />
+
         <SectionTitle>
           ENV MANAGER
         </SectionTitle>
@@ -186,8 +199,61 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
         />
 
         <SectionTitle>
-          ASSETS
+          ASSETS / MAIN SEQUENCE
         </SectionTitle>
+
+        {mainSequence
+          ? (
+            mainSequence.contentList.map((c) => {
+              const i = mainSequence.managedContentInstanceMap.get(c.id);
+
+              if (!i) {
+                return (
+                  <Block key={c.id} className={css(contentGroupStyle)}>
+                    <SectionContent
+                      title="ID / STATE"
+                      content={`${c.id} / NOT AVAILABLE`}
+                    />
+                  </Block>
+                )
+              }
+
+              return (
+                <Block key={c.id} className={css(contentGroupStyle)}>
+                  <SectionContent
+                    title="ID / STATE / STUCK"
+                    content={`${c.id} / ${i.contentId} / ${i.timeline.isStuck()}`}
+                  />
+
+                  <SectionContent
+                    title="SELF SHOWING / PARENT SHOWING"
+                    content={`${i.selfShowing} / ${i.parentShowing}`}
+                  />
+
+                  <SectionContent
+                    title="REMOTE PROGRESS / REMOTE STUCK"
+                    content={`${i.remote.progress} / ${i.remote.stuck}`}
+                  />
+
+                  <SectionContent
+                    title="MANAGED / ADDITIONAL CORE STATE"
+                    content={`${i.managedCoreStateList.state.size} / ${i.additionalManagedCoreStateList.state.size}`}
+                  />
+
+                  <SectionContent
+                    title="TASK QUEUE"
+                    content={`${(Reflect.get(i.taskQueueManager, 'tasks') as Map<unknown, unknown>).size}`}
+                  />
+                </Block>
+              )
+            })
+          )
+          : (
+            <SectionContent title="STATE"
+              content="Not Ready"
+            />
+          )
+        }
 
         <SectionContent
           title="SHOWING CONTENTS COUNT"

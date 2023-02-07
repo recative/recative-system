@@ -109,6 +109,11 @@ export class ContentSequence {
   preloadedContents = new Set<ContentInfo>();
 
   /**
+   * A map of content instance id and the content instance
+   */
+  managedContentInstanceMap = new Map<string, ContentInstance>();
+
+  /**
    * ContentInstance managed by the ContentSequence
    */
   managedContentInstance = new Set<ContentInstance>();
@@ -407,6 +412,7 @@ export class ContentSequence {
   private createContent(content: ContentInfo) {
     const instanceId = `${this.option.id}|content-${content.id}|${nanoid()}`;
     const instance = new ContentInstance(instanceId, {
+      contentId: content.id,
       spec: content.spec,
       triggers: content.triggers,
       audioStation: this.option.audioStation,
@@ -443,6 +449,7 @@ export class ContentSequence {
     });
     content.instance = instance;
     this.managedContentInstance.add(instance);
+    this.managedContentInstanceMap.set(content.id, instance);
     this.logContent(`\`createContent\` ${instance.id}`);
     return content.instance;
   }
@@ -517,6 +524,7 @@ export class ContentSequence {
 
   private handleAssetInstanceDestroy(instance: ContentInstance) {
     this.managedContentInstance.delete(instance);
+    this.managedContentInstanceMap.delete(instance.contentId);
   }
 
   /**

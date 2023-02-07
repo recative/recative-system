@@ -24,4 +24,4 @@ export * from './manager/taskQueue/TaskQueueManager';
 export * from './manager/resource/ResourceListForClient';
 export * from './manager/envVariable/EnvVariableManager';
 
-export type { IInitialAssetStatus } from './sequence';
+export type { ContentSequence, IInitialAssetStatus } from './sequence';
