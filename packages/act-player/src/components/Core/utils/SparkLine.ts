@@ -55,7 +55,7 @@ export class SparkLine {
     }
   };
 
-  updateData = (rawData: number[], log = false) => {
+  updateData = (rawData: number[]) => {
     if (!this.$canvas) return;
     if (!this.context) return;
 
@@ -94,10 +94,6 @@ export class SparkLine {
         x = index * ratioW + MARGIN;
         y = c.height - (data[index] * ratioH + MARGIN);
         this.context.lineTo(x, y);
-
-        if (log) {
-          console.log(x, y);
-        }
       }
     }
 

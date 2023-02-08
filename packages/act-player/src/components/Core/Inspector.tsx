@@ -8,9 +8,9 @@ import { useStyletron } from 'baseui';
 import type { StyleObject } from 'styletron-react';
 import type { EpisodeCore, ContentSequence } from '@recative/core-manager';
 
-
 import { Block } from 'baseui/block';
 import { StatefulTooltip } from 'baseui/tooltip';
+import { Button, SIZE as BUTTON_SIZE } from "baseui/button";
 import { HeadingXSmall, LabelMedium, LabelXSmall } from 'baseui/typography';
 
 import { SparkLine } from './utils/SparkLine';
@@ -22,8 +22,13 @@ import { useRaf } from './hooks/useRaf';
 import { RecativeLogo } from '../Logo/RecativeLogo';
 
 import { useEvent } from '../../hooks/useEvent';
+import { forEachConfig, getRecativeConfigurations } from './utils/storageKeys';
 
 const s = (x: boolean) => x.toString();
+
+const KONAMI_CONFIG = {
+  code: [49, 49, 52, 53, 19, 52],
+}
 
 export interface IInspector<T extends Record<string, unknown>> {
   core: EpisodeCore<T> | null;
@@ -72,6 +77,11 @@ const listContentStyle: StyleObject = {
   lineHeight: '16px !important',
 }
 
+const editorListContentStyle: StyleObject = {
+  boxShadow: '0px 1px 0px 0px rgba(255, 255, 255, 0.45)',
+  pointerEvents: 'all',
+}
+
 const fpsStyles: StyleObject = {
   left: '0',
   bottom: '0',
@@ -103,6 +113,7 @@ interface ISectionContentProps {
   title: string;
   content: string;
   hint?: string;
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const sectionStyle: StyleObject = {
@@ -119,9 +130,10 @@ const preStyle: StyleObject = {
 interface IValInputProps {
   className?: string;
   value: string;
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const ValueInput: React.FC<IValInputProps> = ({ className, value }) => {
+const ValueInput: React.FC<IValInputProps> = ({ className, value, onChange }) => {
   const [css, theme] = useStyletron();
 
   const styles: StyleObject = {
@@ -136,12 +148,24 @@ const ValueInput: React.FC<IValInputProps> = ({ className, value }) => {
   }
 
   return (
-    <input className={cn(css(styles), className)} value={value} />
+    <input
+      className={
+        cn(
+          css(styles),
+          { [css(editorListContentStyle)]: !!onChange },
+          className
+        )
+      }
+      value={value}
+      onChange={onChange}
+    />
   )
 
 }
 
-const SectionContent: React.FC<ISectionContentProps> = ({ title, content, hint }) => {
+const SectionContent: React.FC<ISectionContentProps> = ({
+  title, content, hint, onChange
+}) => {
   const [css] = useStyletron();
 
   return (
@@ -152,10 +176,18 @@ const SectionContent: React.FC<ISectionContentProps> = ({ title, content, hint }
           <StatefulTooltip
             content={<Block className={css(preStyle)}>{hint}</Block>}
           >
-            <ValueInput className={css(listContentStyle)} value={content} />
+            <ValueInput
+              className={css(listContentStyle)}
+              onChange={onChange}
+              value={content}
+            />
           </StatefulTooltip>
         ) : (
-          <ValueInput className={css(listContentStyle)} value={content} />
+          <ValueInput
+            className={css(listContentStyle)}
+            onChange={onChange}
+            value={content}
+          />
         )
       }
     </Block>
@@ -184,6 +216,98 @@ if (!window.__RECATIVE_INTERNAL_REQUIRE_MEMORY_RECORD__) {
   }
 }
 
+export const ConfigureEditor = React.memo(() => {
+  const [css] = useStyletron();
+  const [config, setConfig] = React.useState(getRecativeConfigurations);
+
+  const callbacks = React.useMemo(() => {
+    const result = new Map<string, (event: React.ChangeEvent<HTMLInputElement>) => void>();
+
+    forEachConfig(
+      config,
+      (compoundKey, _, __, ___, key, keyMap) => {
+        result.set(
+          compoundKey,
+          (event) => {
+            setConfig(() => {
+              keyMap.set(key, event.currentTarget.value);
+              return config;
+            });
+          }
+        );
+      });
+
+    return result;
+  }, [config]);
+
+  const syncConfig = useEvent(() => {
+    forEachConfig(
+      config,
+      (_, value, domain, product, key) => {
+        localStorage.setItem(`${domain}/${product}/${key}`, value);
+      }
+    );
+
+    // eslint-disable-next-line no-alert
+    alert(`Configuration synced, refresh the page to activate the changes`);
+  });
+
+  return (
+    <>
+      {[...config.keys()].map((domain) => {
+        const productMap = config.get(domain)!;
+
+        return <Block key={domain} paddingTop="4px">
+          <SectionContent
+            title={domain.toUpperCase()}
+            content=""
+          />
+
+          {
+            [...productMap.keys()].map((product) => {
+              const keyMap = productMap.get(product)!;
+
+              return (
+                <Block
+                  key={`${domain}~~~${product}`}
+                  className={css(contentGroupStyle)}
+                >
+                  <SectionContent
+                    title={`☆ ${product.toUpperCase()}`}
+                    content=""
+                  />
+                  {
+                    [...keyMap.keys()].map((key) => {
+                      const configKey = `${domain}~~~${product}~~~${key}`;
+
+                      return (
+                        <SectionContent
+                          key={configKey}
+                          title={key.toUpperCase()}
+                          content={keyMap.get(key) ?? ''}
+                          onChange={callbacks.get(configKey)}
+                        />
+                      )
+                    })
+                  }
+                </Block>
+              )
+            })
+          }
+        </Block>
+      })}
+
+      <Block paddingTop="8px">
+        <Button
+          onClick={syncConfig}
+          size={BUTTON_SIZE.mini}
+        >
+          SET CONFIG
+        </Button>
+      </Block>
+    </>
+  )
+});
 
 export const Inspector = <T extends Record<string, unknown>>({ core }: IInspector<T>) => {
   const [css] = useStyletron();
@@ -205,7 +329,7 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
     setShowInspector((x) => !x);
   });
 
-  useKonami(handleKonami);
+  useKonami(handleKonami, KONAMI_CONFIG);
 
   if (fpsCanvasRef.current && fpsSparkLine.$canvas !== fpsCanvasRef.current) {
     fpsSparkLine.setCanvas(fpsCanvasRef.current);
@@ -312,7 +436,7 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
                 value={averageDeltaT.toFixed(0)}
               />
             </Block>
-            <Block>
+            <Block paddingLeft="6px">
               <SectionContent
                 title="ΔT"
                 content={fpsRecorder.lastΔt.toFixed(2)}
@@ -333,7 +457,7 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
                     value={`${(averageMemoryPercent * 100).toFixed(2)}%`}
                   />
                 </Block>
-                <Block>
+                <Block paddingLeft="6px">
                   <SectionContent
                     title="Usage"
                     content={memoryRecorder.lastMemory[0].toString()}
@@ -576,7 +700,13 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
             )
           })
         }
+
+        <SectionTitle>
+          CONFIGURATIONS
+        </SectionTitle>
+
+        <ConfigureEditor />
       </Block>
-    </Block >
+    </Block>
   )
 }
