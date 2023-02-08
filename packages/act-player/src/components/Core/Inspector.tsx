@@ -11,7 +11,7 @@ import type { EpisodeCore, ContentSequence } from '@recative/core-manager';
 
 import { Block } from 'baseui/block';
 import { StatefulTooltip } from 'baseui/tooltip';
-import { HeadingXSmall, LabelMedium, LabelXSmall, ParagraphXSmall } from 'baseui/typography';
+import { HeadingXSmall, LabelMedium, LabelXSmall } from 'baseui/typography';
 
 import { SparkLine } from './utils/SparkLine';
 import { FpsRecorder } from './utils/FpsRecorder';
@@ -130,9 +130,9 @@ const ValueInput: React.FC<IValInputProps> = ({ className, value }) => {
     background: 'transparent',
     border: 0,
     color: 'white',
-    fontFamily: theme.typography.LabelSmall.fontFamily,
     outline: 0,
     pointerEvents: 'none',
+    ...theme.typography.ParagraphXSmall,
   }
 
   return (
@@ -152,10 +152,10 @@ const SectionContent: React.FC<ISectionContentProps> = ({ title, content, hint }
           <StatefulTooltip
             content={<Block className={css(preStyle)}>{hint}</Block>}
           >
-            <ParagraphXSmall className={css(listContentStyle)}>{content}</ParagraphXSmall>
+            <ValueInput className={css(listContentStyle)} value={content} />
           </StatefulTooltip>
         ) : (
-          <ParagraphXSmall className={css(listContentStyle)}>{content}</ParagraphXSmall>
+          <ValueInput className={css(listContentStyle)} value={content} />
         )
       }
     </Block>
@@ -310,13 +310,19 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
             position="relative"
           >
             <canvas ref={fpsCanvasRef} />
-            <ValueInput value={averageDeltaT.toFixed(0)} className={css(fpsStyles)} />
+            <ValueInput
+              className={css(fpsStyles)}
+              value={averageDeltaT.toFixed(0)}
+            />
           </Block>
           {
             memoryAnalysisAvailable && (
               <Block width="50%" height="120px" position="relative">
                 <canvas ref={memoryRef} />
-                <ValueInput value={`${(averageMemoryPercent * 100).toFixed(2)}%`} className={css(fpsStyles)} />
+                <ValueInput
+                  className={css(fpsStyles)}
+                  value={`${(averageMemoryPercent * 100).toFixed(2)}%`}
+                />
               </Block>
             )
           }
@@ -367,8 +373,8 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
         />
 
         <SectionContent
-          title="PROGRESS / DURATION"
-          content={`${core.progress.get()} / ${core.duration.get()}`}
+          title="DURATION / PROGRESS"
+          content={`${core.duration.get()} / ${core.progress.get().progress.toFixed(2)}(${core.progress.get().segment})`}
         />
 
         <SectionContent
@@ -413,7 +419,7 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
             <>
               <SectionContent
                 title="DURATION / PROGRESS"
-                content={`${mainSequence.duration ?? 'UNKNOWN'} / ${progress?.progress}(${progress?.segment})`}
+                content={`${mainSequence.duration ?? 'UNKNOWN'} / ${progress?.progress.toFixed(2)}(${progress?.segment})`}
               />
 
               <SectionContent
@@ -489,7 +495,7 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
 
                   <SectionContent
                     title="EXTENSION ID"
-                    content={`${c.spec.contentExtensionId})`}
+                    content={`${c.spec.contentExtensionId}`}
                     hint={JSON.stringify(c.spec.extensionConfigurations, null, 2)}
                   />
 
