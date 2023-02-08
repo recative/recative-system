@@ -19,6 +19,8 @@ export class SparkLine {
 
     this.$canvas.style.cssText +=
       'width: 100% !important; height:100% !important';
+
+    this.syncCanvasSize();
   };
 
   syncClear = () => {
@@ -53,7 +55,7 @@ export class SparkLine {
     }
   };
 
-  updateData = (rawData: number[]) => {
+  updateData = (rawData: number[], log = false) => {
     if (!this.$canvas) return;
     if (!this.context) return;
 
@@ -84,7 +86,6 @@ export class SparkLine {
 
     for (let index = 0; index < data.length; index += 1) {
       if (index === 0) {
-        // First time
         this.context.beginPath();
         this.context.lineWidth = LINE_WIDTH;
         currentHeight = c.height - (data[index] * ratioH + MARGIN);
@@ -93,8 +94,13 @@ export class SparkLine {
         x = index * ratioW + MARGIN;
         y = c.height - (data[index] * ratioH + MARGIN);
         this.context.lineTo(x, y);
+
+        if (log) {
+          console.log(x, y);
+        }
       }
     }
+
     this.context.stroke();
   };
 }

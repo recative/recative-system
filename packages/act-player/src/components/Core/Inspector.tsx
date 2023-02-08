@@ -10,15 +10,18 @@ import type { EpisodeCore, ContentSequence } from '@recative/core-manager';
 
 
 import { Block } from 'baseui/block';
-import { StatefulTooltip } from "baseui/tooltip";
+import { StatefulTooltip } from 'baseui/tooltip';
 import { HeadingXSmall, LabelMedium, LabelXSmall, ParagraphXSmall } from 'baseui/typography';
+
+import { SparkLine } from './utils/SparkLine';
+import { FpsRecorder } from './utils/FpsRecorder';
+import { MemoryRecorder } from './utils/MemoryRecorder';
+
+import { useRaf } from './hooks/useRaf';
 
 import { RecativeLogo } from '../Logo/RecativeLogo';
 
 import { useEvent } from '../../hooks/useEvent';
-import { SparkLine } from './utils/SparkLine';
-import { FpsRecorder } from './utils/FpsRecorder';
-import { useRaf } from './hooks/useRaf';
 
 const s = (x: boolean) => x.toString();
 
@@ -129,7 +132,7 @@ const ValueInput: React.FC<IValInputProps> = ({ className, value }) => {
     color: 'white',
     fontFamily: theme.typography.LabelSmall.fontFamily,
     outline: 0,
-    PointerEvent: 'none',
+    pointerEvents: 'none',
   }
 
   return (
@@ -165,16 +168,36 @@ interface MemoryInfo {
   usedJSHeapSize: number;
 }
 
-const getMemory = () => Reflect.get(performance, 'memory') as MemoryInfo | undefined;
+declare global {
+  interface Window {
+    __RECATIVE_INTERNAL_REQUIRE_MEMORY_RECORD__?: () => [number, number] | Promise<[number, number]>;
+
+    performance: {
+      memory: MemoryInfo;
+    }
+  }
+}
+
+if (!window.__RECATIVE_INTERNAL_REQUIRE_MEMORY_RECORD__) {
+  if (Reflect.get(performance, 'memory')) {
+    window.__RECATIVE_INTERNAL_REQUIRE_MEMORY_RECORD__ = () => [window.performance.memory.usedJSHeapSize, window.performance.memory.jsHeapSizeLimit];
+  }
+}
+
 
 export const Inspector = <T extends Record<string, unknown>>({ core }: IInspector<T>) => {
   const [css] = useStyletron();
-  const [averageDeltaT, setAverageDeltaT] = React.useState(0);
-  const fpsCanvasRaf = React.useRef<HTMLCanvasElement>(null);
-  const memoryRaf = React.useRef<HTMLCanvasElement>(null);
+  const fpsCanvasRef = React.useRef<HTMLCanvasElement>(null);
+  const memoryRef = React.useRef<HTMLCanvasElement>(null);
 
-  const sparkLine = useConstant(() => new SparkLine(0, 120));
+  const [averageDeltaT, setAverageDeltaT] = React.useState(0);
+  const fpsSparkLine = useConstant(() => new SparkLine(0, 120));
   const fpsRecorder = useConstant(() => new FpsRecorder());
+
+  const [averageMemoryPercent, setAverageMemoryPercent] = React.useState(0);
+  const memorySparkLine = useConstant(() => new SparkLine(0, 100));
+  const memoryRecorder = useConstant(() => new MemoryRecorder());
+  const memoryRecordRequested = React.useRef<boolean | null>(true);
 
   const [showInspector, setShowInspector] = React.useState<boolean>(false);
 
@@ -184,14 +207,43 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
 
   useKonami(handleKonami);
 
-  if (fpsCanvasRaf.current && sparkLine.$canvas !== fpsCanvasRaf.current) {
-    sparkLine.setCanvas(fpsCanvasRaf.current);
+  if (fpsCanvasRef.current && fpsSparkLine.$canvas !== fpsCanvasRef.current) {
+    fpsSparkLine.setCanvas(fpsCanvasRef.current);
   }
+
+  if (memoryRef.current && memorySparkLine.$canvas !== memoryRef.current) {
+    memorySparkLine.setCanvas(memoryRef.current);
+  }
+
+  const updateMemory = useEvent(([u, t]: [number, number]) => {
+    memoryRecordRequested.current = true;
+    memoryRecorder.tick(u, t);
+
+    setAverageMemoryPercent(u / t);
+    memorySparkLine.updateData(
+      memoryRecorder.memoryBuffer.map(([u0, t0]) => (u0 / t0) * 100)
+    );
+  });
 
   const drawChart = useEvent(() => {
     fpsRecorder.tick();
+
     setAverageDeltaT(1 / fpsRecorder.averageΔt * 1000);
-    sparkLine.updateData(fpsRecorder.ΔtBuffer.map((x) => 1 / x * 1000));
+    fpsSparkLine.updateData(
+      fpsRecorder.ΔtBuffer.map((x) => 1 / x * 1000)
+    );
+
+    if (!window.__RECATIVE_INTERNAL_REQUIRE_MEMORY_RECORD__) return;
+    if (!memoryRecordRequested.current) return;
+
+    const memory = window.__RECATIVE_INTERNAL_REQUIRE_MEMORY_RECORD__();
+
+    if ('then' in memory) {
+      memoryRecordRequested.current = false;
+      memory.then(updateMemory);
+    } else {
+      updateMemory(memory);
+    }
   });
 
   useRaf(drawChart);
@@ -220,7 +272,7 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
 
   const progress = mainSequence?.progress.get();
 
-  const memory = getMemory();
+  const memoryAnalysisAvailable = !!window.__RECATIVE_INTERNAL_REQUIRE_MEMORY_RECORD__;
 
   return (
     <Block className={css(containerStyle)}>
@@ -253,17 +305,18 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
 
         <Block display="flex">
           <Block
-            width={memory ? "50%" : "100%"}
+            width={memoryAnalysisAvailable ? "50%" : "100%"}
             height="120px"
             position="relative"
           >
-            <canvas ref={fpsCanvasRaf} />
+            <canvas ref={fpsCanvasRef} />
             <ValueInput value={averageDeltaT.toFixed(0)} className={css(fpsStyles)} />
           </Block>
           {
-            memory && (
-              <Block width="50%" height="160px" position="relative">
-                <canvas ref={memoryRaf} />
+            memoryAnalysisAvailable && (
+              <Block width="50%" height="120px" position="relative">
+                <canvas ref={memoryRef} />
+                <ValueInput value={`${(averageMemoryPercent * 100).toFixed(2)}%`} className={css(fpsStyles)} />
               </Block>
             )
           }
