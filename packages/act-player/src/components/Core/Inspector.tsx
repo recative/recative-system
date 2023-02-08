@@ -76,8 +76,8 @@ const fpsStyles: StyleObject = {
   left: '0',
   bottom: '0',
   width: '100%',
-  fontSize: '24px',
-  fontWeight: 'bold',
+  fontSize: '24px !important',
+  fontWeight: 'bold !important',
   textAlign: 'right',
   position: 'absolute',
 }
@@ -304,25 +304,45 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
         </SectionTitle>
 
         <Block display="flex">
-          <Block
-            width={memoryAnalysisAvailable ? "50%" : "100%"}
-            height="120px"
-            position="relative"
-          >
-            <canvas ref={fpsCanvasRef} />
-            <ValueInput
-              className={css(fpsStyles)}
-              value={averageDeltaT.toFixed(0)}
-            />
+          <Block width={memoryAnalysisAvailable ? "50%" : "100%"}>
+            <Block height="120px" position="relative">
+              <canvas ref={fpsCanvasRef} />
+              <ValueInput
+                className={css(fpsStyles)}
+                value={averageDeltaT.toFixed(0)}
+              />
+            </Block>
+            <Block>
+              <SectionContent
+                title="ΔT"
+                content={fpsRecorder.lastΔt.toFixed(2)}
+              />
+              <SectionContent
+                title="FPS"
+                content={(1 / fpsRecorder.lastΔt * 1000).toFixed(2)}
+              />
+            </Block>
           </Block>
           {
             memoryAnalysisAvailable && (
-              <Block width="50%" height="120px" position="relative">
-                <canvas ref={memoryRef} />
-                <ValueInput
-                  className={css(fpsStyles)}
-                  value={`${(averageMemoryPercent * 100).toFixed(2)}%`}
-                />
+              <Block width="50%">
+                <Block height="120px" position="relative">
+                  <canvas ref={memoryRef} />
+                  <ValueInput
+                    className={css(fpsStyles)}
+                    value={`${(averageMemoryPercent * 100).toFixed(2)}%`}
+                  />
+                </Block>
+                <Block>
+                  <SectionContent
+                    title="Usage"
+                    content={memoryRecorder.lastMemory[0].toString()}
+                  />
+                  <SectionContent
+                    title="Total"
+                    content={memoryRecorder.lastMemory[1].toString()}
+                  />
+                </Block>
               </Block>
             )
           }
