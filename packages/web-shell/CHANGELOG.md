@@ -1,5 +1,11 @@
 # @recative/web-shell
 
+## 0.4.1
+
+### Patch Changes
+
+- beb2b1b: fix: Initial episode id not working
+
 ## 0.4.0
 
 ### Minor Changes

@@ -27,6 +27,7 @@
     "jgte",
     "jlte",
     "keyin",
+    "Konami",
     "lktxp",
     "Mergeable",
     "mjolnir",
@@ -66,6 +67,7 @@
     "Uson",
     "vconsole",
     "wdyr",
+    "WECHAT",
     "welldone"
   ],
   "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",

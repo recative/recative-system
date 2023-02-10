@@ -25,5 +25,26 @@ export default [
       }),
     ],
     external: ['electron'],
+  },
+  {
+    input: 'src/main/preload.ts',
+    output: [
+      {
+        file: "build/preload.js",
+        format: "cjs",
+        sourcemap: false,
+      }
+    ],
+    plugins: [
+      commonjs(),
+      resolve({
+        extensions: ['.js', '.ts', '.tsx']
+      }),
+      sucrase({
+        exclude: ['node_modules/**'],
+        transforms: ['jsx', 'typescript']
+      }),
+    ],
+    external: ['electron'],
   }
 ];

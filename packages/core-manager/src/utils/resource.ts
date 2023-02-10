@@ -31,16 +31,19 @@ export function* selectUrl(
     );
 
   if (!urlSpecs.length) {
-    throw new NoMoreURLAvailableError();
+    throw new NoMoreURLAvailableError(urlMap, preferredUploaders);
   }
 
   let currentIndex = 0;
 
-  const errorCollector = new NoMoreURLAvailableError();
+  const errorCollector = new NoMoreURLAvailableError(
+    urlMap,
+    preferredUploaders
+  );
 
   while (true) {
     if (currentIndex >= urlSpecs.length) {
-      const nextError = new NoMoreURLAvailableError();
+      const nextError = new NoMoreURLAvailableError(urlMap, preferredUploaders);
       nextError.triedUrls = errorCollector.triedUrls;
 
       throw nextError;

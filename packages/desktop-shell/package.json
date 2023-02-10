@@ -1,6 +1,6 @@
 {
   "name": "@recative/desktop-shell",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "main": "build/main.js",
   "scripts": {
     "prepare-electron": "rollup -c",
@@ -12,14 +12,19 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "prepare-package": "yarn run build && yarn run prepare-electron",
-    "package": "yarn run prepare-package && electron-forge package",
+    "package:win32-x64": "electron-forge package --arch=x64 --platform=win32",
+    "package:darwin-x64": "electron-forge package --arch=x64 --platform=darwin",
+    "package:darwin-arm64": "electron-forge package --arch=arm64 --platform=darwin",
+    "package": "yarn run prepare-package && yarn run package:win32-x64 && yarn run package:darwin-x64 && yarn run package:darwin-arm64",
     "make": "electron-forge make",
     "clean": "rimraf build"
   },
   "dependencies": {
+    "@types/fs-extra": "9.0.13",
     "async-call-rpc": "^6.1.5",
     "electron-is-dev": "^2.0.0",
     "electron-squirrel-startup": "^1.0.0",
+    "fs-extra": "10.0.0",
     "react-scripts": "5.0.1"
   },
   "devDependencies": {

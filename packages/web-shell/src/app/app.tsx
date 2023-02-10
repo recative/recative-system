@@ -3,11 +3,11 @@ import { Route, Routes, Navigate } from 'react-router-dom';
 
 import { useEpisodes } from '@recative/client-sdk';
 
-import { DATA_TYPE } from './constants/storageKeys';
+import { INDEX_ORDER } from './constants/storageKeys';
 
 import { Player } from './player';
 
-const indexEpisodeOrder = localStorage.getItem(DATA_TYPE);
+const indexEpisodeOrder = localStorage.getItem(INDEX_ORDER);
 
 export const App = () => {
   const episodes = useEpisodes();
@@ -17,7 +17,7 @@ export const App = () => {
       .find(
         (episode) => (
           episode.order
-        === (indexEpisodeOrder ? Number.parseInt(indexEpisodeOrder, 10) : 0)
+          === (indexEpisodeOrder ? Number.parseInt(indexEpisodeOrder, 10) : 0)
         ),
       );
   }, [episodes]);

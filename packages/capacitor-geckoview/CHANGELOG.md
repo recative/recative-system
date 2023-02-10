@@ -1,5 +1,11 @@
 # @capacitor/android-geckoview
 
+## 1.0.8
+
+### Patch Changes
+
+- 03d332b: fix: fix the bug of overwriting localStorage multiple times
+
 ## 1.0.7
 
 ### Patch Changes

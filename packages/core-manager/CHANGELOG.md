@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.12.1
+
+### Patch Changes
+
+- 8969ae5: feat: Add debugging information for NoMoreURLAvailableError
+- 76afb49: fix: Suppress content instance finish when switching content
+
 ## 0.12.0
 
 ### Minor Changes

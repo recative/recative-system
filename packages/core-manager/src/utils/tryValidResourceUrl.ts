@@ -14,7 +14,7 @@ const OK = { ok: true };
 
 export type PostProcessCallback<Result = string, AdditionalData = null> = (
   url: string,
-  additionalData?: AdditionalData,
+  additionalData?: AdditionalData
 ) => Promise<Result | null> | (Result | null);
 /**
  * Find the valid resource URL via the fetch method.
@@ -24,14 +24,14 @@ export type PostProcessCallback<Result = string, AdditionalData = null> = (
 export const tryValidResourceUrl = async <
   PostProcess extends PostProcessCallback<Result, AdditionalData> | undefined,
   Result = string,
-  AdditionalData = undefined,
+  AdditionalData = undefined
 >(
   x: Generator<readonly [string, string], void, unknown>,
   postProcess?: PostProcess,
   additionalData?: AdditionalData,
   trustedUploaders: string[] = [],
   taskId = Math.random().toString(36),
-  logObject: Record<string, string> | undefined = undefined,
+  logObject: Record<string, string> | undefined = undefined
 ): Promise<PostProcess extends undefined ? string | null : Result | null> => {
   while (true) {
     const match = x.next().value;
@@ -43,17 +43,18 @@ export const tryValidResourceUrl = async <
     const [url, uploader] = match;
 
     const key = logObject
-      ? (objectEntries(logObject) as [string, string][])
-        .filter(([, value]) => value.includes(url))[0][0]
+      ? (objectEntries(logObject) as [string, string][]).filter(([, value]) =>
+          value.includes(url)
+        )[0][0]
       : null;
 
     try {
       const availability = trustedUploaders.includes(uploader)
         ? OK
         : await fetch(url, {
-          method: 'HEAD',
-          cache: 'no-cache',
-        });
+            method: 'HEAD',
+            cache: 'no-cache',
+          });
 
       if (availability.ok) {
         if (logObject && typeof key === 'string') {

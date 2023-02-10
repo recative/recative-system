@@ -3,6 +3,23 @@ import isDev from 'electron-is-dev';
 import { existsSync } from 'fs';
 import { initializeServer } from './rpc';
 import { app, BrowserWindow, protocol } from 'electron';
+import { customProtocolName } from '../config';
+
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  app.quit();
+}
+
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient(customProtocolName, process.execPath, [
+      path.resolve(process.argv[1]),
+    ]);
+  }
+} else {
+  app.setAsDefaultProtocolClient(customProtocolName);
+}
 
 initializeServer();
 
@@ -20,11 +37,12 @@ protocol.registerSchemesAsPrivileged([
   },
 ]);
 
+let mainWindow: BrowserWindow | null = null;
+
 function createWindow() {
   // Create the browser window.
   const window = new BrowserWindow({
-    width: 800,
-    height: 600,
+    fullscreen: true,
     webPreferences: {
       nodeIntegration: true,
       preload: path.join(__dirname, 'preload.js'),
@@ -40,6 +58,11 @@ function createWindow() {
   if (isDev) {
     window.webContents.openDevTools({ mode: 'detach' });
   }
+
+  if (mainWindow) {
+    mainWindow.close();
+  }
+  mainWindow = window;
 }
 
 // This method will be called when Electron has finished
@@ -77,5 +100,25 @@ app.on('activate', () => {
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
+  }
+});
+
+function handleCustomUrl(url: string) {
+  console.error('open-url', url);
+  mainWindow?.webContents.send('open-url', url);
+}
+
+// For custom protocol on none-Windows
+app.on('open-url', (event, url) => {
+  handleCustomUrl(url);
+});
+
+// For custom protocol on Windows
+app.on('second-instance', (event, commandLine, workingDirectory) => {
+  // Someone tried to run a second instance, we should focus our window.
+  handleCustomUrl(commandLine[commandLine.length - 1]);
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
   }
 });
