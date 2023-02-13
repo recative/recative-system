@@ -232,6 +232,8 @@ export class EpisodeCore<
   readonly episodeId: string;
 
   constructor(config: EpisodeCoreConfig<AdditionalEnvVariable>) {
+    // We need to inject this here
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (globalThis as any).audioStation = this.audioStation;
     this.episodeId = config.episodeId;
     this.contentLanguage = jsonAtom(
