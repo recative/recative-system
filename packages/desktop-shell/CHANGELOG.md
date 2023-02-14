@@ -1,5 +1,13 @@
 # desktop-shell
 
+## 0.3.0
+
+### Minor Changes
+
+- f272ca1: feat: Share file by save file
+- 19aa427: feat: Inject constants.json into electron main process
+- 44ad449: feat: Write temp file
+
 ## 0.2.0
 
 ### Minor Changes
