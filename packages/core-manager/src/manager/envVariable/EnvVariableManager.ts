@@ -11,6 +11,11 @@ import { DEFAULT_AVATAR } from './constant/defaultAvatar';
 export interface IDefaultAdditionalEnvVariable {
   [key: string]: unknown;
 }
+declare global {
+  interface Window {
+    constant: { clientType?: string } | undefined;
+  }
+}
 
 export interface IUserRelatedEnvVariable {
   token: string;
@@ -58,6 +63,8 @@ export class EnvVariableManager<
         this.screenSizeEnvVariableAtom,
       ],
       (user, additional, lang, device, screen) => {
+        const client = `client:${window.constant?.clientType ?? 'unknown'}`;
+
         return {
           ...additional,
           ...this.browserRelatedEnvVariable,
@@ -66,6 +73,7 @@ export class EnvVariableManager<
             lang: lang ?? DEFAULT_LANGUAGE,
             device,
             screen,
+            client,
           },
         };
       }
