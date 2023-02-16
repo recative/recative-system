@@ -63,9 +63,7 @@ export class EnvVariableManager<
         this.screenSizeEnvVariableAtom,
       ],
       (user, additional, lang, device, screen) => {
-        const client = `client:${window.constant?.clientType ?? 'unknown'}`;
-
-        return {
+        const result = {
           ...additional,
           ...this.browserRelatedEnvVariable,
           ...user,
@@ -73,9 +71,14 @@ export class EnvVariableManager<
             lang: lang ?? DEFAULT_LANGUAGE,
             device,
             screen,
-            client,
-          },
+          } as Record<string, string>,
         };
+
+        if (window.constant?.clientType) {
+          result.__smartResourceConfig.client = window.constant.clientType;
+        }
+
+        return result;
       }
     );
 
