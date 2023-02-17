@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.12.3
+
+### Patch Changes
+
+- 20a40d3: chore: Adjust the way of reading device type
+
 ## 0.12.2
 
 ### Patch Changes
