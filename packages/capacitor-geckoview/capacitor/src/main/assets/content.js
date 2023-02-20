@@ -24,6 +24,7 @@ const syncLocalStorage = async () => {
     }, 1000);
   }
 };
+syncLocalStorage();
 
 const runScript = (script) => {
   var element = document.createElement('script');
