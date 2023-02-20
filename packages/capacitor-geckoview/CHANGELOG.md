@@ -1,5 +1,11 @@
 # @capacitor/android-geckoview
 
+## 1.0.9
+
+### Patch Changes
+
+- 5e8473d: fix: incorrect logic in content.js
+
 ## 1.0.8
 
 ### Patch Changes
