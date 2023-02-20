@@ -1,5 +1,22 @@
 # Changelog
 
+## 12.0.3
+
+### Patch Changes
+
+- Updated dependencies [20a40d3]
+  - @recative/core-manager@0.12.3
+
+## 12.0.2
+
+### Patch Changes
+
+- Updated dependencies [bb0e92c]
+- Updated dependencies [2432b63]
+- Updated dependencies [ac22b56]
+  - @recative/core-manager@0.12.2
+  - @recative/act-player@0.5.17
+
 ## 12.0.1
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @recative/act-player
 
+## 0.5.17
+
+### Patch Changes
+
+- 2432b63: feat: Log video element error
+- ac22b56: feat: Implement a debugger which can be activated by keyboard codes
+- Updated dependencies [bb0e92c]
+  - @recative/core-manager@0.12.2
+
 ## 0.5.16
 
 ### Patch Changes

@@ -16,7 +16,7 @@ type IAnimeParameters = AnimeParams & { target?: never };
 
 export const useAnime = (
   x: IAnimeParameters,
-  frameRateLevel: FrameRateLevel = FrameRateLevel.D1,
+  frameRateLevel: FrameRateLevel = FrameRateLevel.D1
 ) => {
   const ticker = useTicker();
   const resourceTracker = useResourceTracker();
@@ -24,10 +24,10 @@ export const useAnime = (
 
   const animeTicker = result.tick.bind(result);
   const tickFunction = (timestamp: number) => {
-    if (result.paused){
+    if (result.paused) {
       ticker.removeFn(tickFunction);
       return;
-    };
+    }
     animeTicker(timestamp);
   };
 
@@ -39,9 +39,13 @@ export const useAnime = (
   });
 
   result.play = () => {
-    if (!result.paused) { return; }
+    if (!result.paused) {
+      return;
+    }
     // @ts-ignore
-    if (result.completed) { result.reset(); }
+    if (result.completed) {
+      result.reset();
+    }
     result.pause();
     result.paused = false;
     ticker.addFn(tickFunction, frameRateLevel);
@@ -57,7 +61,7 @@ export const useAnime = (
 export const useToggleAnime = (
   x: Omit<IAnimeParameters, 'autoplay'>,
   lazy = true,
-  frameRateLevel?: FrameRateLevel,
+  frameRateLevel?: FrameRateLevel
 ) => {
   let instance: AnimeInstance | null = null;
 
@@ -110,7 +114,7 @@ export const useToggleAnime = (
 
 export const useAnimeTimeline = (
   x: AnimeParams,
-  frameRateLevel: FrameRateLevel = FrameRateLevel.D1,
+  frameRateLevel: FrameRateLevel = FrameRateLevel.D1
 ) => {
   const ticker = useTicker();
   const resourceTracker = useResourceTracker();
@@ -118,10 +122,10 @@ export const useAnimeTimeline = (
 
   const animeTicker = result.tick.bind(result);
   const tickFunction = (timestamp: number) => {
-    if (result.paused){
+    if (result.paused) {
       ticker.removeFn(tickFunction);
       return;
-    };
+    }
     animeTicker(timestamp);
   };
 
@@ -133,9 +137,13 @@ export const useAnimeTimeline = (
   });
 
   result.play = () => {
-    if (!result.paused) { return; }
+    if (!result.paused) {
+      return;
+    }
     // @ts-ignore
-    if (result.completed) { result.reset(); }
+    if (result.completed) {
+      result.reset();
+    }
     result.pause();
     result.paused = false;
     ticker.addFn(tickFunction, frameRateLevel);
@@ -169,7 +177,7 @@ export const useLerp = (
   updateFn: (x: number) => void,
   damping: number = 0.15,
   threshold: number = 1e-5,
-  frameRateLevel: FrameRateLevel = FrameRateLevel.D1,
+  frameRateLevel: FrameRateLevel = FrameRateLevel.D1
 ) => {
   let targetValue = getCurrentValFn();
   let cachedDamping = damping;
@@ -177,7 +185,7 @@ export const useLerp = (
   const [startLerp, stopLerp] = useRaf((_, __, ticksElapsed) => {
     const currentValue = getCurrentValFn();
     updateFn(
-      currentValue + (targetValue - currentValue) * cachedDamping * ticksElapsed,
+      currentValue + (targetValue - currentValue) * cachedDamping * ticksElapsed
     );
     if (Math.abs(targetValue - currentValue) < threshold) {
       updateFn(targetValue);
@@ -202,7 +210,7 @@ export const useLerpDataSource = (
   initialValue: number,
   damping: number = 0.15,
   threshold: number = 1e-5,
-  frameRateLevel?: FrameRateLevel,
+  frameRateLevel?: FrameRateLevel
 ) => {
   const dataSource = new DataSource(initialValue);
 
@@ -213,7 +221,7 @@ export const useLerpDataSource = (
     },
     damping,
     threshold,
-    frameRateLevel,
+    frameRateLevel
   );
 
   const { subscribe } = dataSource;
@@ -248,7 +256,7 @@ export const useBatchPaint = (x: () => void) => {
 
 export const useThrottle = <T extends unknown[], U>(
   x: (...args: T) => U,
-  time = 1000 / 24,
+  time = 1000 / 24
 ) => {
   let inThrottle: boolean;
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.12.3
+
+### Patch Changes
+
+- 20a40d3: chore: Adjust the way of reading device type
+
+## 0.12.2
+
+### Patch Changes
+
+- bb0e92c: feat(core-manager): Add client type to device manager
+
 ## 0.12.1
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@recative/core-manager",
-  "version": "0.12.1",
+  "version": "0.12.3",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",

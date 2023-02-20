@@ -1,9 +1,16 @@
 import path from 'path';
 import isDev from 'electron-is-dev';
-import { existsSync } from 'fs';
+import fs, { existsSync } from 'fs-extra';
 import { initializeServer } from './rpc';
 import { app, BrowserWindow, protocol } from 'electron';
 import { customProtocolName } from '../config';
+
+const constantsPath = path.normalize(
+  path.join(__dirname, '..', isDev ? 'public' : 'build', `/constants.json`)
+);
+try {
+  Reflect.set(globalThis, 'constant', fs.readJsonSync(constantsPath));
+} catch {}
 
 const gotTheLock = app.requestSingleInstanceLock();
 
