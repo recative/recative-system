@@ -1,30 +1,41 @@
-const syncLocalStorage = async () => {
-  const port = navigator.userAgent.match(/random_port\/(\d+)/i);
-  if (port && port[1]) {
-    const SESSION_ID = await browser.storage.local.get('SESSION_ID');
-    if (!localStorage.getItem('__OVERWRITE_SUCCESS') !== SESSION_ID) {
-      const url = new URL(location.href);
-      if (url.hostname === 'localhost' && url.port === port[1]) {
-        browser.storage.local.get(['localStorage']).then((result) => {
-          if (result['localStorage']) {
-            for (key in result['localStorage']) {
-              localStorage.setItem(key, result['localStorage'][key]);
+const syncLocalStorage = async (callback) => {
+  try {
+    const port = navigator.userAgent.match(/random_port\/(\d+)/i);
+    if (port && port[1]) {
+      if (!!!sessionStorage.getItem('__OVERWRITE_SUCCESS')) {
+        const url = new URL(location.href);
+        if (url.hostname === 'localhost' && url.port === port[1]) {
+          browser.storage.local.get(['localStorage']).then((result) => {
+            if (result['localStorage']) {
+              for (key in result['localStorage']) {
+                localStorage.setItem(key, result['localStorage'][key]);
+              }
             }
-          }
-        });
-        localStorage.setItem('__OVERWRITE_SUCCESS', SESSION_ID);
+            sessionStorage.setItem('__OVERWRITE_SUCCESS', true);
+            callback();
+          }).catch(() => {
+            callback();
+          }).finally(() => {
+            setInterval(() => {
+              const data = JSON.parse(JSON.stringify(localStorage));
+              browser.storage.local.set({
+                localStorage: data,
+              })
+            }, 1000);
+          });
+        } else {
+          callback();
+        }
+      } else {
+        callback();
       }
+    } else {
+      callback();
     }
-    setInterval(() => {
-      const data = JSON.parse(JSON.stringify(localStorage));
-      delete data['__OVERWRITE_SUCCESS'];
-      browser.storage.local.set({
-        localStorage: data,
-      })
-    }, 1000);
+  } catch (error) {
+    callback();
   }
 };
-syncLocalStorage();
 
 const runScript = (script) => {
   var element = document.createElement('script');
@@ -101,11 +112,13 @@ runScript(`
   });
 `);
 
-runScript(`
-  let count = 0;
-  const intervalId = setInterval(() => {
-    window.dispatchEvent(new Event('BrowserInitCompleted'));
-    count += 1;
-    if (count >= 10) clearInterval(intervalId);
-  }, 1000);
-`);
+syncLocalStorage(() => {
+  runScript(`
+    let count = 0;
+    const intervalId = setInterval(() => {
+      window.dispatchEvent(new Event('BrowserInitCompleted'));
+      count += 1;
+      if (count >= 10) clearInterval(intervalId);
+    }, 1000);
+  `);
+});
