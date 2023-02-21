@@ -11,6 +11,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -18,39 +19,39 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.ViewTreeObserver;
 import android.webkit.ValueCallback;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
-
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContract;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.pm.PackageInfoCompat;
 import androidx.fragment.app.Fragment;
-
 import com.getcapacitor.android.R;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.cordova.MockCordovaGeckoviewImpl;
 import com.getcapacitor.cordova.MockCordovaInterfaceImpl;
+import com.getcapacitor.cordova.MockCordovaWebViewImpl;
 import com.getcapacitor.httpserver.SimpleHttpServer;
 import com.getcapacitor.util.HostMask;
 import com.getcapacitor.util.PermissionHelper;
 import com.getcapacitor.util.WebColor;
-
 import java.io.File;
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
+import java.util.Set;
 import org.apache.cordova.ConfigXmlParser;
 import org.apache.cordova.CordovaPreferences;
 import org.apache.cordova.CordovaWebView;
@@ -62,11 +63,7 @@ import org.mozilla.geckoview.GeckoRuntimeSettings;
 import org.mozilla.geckoview.GeckoSession;
 import org.mozilla.geckoview.GeckoSessionSettings;
 import org.mozilla.geckoview.GeckoView;
-import org.mozilla.geckoview.MediaSession;
 import org.mozilla.geckoview.WebExtension;
-
-import javax.net.ServerSocketFactory;
-import javax.net.SocketFactory;
 
 import fi.iki.elonen.NanoHTTPD;
 
@@ -75,17 +72,17 @@ import fi.iki.elonen.NanoHTTPD;
  * loading and communicating with all Plugins,
  * proxying Native events to Plugins, executing Plugin methods,
  * communicating with the WebView, and a whole lot more.
- * <p>
+ *
  * Generally, you'll not use Bridge directly, instead, extend from BridgeActivity
  * to get a WebView instance and proxy native events automatically.
- * <p>
+ *
  * If you want to use this Bridge in an existing Android app, please
  * see the source for BridgeActivity for the methods you'll need to
  * pass through to Bridge:
  * <a href="https://github.com/ionic-team/capacitor/blob/HEAD/android/capacitor/src/main/java/com/getcapacitor/BridgeActivity.java">
- * BridgeActivity.java</a>
+ *   BridgeActivity.java</a>
  */
-public class Bridge implements IPostMessage {
+public class Bridge implements IPostMessage{
 
     private static final String PREFS_NAME = "CapacitorSettings";
     private static final String PERMISSION_PREFS_NAME = "PluginPermStates";
@@ -95,6 +92,7 @@ public class Bridge implements IPostMessage {
     private static final String BUNDLE_PLUGIN_CALL_BUNDLE_KEY = "capacitorLastPluginCallBundle";
     private static final String LAST_BINARY_VERSION_CODE = "lastBinaryVersionCode";
     private static final String LAST_BINARY_VERSION_NAME = "lastBinaryVersionName";
+    private static final String MINIMUM_ANDROID_WEBVIEW_ERROR = "System WebView is not supported";
 
     // The name of the directory we use to look for index.html and the rest of our web assets
     public static final String DEFAULT_WEB_ASSET_DIR = "public";
@@ -102,6 +100,8 @@ public class Bridge implements IPostMessage {
     public static final String CAPACITOR_HTTPS_SCHEME = "https";
     public static final String CAPACITOR_FILE_START = "/_capacitor_file_";
     public static final String CAPACITOR_CONTENT_START = "/_capacitor_content_";
+    public static final int DEFAULT_ANDROID_WEBVIEW_VERSION = 60;
+    public static final int MINIMUM_ANDROID_WEBVIEW_VERSION = 55;
 
     // Loaded Capacitor config
     private CapConfig config;
@@ -115,10 +115,8 @@ public class Bridge implements IPostMessage {
     private String appUrl;
     private String appUrlConfig;
     private HostMask appAllowNavigationMask;
+    private Set<String> allowedOriginRules = new HashSet<String>();
     // A reference to the main WebView for the app
-
-    private WebExtensionPortProxy webExtensionPortProxy;
-    public final MockCordovaInterfaceImpl cordovaInterface;
     private CordovaWebView cordovaWebView;
     private CordovaPreferences preferences;
     private BridgeWebViewClient webViewClient;
@@ -134,6 +132,8 @@ public class Bridge implements IPostMessage {
     private Handler taskHandler = null;
 
     private final List<Class<? extends Plugin>> initialPlugins;
+
+    private final List<Plugin> pluginInstances;
 
     // A map of Plugin Id's to PluginHandle's
     private Map<String, PluginHandle> plugins = new HashMap<>();
@@ -157,14 +157,19 @@ public class Bridge implements IPostMessage {
     // An interface to manipulate route resolving
     private RouteProcessor routeProcessor;
 
-    private final WebviewExtension webviewExtension;
+    // A pre-determined path to load the bridge
+
+    private ServerPath serverPath;
+
+    private WebExtensionPortProxy webExtensionPortProxy;
+    public final MockCordovaInterfaceImpl cordovaInterface;
+    private WebviewExtension webviewExtension;
     private final static String BUILD_INSTALL = "resource://android/assets/";
     private NanoHTTPD server;
 
     /**
      * Create the Bridge with a reference to the main {@link Activity} for the
-     * app, and a reference to the {@link WebView} our app will use.
-     *
+     * app, and a reference to the {@link GeckoView} our app will use.
      * @param context
      * @param webView
      * @deprecated Use {@link Bridge.Builder} to create Bridge instances
@@ -179,27 +184,32 @@ public class Bridge implements IPostMessage {
             CordovaPreferences preferences,
             CapConfig config
     ) {
-        this(context, null, webView, initialPlugins, cordovaInterface, pluginManager, preferences, config);
+        this(context, null, null, webView, initialPlugins, new ArrayList<>(), cordovaInterface, pluginManager, preferences, config);
     }
 
     private Bridge(
             AppCompatActivity context,
+            ServerPath serverPath,
             Fragment fragment,
             GeckoView webView,
             List<Class<? extends Plugin>> initialPlugins,
+            List<Plugin> pluginInstances,
             MockCordovaInterfaceImpl cordovaInterface,
             PluginManager pluginManager,
             CordovaPreferences preferences,
             CapConfig config
     ) {
         this.app = new App();
+        this.serverPath = serverPath;
         this.context = context;
         this.fragment = fragment;
         this.webviewExtension = new WebviewExtension(webView);
         this.webViewClient = new BridgeWebViewClient(this);
         this.initialPlugins = initialPlugins;
+        this.pluginInstances = pluginInstances;
         this.cordovaInterface = cordovaInterface;
         this.preferences = preferences;
+
         // Start our plugin execution threads and handlers
         handlerThread.start();
         taskHandler = new Handler(handlerThread.getLooper());
@@ -209,6 +219,7 @@ public class Bridge implements IPostMessage {
 
         // Initialize web view and message handler for it
         this.initWebView();
+        this.setAllowedOriginRules();
         this.msgHandler = new MessageHandler(this, webView, pluginManager);
 
         // Grab any intent info that our app was launched with
@@ -221,12 +232,30 @@ public class Bridge implements IPostMessage {
         this.loadWebView();
     }
 
+    private void setAllowedOriginRules() {
+        String[] appAllowNavigationConfig = this.config.getAllowNavigation();
+        String authority = this.getHost();
+        String scheme = this.getScheme();
+        allowedOriginRules.add(scheme + "://" + authority);
+        if (this.getServerUrl() != null) {
+            allowedOriginRules.add(this.getServerUrl());
+        }
+        if (appAllowNavigationConfig != null) {
+            for (String allowNavigation : appAllowNavigationConfig) {
+                if (!allowNavigation.startsWith("http")) {
+                    allowedOriginRules.add("https://" + allowNavigation);
+                } else {
+                    allowedOriginRules.add(allowNavigation);
+                }
+            }
+        }
+    }
+
     public App getApp() {
         return app;
     }
-
-    private void loadWebView() {
-//        bind port retry 3 times
+    private void startRandomPort(){
+        //        bind port retry 3 times
         for (int retry = 0; retry < 3 && server == null; retry++) {
             try {
                 int port = 1024 + new Random().nextInt(64511);
@@ -238,6 +267,10 @@ public class Bridge implements IPostMessage {
                 server = null;
             }
         }
+    }
+    private void loadWebView() {
+
+        startRandomPort();
         String overriddenUserAgentString = TextUtils.isEmpty(config.getOverriddenUserAgentString())?"":config.getOverriddenUserAgentString();
         String appendedUserAgentString = TextUtils.isEmpty(config.getAppendedUserAgentString())?"":config.getAppendedUserAgentString();
         GeckoSessionSettings sessionSettings = new GeckoSessionSettings.Builder()
@@ -255,14 +288,13 @@ public class Bridge implements IPostMessage {
         String[] appAllowNavigationConfig = this.config.getAllowNavigation();
 
         ArrayList<String> authorities = new ArrayList<>();
+
         if (appAllowNavigationConfig != null) {
             authorities.addAll(Arrays.asList(appAllowNavigationConfig));
         }
         this.appAllowNavigationMask = HostMask.Parser.parse(appAllowNavigationConfig);
-
         String authority = this.getHost();
         authorities.add(authority);
-
         String scheme = this.getScheme();
 
         localUrl = scheme + "://" + authority;
@@ -272,6 +304,8 @@ public class Bridge implements IPostMessage {
                 URL appUrlObject = new URL(appUrlConfig);
                 authorities.add(appUrlObject.getAuthority());
             } catch (Exception ex) {
+                Logger.error("Provided server url is invalid: " + ex.getMessage());
+                return;
             }
             localUrl = appUrlConfig;
             appUrl = appUrlConfig;
@@ -287,16 +321,14 @@ public class Bridge implements IPostMessage {
         if (appUrlPath != null && !appUrlPath.trim().isEmpty()) {
             appUrl += appUrlPath;
         }
-
         final boolean html5mode = this.config.isHTML5Mode();
 
         // Start the local web server
         localServer = new WebViewLocalServer(context, this, getJSInjector(), authorities, html5mode);
         localServer.hostAssets(DEFAULT_WEB_ASSET_DIR);
+
         Logger.debug("Loading app at " + appUrl);
 
-//        webView.setWebChromeClient(new BridgeWebChromeClient(this));
-//        webView.setWebViewClient(this.webViewClient);
 
         if (!isDeployDisabled() && !isNewBinary()) {
             SharedPreferences prefs = getContext()
@@ -306,9 +338,28 @@ public class Bridge implements IPostMessage {
                 setServerBasePath(path);
             }
         }
-        // Get to work
-//        webView.loadUrl(appUrl);
 
+        if (!this.isMinimumWebViewInstalled()) {
+            String errorUrl = this.getErrorUrl();
+            if (errorUrl != null) {
+//                webView.loadUrl(errorUrl);
+                return;
+            } else {
+                Logger.error(MINIMUM_ANDROID_WEBVIEW_ERROR);
+            }
+        }
+
+        // If serverPath configured, start server based on provided path
+        if (serverPath != null) {
+            if (serverPath.getType() == ServerPath.PathType.ASSET_PATH) {
+                setServerAssetPath(serverPath.getPath());
+            } else {
+                setServerBasePath(serverPath.getPath());
+            }
+        } else {
+            // Get to work
+//            webView.loadUrl(appUrl);
+        }
         listener = new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
@@ -318,11 +369,48 @@ public class Bridge implements IPostMessage {
         };
         this.webviewExtension.getWebview().getViewTreeObserver().addOnGlobalLayoutListener(listener);
     }
-
     ViewTreeObserver.OnGlobalLayoutListener listener = null;
 
     private void removeListener() {
         this.webviewExtension.getWebview().getViewTreeObserver().removeOnGlobalLayoutListener(listener);
+    }
+    @SuppressLint("WebViewApiAvailability")
+    public boolean isMinimumWebViewInstalled() {
+        PackageManager pm = getContext().getPackageManager();
+
+        // Check getCurrentWebViewPackage() directly if above Android 8
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            PackageInfo info = WebView.getCurrentWebViewPackage();
+            String majorVersionStr = info.versionName.split("\\.")[0];
+            int majorVersion = Integer.parseInt(majorVersionStr);
+            return majorVersion >= config.getMinWebViewVersion();
+        }
+
+        // Otherwise manually check WebView versions
+        try {
+            String webViewPackage = "com.google.android.webview";
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                webViewPackage = "com.android.chrome";
+            }
+            PackageInfo info = pm.getPackageInfo(webViewPackage, 0);
+            String majorVersionStr = info.versionName.split("\\.")[0];
+            int majorVersion = Integer.parseInt(majorVersionStr);
+            return majorVersion >= config.getMinWebViewVersion();
+        } catch (Exception ex) {
+            Logger.warn("Unable to get package info for 'com.google.android.webview'" + ex.toString());
+        }
+
+        try {
+            PackageInfo info = pm.getPackageInfo("com.android.webview", 0);
+            String majorVersionStr = info.versionName.split("\\.")[0];
+            int majorVersion = Integer.parseInt(majorVersionStr);
+            return majorVersion >= config.getMinWebViewVersion();
+        } catch (Exception ex) {
+            Logger.warn("Unable to get package info for 'com.android.webview'" + ex.toString());
+        }
+
+        // Could not detect any webview, return false
+        return false;
     }
 
     public boolean launchIntent(Uri url) {
@@ -339,7 +427,7 @@ public class Bridge implements IPostMessage {
             }
         }
 
-        if (!url.toString().contains(appUrl) && !appAllowNavigationMask.matches(url.getHost())) {
+        if (!url.toString().startsWith(appUrl) && !appAllowNavigationMask.matches(url.getHost())) {
             try {
                 Intent openIntent = new Intent(Intent.ACTION_VIEW, url);
                 getContext().startActivity(openIntent);
@@ -361,7 +449,7 @@ public class Bridge implements IPostMessage {
 
         try {
             PackageInfo pInfo = getContext().getPackageManager().getPackageInfo(getContext().getPackageName(), 0);
-            versionCode = Integer.toString(pInfo.versionCode);
+            versionCode = Integer.toString((int) PackageInfoCompat.getLongVersionCode(pInfo));
             versionName = pInfo.versionName;
         } catch (Exception ex) {
             Logger.error("Unable to get package info", ex);
@@ -408,7 +496,6 @@ public class Bridge implements IPostMessage {
 
     /**
      * Get the Context for the App
-     *
      * @return
      */
     public Context getContext() {
@@ -417,7 +504,6 @@ public class Bridge implements IPostMessage {
 
     /**
      * Get the activity for the app
-     *
      * @return
      */
     public AppCompatActivity getActivity() {
@@ -436,7 +522,6 @@ public class Bridge implements IPostMessage {
 
     /**
      * Get the core WebView under Capacitor's control
-     *
      * @return
      */
     public WebviewExtension getWebView() {
@@ -445,7 +530,6 @@ public class Bridge implements IPostMessage {
 
     /**
      * Get the URI that was used to launch the app (if any)
-     *
      * @return
      */
     public Uri getIntentUri() {
@@ -454,7 +538,6 @@ public class Bridge implements IPostMessage {
 
     /**
      * Get scheme that is used to serve content
-     *
      * @return
      */
     public String getScheme() {
@@ -463,7 +546,6 @@ public class Bridge implements IPostMessage {
 
     /**
      * Get host name that is used to serve content
-     *
      * @return
      */
     public String getHost() {
@@ -472,11 +554,29 @@ public class Bridge implements IPostMessage {
 
     /**
      * Get the server url that is used to serve content
-     *
      * @return
      */
     public String getServerUrl() {
         return this.config.getServerUrl();
+    }
+
+    public String getErrorUrl() {
+        String errorPath = this.config.getErrorPath();
+
+        if (errorPath != null && !errorPath.trim().isEmpty()) {
+            String authority = this.getHost();
+            String scheme = this.getScheme();
+
+            String localUrl = scheme + "://" + authority;
+
+            return localUrl + "/" + errorPath;
+        }
+
+        return null;
+    }
+
+    public String getAppUrl() {
+        return appUrl;
     }
 
     public CapConfig getConfig() {
@@ -490,8 +590,8 @@ public class Bridge implements IPostMessage {
     /**
      * Initialize the WebView, setting required flags
      */
+    @SuppressLint("SetJavaScriptEnabled")
     private void initWebView() {
-
         String backgroundColor = this.config.getBackgroundColor();
         try {
             if (backgroundColor != null) {
@@ -512,16 +612,21 @@ public class Bridge implements IPostMessage {
      * Register our core Plugin APIs
      */
     private void registerAllPlugins() {
+        this.registerPlugin(com.getcapacitor.plugin.CapacitorCookies.class);
         this.registerPlugin(com.getcapacitor.plugin.WebView.class);
+        this.registerPlugin(com.getcapacitor.plugin.CapacitorHttp.class);
 
         for (Class<? extends Plugin> pluginClass : this.initialPlugins) {
             this.registerPlugin(pluginClass);
+        }
+
+        for (Plugin plugin : pluginInstances) {
+            registerPluginInstance(plugin);
         }
     }
 
     /**
      * Register additional plugins
-     *
      * @param pluginClasses the plugins to register
      */
     public void registerPlugins(Class<? extends Plugin>[] pluginClasses) {
@@ -530,49 +635,87 @@ public class Bridge implements IPostMessage {
         }
     }
 
+    public void registerPluginInstances(Plugin[] pluginInstances) {
+        for (Plugin plugin : pluginInstances) {
+            this.registerPluginInstance(plugin);
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private String getLegacyPluginName(Class<? extends Plugin> pluginClass) {
+        NativePlugin legacyPluginAnnotation = pluginClass.getAnnotation(NativePlugin.class);
+        if (legacyPluginAnnotation == null) {
+            Logger.error("Plugin doesn't have the @CapacitorPlugin annotation. Please add it");
+            return null;
+        }
+
+        return legacyPluginAnnotation.name();
+    }
+
     /**
      * Register a plugin class
-     *
      * @param pluginClass a class inheriting from Plugin
      */
     public void registerPlugin(Class<? extends Plugin> pluginClass) {
-        String pluginName;
-
-        CapacitorPlugin pluginAnnotation = pluginClass.getAnnotation(CapacitorPlugin.class);
-        if (pluginAnnotation == null) {
-            NativePlugin legacyPluginAnnotation = pluginClass.getAnnotation(NativePlugin.class);
-
-            if (legacyPluginAnnotation == null) {
-                Logger.error("Plugin doesn't have the @CapacitorPlugin annotation. Please add it");
-                return;
-            }
-
-            pluginName = legacyPluginAnnotation.name();
-        } else {
-            pluginName = pluginAnnotation.name();
-        }
-
-        String pluginId = pluginClass.getSimpleName();
-
-        // Use the supplied name as the id if available
-        if (!pluginName.equals("")) {
-            pluginId = pluginName;
-        }
-
-        Logger.debug("Registering plugin: " + pluginId);
+        String pluginId = pluginId(pluginClass);
+        if (pluginId == null) return;
 
         try {
             this.plugins.put(pluginId, new PluginHandle(this, pluginClass));
         } catch (InvalidPluginException ex) {
-            Logger.error(
-                    "NativePlugin " +
-                            pluginClass.getName() +
-                            " is invalid. Ensure the @CapacitorPlugin annotation exists on the plugin class and" +
-                            " the class extends Plugin"
-            );
+            logInvalidPluginException(pluginClass);
         } catch (PluginLoadException ex) {
-            Logger.error("NativePlugin " + pluginClass.getName() + " failed to load", ex);
+            logPluginLoadException(pluginClass, ex);
         }
+    }
+
+    public void registerPluginInstance(Plugin plugin) {
+        Class<? extends Plugin> clazz = plugin.getClass();
+        String pluginId = pluginId(clazz);
+        if (pluginId == null) return;
+
+        try {
+            this.plugins.put(pluginId, new PluginHandle(this, plugin));
+        } catch (InvalidPluginException ex) {
+            logInvalidPluginException(clazz);
+        }
+    }
+
+    private String pluginId(Class<? extends Plugin> clazz) {
+        String pluginName = pluginName(clazz);
+        String pluginId = clazz.getSimpleName();
+        if (pluginName == null) return null;
+
+        if (!pluginName.equals("")) {
+            pluginId = pluginName;
+        }
+        Logger.debug("Registering plugin instance: " + pluginId);
+        return pluginId;
+    }
+
+    private String pluginName(Class<? extends Plugin> clazz) {
+        String pluginName;
+        CapacitorPlugin pluginAnnotation = clazz.getAnnotation(CapacitorPlugin.class);
+        if (pluginAnnotation == null) {
+            pluginName = this.getLegacyPluginName(clazz);
+        } else {
+            pluginName = pluginAnnotation.name();
+        }
+
+        return pluginName;
+    }
+
+    private void logInvalidPluginException(Class<? extends Plugin> clazz) {
+        Logger.error(
+                "NativePlugin " +
+                        clazz.getName() +
+                        " is invalid. Ensure the @CapacitorPlugin annotation exists on the plugin class and" +
+                        " the class extends Plugin"
+        );
+    }
+
+    private void logPluginLoadException(Class<? extends Plugin> clazz, Exception ex) {
+        Logger.error("NativePlugin " + clazz.getName() + " failed to load", ex);
     }
 
     public PluginHandle getPlugin(String pluginId) {
@@ -582,11 +725,11 @@ public class Bridge implements IPostMessage {
     /**
      * Find the plugin handle that responds to the given request code. This will
      * fire after certain Android OS intent results/permission checks/etc.
-     *
      * @param requestCode
      * @return
      */
     @Deprecated
+    @SuppressWarnings("deprecation")
     public PluginHandle getPluginWithRequestCode(int requestCode) {
         for (PluginHandle handle : this.plugins.values()) {
             int[] requestCodes;
@@ -625,10 +768,9 @@ public class Bridge implements IPostMessage {
 
     /**
      * Call a method on a plugin.
-     *
-     * @param pluginId   the plugin id to use to lookup the plugin handle
+     * @param pluginId the plugin id to use to lookup the plugin handle
      * @param methodName the name of the method to call
-     * @param call       the call object to pass to the method
+     * @param call the call object to pass to the method
      */
     public void callPluginMethod(String pluginId, final String methodName, final PluginCall call) {
         try {
@@ -640,16 +782,18 @@ public class Bridge implements IPostMessage {
                 return;
             }
 
-            Logger.verbose(
-                    "callback: " +
-                            call.getCallbackId() +
-                            ", pluginId: " +
-                            plugin.getId() +
-                            ", methodName: " +
-                            methodName +
-                            ", methodData: " +
-                            call.getData().toString()
-            );
+            if (Logger.shouldLog()) {
+                Logger.verbose(
+                        "callback: " +
+                                call.getCallbackId() +
+                                ", pluginId: " +
+                                plugin.getId() +
+                                ", methodName: " +
+                                methodName +
+                                ", methodData: " +
+                                call.getData().toString()
+                );
+            }
 
             Runnable currentThreadTask = () -> {
                 try {
@@ -676,14 +820,12 @@ public class Bridge implements IPostMessage {
     /**
      * Evaluate JavaScript in the web view. This method
      * executes on the main thread automatically.
-     *
-     * @param js       the JS to execute
+     * @param js the JS to execute
      * @param callback an optional ValueCallback that will synchronously receive a value
      *                 after calling the JS
      */
     public void eval(final String js, final ValueCallback<String> callback) {
         Handler mainHandler = new Handler(context.getMainLooper());
-//        mainHandler.post(() -> webView.evaluateJavascript(js, callback));
         mainHandler.post(() -> webExtensionPortProxy.eval(js));
     }
 
@@ -696,13 +838,11 @@ public class Bridge implements IPostMessage {
     }
 
     public void triggerJSEvent(final String eventName, final String target) {
-        eval("window.Capacitor.triggerEvent(\"" + eventName + "\", \"" + target + "\")", s -> {
-        });
+        eval("window.Capacitor.triggerEvent(\"" + eventName + "\", \"" + target + "\")", s -> {});
     }
 
     public void triggerJSEvent(final String eventName, final String target, final String data) {
-        eval("window.Capacitor.triggerEvent(\"" + eventName + "\", \"" + target + "\", " + data + ")", s -> {
-        });
+        eval("window.Capacitor.triggerEvent(\"" + eventName + "\", \"" + target + "\", " + data + ")", s -> {});
     }
 
     public void triggerWindowJSEvent(final String eventName) {
@@ -733,7 +873,6 @@ public class Bridge implements IPostMessage {
 
     /**
      * Retain a call between plugin invocations
-     *
      * @param call
      */
     public void saveCall(PluginCall call) {
@@ -742,7 +881,6 @@ public class Bridge implements IPostMessage {
 
     /**
      * Get a retained plugin call
-     *
      * @param callbackId the callbackId to use to lookup the call with
      * @return the stored call
      */
@@ -766,7 +904,6 @@ public class Bridge implements IPostMessage {
 
     /**
      * Release a retained call
-     *
      * @param call a call to release
      */
     public void releaseCall(PluginCall call) {
@@ -775,7 +912,6 @@ public class Bridge implements IPostMessage {
 
     /**
      * Release a retained call by its ID
-     *
      * @param callbackId an ID of a callback to release
      */
     public void releaseCall(String callbackId) {
@@ -856,7 +992,6 @@ public class Bridge implements IPostMessage {
 
     /**
      * Restore any saved bundle state data
-     *
      * @param savedInstanceState
      */
     public void restoreInstanceState(Bundle savedInstanceState) {
@@ -912,6 +1047,7 @@ public class Bridge implements IPostMessage {
     }
 
     @Deprecated
+    @SuppressWarnings("deprecation")
     public void startActivityForPluginWithResult(PluginCall call, Intent intent, int requestCode) {
         Logger.debug("Starting activity for result");
 
@@ -924,13 +1060,13 @@ public class Bridge implements IPostMessage {
      * Check for legacy Capacitor or Cordova plugins that may have registered to handle a permission
      * request, and handle them if so. If not handled, false is returned.
      *
-     * @param requestCode  the code that was requested
-     * @param permissions  the permissions requested
+     * @param requestCode the code that was requested
+     * @param permissions the permissions requested
      * @param grantResults the set of granted/denied permissions
      * @return true if permission code was handled by a plugin explicitly, false if not
      */
-    boolean onRequestPermissionsResult(int requestCode, String[] permissions,
-                                       int[] grantResults) {
+    @SuppressWarnings("deprecation")
+    boolean onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         PluginHandle plugin = getPluginWithRequestCode(requestCode);
 
         if (plugin == null) {
@@ -962,8 +1098,7 @@ public class Bridge implements IPostMessage {
      * @param permissions
      * @return true if permissions were saved and defined correctly, false if not
      */
-    protected boolean validatePermissions(Plugin plugin, PluginCall
-            savedCall, Map<String, Boolean> permissions) {
+    protected boolean validatePermissions(Plugin plugin, PluginCall savedCall, Map<String, Boolean> permissions) {
         SharedPreferences prefs = getContext().getSharedPreferences(PERMISSION_PREFS_NAME, Activity.MODE_PRIVATE);
 
         for (Map.Entry<String, Boolean> permission : permissions.entrySet()) {
@@ -1013,8 +1148,8 @@ public class Bridge implements IPostMessage {
     /**
      * Helper to check all permissions and see the current states of each permission.
      *
-     * @return A mapping of permission aliases to the associated granted status.
      * @since 3.0.0
+     * @return A mapping of permission aliases to the associated granted status.
      */
     protected Map<String, PermissionState> getPermissionStates(Plugin plugin) {
         Map<String, PermissionState> permissionsResults = new HashMap<>();
@@ -1066,11 +1201,11 @@ public class Bridge implements IPostMessage {
     /**
      * Handle an activity result and pass it to a plugin that has indicated it wants to
      * handle the result.
-     *
      * @param requestCode
      * @param resultCode
      * @param data
      */
+    @SuppressWarnings("deprecation")
     boolean onActivityResult(int requestCode, int resultCode, Intent data) {
         PluginHandle plugin = getPluginWithRequestCode(requestCode);
 
@@ -1100,7 +1235,6 @@ public class Bridge implements IPostMessage {
 
     /**
      * Handle an onNewIntent lifecycle event and notify the plugins
-     *
      * @param intent
      */
     public void onNewIntent(Intent intent) {
@@ -1115,7 +1249,6 @@ public class Bridge implements IPostMessage {
 
     /**
      * Handle an onConfigurationChanged event and notify the plugins
-     *
      * @param newConfig
      */
     public void onConfigurationChanged(Configuration newConfig) {
@@ -1205,8 +1338,10 @@ public class Bridge implements IPostMessage {
      * Handle onDetachedFromWindow lifecycle event
      */
     public void onDetachedFromWindow() {
-        webviewExtension.getWebview().removeAllViews();
+//        webView.removeAllViews();
 //        webView.destroy();
+        this.getWebView().getWebview().onDetachedFromWindow();
+        this.getWebView().getWebview().removeAllViews();
     }
 
     public String getServerBasePath() {
@@ -1216,7 +1351,6 @@ public class Bridge implements IPostMessage {
     /**
      * Tell the local server to load files from the given
      * file path instead of the assets path.
-     *
      * @param path
      */
     public void setServerBasePath(String path) {
@@ -1227,7 +1361,6 @@ public class Bridge implements IPostMessage {
     /**
      * Tell the local server to load files from the given
      * asset path.
-     *
      * @param path
      */
     public void setServerAssetPath(String path) {
@@ -1254,12 +1387,17 @@ public class Bridge implements IPostMessage {
         return appAllowNavigationMask;
     }
 
+    public Set<String> getAllowedOriginRules() {
+        return allowedOriginRules;
+    }
+
     public BridgeWebViewClient getWebViewClient() {
         return this.webViewClient;
     }
 
     public void setWebViewClient(BridgeWebViewClient client) {
         this.webViewClient = client;
+//        webView.setWebViewClient(client);
     }
 
     List<WebViewListener> getWebViewListeners() {
@@ -1278,9 +1416,12 @@ public class Bridge implements IPostMessage {
         this.routeProcessor = routeProcessor;
     }
 
+    ServerPath getServerPath() {
+        return serverPath;
+    }
+
     /**
      * Add a listener that the WebViewClient can trigger on certain events.
-     *
      * @param webViewListener A {@link WebViewListener} to add.
      */
     public void addWebViewListener(WebViewListener webViewListener) {
@@ -1289,7 +1430,6 @@ public class Bridge implements IPostMessage {
 
     /**
      * Remove a listener that the WebViewClient triggers on certain events.
-     *
      * @param webViewListener A {@link WebViewListener} to remove.
      */
     public void removeWebViewListener(WebViewListener webViewListener) {
@@ -1301,10 +1441,12 @@ public class Bridge implements IPostMessage {
         private Bundle instanceState = null;
         private CapConfig config = null;
         private List<Class<? extends Plugin>> plugins = new ArrayList<>();
+        private List<Plugin> pluginInstances = new ArrayList<>();
         private AppCompatActivity activity;
         private Fragment fragment;
         private RouteProcessor routeProcessor;
         private final List<WebViewListener> webViewListeners = new ArrayList<>();
+        private ServerPath serverPath;
 
         public Builder(AppCompatActivity activity) {
             this.activity = activity;
@@ -1343,6 +1485,16 @@ public class Bridge implements IPostMessage {
             return this;
         }
 
+        public Builder addPluginInstance(Plugin plugin) {
+            this.pluginInstances.add(plugin);
+            return this;
+        }
+
+        public Builder addPluginInstances(List<Plugin> plugins) {
+            this.pluginInstances.addAll(plugins);
+            return this;
+        }
+
         public Builder addWebViewListener(WebViewListener webViewListener) {
             webViewListeners.add(webViewListener);
             return this;
@@ -1361,6 +1513,11 @@ public class Bridge implements IPostMessage {
             return this;
         }
 
+        public Builder setServerPath(ServerPath serverPath) {
+            this.serverPath = serverPath;
+            return this;
+        }
+
         @SuppressLint("WrongThread")
         public Bridge create() {
             // Cordova initialization
@@ -1374,7 +1531,6 @@ public class Bridge implements IPostMessage {
             if (instanceState != null) {
                 cordovaInterface.restoreInstanceState(instanceState);
             }
-
             GeckoView webView = this.fragment != null ? fragment.getView().findViewById(R.id.webview) : activity.findViewById(R.id.webview);
             MockCordovaGeckoviewImpl mockWebView = new MockCordovaGeckoviewImpl(activity.getApplicationContext());
             mockWebView.init(cordovaInterface, pluginEntries, preferences, webView);
@@ -1393,11 +1549,15 @@ public class Bridge implements IPostMessage {
                     .build();
             GeckoRuntime sRuntime = GeckoRuntime
                     .create(activity, runTimeSettings);
+
+            // Bridge initialization
             Bridge bridge = new Bridge(
                     activity,
+                    serverPath,
                     fragment,
                     webView,
                     plugins,
+                    pluginInstances,
                     cordovaInterface,
                     pluginManager,
                     preferences,
@@ -1434,12 +1594,10 @@ public class Bridge implements IPostMessage {
             return bridge;
         }
     }
-
     @Override
     public void postMessage(Object message) {
         this.msgHandler.postMessage(message.toString());
     }
-
     public void setWebExtensionPortProxy(WebExtensionPortProxy proxy) {
         this.webExtensionPortProxy = proxy;
     }
