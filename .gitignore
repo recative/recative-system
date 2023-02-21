@@ -50,3 +50,8 @@ Thumbs.db
 # Parcel
 .parcel-cache
 *.recative
+
+# Recative System
+**/bundle/**/*
+constants.json
+version.txt
