@@ -42,8 +42,8 @@ export const useAnime = (
     if (!result.paused) {
       return;
     }
-    // @ts-ignore
     if (result.completed) {
+      // @ts-ignore
       result.reset();
     }
     result.pause();
@@ -140,8 +140,8 @@ export const useAnimeTimeline = (
     if (!result.paused) {
       return;
     }
-    // @ts-ignore
     if (result.completed) {
+      // @ts-ignore
       result.reset();
     }
     result.pause();
