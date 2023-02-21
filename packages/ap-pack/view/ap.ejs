@@ -122,41 +122,52 @@
           }
         });
 
-    const loadScripts = () => {
-      loadConstants().finally(() => {
-        const scripts =
-          `<%= htmlWebpackPlugin.files.js.map(htmlWebpackPlugin.options.transformPath) %>`
-            // The script list comes from Webpack
-            .split(',');
-
-        Promise.all(
-          scripts.map((file) =>
-            fetch(file)
-              .then((response) => {
-                scriptLoadingError = scriptLoadingError || !response.ok;
-
-                if (!response.ok) {
-                  emergencyChannel.postMessage('ap-script-load-error');
-                }
-              })
-              .catch(() => {
-                emergencyChannel.postMessage('ap-script-load-error');
-              })
-          )
-        ).then(() => {
-          scripts.map((file) => {
-            document.body.appendChild(document.createElement('script')).src =
-              file;
-          });
-
-          if (localStorage.getItem('@recative/ap-pack/debug-lifecycle')) {
-            document
-              .querySelector('#overlay')
-              ?.classList.remove('recative-not-ready');
-            document.querySelector('#overlay')?.classList.add('recative-ready');
-          }
+    const loadVersion = () =>
+      fetch(`<%= htmlWebpackPlugin.options.transformPath("/version.txt") %>`)
+        .then((response) => response.text())
+        .then((data) => {
+          Reflect.set(window, 'version', data);
         });
-      });
+
+    const loadScripts = () => {
+      loadConstants()
+        .then(loadVersion)
+        .finally(() => {
+          const scripts =
+            `<%= htmlWebpackPlugin.files.js.map(htmlWebpackPlugin.options.transformPath) %>`
+              // The script list comes from Webpack
+              .split(',');
+
+          Promise.all(
+            scripts.map((file) =>
+              fetch(file)
+                .then((response) => {
+                  scriptLoadingError = scriptLoadingError || !response.ok;
+
+                  if (!response.ok) {
+                    emergencyChannel.postMessage('ap-script-load-error');
+                  }
+                })
+                .catch(() => {
+                  emergencyChannel.postMessage('ap-script-load-error');
+                })
+            )
+          ).then(() => {
+            scripts.map((file) => {
+              document.body.appendChild(document.createElement('script')).src =
+                file;
+            });
+
+            if (localStorage.getItem('@recative/ap-pack/debug-lifecycle')) {
+              document
+                .querySelector('#overlay')
+                ?.classList.remove('recative-not-ready');
+              document
+                .querySelector('#overlay')
+                ?.classList.add('recative-ready');
+            }
+          });
+        });
     };
 
     if (

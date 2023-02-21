@@ -33,6 +33,11 @@ fetch(`/constants.json`)
       }
     }
   })
+  .then(() => fetch(`/version.txt`))
+  .then((response) => response.text())
+  .then((data) => {
+    Reflect.set(window, 'version', data);
+  })
   .finally(() => {
     root.render(
       <StyletronProvider value={engine}>

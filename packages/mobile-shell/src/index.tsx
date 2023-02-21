@@ -70,7 +70,8 @@ fetch('/constants.json')
         });
       }
     }
-  }).then(() => {
+  })
+  .then(() => {
     return new Promise<void>((resolve) => {
       const eventName = localStorage.getItem(WAIT_FOR_GLOBAL_EVENT);
 
@@ -80,6 +81,11 @@ fetch('/constants.json')
         resolve();
       });
     });
+  })
+  .then(() => fetch(`/version.txt`))
+  .then((response) => response.text())
+  .then((data) => {
+    Reflect.set(window, 'version', data);
   })
   .finally(() => {
     ReactDOM.render(
