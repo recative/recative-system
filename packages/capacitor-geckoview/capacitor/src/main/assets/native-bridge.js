@@ -5,7 +5,7 @@
 window.readyList = [];
 
 setTimeout(() => {
-  if (!window.androidBridge) location.reload();
+    if (!window.androidBridge) location.reload();
 }, 5000)
 
 const nativeBridge = (function (exports) {
@@ -157,13 +157,11 @@ const nativeBridge = (function (exports) {
                     const handler = args[1];
                     if (eventName === 'deviceready' && handler) {
                         if (!window.androidBridge) {
-                          console.log('aaaaaaa push')
-                          window.readyList.push(() => {
-                              Promise.resolve().then(handler);
-                          });
+                            window.readyList.push(() => {
+                                Promise.resolve().then(handler);
+                            });
                         } else {
-                          console.log('aaaaaaa run')
-                          Promise.resolve().then(handler);
+                            Promise.resolve().then(handler);
                         }
                     }
                     else if (eventName === 'backbutton' && cap.Plugins.App) {
@@ -639,17 +637,17 @@ const nativeBridge = (function (exports) {
                 try {
                     // win.androidBridge.postMessage(JSON.stringify(data));
                     if (!window.androidBridge) {
-                      window.readyList.push(() => {
+                        window.readyList.push(() => {
+                            window.postMessage({
+                                direction: 'page',
+                                message: JSON.stringify(data),
+                            }, '*');
+                        });
+                    } else {
                         window.postMessage({
                             direction: 'page',
                             message: JSON.stringify(data),
                         }, '*');
-                      });
-                    } else {
-                      window.postMessage({
-                          direction: 'page',
-                          message: JSON.stringify(data),
-                      }, '*');
                     }
                 }
                 catch (e) {

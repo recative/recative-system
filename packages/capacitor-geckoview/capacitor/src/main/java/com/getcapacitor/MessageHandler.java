@@ -2,6 +2,9 @@ package com.getcapacitor;
 
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
+import androidx.webkit.JavaScriptReplyProxy;
+import androidx.webkit.WebViewCompat;
+import androidx.webkit.WebViewFeature;
 import org.apache.cordova.PluginManager;
 import org.mozilla.geckoview.GeckoView;
 
@@ -14,10 +17,30 @@ public class MessageHandler {
     private Bridge bridge;
     private GeckoView webView;
     private PluginManager cordovaPluginManager;
-    public MessageHandler(Bridge bridge,GeckoView webView, PluginManager cordovaPluginManager) {
+    private JavaScriptReplyProxy javaScriptReplyProxy;
+
+    public MessageHandler(Bridge bridge, GeckoView webView, PluginManager cordovaPluginManager) {
         this.bridge = bridge;
-        this.cordovaPluginManager = cordovaPluginManager;
         this.webView = webView;
+        this.cordovaPluginManager = cordovaPluginManager;
+
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER) && !bridge.getConfig().isUsingLegacyBridge()) {
+            WebViewCompat.WebMessageListener capListener = (view, message, sourceOrigin, isMainFrame, replyProxy) -> {
+                if (isMainFrame) {
+                    postMessage(message.getData());
+                    javaScriptReplyProxy = replyProxy;
+                } else {
+                    Logger.warn("Plugin execution is allowed in Main Frame only");
+                }
+            };
+//            try {
+//                WebViewCompat.addWebMessageListener(webView, "androidBridge", bridge.getAllowedOriginRules(), capListener);
+//            } catch (Exception ex) {
+//                webView.addJavascriptInterface(this, "androidBridge");
+//            }
+        } else {
+//            webView.addJavascriptInterface(this, "androidBridge");
+        }
     }
 
     /**
@@ -98,9 +121,13 @@ public class MessageHandler {
 
             boolean isValidCallbackId = !call.getCallbackId().equals(PluginCall.CALLBACK_ID_DANGLING);
             if (isValidCallbackId) {
-                final String runScript = "window.Capacitor.fromNative(" + data.toString() + ")";
-//                webView.post(() -> webView.evaluateJavascript(runScript, null));
-                this.webView.post(()->  this.bridge.getWebExtensionPortProxy().eval(runScript));
+                if (bridge.getConfig().isUsingLegacyBridge()) {
+                    legacySendResponseMessage(data);
+                } else if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER) && javaScriptReplyProxy != null) {
+                    javaScriptReplyProxy.postMessage(data.toString());
+                } else {
+                    legacySendResponseMessage(data);
+                }
             } else {
                 bridge.getApp().fireRestoredResult(data);
             }
@@ -112,12 +139,21 @@ public class MessageHandler {
         }
     }
 
+    private void legacySendResponseMessage(PluginResult data) {
+        final String runScript = "window.Capacitor.fromNative(" + data.toString() + ")";
+        this.webView.post(()->  this.bridge.getWebExtensionPortProxy().eval(runScript));
+    }
+
     private void callPluginMethod(String callbackId, String pluginId, String methodName, JSObject methodData) {
         PluginCall call = new PluginCall(this, pluginId, callbackId, methodName, methodData);
         bridge.callPluginMethod(pluginId, methodName, call);
     }
 
     private void callCordovaPluginMethod(String callbackId, String service, String action, String actionArgs) {
-        cordovaPluginManager.exec(service, action, callbackId, actionArgs);
+        bridge.execute(
+            () -> {
+                cordovaPluginManager.exec(service, action, callbackId, actionArgs);
+            }
+        );
     }
 }
