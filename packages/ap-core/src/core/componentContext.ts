@@ -32,7 +32,7 @@ export const removeContext = () => {
 export const getContext = () => currentContext;
 
 export const createComponentContext = (
-  parent: IComponentContext | null = null,
+  parent: IComponentContext | null = null
 ) => {
   const eventTarget = new EventTarget2();
 
@@ -44,18 +44,20 @@ export const createComponentContext = (
     store: new AtomStore(),
     remoteStoreRegistry: new RemoteStoreRegistry(),
     taskQueue: new TimeSlicingQueue(),
-    wrap: <T extends unknown[], U>(x: (...args: T) => U) => (...args: T) => {
-      const oldContext = getContext();
-      setContext(result);
-      const fnResult = x(...args);
-      if (oldContext !== null) {
-        setContext(oldContext);
-      } else {
-        removeContext();
-      }
+    wrap:
+      <T extends unknown[], U>(x: (...args: T) => U) =>
+      (...args: T) => {
+        const oldContext = getContext();
+        setContext(result);
+        const fnResult = x(...args);
+        if (oldContext !== null) {
+          setContext(oldContext);
+        } else {
+          removeContext();
+        }
 
-      return fnResult;
-    },
+        return fnResult;
+      },
     parent,
   };
 

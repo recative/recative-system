@@ -1,5 +1,13 @@
 # @recative/web-shell
 
+## 0.4.3
+
+### Patch Changes
+
+- 64b0c01: chore: Supports fetching version number
+- Updated dependencies [4c56c57]
+  - @recative/act-player@0.5.18
+
 ## 0.4.2
 
 ### Patch Changes

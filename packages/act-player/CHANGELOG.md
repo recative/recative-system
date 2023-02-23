@@ -1,5 +1,13 @@
 # @recative/act-player
 
+## 0.5.18
+
+### Patch Changes
+
+- 4c56c57: fix: Better video error log
+- Updated dependencies [0b36c02]
+  - @recative/core-manager@0.13.0
+
 ## 0.5.17
 
 ### Patch Changes

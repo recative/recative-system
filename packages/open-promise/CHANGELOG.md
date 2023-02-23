@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0
+
+### Minor Changes
+
+- 0b36c02: feat: Adapting new promise queue
+- 156055e: refactor: Update the API structure of TimeSlicingQueue
+
+### Patch Changes
+
+- 156055e: feat: Implement a new FrameFillingQueue
+
 ## 0.2.4
 
 ### Patch Changes

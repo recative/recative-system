@@ -1,5 +1,17 @@
 # Changelog
 
+## 13.0.0
+
+### Patch Changes
+
+- Updated dependencies [4c56c57]
+- Updated dependencies [156055e]
+- Updated dependencies [0b36c02]
+- Updated dependencies [156055e]
+  - @recative/act-player@0.5.18
+  - @recative/open-promise@0.3.0
+  - @recative/core-manager@0.13.0
+
 ## 12.0.3
 
 ### Patch Changes

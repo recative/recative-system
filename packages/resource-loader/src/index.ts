@@ -1,24 +1,22 @@
-import {
-  createStore, get, set, UseStore,
-} from 'idb-keyval';
+import { createStore, get, set, UseStore } from 'idb-keyval';
 import { ResourceLoaderCacheLevel } from '@recative/definitions';
 import { OpenPromise, OpenPromiseState } from '@recative/open-promise';
 
 interface IResourceLoaderItem {
-  id: string
-  url: string
-  cacheLevel?: ResourceLoaderCacheLevel
+  id: string;
+  url: string;
+  cacheLevel?: ResourceLoaderCacheLevel;
 }
 
 interface IProgress {
-  resolved: boolean
-  progress: number
-  id: string
+  resolved: boolean;
+  progress: number;
+  id: string;
 }
 
 interface IFetchPromise {
-  promise: OpenPromise<Blob>
-  progress: number
+  promise: OpenPromise<Blob>;
+  progress: number;
 }
 
 export class ResourceLoader {
@@ -50,8 +48,9 @@ export class ResourceLoader {
 
   public fetchResource = (resource: IResourceLoaderItem): Promise<Blob> => {
     if (
-      this.fetchPromiseMap[resource.id]
-      && this.fetchPromiseMap[resource.id].promise.state === OpenPromiseState.Rejected
+      this.fetchPromiseMap[resource.id] &&
+      this.fetchPromiseMap[resource.id].promise.state ===
+        OpenPromiseState.Rejected
     ) {
       this.fetchPromiseMap[resource.id] = {
         promise: this.fetchGenerator(resource),
@@ -82,15 +81,14 @@ export class ResourceLoader {
     throw new Error('not found');
   };
 
-  private fetchGenerator = (resource: IResourceLoaderItem): OpenPromise<Blob> => (
+  private fetchGenerator = (resource: IResourceLoaderItem): OpenPromise<Blob> =>
     new OpenPromise(async (resolve, reject) => {
       try {
         resolve(await this.fetch(resource));
       } catch (error) {
         reject(error as Error);
       }
-    })
-  );
+    });
 
   public getProgress = (idList?: string[]): IProgress[] => {
     const progressList: IProgress[] = [];
@@ -117,7 +115,7 @@ export class ResourceLoader {
   };
 
   // eslint-disable-next-line class-methods-use-this
-  private fetch = async (resource: IResourceLoaderItem): Promise<Blob> => (
+  private fetch = async (resource: IResourceLoaderItem): Promise<Blob> =>
     new Promise((topResolve, topReject) => {
       const abort = new AbortController();
       Promise.race([
@@ -128,59 +126,60 @@ export class ResourceLoader {
             reject();
           }, 60 * 1000);
         }),
-        fetch(
-          resource.url,
-          {
-            signal: abort.signal,
-          },
-        ),
-      ]).then(async (response) => {
-        if (response.body) {
-          const contentLength = Number(response.headers.get('Content-Length'));
-          let receivedLength = 0;
-          const reader = response.body.getReader();
-          const chunks: Uint8Array[] = [];
-          // eslint-disable-next-line no-constant-condition
-          while (true) {
-            try {
-              // eslint-disable-next-line no-await-in-loop
-              const { done, value } = await reader.read();
-              if (done) break;
-              if (value) {
-                chunks.push(value);
-                receivedLength += value.length;
-              }
-              if (contentLength > 0 && this.fetchPromiseMap[resource.id]) {
-                this.fetchPromiseMap[resource.id].progress = receivedLength / contentLength;
-              }
-            } catch (error) {
-              abort.abort();
-              return;
-            }
-          }
-          const blob = new Blob(chunks);
-          switch (resource.cacheLevel) {
-            case ResourceLoaderCacheLevel.Idb:
+        fetch(resource.url, {
+          signal: abort.signal,
+        }),
+      ])
+        .then(async (response) => {
+          if (response.body) {
+            const contentLength = Number(
+              response.headers.get('Content-Length')
+            );
+            let receivedLength = 0;
+            const reader = response.body.getReader();
+            const chunks: Uint8Array[] = [];
+            // eslint-disable-next-line no-constant-condition
+            while (true) {
               try {
-                await set(resource.id, blob);
-              // eslint-disable-next-line no-empty
-              } catch (error) {}
-              break;
-            // eslint-disable-next-line no-fallthrough
-            case ResourceLoaderCacheLevel.Memory:
-              this.resourceMemoryMap[resource.id] = blob;
-              break;
-            default:
-            case ResourceLoaderCacheLevel.FetchCache:
-              break;
+                // eslint-disable-next-line no-await-in-loop
+                const { done, value } = await reader.read();
+                if (done) break;
+                if (value) {
+                  chunks.push(value);
+                  receivedLength += value.length;
+                }
+                if (contentLength > 0 && this.fetchPromiseMap[resource.id]) {
+                  this.fetchPromiseMap[resource.id].progress =
+                    receivedLength / contentLength;
+                }
+              } catch (error) {
+                abort.abort();
+                return;
+              }
+            }
+            const blob = new Blob(chunks);
+            switch (resource.cacheLevel) {
+              case ResourceLoaderCacheLevel.Idb:
+                try {
+                  await set(resource.id, blob);
+                  // eslint-disable-next-line no-empty
+                } catch (error) {}
+                break;
+              // eslint-disable-next-line no-fallthrough
+              case ResourceLoaderCacheLevel.Memory:
+                this.resourceMemoryMap[resource.id] = blob;
+                break;
+              default:
+              case ResourceLoaderCacheLevel.FetchCache:
+                break;
+            }
+            topResolve(blob);
+          } else {
+            throw new Error('fetch error');
           }
-          topResolve(blob);
-        } else {
-          throw new Error('fetch error');
-        }
-      }).catch((error) => {
-        topReject(error);
-      });
-    })
-  );
+        })
+        .catch((error) => {
+          topReject(error);
+        });
+    });
 }
