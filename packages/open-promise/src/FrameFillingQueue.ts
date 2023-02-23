@@ -173,6 +173,10 @@ export class FrameFillingQueue extends EventTarget {
         results.push(promise);
         this.handlePromise(promise, results);
       }
+
+      if (!this.queue.length) {
+        this.dispatchEvent(new QueueUpdateEvent(this, QueueUpdateAction.Clear));
+      }
     }
   };
 

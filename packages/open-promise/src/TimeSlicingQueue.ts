@@ -1,5 +1,6 @@
 import debug from 'debug';
 import { FrameFillingQueue } from './FrameFillingQueue';
+import { QueueUpdateAction } from './QueueUpdateAction';
 
 import { SequentialQueue } from './SequentialQueue';
 import { now, timeRemaining, initializeTimeRemaining } from './timeRemaining';
@@ -29,7 +30,7 @@ export enum QueueType {
  *
  * @template T The type of the queued tasks.
  */
-export class TimeSlicingQueue {
+export class TimeSlicingQueue extends EventTarget {
   /**
    * A flag indicating whether the queue is currently running.
    */
@@ -99,6 +100,8 @@ export class TimeSlicingQueue {
     readonly dependencyQueue?: Queue,
     public readonly queueId = Math.random().toString(36).substring(2)
   ) {
+    super();
+
     if (type === QueueType.FrameFilling) {
       this.queue = new SequentialQueue(concurrency, dependencyQueue, queueId);
     } else {
@@ -107,6 +110,16 @@ export class TimeSlicingQueue {
         dependencyQueue,
         queueId,
         protectedTime
+      );
+
+      this.queue.addEventListener(QueueUpdateAction.Add, (event) =>
+        this.dispatchEvent(event)
+      );
+      this.queue.addEventListener(QueueUpdateAction.Remove, (event) =>
+        this.dispatchEvent(event)
+      );
+      this.queue.addEventListener(QueueUpdateAction.Clear, (event) =>
+        this.dispatchEvent(event)
       );
     }
 
