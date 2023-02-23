@@ -1,74 +1,35 @@
 import debug from 'debug';
 import EventTarget from '@ungap/event-target';
 
-import { CustomEvent } from './CustomEvent';
-import { OpenPromise } from './OpenPromise';
 import { allSettled } from './allSettled';
+import { QueueUpdateEvent } from './QueueUpdateEvent';
+import { QueueUpdateAction } from './QueueUpdateAction';
+import { NotLazyOpenPromiseError } from './NotLazyOpenPromiseError';
+
+import type { Queue, QueuedTask } from './types';
+import type { OpenPromise } from './OpenPromise';
 
 const log = debug('promise:seq-q');
 
-export type SequentialTask = (() => void) | OpenPromise<any>;
-
-export class NotLazyOpenPromiseError extends Error {
-  name = 'NotLazyOpenPromiseError';
-
-  constructor() {
-    super('OpenPromise must be lazy');
-  }
-}
-
-export enum SequentialQueueUpdateAction {
-  /**
-   * New task was added to the queue.
-   */
-  Add = 'add',
-  /**
-   * Some task was removed from the queue.
-   */
-  Remove = 'remove',
-  /**
-   * Some tasks was executed and removed from the queue.
-   */
-  Clear = 'clear',
-  /**
-   * All tasks was executed.
-   */
-  Drain = 'drain',
-}
-
-interface ISequentialQueueUpdateEventDetail {
-  remainTasks: number;
-  clearedTasks: number;
-  action: SequentialQueueUpdateAction;
-}
-
-export class SequentialQueueUpdateEvent extends CustomEvent<ISequentialQueueUpdateEventDetail> {
-  constructor(queue: SequentialQueue, action: SequentialQueueUpdateAction) {
-    super('update', {
-      detail: {
-        remainTasks: queue.remainTasks,
-        clearedTasks: queue.clearedTasks,
-        action,
-      }
-    })
-  }
-}
-
 export class SequentialQueue extends EventTarget {
-  protected queue: Array<SequentialTask> = [];
+  protected queue: Array<QueuedTask> = [];
   protected internalClearedTasks: number = 0;
 
-  protected readonly taskMap = new Map<SequentialTask, string>();
+  readonly taskMap = new Map<QueuedTask, string>();
 
   constructor(
     readonly concurrency: number = 1,
-    readonly dependencyQueue?: SequentialQueue,
-    public readonly queueId = Math.random().toString(36).substring(2),
+    readonly dependencyQueue?: Queue,
+    public readonly queueId = Math.random().toString(36).substring(2)
   ) {
     super();
   }
 
-  get remainTasks() {
+  get remainTasks(): number {
+    return this.queue.length;
+  }
+
+  get length() {
     return this.queue.length;
   }
 
@@ -76,10 +37,8 @@ export class SequentialQueue extends EventTarget {
     return this.internalClearedTasks;
   }
 
-  add(task: SequentialTask, taskId?: string) {
-    this.dispatchEvent(
-      new SequentialQueueUpdateEvent(this, SequentialQueueUpdateAction.Add)
-    );
+  add(task: QueuedTask, taskId?: string) {
+    this.dispatchEvent(new QueueUpdateEvent(this, QueueUpdateAction.Add));
     this.queue.push(task);
 
     if (taskId) {
@@ -87,7 +46,7 @@ export class SequentialQueue extends EventTarget {
     }
   }
 
-  remove(task: SequentialTask) {
+  remove(task: QueuedTask) {
     const index = this.queue.indexOf(task);
     if (index > -1) {
       this.queue.splice(index, 1);
@@ -97,16 +56,16 @@ export class SequentialQueue extends EventTarget {
       this.taskMap.delete(task);
     }
 
-    this.dispatchEvent(
-      new SequentialQueueUpdateEvent(this, SequentialQueueUpdateAction.Remove)
-    );
+    this.dispatchEvent(new QueueUpdateEvent(this, QueueUpdateAction.Remove));
   }
 
   tick() {
     const openPromiseTasks: OpenPromise<any>[] = [];
 
     if (this.dependencyQueue && this.dependencyQueue.remainTasks !== 0) {
-      log(`[${this.queueId}] Waiting for the dependency queue with ${this.dependencyQueue.remainTasks} tasks.`);
+      log(
+        `[${this.queueId}] Waiting for the dependency queue with ${this.dependencyQueue.remainTasks} tasks.`
+      );
       return Promise.resolve([]);
     }
 
@@ -138,9 +97,7 @@ export class SequentialQueue extends EventTarget {
     }
 
     this.internalClearedTasks += taskCleared;
-    this.dispatchEvent(
-      new SequentialQueueUpdateEvent(this, SequentialQueueUpdateAction.Clear)
-    );
+    this.dispatchEvent(new QueueUpdateEvent(this, QueueUpdateAction.Clear));
 
     return allSettled(openPromiseTasks);
   }

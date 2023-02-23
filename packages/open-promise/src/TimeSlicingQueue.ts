@@ -1,13 +1,10 @@
 import debug from 'debug';
+import { FrameFillingQueue } from './FrameFillingQueue';
 
-import {
-  now,
-  timeRemaining,
-  initializeTimeRemaining,
-} from './timeRemaining';
 import { SequentialQueue } from './SequentialQueue';
+import { now, timeRemaining, initializeTimeRemaining } from './timeRemaining';
 
-import type { SequentialTask } from './SequentialQueue';
+import type { Queue, QueuedTask } from './types';
 
 const log = debug('promise:time-slice');
 const logGroup = debug('promise:time-slices');
@@ -16,20 +13,49 @@ logGroup.log = console.groupCollapsed.bind(console);
 
 const MAX_TASK_DELAY_TIME = 2000;
 
-export class TimeSlicingQueue extends SequentialQueue {
+export enum QueueType {
+  Sequential = 'sequential',
+  FrameFilling = 'frame-filling',
+}
+
+export class TimeSlicingQueue {
   running: boolean = false;
 
   private tickScheduled = false;
 
   private lastSuccessfulTickTime = 0;
 
+  private queue: SequentialQueue | FrameFillingQueue;
+
+  get taskMap() {
+    return this.queue.taskMap;
+  }
+
+  get length() {
+    return this.queue.length;
+  }
+
+  get remainTasks(): number {
+    return this.queue.length;
+  }
+
   constructor(
     readonly concurrency: number = 1,
+    readonly type: QueueType = QueueType.FrameFilling,
     readonly protectedTime: number = 2,
-    readonly dependencyQueue?: SequentialQueue | TimeSlicingQueue,
-    public readonly queueId = Math.random().toString(36).substring(2),
+    readonly dependencyQueue?: Queue,
+    public readonly queueId = Math.random().toString(36).substring(2)
   ) {
-    super(concurrency, dependencyQueue, queueId);
+    if (type === QueueType.FrameFilling) {
+      this.queue = new SequentialQueue(concurrency, dependencyQueue, queueId);
+    } else {
+      this.queue = new FrameFillingQueue(
+        concurrency,
+        dependencyQueue,
+        queueId,
+        protectedTime
+      );
+    }
 
     initializeTimeRemaining();
     log(`[${this.queueId}] initialized`);
@@ -45,8 +71,8 @@ export class TimeSlicingQueue extends SequentialQueue {
     this.scheduleTick();
   };
 
-  add = (task: SequentialTask, taskId?: string) => {
-    super.add(task, taskId);
+  add = (task: QueuedTask, taskId?: string) => {
+    this.queue.add(task, taskId);
 
     if (this.running) {
       this.scheduleTick();
@@ -55,12 +81,13 @@ export class TimeSlicingQueue extends SequentialQueue {
 
   private logRemainedTask = (title = `Remained Tasks`) => {
     logGroup(title);
-    log([
-      '',
-      ...[...this.taskMap.values()].map((x) => `* ${x}`)
-    ].join('\r\n'));
+    log(
+      ['', ...[...this.queue.taskMap.values()].map((x) => `* ${x}`)].join(
+        '\r\n'
+      )
+    );
     console.groupEnd();
-  }
+  };
 
   private scheduleTick = () => {
     if (this.tickScheduled) {
@@ -91,15 +118,21 @@ export class TimeSlicingQueue extends SequentialQueue {
     const currentTime = now();
 
     if (currentTime - this.lastSuccessfulTickTime > MAX_TASK_DELAY_TIME) {
-      this.logRemainedTask(`[${this.queueId}] [Force] Δt=${deltaT}, ${this.queue.length} in queue`);
+      this.logRemainedTask(
+        `[${this.queueId}] [Force] Δt=${deltaT}, ${this.queue.length} in queue`
+      );
       this.lastSuccessfulTickTime = currentTime;
-      this.tick().then(this.scheduleTick);
+      this.queue.tick().then(this.scheduleTick);
     } else if (deltaT > this.protectedTime) {
-      this.logRemainedTask(`[${this.queueId}] Δt=${deltaT}, ${this.queue.length} in queue`);
+      this.logRemainedTask(
+        `[${this.queueId}] Δt=${deltaT}, ${this.queue.length} in queue`
+      );
       this.lastSuccessfulTickTime = currentTime;
-      this.tick().then(this.scheduleTick);
+      this.queue.tick().then(this.scheduleTick);
     } else if (this.queue.length > 0) {
-      this.logRemainedTask(`[${this.queueId}] Δt=${deltaT}, protected time reached, scheduling next tick, ${this.queue.length} tasks delayed`);
+      this.logRemainedTask(
+        `[${this.queueId}] Δt=${deltaT}, protected time reached, scheduling next tick, ${this.queue.length} tasks delayed`
+      );
       this.scheduleTick();
     }
   };
