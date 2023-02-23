@@ -1,4 +1,6 @@
-
+/**
+ * An enum representing different update actions that can be taken on a queue.
+ */
 export enum QueueUpdateAction {
   /**
    * New task was added to the queue.

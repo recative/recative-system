@@ -10,17 +10,57 @@ import { NotLazyOpenPromiseError } from './NotLazyOpenPromiseError';
 
 const log = debug('promise:par-q');
 
+/**
+ * A queue that processes tasks asynchronously in frames.
+ */
 export class FrameFillingQueue extends EventTarget {
+  /**
+   * The tasks currently in the queue.
+   */
   private queue: Array<QueuedTask> = [];
 
+  /**
+   * A map of tasks to their unique identifiers.
+   */
   readonly taskMap = new Map<QueuedTask, string>();
 
+  /**
+   * The number of cleared tasks.
+   */
   clearedTasks = 0;
 
+  /**
+   * The number of rejected promises.
+   */
+  rejected = 0;
+
+  /**
+   * The number of resolved promises.
+   */
+  resolved = 0;
+
+  /**
+   * The number of tasks currently being processed.
+   */
+  working = 0;
+
+  /**
+   * Returns the number of remaining tasks in the queue.
+   */
   get remainTasks(): number {
     return this.queue.length;
   }
 
+  /**
+   * Creates a new instance of `FrameFillingQueue`.
+   *
+   * @param concurrent - The maximum number of tasks to execute concurrently.
+   * @param dependencyQueue - An optional dependency queue that must be empty
+   *   before tasks in this queue can be executed.
+   * @param queueId - An optional unique identifier for the queue.
+   * @param protectedTime - The amount of time (in milliseconds) that must
+   *   remain in the current frame before the next task can be executed.
+   */
   constructor(
     readonly concurrent = 1,
     readonly dependencyQueue?: Queue,
@@ -30,10 +70,19 @@ export class FrameFillingQueue extends EventTarget {
     super();
   }
 
+  /**
+   * The number of tasks in the queue.
+   */
   get length() {
     return this.queue.length;
   }
 
+  /**
+   * Adds a task to the queue.
+   *
+   * @param task - The task to add to the queue.
+   * @param taskId - An optional unique identifier for the task.
+   */
   add = (task: QueuedTask, taskId?: string) => {
     this.dispatchEvent(new QueueUpdateEvent(this, QueueUpdateAction.Add));
     this.queue.push(task);
@@ -45,26 +94,13 @@ export class FrameFillingQueue extends EventTarget {
     this.tick();
   };
 
-  rejected = 0;
-
-  resolved = 0;
-
-  working = 0;
-
-  private executeTask = (task: QueuedTask): Promise<any> => {
-    this.remove(task, true);
-
-    if ('execute' in task) {
-      if (!task.lazy) {
-        throw new NotLazyOpenPromiseError();
-      }
-      task.execute();
-      return task;
-    }
-
-    return Promise.resolve(task());
-  };
-
+  /**
+   * Removes a task from the queue.
+   *
+   * @param task - The task to remove from the queue.
+   * @param silent - An optional flag to indicate whether to suppress the
+   *   `QueueUpdateEvent`.
+   */
   remove(task: QueuedTask, silent?: boolean) {
     const index = this.queue.indexOf(task);
     if (index > -1) {
@@ -80,37 +116,73 @@ export class FrameFillingQueue extends EventTarget {
     }
   }
 
-  private handlePromise = (
+  /**
+   * Executes a task and returns a promise that resolves when the task is
+   * complete.
+   *
+   * @param task - The task to execute.
+   */
+  private executeTask = (task: QueuedTask): Promise<any> => {
+    this.remove(task, true);
+
+    if ('execute' in task) {
+      if (!task.lazy) {
+        throw new NotLazyOpenPromiseError();
+      }
+      task.execute();
+      return task;
+    }
+
+    return Promise.resolve(task());
+  };
+
+  /**
+   * Handles a promise in the queue, updating the relevant counters and
+   * triggering the execution of the next task if the concurrency limit allows
+   * it.
+   *
+   * @param p - The promise to handle.
+   * @param results - An array to which the promise will be pushed.
+   * @returns A promise that resolves when the input promise has settled.
+   */
+  private handlePromise = async (
     p: Promise<unknown>,
     results: Promise<unknown>[]
   ) => {
     this.working += 1;
 
-    return p
-      .then(() => {
+    try {
+      try {
+        await p;
         this.resolved += 1;
-      })
-      .catch(() => {
+      } catch {
         this.rejected += 1;
-      })
-      .finally(() => {
-        this.clearedTasks += 1;
-        this.working -= 1;
+      }
+    } finally {
+      this.clearedTasks += 1;
+      this.working -= 1;
 
-        const deltaT = timeRemaining();
+      const deltaT = timeRemaining();
 
-        if (
-          this.queue.length &&
-          this.working < this.concurrent &&
-          deltaT > this.protectedTime
-        ) {
-          const promise = this.executeTask(this.queue[0]);
-          results.push(promise);
-          this.handlePromise(promise, results);
-        }
-      });
+      if (
+        this.queue.length &&
+        this.working < this.concurrent &&
+        deltaT > this.protectedTime
+      ) {
+        const promise = this.executeTask(this.queue[0]);
+        results.push(promise);
+        this.handlePromise(promise, results);
+      }
+    }
   };
 
+  /**
+   * Executes the next available task in the queue. If the queue is not empty
+   * and the number of working tasks is less than `concurrent`, a task will be
+   * removed from the queue and executed.
+   *
+   * @returns A promise that resolves when all tasks have completed.
+   */
   tick = () => {
     if (this.dependencyQueue && this.dependencyQueue.remainTasks !== 0) {
       log(

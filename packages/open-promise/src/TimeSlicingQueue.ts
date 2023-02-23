@@ -13,32 +13,85 @@ logGroup.log = console.groupCollapsed.bind(console);
 
 const MAX_TASK_DELAY_TIME = 2000;
 
+/**
+ * The `QueueType` enum represents the two types of queues that can be used in
+ * the `TimeSlicingQueue` class:
+ * a sequential queue or a frame-filling queue.
+ */
 export enum QueueType {
   Sequential = 'sequential',
   FrameFilling = 'frame-filling',
 }
 
+/**
+ * The `TimeSlicingQueue` class is a task queue that schedules tasks to run
+ * at a later time to avoid blocking the main thread.
+ *
+ * @template T The type of the queued tasks.
+ */
 export class TimeSlicingQueue {
+  /**
+   * A flag indicating whether the queue is currently running.
+   */
   running: boolean = false;
 
+  /**
+   * Indicates whether a tick has been scheduled.
+   *
+   * @private
+   */
   private tickScheduled = false;
 
+  /**
+   * The time of the last successful tick.
+   *
+   * @private
+   */
   private lastSuccessfulTickTime = 0;
 
+  /**
+   * The queue used to store tasks.
+   *
+   * @private
+   */
   private queue: SequentialQueue | FrameFillingQueue;
 
+  /**
+   * Returns a map of the tasks in the queue and their corresponding IDs.
+   */
   get taskMap() {
     return this.queue.taskMap;
   }
 
+  /**
+   * Returns the number of tasks in the queue.
+   */
   get length() {
     return this.queue.length;
   }
 
+  /**
+   * Returns the number of tasks in the queue.
+   *
+   * This property is identical to `length` and is provided for
+   * compatibility with the `Queue` interface.
+   */
   get remainTasks(): number {
     return this.queue.length;
   }
 
+  /**
+   * Constructs a new `TimeSlicingQueue` object.
+   *
+   * @param concurrency The maximum number of tasks that can be run
+   *   concurrently.
+   * @param type The type of the queue to use: either a sequential queue or a
+   *   frame-filling queue.
+   * @param protectedTime The minimum amount of time (in milliseconds) between
+   *   ticks to ensure that the main thread is not blocked.
+   * @param dependencyQueue A dependency queue to use.
+   * @param queueId An optional ID to use for the queue.
+   */
   constructor(
     readonly concurrency: number = 1,
     readonly type: QueueType = QueueType.FrameFilling,
@@ -61,6 +114,9 @@ export class TimeSlicingQueue {
     log(`[${this.queueId}] initialized`);
   }
 
+  /**
+   * Runs the queue.
+   */
   run = () => {
     if (this.running) {
       return;
@@ -71,6 +127,11 @@ export class TimeSlicingQueue {
     this.scheduleTick();
   };
 
+  /**
+   * Adds a task to the queue.
+   * @param task The task to add.
+   * @param taskId An optional ID to assign to the task.
+   */
   add = (task: QueuedTask, taskId?: string) => {
     this.queue.add(task, taskId);
 
@@ -79,6 +140,12 @@ export class TimeSlicingQueue {
     }
   };
 
+  /**
+   * Logs the tasks that are still in the queue.
+   *
+   * @private
+   * @param title The title of the log.
+   */
   private logRemainedTask = (title = `Remained Tasks`) => {
     logGroup(title);
     log(
@@ -89,6 +156,11 @@ export class TimeSlicingQueue {
     console.groupEnd();
   };
 
+  /**
+   * Schedules a tick to process the next task in the queue.
+   *
+   * @private
+   */
   private scheduleTick = () => {
     if (this.tickScheduled) {
       return;
@@ -103,6 +175,11 @@ export class TimeSlicingQueue {
     });
   };
 
+  /**
+   * Processes the next task in the queue.
+   *
+   * @private
+   */
   private tickOnce = () => {
     if (!this.running) {
       log(`[${this.queueId}] queue is not running, won't tick`);
@@ -137,6 +214,9 @@ export class TimeSlicingQueue {
     }
   };
 
+  /**
+   * Stops the queue.
+   */
   stop = () => {
     this.running = false;
   };
