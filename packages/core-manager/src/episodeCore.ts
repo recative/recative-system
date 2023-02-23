@@ -115,7 +115,7 @@ export class EpisodeCore<
 
   readonly slowTaskQueue = new TimeSlicingQueue(
     6,
-    QueueType.Sequential,
+    QueueType.FrameFilling,
     8,
     this.fastTaskQueue,
     'slow'
