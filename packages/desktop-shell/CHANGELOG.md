@@ -1,5 +1,17 @@
 # desktop-shell
 
+## 0.4.0
+
+### Minor Changes
+
+- 917bcb5: feat: Universal binary on macOS
+
+### Patch Changes
+
+- 64b0c01: chore: Supports fetching version number
+- 0a0ef4d: fix: Avoid parallel build by manually create darwin universal package
+- c21207d: fix: Use absolute path in darwin-universal script
+
 ## 0.3.0
 
 ### Minor Changes

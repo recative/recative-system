@@ -1,5 +1,14 @@
 # @recative/mobile-shell
 
+## 0.2.5
+
+### Patch Changes
+
+- 64b0c01: chore: Supports fetching version number
+- Updated dependencies [4c56c57]
+  - @recative/act-player@0.5.18
+  - @recative/client-sdk@13.0.0
+
 ## 0.2.4
 
 ### Patch Changes

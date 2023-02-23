@@ -1,5 +1,15 @@
 # @recative/ap-core
 
+## 0.7.5
+
+### Patch Changes
+
+- Updated dependencies [156055e]
+- Updated dependencies [0b36c02]
+- Updated dependencies [156055e]
+  - @recative/open-promise@0.3.0
+  - @recative/resource-bridge@0.2.6
+
 ## 0.7.4
 
 ### Patch Changes

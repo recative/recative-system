@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.6
+
+### Patch Changes
+
+- Updated dependencies [156055e]
+- Updated dependencies [0b36c02]
+- Updated dependencies [156055e]
+  - @recative/open-promise@0.3.0
+
 ## 0.2.5
 
 ### Patch Changes

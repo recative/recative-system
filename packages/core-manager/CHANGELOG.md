@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.13.0
+
+### Minor Changes
+
+- 0b36c02: feat: Adapting new promise queue
+
+### Patch Changes
+
+- Updated dependencies [156055e]
+- Updated dependencies [0b36c02]
+- Updated dependencies [156055e]
+  - @recative/open-promise@0.3.0
+  - @recative/resource-loader@0.3.0
+
 ## 0.12.3
 
 ### Patch Changes

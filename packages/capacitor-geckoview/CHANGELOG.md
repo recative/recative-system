@@ -1,5 +1,11 @@
 # @capacitor/android-geckoview
 
+## 1.0.10
+
+### Patch Changes
+
+- b1fcd48: chore: code improve in content.js
+
 ## 1.0.9
 
 ### Patch Changes
