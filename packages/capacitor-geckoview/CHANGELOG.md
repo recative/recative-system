@@ -1,5 +1,11 @@
 # @capacitor/android-geckoview
 
+## 2.0.0
+
+### Major Changes
+
+- 8b0f252: feat: upgrade and base on capacitor/4.6.0
+
 ## 1.0.10
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1
+
+### Patch Changes
+
+- ad40709: fix: Events are not dispatched
+
 ## 0.3.0
 
 ### Minor Changes
