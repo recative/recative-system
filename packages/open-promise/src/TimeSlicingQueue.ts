@@ -140,6 +140,10 @@ export class TimeSlicingQueue {
     }
   };
 
+  get remove() {
+    return this.queue.remove;
+  }
+
   /**
    * Logs the tasks that are still in the queue.
    *

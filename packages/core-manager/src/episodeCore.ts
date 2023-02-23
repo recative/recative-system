@@ -7,6 +7,7 @@ import {
   TimeSlicingQueue,
   OpenPromiseState,
   PromiseResolvedError,
+  QueueType,
 } from '@recative/open-promise';
 import { ResourceLoader } from '@recative/resource-loader';
 import { getGlobalAudioStation } from '@recative/audio-station';
@@ -104,10 +105,17 @@ export class EpisodeCore<
 
   readonly audioStation = getGlobalAudioStation();
 
-  readonly fastTaskQueue = new TimeSlicingQueue(10, 4, undefined, 'fast');
+  readonly fastTaskQueue = new TimeSlicingQueue(
+    10,
+    QueueType.FrameFilling,
+    4,
+    undefined,
+    'fast'
+  );
 
   readonly slowTaskQueue = new TimeSlicingQueue(
     6,
+    QueueType.Sequential,
     8,
     this.fastTaskQueue,
     'slow'
