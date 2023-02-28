@@ -1,5 +1,13 @@
 # @recative/web-shell
 
+## 0.4.4
+
+### Patch Changes
+
+- Updated dependencies [6fab431]
+- Updated dependencies [6d18085]
+  - @recative/act-player@0.5.19
+
 ## 0.4.3
 
 ### Patch Changes

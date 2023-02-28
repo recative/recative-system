@@ -1,5 +1,12 @@
 # @recative/act-player
 
+## 0.5.19
+
+### Patch Changes
+
+- 6fab431: feat: Implement error collecting tool for the inspector
+- 6d18085: feat: Better error message handling
+
 ## 0.5.18
 
 ### Patch Changes
