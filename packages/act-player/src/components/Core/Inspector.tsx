@@ -2,6 +2,7 @@ import * as React from 'react';
 import cn from 'classnames';
 
 import useConstant from 'use-constant';
+import { useStore } from '@nanostores/react';
 import { useKonami } from 'react-konami-code';
 import { useStyletron } from 'baseui';
 
@@ -19,16 +20,18 @@ import { MemoryRecorder } from './utils/MemoryRecorder';
 
 import { useRaf } from './hooks/useRaf';
 
+import { Prototype } from '../Prototype/Prototype';
 import { RecativeLogo } from '../Logo/RecativeLogo';
 
 import { useEvent } from '../../hooks/useEvent';
+import { errorCollectingAtom } from './utils/errorCollector';
 import { forEachConfig, getRecativeConfigurations } from './utils/storageKeys';
 
 const s = (x: boolean) => x.toString();
 
 const KONAMI_CONFIG = {
-  code: [49, 49, 52, 53, 19, 52],
-}
+  code: [49, 49, 52, 53, 49, 52],
+};
 
 export interface IInspector<T extends Record<string, unknown>> {
   core: EpisodeCore<T> | null;
@@ -310,10 +313,11 @@ export const ConfigureEditor = React.memo(() => {
 });
 
 export const Inspector = <T extends Record<string, unknown>>({ core }: IInspector<T>) => {
-  const [css] = useStyletron();
+  const [css, theme] = useStyletron();
   const fpsCanvasRef = React.useRef<HTMLCanvasElement>(null);
   const memoryRef = React.useRef<HTMLCanvasElement>(null);
 
+  const collectedErrors = useStore(errorCollectingAtom);
   const [averageDeltaT, setAverageDeltaT] = React.useState(0);
   const fpsSparkLine = useConstant(() => new SparkLine(0, 120));
   const fpsRecorder = useConstant(() => new FpsRecorder());
@@ -371,6 +375,15 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
   });
 
   useRaf(drawChart);
+
+  React.useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent(
+        'recative-error',
+        { detail: new Error('Inspector enabled') }
+      )
+    );
+  }, [])
 
   if (!showInspector) return null;
 
@@ -706,6 +719,32 @@ export const Inspector = <T extends Record<string, unknown>>({ core }: IInspecto
         </SectionTitle>
 
         <ConfigureEditor />
+
+        <SectionTitle>
+          ERRORS
+        </SectionTitle>
+        {
+          collectedErrors.map((x, index) => (
+            <Block
+              key={index}
+              marginTop="4px"
+              marginBottom="4px"
+              paddingTop="4px"
+              paddingRight="4px"
+              paddingBottom="4px"
+              paddingLeft="4px"
+              backgroundColor={theme.colors.backgroundLightNegative}
+            >
+              <LabelXSmall
+                marginBottom="4px"
+                color={theme.colors.contentNegative}
+              >
+                {x.date.toLocaleString()}
+              </LabelXSmall>
+              <Prototype value={x.object} valueKey="#" />
+            </Block>
+          ))
+        }
       </Block>
     </Block>
   )

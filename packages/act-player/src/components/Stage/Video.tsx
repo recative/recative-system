@@ -338,6 +338,13 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
     const videoError = videoRef.current?.error
       ?? (event.nativeEvent as ErrorEvent).error
 
+    window.dispatchEvent(
+      new CustomEvent(
+        'recative-error',
+        { detail: videoError }
+      )
+    );
+
     if (!videoError) {
       // eslint-disable-next-line no-console
       console.error(`Video element error: Undefined error`);
