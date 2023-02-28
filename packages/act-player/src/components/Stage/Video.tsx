@@ -332,10 +332,24 @@ export const InternalVideo: AssetExtensionComponent = (props) => {
     stuck();
   }, [stuck]);
 
-  const handleError = React.useCallback((event: React.SyntheticEvent<HTMLVideoElement, Event>) => {
-    const videoError = videoRef.current?.error ?? (event.nativeEvent as ErrorEvent).error
-    // eslint-disable-next-line no-console
-    console.error(`Video element error: ${videoError?.code ?? "<Unknown error code>"}, ${videoError?.message ?? "<Empty error message>"}`)
+  const handleError = React.useCallback((
+    event: React.SyntheticEvent<HTMLVideoElement, Event>
+  ) => {
+    const videoError = videoRef.current?.error
+      ?? (event.nativeEvent as ErrorEvent).error
+
+    if (!videoError) {
+      // eslint-disable-next-line no-console
+      console.error(`Video element error: Undefined error`);
+    } else if (!videoError.code && !videoError.message) {
+      // eslint-disable-next-line no-console
+      console.error(`Video element error:`, videoError);
+    } else {
+      const code = videoError.code ?? '<Unknown error code>';
+      const message = videoError.message ?? '<Empty error message>';
+      // eslint-disable-next-line no-console
+      console.error(`Video element error: ${code}, ${message}`);
+    }
   }, []);
 
   return (
