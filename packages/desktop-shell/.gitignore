@@ -41,6 +41,7 @@ yarn-error.log*
 .recative
 public/bundle/*
 public/constants.json
+public/version.txt
 !public/bundle/.gitkeep
 
 # Electron Forge

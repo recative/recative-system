@@ -25,4 +25,5 @@ yarn-error.log*
 # Recative Bundle
 public/bundle
 public/constants.json
+public/version.txt
 dist/web-web-root.zip
