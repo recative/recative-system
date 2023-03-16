@@ -72,6 +72,12 @@ const config = {
             label: 'Technotes',
           },
           {
+            to: 'docs/studio/intro',
+            activeBasePath: 'docs/studio',
+            position: 'left',
+            label: 'Studio',
+          },
+          {
             to: 'api',
             label: 'API',
             activeBasePath: 'api',
