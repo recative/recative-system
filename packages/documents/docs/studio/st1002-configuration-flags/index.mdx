@@ -1,0 +1,79 @@
+---
+sidebar_position: 1002
+---
+
+# ST1002: Mobile shell overrides for debug purpose
+
+## Introduction
+This document lists all possible configurations for debug purposes. You can set
+these values via debugger in `localstorage`, and reload the app to make them
+take effect.
+
+All overrides are named in a path-like style, the second part of the path
+represents the configuration is coded in which package.
+
+## Configurations
+Here is a list of the supported flags:
+
+* **`@recative/mobile-shell/path`:** Override the path of data source, this is
+  useful if you want the application load configuration from LAN, to preview
+  changes on mobile application.
+
+* **`@recative/mobile-shell/data-type`:** Use which type of data, JSON or BSON.
+  BSON is a more efficient encoding format. Changing this is not necessary in
+  most cases.
+
+* **`@recative/mobile-shell/console`:** Enable `vConsole` or not, if you don't
+  have an expensive macOS machine, and want to debug problems on mobile platform,
+  this would be useful.
+
+* **`@recative/mobile-shell/index-order`:** Change the episode order of the
+  first episode. If this override is available, the app would find the episode
+  with this order number, and show it instead the episode with the order of 0.
+
+* **`@recative/mobile-shell/preferred-uploaders`:** Override the uploader
+  configuration. This is useful while the media package is not published and
+  developers want to see changes immediately.
+
+* **`@recative/client-sdk/container-component`:** Override the remote component
+  path, this would be useful if developers is debugging a skin for mobile
+  platform.
+
+* **`@recative/smart-resource/report-match-score`:** Generate a report of each
+  smart resource matching request, to debug i18n related problems.
+
+* **`@recative/core-manager/report-resource-validation`:** Generate a report of
+  each smart resource URL trying request, to debug CDN related problems.
+
+* **`@recative/ap-pack/no-sw`:** Disable Service Worker to make the act point
+  work like an application.
+
+* **`@recative/ap-pack/debug-lifecycle`:** Show an overlay about the lifecycle
+  and status of the act-point, red means script not loaded, orange means script
+  loaded but act point not played, green means the act point is played by the
+  player, purple means the act point is paused by the player.
+
+* **`@recative/demo-player/bundle-id`:** A number, to fetch metadata for
+  specific version of the project.
+
+## Usage example
+
+Here is a code snippest for you to see how configuration flag wors:
+
+```ts
+localStorage['@recative/mobile-shell/path'] = 'https://developer.nicestick.io:9999/bson/$fileName'
+localStorage['@recative/mobile-shell/data-type'] = 'bson';
+localStorage["@recative/mobile-shell/preferred-uploaders"] = [
+    "@recative/uploader-extension-mobile-shell/cached",
+    "@recative/uploader-extension-mobile-shell/build-in",
+    "@recative/uploader-extension-s3-oss/S3Uploader",
+    "@recative/uploader-extension-ali-oss/AliOSSUploader",
+    "@recative/uploader-polyv-vod/PolyVUploader",
+    "@recative/uploader-extension-studio/ResourceManager"
+  ].join();
+localStorage.debug = '*';
+```
+
+Please be caution that the `localStorage` field of the `constant` configuration
+will alway override your configuration each time the program starts. If some
+bugs happened, check the `window.constant` variable to investigate the detail.
