@@ -30,46 +30,140 @@ const logGroup = debug('client:injector');
 // eslint-disable-next-line no-console
 logGroup.log = console.groupCollapsed.bind(console);
 
-export interface InjectedProps<
+/**
+ * Interface representing the parameter to a React hook, which will be
+ * injected to multiple places.
+ * @template PlayerPropsInjectedDependencies - an object providing platform
+ *           specific dependencies to the hooks.
+ * @template EnvVariable - a variable that contains the metadata related to the
+ *           client.
+ */
+export interface IInjectedProps<
   PlayerPropsInjectedDependencies,
-  EnvVariable extends Record<string, unknown>,
+  EnvVariable extends Record<string, unknown>
 > {
+  /**
+   * An optional string representing the ID of the episode.
+   */
   episodeId?: string;
+  /**
+   * An object representing the series core used to control the series level
+   * playback tasks.
+   */
   seriesCore: SeriesCore<EnvVariable> | null;
+  /**
+   * An object representing the episode core used to control the episode level
+   * playback tasks.
+   */
   episodeCore: EpisodeCore<EnvVariable> | null;
+  /**
+   * An array of string representing the IDs of the preferred uploaders to be
+   * used to fetch resources.
+   */
   preferredUploaders: string[];
+  /**
+   * An array of string representing the IDs of the trusted uploaders, whose
+   * resources are always be treated as available.
+   */
   trustedUploaders: string[];
+  /**
+   * An object containing the metadata related to the client.
+   */
   envVariable: EnvVariable | undefined;
+  /**
+   * An object containing information about the user token, avatar and nickname.
+   */
   userData: IUserRelatedEnvVariable | undefined;
+  /**
+   * An object providing platform specific dependencies to the hooks.
+   */
   dependencies: PlayerPropsInjectedDependencies;
+  /**
+   * An object containing user implemented functions to customize the behavior
+   * of the player.
+   */
   userImplementedFunctions: Partial<RawUserImplementedFunctions> | undefined;
 }
 
 type UnknownRecord = Record<string, unknown>;
 
-const ON_END: IContentProps<unknown, UnknownRecord>['onEnd'] = () => log('[DEFAULT] All content ended');
-const ON_SEGMENT_END: IContentProps<unknown, UnknownRecord>['onSegmentEnd'] = ({ episodeId, segment }: SegmentEndEventDetail) => log(`[DEFAULT] Segment ${segment} of ${episodeId} ended`);
-const ON_SEGMENT_START: IContentProps<unknown, UnknownRecord>['onSegmentStart'] = ({ episodeId, segment }: SegmentStartEventDetail) => log(`[DEFAULT] Segment ${segment} of ${episodeId} ended`);
+const ON_END: IContentProps<unknown, UnknownRecord>['onEnd'] = () =>
+  log('[DEFAULT] All content ended');
+const ON_SEGMENT_END: IContentProps<unknown, UnknownRecord>['onSegmentEnd'] = ({
+  episodeId,
+  segment,
+}: SegmentEndEventDetail) =>
+  log(`[DEFAULT] Segment ${segment} of ${episodeId} ended`);
+const ON_SEGMENT_START: IContentProps<
+  unknown,
+  UnknownRecord
+>['onSegmentStart'] = ({ episodeId, segment }: SegmentStartEventDetail) =>
+  log(`[DEFAULT] Segment ${segment} of ${episodeId} ended`);
 
-export type PlayerPropsInjectorHook<
+/**
+ * This interface defines the properties that can be injected to different parts
+ * of the application.
+ * It is used as the return type of a React hook.
+ *
+ * @template PlayerPropsInjectedDependencies - Dependencies injected to
+ *           the `ManagedActPlayer` component of the `@recative/act-player`
+ *           package
+ * @template EnvVariable - Environment variables injected to client-sdk
+ *           configuration
+ */
+export interface IInjectorProps<
   PlayerPropsInjectedDependencies,
-  EnvVariable extends Record<string, unknown>,
-> = (
-  props: InjectedProps<PlayerPropsInjectedDependencies, EnvVariable>
-) => {
+  EnvVariable extends Record<string, unknown>
+> {
+  /**
+   * ID of the episode to inject the properties.
+   */
   episodeId?: string;
+
+  /**
+   * Partial properties to inject to the ManagedActPlayer component.
+   */
   injectToPlayer?: Partial<IManagedActPointProps<EnvVariable>>;
-  injectToSdk?: Partial<IContentProps<PlayerPropsInjectedDependencies, EnvVariable>>;
+
+  /**
+   * Partial properties to inject to the client-sdk configuration.
+   * Please notice only these properties will take effect: `attemptAutoplay`,
+   * `defaultContentLanguage`, `defaultSubtitleLanguage`, `preferredUploaders`,
+   * `trustedUploaders`.
+   */
+  injectToSdk?: Partial<
+    IContentProps<PlayerPropsInjectedDependencies, EnvVariable>
+  >;
+
+  /**
+   * Properties to inject to the container component.
+   */
   injectToContainer?: Record<string, unknown>;
-  getEpisodeMetadata?:
-  | ((episodeId: string, episodeMetadata: IEpisodeMetadata) => (
+
+  /**
+   * A function to modify the metadata of the episode.
+   *
+   * @param episodeId - ID of the episode to modify the metadata.
+   * @param episodeMetadata - Metadata of the episode to modify.
+   *
+   * @returns The modified metadata, or undefined if no modification is needed.
+   */
+  getEpisodeMetadata?: (
+    episodeId: string,
+    episodeMetadata: IEpisodeMetadata
+  ) =>
     | IEpisodeMetadata
     | Promise<IEpisodeMetadata>
     | undefined
-    | Promise<undefined>
-  ))
-  | undefined;
-};
+    | Promise<undefined>;
+}
+
+export type PlayerPropsInjectorHook<
+  PlayerPropsInjectedDependencies,
+  EnvVariable extends Record<string, unknown>
+> = (
+  props: IInjectedProps<PlayerPropsInjectedDependencies, EnvVariable>
+) => IInjectorProps<PlayerPropsInjectedDependencies, EnvVariable>;
 
 // This could be any!
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,49 +184,52 @@ const NULL_ATOM = atom(null);
  * Garbage in garbage out.
  */
 export const useInjector = <
-    PlayerPropsInjectedDependencies,
-    EnvVariable extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable,
-  >(
-    episodeId: string | null,
-    preferredUploaders: string[],
-    trustedUploaders: string[],
-    envVariable: EnvVariable | undefined,
-    userData: IUserRelatedEnvVariable | undefined,
-    episodeDetail: IEpisodeDetail | null,
-    internalUsePlayerPropsHook:
-    PlayerPropsInjectorHook<PlayerPropsInjectedDependencies, EnvVariable> | undefined,
-    playerPropsHookDependencies: PlayerPropsInjectedDependencies,
-    userImplementedFunctions: Partial<RawUserImplementedFunctions> | undefined,
-    navigate: ISeriesCoreConfig['navigate'],
-    seriesCoreRef: React.MutableRefObject<SeriesCore<EnvVariable> | undefined>,
-  ) => {
+  PlayerPropsInjectedDependencies,
+  EnvVariable extends IDefaultAdditionalEnvVariable = IDefaultAdditionalEnvVariable
+>(
+  episodeId: string | null,
+  preferredUploaders: string[],
+  trustedUploaders: string[],
+  envVariable: EnvVariable | undefined,
+  userData: IUserRelatedEnvVariable | undefined,
+  episodeDetail: IEpisodeDetail | null,
+  internalUsePlayerPropsHook:
+    | PlayerPropsInjectorHook<PlayerPropsInjectedDependencies, EnvVariable>
+    | undefined,
+  playerPropsHookDependencies: PlayerPropsInjectedDependencies,
+  userImplementedFunctions: Partial<RawUserImplementedFunctions> | undefined,
+  navigate: ISeriesCoreConfig['navigate'],
+  seriesCoreRef: React.MutableRefObject<SeriesCore<EnvVariable> | undefined>
+) => {
   const seriesCore = seriesCoreRef.current;
   const episodeCore = useStore(seriesCore?.currentEpisodeCore ?? NULL_ATOM);
 
   const fetchData = useDataFetcher();
 
   if (
-    playerPropsHookDependencies
-    && (
-      typeof playerPropsHookDependencies !== 'object'
-        || playerPropsHookDependencies === null
-    )
+    playerPropsHookDependencies &&
+    (typeof playerPropsHookDependencies !== 'object' ||
+      playerPropsHookDependencies === null)
   ) {
     throw new TypeError('Invalid player property hooks dependencies');
   }
 
   const usePlayerProps: PlayerPropsInjectorHook<
-  PlayerPropsInjectedDependencies, EnvVariable
+    PlayerPropsInjectedDependencies,
+    EnvVariable
   > = internalUsePlayerPropsHook ?? usePlayerPropsDefaultHook;
 
   const normalizeEpisodeId = useEpisodeIdNormalizer();
 
-  const internalDependencies = React.useMemo(() => ({
-    navigate,
-    fetchData,
-    normalizeEpisodeId,
-    ...playerPropsHookDependencies,
-  }), [fetchData, navigate, playerPropsHookDependencies, normalizeEpisodeId]);
+  const internalDependencies = React.useMemo(
+    () => ({
+      navigate,
+      fetchData,
+      normalizeEpisodeId,
+      ...playerPropsHookDependencies,
+    }),
+    [fetchData, navigate, playerPropsHookDependencies, normalizeEpisodeId]
+  );
 
   const playerPropsHookProps = React.useMemo(
     () => ({
@@ -156,15 +253,11 @@ export const useInjector = <
       seriesCore,
       internalDependencies,
       userImplementedFunctions,
-    ],
+    ]
   );
 
-  const {
-    injectToSdk,
-    injectToPlayer,
-    injectToContainer,
-    getEpisodeMetadata,
-  } = usePlayerProps(playerPropsHookProps);
+  const { injectToSdk, injectToPlayer, injectToContainer, getEpisodeMetadata } =
+    usePlayerProps(playerPropsHookProps);
 
   const {
     hookOnEnd,
@@ -202,7 +295,7 @@ export const useInjector = <
     injectToSdk,
     injectToPlayer,
     injectToContainer,
-    playerPropsHookProps,
+    playerPropsHookProps
   );
 
   return {

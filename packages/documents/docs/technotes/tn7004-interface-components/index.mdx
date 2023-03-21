@@ -2,9 +2,113 @@
 sidebar_position: 7004
 ---
 
-# TN7003: Build a customized interface
+# TN7004: Building a Customized Interface
 
-Abstract
+## Abstract
 
 The Recative System recommend writing your customized interface by injecting
-custom proerities to the React component, this article will introduce.
+custom proprieties to the React component, this article will introduce the
+essentials of building a interface component.
+
+## Getting started
+
+To get started building your customized interface, we need to setup a new
+package which generates a single file CommonJS module, we recommend using Parcel
+v2 to build the module.
+
+Here's a recommended configuration snippiest:
+
+```json
+{
+  "scripts": {
+    "prepack": "yarn clean && yarn build",
+    "clean": "rimraf ./dist",
+    "watch": "parcel watch",
+    "build": "parcel build",
+    "reset": "rimraf ./dist ./.parcel-cache"
+  },
+  "targets": {
+    "main": false,
+    "module": false,
+    "types": false,
+    "containerComponents": {
+      "source": "src/containerComponents.ts",
+      "distDir": "dist/player",
+      "outputFormat": "commonjs",
+      "optimize": false,
+      "includeNodeModules": false,
+      "isLibrary": true
+    }
+  },
+  "externals": {
+    "baseui": true,
+    "react": true,
+    "react-dom": true
+  }
+}
+```
+
+## Building customized interface components
+
+Interface components are elements that stack with each other, each component
+provides different features.
+
+It's possible to build up your very own features by modifying the default
+appearance and behavior of the default one. Developers need to export a variable
+called `interfaceComponents`, the value is an array of React components. The
+`act-player` will provide two parameters to the component: `core` and
+`loadingComponent`.
+
+Checkout [the document of the `act-player`](/docs/technotes/tn8001-act-player#interface-component)
+to gain some conceptual information about interface components.
+
+If you would like to register your component to the core, which can make sure
+it can be controlled by the lifecycle management mechanism, consider using the
+[`use-constant`](https://www.npmjs.com/package/use-constant) to store a
+singleton instance of registered component lifecycle management interface.
+
+Here is an example about how to register the component:
+
+```typescript
+const core = useConstant(() => {
+  const coreFunctions = props.core.registerComponent(
+    YOUR_COMPONENT_ID,
+    YOUR_COMPONENT_FUNCTIONS
+  );
+
+  return coreFunctions;
+});
+```
+
+The component ID is a string, which should be unique among other interface
+components, and component functions is an object, which contains multiple
+functions that could let the [episode core](/docs/technotes/tn9002-episode-core)
+to control the behavior of your component, for detailed typing information,
+checkout the [API reference](/api/core-manager/interface/ComponentFunctions).
+
+the `registerComponent` method will return [a set of functions](/api/core-manager/interface/CoreFunctions) which allow
+developers to control the behavior of the [episode core](/docs/technotes/tn9002-episode-core),
+and this is the only recommend way to control the episode core.
+
+## Wrapping the player
+
+For features that happened across different episodes, developers could export
+a variable named `ContainerComponent`, this is fulfilled by the series core.
+
+Container component won't be reloaded among episodes, and while [related
+parameters](/api/client-sdk/interface/IContainerComponentProps) changed, the
+component will be notified.
+
+Some suitable use cases are implementing global payment service, building
+transition animations and more.
+
+## Injecting parameters
+
+If you want to control more detailed behavior of different parts of the player,
+parameter injection provides a possible approach. This is made possible by
+exporting a React hook, named `usePlayerProps`.
+
+The `@recative/client-sdk` will provide [several parameters](/api/client-sdk/interface/InjectedProps)
+to the hook, and the the hook should return an object which contains the
+[additional proprieties](/api/client-sdk/interface/IInjectorProps) which need to
+be injected to several destinations.

@@ -6,7 +6,8 @@ export { useSdkConfig, useEpisodes } from './hooks/useSdkConfig';
 
 export type {
   PlayerPropsInjectorHook,
-  InjectedProps,
+  IInjectedProps as InjectedProps,
+  IInjectorProps,
 } from './components/hooks/useInjector';
 export * from './components/hooks/useDataFetcher';
 export * from './components/hooks/useEpisodeIdNormalizer';

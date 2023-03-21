@@ -89,14 +89,50 @@ const DefaultContainerModule = {
   Container: DefaultContainerComponent,
 };
 
+/**
+ * The property of the container component, which wrap the player to manage
+ * series level logic.
+ */
 export interface IContainerComponentProps<
-  EnvVariable extends Record<string, unknown>,
+  EnvVariable extends Record<string, unknown>
 > {
+  /**
+   * An instance of EpisodeCore class, which is used to manage the current
+   * episode.
+   * Can be null if the episode is not yet available.
+   */
   episodeCore: EpisodeCore<EnvVariable> | null;
+
+  /**
+   * An instance of SeriesCore class, which is used to manage the series that
+   * the current episode belongs to.
+   */
   seriesCore: SeriesCore<EnvVariable>;
+
+  /**
+   * The status of the network request for the list of episodes.
+   */
   episodeListRequestStatus: NetworkRequestStatus;
+
+  /**
+   * The status of the network request for the current episode's details.
+   * Can be undefined if the episode details have not yet been requested.
+   */
   episodeDetailRequestStatus: NetworkRequestStatus | undefined;
+
+  /**
+   * The ID of the current episode.
+   * We **must** use episode id which comes from episodeCore but not from the
+   * router or the episodeDetail, this is a problem of lifecycle, only id in
+   * episode id changed means the episode core ready, and we can  initialize the
+   * episode safely.
+   */
   episodeId: string;
+
+  /**
+   * A Map of all episodes, with the episode ID as the key and an instance of
+   * episode metadata as the value.
+   */
   episodes: Map<string, IEpisode>;
 }
 
@@ -141,7 +177,11 @@ export const ContentModuleFactory = <
     interfaceComponents,
   } = containerModule;
 
-  const ContainerComponent = Container || DefaultContainerComponent;
+  const ContainerComponent: React.FC<
+    React.PropsWithChildren<
+      IContainerComponentProps<EnvVariable>
+    >
+  > = Container || DefaultContainerComponent;
 
   type ContentProps = IContentProps<PlayerPropsInjectedDependencies, EnvVariable>;
 
@@ -305,10 +345,6 @@ export const ContentModuleFactory = <
         episodeDetailRequestStatus={
           episodeId ? config.requestStatus[episodeId] : undefined
         }
-        // We must use episode id from episodeCore but not from the router or
-        // the episodeDetail, this is a problem of lifecycle, only id in
-        // episode id changed means the episode core ready, and we can
-        // initialize the episode safely.
         episodeId={episodeCore?.episodeId || ''}
         episodes={config.episodesMap}
         {...props}

@@ -1,5 +1,6 @@
 import { makeUniversalApp } from '@electron/universal';
 import path from 'path';
+// @ts-ignore
 import { productName } from '../package.json';
 
 makeUniversalApp({
