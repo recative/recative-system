@@ -129,30 +129,110 @@ export type CoreState =
   | 'destroying'
   | 'destroyed';
 
+/**
+ * An interface defining the functions provided by a component to the content
+ * scheduling system (EpisodeCore).
+ */
 export interface ComponentFunctions {
-  // playback and timeline sync
+  /**
+   * Begins playback of the component.
+   */
   play(): void;
+
+  /**
+   * Pauses playback of the component.
+   */
   pause(): void;
+
+  /**
+   * Suspends playback of the component, but allows resuming without seeking.
+   */
   suspend(): void;
+
+  /**
+   * Resumes playback of the component from the current position.
+   */
   resume(): void;
+
+  /**
+   * Syncs the progress and time of the component with the EpisodeCore.
+   * @param progress - A number between 0 and 1 representing the progress of the
+   *        component.
+   * @param time - A number in milliseconds representing the current time of the
+   *        component.
+   */
   sync(progress: number, time: number): void;
-  // content lifecycle, for stage
+
+  /**
+   * Creates an asset (a piece of content) with the provided ID and
+   * specifications.
+   * @param id - A string ID for the asset.
+   * @param spec - An object specifying the metadata for the asset, including
+   *        its type and additional information necessary for displaying it.
+   */
   createContent(id: string, spec: ContentSpec): void;
+
+  /**
+   * Shows the asset with the provided ID.
+   * @param id - The ID of the asset to show.
+   */
   showContent(id: string): void;
+
+  /**
+   * Hides the asset with the provided ID.
+   * @param id - The ID of the asset to hide.
+   */
   hideContent(id: string): void;
+
+  /**
+   * Destroys the asset with the provided ID.
+   * @param id - The ID of the asset to destroy.
+   */
   destroyContent(id: string): void;
-  // content lifecycle, for content
+
+  /**
+   * Shows the component itself.
+   */
   showItself(): void;
+
+  /**
+   * Hides the component itself.
+   */
   hideItself(): void;
+
+  /**
+   * Destroys the component itself.
+   * @returns A Promise that resolves when the destruction is complete.
+   */
   destroyItself(): Promise<void>;
-  // switching blocker
-  /** will blocks both preload and showing of next asset instance when it returns true
-   * see unblockNextContentSetup and unblockContentSwitch on CoreFunctions */
+
+  /**
+   * Determines whether content switching should be blocked between the provided
+   * indices.
+   * @param from - The index of the asset being switched from.
+   * @param to - The index of the asset being switched to.
+   * @returns A boolean indicating whether content switching should be blocked.
+   * @see unblockNextContentSetup
+   * @see unblockContentSwitch
+   */
   shouldBlockContentSwitch(from: number, to: number): boolean;
-  // dialog area
+
+  /**
+   * Handles a trigger action from a dialog area.
+   * @param action - The response object for the triggered action.
+   */
   handleDialogActionTrigger(action: DialogActionTriggerResponse): void;
-  // run queued task inside the sandbox;
+
+  /**
+   * Add a task to the global task scheduling queue.
+   * @param taskId - The ID of the task to run.
+   * @returns A Promise that resolves when the task is complete.
+   */
   runQueuedTask(taskId: string): Promise<void>;
-  // Subsequence event
+
+  /**
+   * Notifies the component that a sequence has ended.
+   * @param id - The ID of the sequence that has ended.
+   */
   sequenceEnded(id: string): void;
 }

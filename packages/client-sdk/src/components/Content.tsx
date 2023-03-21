@@ -11,9 +11,10 @@ import {
   InitializedEventDetail,
   SegmentStartEventDetail,
   IUserRelatedEnvVariable,
+  EpisodeCore,
 } from '@recative/core-manager';
 
-import type { RawUserImplementedFunctions } from '@recative/definitions';
+import type { IEpisode, RawUserImplementedFunctions } from '@recative/definitions';
 import type {
   IEpisodeMetadata,
   ISeriesCoreConfig,
@@ -24,6 +25,7 @@ import { useSeriesCore } from './hooks/useSeriesCore';
 import { useCustomEventWrapper } from './hooks/useCustomEventWrapper';
 
 import type { PlayerPropsInjectorHook } from './hooks/useInjector';
+import type { NetworkRequestStatus } from '../constant/NetworkRequestStatus';
 
 import { loadCustomizedModule } from '../utils/loadCustomizedModule';
 
@@ -86,11 +88,23 @@ if (typeof window !== 'undefined') {
 const DefaultContainerModule = {
   Container: DefaultContainerComponent,
 };
+
+export interface IContainerComponentProps<
+  EnvVariable extends Record<string, unknown>,
+> {
+  episodeCore: EpisodeCore<EnvVariable> | null;
+  seriesCore: SeriesCore<EnvVariable>;
+  episodeListRequestStatus: NetworkRequestStatus;
+  episodeDetailRequestStatus: NetworkRequestStatus | undefined;
+  episodeId: string;
+  episodes: Map<string, IEpisode>;
+}
+
 export interface IContentModule<
   PlayerPropsInjectedDependencies,
   EnvVariable extends Record<string, unknown>,
 > {
-  Container?: React.FC<React.PropsWithChildren>;
+  Container?: React.FC<React.PropsWithChildren<IContainerComponentProps<EnvVariable>>>;
   interfaceComponents?: InterfaceExtensionComponent[];
   usePlayerProps?: PlayerPropsInjectorHook<PlayerPropsInjectedDependencies, EnvVariable>;
 }
@@ -127,9 +141,7 @@ export const ContentModuleFactory = <
     interfaceComponents,
   } = containerModule;
 
-  const ContainerComponent: React.FC<
-    React.PropsWithChildren<Record<string, unknown>>
-  > = Container || DefaultContainerComponent;
+  const ContainerComponent = Container || DefaultContainerComponent;
 
   type ContentProps = IContentProps<PlayerPropsInjectedDependencies, EnvVariable>;
 
@@ -291,7 +303,7 @@ export const ContentModuleFactory = <
         seriesCore={seriesCore}
         episodeListRequestStatus={config.requestStatus.episodes}
         episodeDetailRequestStatus={
-          episodeId && config.requestStatus[episodeId]
+          episodeId ? config.requestStatus[episodeId] : undefined
         }
         // We must use episode id from episodeCore but not from the router or
         // the episodeDetail, this is a problem of lifecycle, only id in
