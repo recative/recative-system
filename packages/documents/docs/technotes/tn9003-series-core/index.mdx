@@ -1,0 +1,59 @@
+---
+sidebar_position: 9003
+---
+
+# TN9003: Series Core - Series Level Content Management
+
+## Introduction
+
+`SeriesCore` is a crucial component of the Recative System that handles
+scheduling tasks related to switching between different program Episodes. Its
+primary role is to manage the transactional work of destroying old Episodes and
+enabling new Episodes to start playing. Developers can use the SeriesCore APIs
+to control the behavior of the scheduler, such as preventing auto-play from
+occurring.
+
+## Switching between episodes
+
+The core logic of `SeriesCore` is encapsulated in the setEpisode function. When
+developers call this function, it takes care of scheduling the new Episode to
+start playing and destroys the data associated with the old Episode at an
+appropriate time.
+
+When the setEpisode function is called, `SeriesCore` first checks to see if
+there is a currently playing episode. If there is, it will stop playback of that
+episode and destroy any associated data that is no longer needed. Then, it will
+load the new episode into memory and prepare it for playback.
+
+At this point, developers can use a number of optional arguments to customize
+the behavior of the scheduler. For example, they can specify whether or not auto
+play should be enabled for the new episode with `shouldBlockEpisodePlay`, should
+wait for the event to destroy the old episode core with
+`shouldBlockEpisodeDestroy`.
+
+Once all of the necessary preparations have been made, `SeriesCore` will begin
+playback of the new episode. It will also update its internal state to reflect
+the fact that a new episode is now playing, so that it can correctly handle any
+subsequent switching tasks.
+
+## Events
+
+Series core may dispatch several events for different purposes:
+
+| Name           | Description                                                         |
+| -------------- | ------------------------------------------------------------------- |
+| `segmentStart` | This event is emitted when an asset (segment) starts playing.       |
+| `segmentEnd`   | This event is emitted when an asset (segment) segment ends playing. |
+| `end`          | This event is emitted when the episode core is destroyed.           |
+| `initialized`  | This event is emitted when the episode core is initialized.         |
+
+## Stores
+
+Data which is shared among all episodes are managed by the SeriesCore, which
+includes:
+
+| Name                      | Description                                                                   |
+| ------------------------- | ----------------------------------------------------------------------------- |
+| `envVariable`             | The client related environment variables like device type and browser engine. |
+| `userData`                | The user related data like token, avatar and name.                            |
+| `userImplementedFunction` | Platform specific functions like payment and persistence data store.          |
