@@ -1,3 +1,9 @@
+---
+sidebar_position: 0006
+---
+
+# AP0006: Animation Hooks
+
 This page describes hooks that you can use to create vivid animations, checkout
 [this introduction](/pages/Hooks/hooks-intro) if you are new to Recative AP hooks.
 

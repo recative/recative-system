@@ -14,6 +14,7 @@
  *   make sure variables are exported correctly to package and hot
  *   loaded modules.
  */
+
 export * from './hooks/useRemoteData';
 export * from './hooks/useEpisodeDetail';
 export * from './hooks/useUserImplementedFunctions';
@@ -28,3 +29,4 @@ export * from './utils/getDiagnosisInformation';
 export { fetch as fetchMetadata } from './utils/fetch';
 
 export { PlayerSdkProvider } from './context';
+export type { IPlayerSdkProviderProps } from './context';

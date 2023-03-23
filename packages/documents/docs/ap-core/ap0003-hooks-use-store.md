@@ -1,3 +1,9 @@
+---
+sidebar_position: 0003
+---
+
+# AP0003: Store Hooks
+
 A store hook stores a piece of information, it works like `useState` in React,
 and the design concept comes from [Recoil](https://recoiljs.org/).
 
@@ -5,7 +11,7 @@ and the design concept comes from [Recoil](https://recoiljs.org/).
 
 We need to define a store before using it:
 
-```TypeScript
+```ts
 import { AtomDefinition } from '@recative/ap-core'
 
 const COUNT_STORE = AtomDefinition<number>(0)
@@ -21,7 +27,7 @@ You can consume it with the `useStore` hook, it will return three methods:
 
 Here's an example:
 
-```TypeScript
+```ts
 const [getCount, setCount, subscribeCountUpdate] = useStore(COUNT_STORE)
 
 getCount() // it will return 0

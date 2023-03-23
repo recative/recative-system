@@ -1,4 +1,4 @@
-# Best Practices
+# AP0008: Best Practices
 
 In this article, we will introduce recommended practices for developers, we hope
 this could help you building better interactive programs.
@@ -18,7 +18,7 @@ code become more and more complex and reduce maintainability.
 Like, if we want to pre-load an image, do some operation, then put it into stage,
 avoid coding like this:
 
-```TypeScript
+```ts
 const MyGreatComponent = () => {
   const container = new PIXI.Container();
   fetch('ap-resource://mySprite.svg').then(
@@ -35,7 +35,7 @@ const MyGreatComponent = () => {
 
 Better way:
 
-```TypeScript
+```ts
 const MyGreatComponent = () => {
   const [getState, setState, subscribeStateUpdate] = useStore(STATE_STORE);
 

@@ -1,3 +1,9 @@
+---
+sidebar_position: 0002
+---
+
+# AP0002: Introduction to AP Core Hooks
+
 React users may be familiar with this concept. To Recative AP, it's an easy way to reuse
 logics to make your life easier.
 
@@ -7,7 +13,7 @@ even in a for loop (but it doesn't mean you should do).
 
 It looks like this:
 
-```TypeScript
+```ts
 import { useStore, AtomDefinition } from '@recative/ap-core'
 import { TextureButton } from '@paperclip/ap-components'
 
@@ -45,7 +51,7 @@ Hooks work properly.
 
 This won't work:
 
-```TypeScript
+```ts
 // Imports were ignored.
 
 const counterBinding = () => {
@@ -66,7 +72,7 @@ const counterBinding = () => {
 
 This will work, but it's anti-pattern, will cause memory leak:
 
-```TypeScript
+```ts
 // Imports were ignored.
 
 const counterBinding = () => {
@@ -89,7 +95,7 @@ const counterBinding = () => {
 
 The correct way to achieve this task:
 
-```TypeScript
+```ts
 // Imports were ignored.
 
 const counterBinding = () => {

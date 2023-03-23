@@ -78,6 +78,12 @@ const config = {
             label: 'Studio',
           },
           {
+            to: 'docs/ap-core/intro',
+            activeBasePath: 'docs/ap-core',
+            position: 'left',
+            label: 'AP Core',
+          },
+          {
             to: 'api',
             label: 'API',
             activeBasePath: 'api',

@@ -1,3 +1,9 @@
+---
+sidebar_position: 0007
+---
+
+# AP0007: Remote Store
+
 A remote store hook store creates a storage slot that is synchronized across devices.
 It looks like `useStore`, but has more complex behavior.
 
@@ -5,7 +11,7 @@ It looks like `useStore`, but has more complex behavior.
 
 Like the `useStore` hook, we need to define a store before using it:
 
-```TypeScript
+```ts
 import { Boolean } from 'runtypes';
 import { RemoteAtomDefinition } from '@recative/ap-core'
 
@@ -28,7 +34,7 @@ We need to provide three parameters to this function:
 
 Then we can call the `useRemoteStore` hook:
 
-```TypeScript
+```ts
 const [getFinishedTask, setFinishedTask, subscribeFinishedTaskUpdate] = useRemoteStore(FINISHED_TASK_STORE)
 ```
 

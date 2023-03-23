@@ -1,3 +1,9 @@
+---
+sidebar_position: 0001
+---
+
+# AP0001: Getting Started
+
 ## Installing
 
 In our development specification, <span translate="no">Yarn 2</span> is the 

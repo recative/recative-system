@@ -15,9 +15,32 @@ export interface IClientSdkConfigContextValue extends IClientSdkConfig {
 
 export const ClientSdkContext = React.createContext<IClientSdkConfigContextValue | null>(null);
 
-interface IPlayerSdkProviderProps {
+/**
+ * The properties interface for a player SDK provider component in a React
+ * application.
+ */
+export interface IPlayerSdkProviderProps {
+  /**
+   * The path pattern for the data to be retrieved by the player SDK. This value
+   * should be a string, which could includes two placeholders for the specific
+   * data to be retrieved. 
+   * 
+   * The placeholders are `$fileName` and `$dataType` respectively, which will
+   * be replaced by the actual values at runtime.
+   *
+   * @Example "/bundle/data/$fileName.$dataType"
+   */
   pathPattern: string;
+
+  /**
+   * The data type of the data to be retrieved by the player SDK. This value
+   * should be one of the following strings: "bson", "json", or "uson".
+   */
   dataType: 'bson' | 'json' | 'uson';
+
+  /**
+   * The child elements to be rendered inside the player SDK provider component.
+   */
   children: React.ReactNode;
 }
 

@@ -46,25 +46,99 @@ error.log = console.error.bind(console);
 
 const VOID_ATOM = atom('void' as const);
 
+/**
+ * Interface for the props of a wrapped player component.
+ * 
+ * @template PlayerPropsInjectedDependencies - Type of the platform specific
+ *           dependencies shared by the player and customized user skin.
+ * @template EnvVariable - Type of the environment variable object which
+ *           contains the runtime configurations.
+ */
 export interface IContentProps<
   PlayerPropsInjectedDependencies,
-  EnvVariable extends Record<string, unknown>,
+  EnvVariable extends Record<string, unknown>
 > {
+  /**
+   * The ID of the episode to be played. 
+   */
   episodeId: string | undefined;
+
+  /** 
+   * An object containing user implemented functions.
+   */
   userImplementedFunctions?: Partial<RawUserImplementedFunctions>;
+  /**
+   * An array of string representing the IDs of the preferred uploaders to be
+   * used to fetch resources.
+   */
   preferredUploaders: string[];
+  /**
+   * An array of string representing the IDs of the trusted uploaders, whose
+   * resources are always be treated as available.
+   */
   trustedUploaders: string[];
+
+  /**
+   * An object containing the metadata related to the client.
+   */
   envVariable: EnvVariable | undefined;
+
+  /**
+   * An object containing information about the user token, avatar and nickname.
+   */
   userData: IUserRelatedEnvVariable | undefined;
+
+  /**
+   * A React functional component to render while the player is loading, this
+   * component is shared among all the components of the component to create
+   * a consistent user experience.
+   */
   LoadingComponent?: React.FC;
+
+  /**
+   * A boolean value indicating whether to attempt autoplay. 
+   */
   attemptAutoplay?: IEpisodeMetadata['attemptAutoplay'];
+
+  /**
+   * The default language for the content of the episode. 
+   */
   defaultContentLanguage?: IEpisodeMetadata['defaultContentLanguage'];
+
+  /**
+   * The default subtitle language for the episode. 
+   */
   defaultSubtitleLanguage?: IEpisodeMetadata['defaultSubtitleLanguage'];
+
+  /** 
+   * An object containing platform-specific dependencies used by the player and
+   * customized user skin. 
+   */
   playerPropsHookDependencies: PlayerPropsInjectedDependencies;
-  onEpisodeIdUpdate: ISeriesCoreConfig['navigate'],
+
+  /**
+   * A function to call when the episode ID is updated.
+   */
+  onEpisodeIdUpdate: ISeriesCoreConfig['navigate'];
+
+  /**
+   * An optional callback function called when the media playback ends.
+   */
   onEnd?: (x: EndEventDetail) => void;
+
+  /**
+   * An optional callback function called when an asset playback ends.
+   */
   onSegmentEnd?: (x: SegmentEndEventDetail) => void;
+
+  /**
+   * An optional callback function called when an asset playback starts.
+   */
   onSegmentStart?: (x: SegmentStartEventDetail) => void;
+
+  /**
+   * An optional callback function called when the episode core is initialized.
+   */
   onInitialized?: (x: InitializedEventDetail) => void;
 }
 

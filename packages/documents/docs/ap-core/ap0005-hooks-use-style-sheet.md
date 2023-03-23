@@ -1,3 +1,9 @@
+---
+sidebar_position: 0005
+---
+
+# AP0005: Style Sheet hooks
+
 Recative AP use [`stylesheets`](/classes/stylesheet) to expose component styles, it's
 the only recommended way to update component styles across scopes (like 
 components or hooks).
@@ -6,7 +12,7 @@ components or hooks).
 
 Like store definition, we need to SHOUT OUT A NEW STYLE DEFINITION.
 
-```TypeScript
+```ts
 import { StyleDefinition } from '@recative/ap-core'
 
 export const LOGO_OPACITY_STYLE = StyleDefinition()
@@ -16,7 +22,7 @@ We recommend adding a suffix `_STYLE` to the variable name.
 
 Then, we can register the style to the style sheet in our component:
 
-```TypeScript
+```ts
 import * as PIXI from 'pixi.js'
 import { useStylesheet } from '@recative/ap-core'
 
@@ -47,7 +53,7 @@ mapped to numbers.
 
 Then, we may want to operate this style from other scopes:
 
-```TypeScript
+```ts
 import { useStylesheet } from '@recative/ap-core'
 
 import { LOGO_OPACITY_STYLE } from './Logo'

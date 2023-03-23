@@ -1,3 +1,9 @@
+---
+sidebar_position: 0004
+---
+
+# AP0004: Event Target Hooks
+
 An event target hook expose the event pivot of the current interactive program, 
 we can dispatch a signal, the scope who cares about this signal could subscribe 
 it and handle its own logic separately.
@@ -6,7 +12,7 @@ it and handle its own logic separately.
 
 Like store definition, we need to define a new event type:
 
-```TypeScript
+```ts
 import { EventDefinition } from '@recative/ap-core'
 
 const START_RUNNING_TASK_EVENT = EventDefinition<{ taskName: string }>()
@@ -17,7 +23,7 @@ the event.
 
 Then we need to get the event pivot from your component.
 
-```TypeScript
+```ts
 import { useStore } from '@recative/ap-core'
 import { TextureButton } from '@paperclip/ap-components'
 
@@ -37,7 +43,7 @@ export const StartButton = () => {
 
 You can subscribe this event in another component, like this:
 
-```TypeScript
+```ts
 export const Main = () => {
     const eventTarget = useEventTarget()
 
