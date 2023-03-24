@@ -11,7 +11,7 @@ export type RawGoToEpisode = (
   episode: string,
   forceReload?: boolean,
   assetOrder?: number,
-  assetTime?: number,
+  assetTime?: number
 ) => void;
 
 export interface ShowVideoModalUrlRequest {
@@ -53,7 +53,8 @@ export interface RawUserImplementedFunctions {
    */
   gotoSeries(series: string): void;
   /**
-   * Unlock another episode, if episode not provided, current episode will be unlocked
+   * Unlock another episode, if episode not provided, current episode will be
+   * unlocked
    */
   unlockEpisode(episode?: string): void;
   /**
@@ -77,9 +78,9 @@ export interface RawUserImplementedFunctions {
    */
   showVideoModal(
     request:
-    | ShowVideoModalUrlRequest
-    | ShowVideoModalIdRequest
-    | ShowVideoModalLabelRequest
+      | ShowVideoModalUrlRequest
+      | ShowVideoModalIdRequest
+      | ShowVideoModalLabelRequest
   ): void;
   /**
    * show a debug message
@@ -101,9 +102,15 @@ export interface RawUserImplementedFunctions {
    * Customized action for third party extension
    */
   customizedActionRequest(request: CustomizedActionRequest): unknown;
+  /**
+   * Jump to another episode
+   */
   gotoEpisode: RawGoToEpisode;
 }
 
-export type UserImplementedFunctions = Omit<RawUserImplementedFunctions, 'gotoEpisode'> & {
+export type UserImplementedFunctions = Omit<
+  RawUserImplementedFunctions,
+  'gotoEpisode'
+> & {
   gotoEpisode: GoToEpisode;
 };
