@@ -1,0 +1,157 @@
+---
+sidebar_position: 7007
+---
+
+# TN7007: Task Queue
+
+## Abstract
+
+The Recative System provides a task queue manager to schedule different types of
+tasks while the application is preloading and running, this article will give
+developers a brief introduction about these queues and its usage in the system.
+
+## Two different task queues
+
+There are two types of task queues: `FrameFillingQueue` and `SequentialQueue`.
+
+They are both designed to manage asynchronous tasks and address performance
+issues that arise due to JavaScript's single-threaded nature. When asynchronous
+tasks take longer than a frame's "safe time" to complete, it can lead to browser
+rendering freezing, which can negatively impact user experience. These two
+queues aim to solve this issue by scheduling tasks effectively.
+
+- Both `FrameFillingQueue` and `SequentialQueue` are ordered collections of
+  elements that are added to the queue in a sequential manner.
+
+- Both classes follow the FIFO (First-In-First-Out) principle, i.e., the first
+  element added to the queue is the first to be removed.
+
+* Both classes have a similar implementation for the enqueue and dequeue
+  methods, with the only difference being the order in which the elements are
+  processed.
+
+### `FrameFillingQueue`
+
+The `FrameFillingQueue` follows a greedy strategy, managing tasks on a per-task
+basis. When a task is completed, the queue checks whether there is enough time
+remaining in the frame to execute another task. If enough time is available, the
+next task is called immediately.
+
+However, this approach can result in frame drop
+problems if there is enough time left but not enough to complete the new task.
+The scheduling strategy of the FrameFillingQueue is to clear tasks as soon as
+possible, and the trade-off of possible frame drops is considered acceptable.
+
+### `SequentialQueue`
+
+The `SequentialQueue`, on the other hand, takes a more conservative approach to
+scheduling tasks. It groups several tasks into a task group and executes
+multiple task groups concurrently. Before executing another task group, the
+queue checks whether there is enough remaining time in the frame to do so
+safely.
+
+Developers can fine-tune the user experience by adjusting the number of
+concurrent tasks and the "safe time."
+
+## A high level wrapper `TimeSlicingQueue`
+
+`TimeSlicingQueue` is a class that unifies `FrameFillingQueue` and
+`SequentialQueue`, providing developers with a consistent API for managing
+asynchronous tasks.
+
+When a developer instantiates a `TimeSlicingQueue`, they pass in the `QueueType`
+as an argument. The TimeSlicingQueue then internally creates an instance of
+either `FrameFillingQueue` or `SequentialQueue` based on the specified
+`QueueTypes`.
+
+### Dependency queue
+
+`dependencyQueue` refers to the internal queue used by `TimeSlicingQueue` to
+manage the dependencies between different tasks. When a task is added to the
+TimeSlicingQueue, it can have a dependency on one or more other tasks in the
+queue.
+
+For example, consider a scenario where we have three tasks: Task A, Task B, and
+Task C. Task A is dependent on Task B, and Task B is dependent on Task C. This
+means that Task C must be completed before Task B can start, and Task B must be
+completed before Task A can start.
+
+To manage these dependencies, `TimeSlicingQueue` uses a `dependencyQueue` which
+keeps track of the tasks that are waiting for their dependencies to be
+completed. When a task is added to the TimeSlicingQueue, the queue checks
+whether any of its dependencies are still waiting in the dependencyQueue. If so,
+the task is added to the `dependencyQueue` as well and is marked as waiting for
+its dependencies to be completed.
+
+Once a task's dependencies have been completed, it is moved from the
+`dependencyQueue` to the main task queue where it can be executed. This ensures
+that tasks are executed in the correct order and that all dependencies are
+satisfied before a task is started.
+
+## Episode level public queue
+
+### Default task queue configuration
+
+The Episode Core library provides two default queues: the fast queue and the
+slow queue. These queues have different parameter configurations, with the
+fast queue having a higher concurrency level and the slow queue having a smaller
+concurrency level.
+
+Additionally, the slow queue has a dependency on the fast queue, which means
+that tasks in the slow queue will not execute until all tasks in the fast queue
+have finished. This ensures that any dependencies or prerequisites are met
+before the slow queue starts processing its tasks.
+
+:::info
+Resource loading is also managed by the task queue, blocking resources are
+managed by the `fastQueue` and non-blocking resources are managed by the
+blocking resources.
+:::
+
+### Interactive program initialization
+
+Interactive programs can register their initialization tasks into the task queue
+to make sure your task won't cause frame drop while there are a lot of tasks
+have to be done.
+
+Here is an example:
+
+```ts
+import {
+  createPixiApp,
+  createActPointManager,
+} from '@recative/ap-core';
+
+function main() {
+  const appManager = createActPointManager();
+  const pixiApp = createPixiApp({
+    context: appManager.context,
+    pixiOptions: { backgroundColor: 0xffffff },
+    resolutionMode: 'window',
+  });
+  appManager.add(pixiApp);
+  document.body.appendChild(appManager.domElement);
+
+  const Main = () => {
+    // Some logic to draw your interface.
+  };
+
+  appManager.requireInitializeTask(() =>
+    // Your first initialize task.
+  );
+  appManager.requireInitializeTask(() =>
+    // Your second initialize task.
+  );
+
+  appManager.initialized.finally(() => {
+    // The task is initialized
+    pixiApp.add(Main);
+  });
+
+  if (process.env.NODE_ENV === 'development') {
+    pixiApp.context.ticker.replay();
+  }
+}
+
+main();
+```
