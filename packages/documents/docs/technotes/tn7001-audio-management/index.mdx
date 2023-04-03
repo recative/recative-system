@@ -18,8 +18,8 @@ since different browsers have different media playback strategy:
 
 To handle these complex problem Recative System created a consistence audio
 experience across all major browser platforms. This feature is enabled by
-[`@recative/audio-station`](https://recative.github.io/api/audio-station) and
-[`@recative/phonograph`](https://recative.github.io/api/phonograph),
+[`@recative/audio-station`](/api/audio-station) and
+[`@recative/phonograph`](/api/phonograph),
 which created a global `AudioContext`, and manually manage the media playback
 related work instead of using
 [HTMLMediaElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement).
@@ -37,7 +37,7 @@ the audio management system.
 
 `AudioStation` maintain a singleton of audio context and the audio station
 manager, user need to call the
-[`getGlobalAudioStation`](http://localhost:3000/api/audio-station/function/getGlobalAudioStation)
+[`getGlobalAudioStation`](/api/audio-station/function/getGlobalAudioStation)
 method to
 [interact with the manager](https://github.com/recative/recative-system/blob/bbc22e46471e4516333525819a24b111c167b9ed/packages/core-manager/src/episodeCore.ts#L105).
 
