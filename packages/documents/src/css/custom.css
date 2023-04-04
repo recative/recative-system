@@ -727,7 +727,17 @@ footer.footer .container.container-fluid {
   }
 }
 
-@media (max-width: 1400px) {
+@media (max-width: 1620px) {
+  .recative__doc_page_wrap .main-wrapper > div {
+    margin: 0;
+    width: initial;
+    min-width: initial;
+  }
+
+  .recative__doc_page_wrap .main-wrapper > div > main {
+    max-width: calc(100vw - var(--recative-sidebar-width));
+  }
+
   .recative__doc_page_wrap .theme-doc-toc-desktop {
     display: none;
   }
@@ -748,6 +758,10 @@ footer.footer .container.container-fluid {
 }
 
 @media (max-width: 996px) {
+  .recative__doc_page_wrap .main-wrapper > div > main {
+    max-width: initial;
+  }
+
   .blog-wrapper .main-wrapper > .container > .row > main {
     max-width: 100% !important;
   }
